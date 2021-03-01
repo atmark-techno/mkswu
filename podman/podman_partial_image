@@ -1,0 +1,83 @@
+#!/bin/bash
+
+error() {
+	echo "$@" >&2
+	exit 1
+}
+
+usage() {
+	echo "Usage: $0 -b base [-b base...] archive [archive..]"
+	echo "base = image name recognizable by podman image inspect, to be removed from archive"
+	echo "archive = image name recognizable by podman save"
+}
+
+command -v jq >/dev/null || error "You must install jq to use $0"
+declare -A known_hashs
+OUTPUT=image.tar
+
+inspect_image() {
+	local image="$1"
+	local hash checksum
+
+	while IFS=: read -r hash checksum; do
+		[[ "$hash" == "sha256" ]] || error "Unhandled hash $hash"
+		known_hashs[$checksum]=$hash
+	done < <(podman image inspect "$image" | jq -r 'map(.RootFS.Layers) | .[] | .[] ')
+}
+
+trim_archives() {
+	local archive tmpdir checksum
+
+	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
+	# shellcheck disable=SC2064
+	trap "rm -rf \"$tmpdir\"" EXIT
+	for archive; do
+		podman save --format=oci-archive "$archive" | tar -C "$tmpdir" -x || error "Could not extract $archive"
+		mv "$tmpdir/index.json" "$tmpdir/index.json-$archive"
+	done
+	jq -s '.[0] + { manifests: [.[] | .manifests | .[]] }' "$tmpdir/index.json-"* > "$tmpdir/index.json"
+
+	shopt -s nullglob
+	for blob in "$tmpdir/blobs/sha256/"*; do
+		checksum=$(gunzip < "$blob" 2>/dev/null | sha256sum | cut -d' ' -f1)
+		if [[ "${known_hashs[$checksum]}" == "sha256" ]]; then
+			rm -f "$blob"
+		fi
+	done
+
+	tar -C "$tmpdir" --owner root --group root -cf "$OUTPUT" blobs index.json oci-layout \
+		|| error "Could not create new archive"
+}
+
+while (( $# > 0 )); do
+	case "$1" in
+	"-b")
+		(( $# >= 2 )) || error "Missing argument to $1"
+		inspect_image "$2"
+		shift 2
+		;;
+	"-o")
+		(( $# >= 2 )) || error "Missing argument to $1"
+		OUTPUT="$2"
+		shift 2
+		;;
+	"-h"|"--help")
+		usage
+		exit 0
+		;;
+	"--")
+		shift
+		break
+		;;
+	"-"*)
+		error "Invalid argument $1"
+		;;
+	*)
+		break
+		;;
+	esac
+done
+
+(( $# < 1 )) && usage && exit 1
+
+trim_archives "$@"

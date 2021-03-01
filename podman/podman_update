@@ -1,0 +1,33 @@
+#!/bin/bash
+
+error() {
+	echo "$@" >&2
+	exit 1
+}
+
+(( $# != 1 )) && error "Usage: $0 <container>"
+
+container="$1"
+
+current_image=$(podman inspect --format "{{.Image}}" "$container") \
+	|| error "Could not find container image"
+image_name=$(podman inspect --format "{{.ImageName}}" "$container") \
+	|| error "Could not find container image name"
+
+[[ "${image_name%/*}" == "localhost" ]] && error "Image must not be local to pull: $image_name"
+
+new_image=$(podman pull -q "$image_name") \
+	|| error "Could not pull $image_name"
+
+if [[ "$new_image" == "$current_image" ]]; then
+	# nothing updated, all clear!
+	exit 0
+fi
+
+podman stop "$container"
+# podman currently has no way of cloning, or modifying a container,
+# so remove it and recreate it from config
+podman rm "$container"
+podman_start "$container"
+
+
