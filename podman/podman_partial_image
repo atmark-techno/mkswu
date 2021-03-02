@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 error() {
 	echo "$@" >&2
@@ -11,26 +11,17 @@ usage() {
 	echo "archive = image name recognizable by podman save"
 }
 
-command -v jq >/dev/null || error "You must install jq to use $0"
-declare -A known_hashs
-OUTPUT=image.tar
-
 inspect_image() {
 	local image="$1"
 	local hash checksum
 
-	while IFS=: read -r hash checksum; do
-		[[ "$hash" == "sha256" ]] || error "Unhandled hash $hash"
-		known_hashs[$checksum]=$hash
-	done < <(podman image inspect "$image" | jq -r 'map(.RootFS.Layers) | .[] | .[] ')
+	podman image inspect "$image" |
+		jq -r 'map(.RootFS.Layers) | .[] | .[] ' >> "$tmpdir/known_hashs"
 }
 
 trim_archives() {
-	local archive tmpdir checksum
+	local archive checksum
 
-	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
-	# shellcheck disable=SC2064
-	trap "rm -rf \"$tmpdir\"" EXIT
 	for archive; do
 		podman save --format=oci-archive "$archive" | tar -C "$tmpdir" -x || error "Could not extract $archive"
 		mv "$tmpdir/index.json" "$tmpdir/index.json-$archive"
@@ -40,7 +31,7 @@ trim_archives() {
 	shopt -s nullglob
 	for blob in "$tmpdir/blobs/sha256/"*; do
 		checksum=$(gunzip < "$blob" 2>/dev/null | sha256sum | cut -d' ' -f1)
-		if [[ "${known_hashs[$checksum]}" == "sha256" ]]; then
+		if grep -qx "sha256:$checksum" "$tmpdir/known_hashs"; then
 			rm -f "$blob"
 		fi
 	done
@@ -49,35 +40,48 @@ trim_archives() {
 		|| error "Could not create new archive"
 }
 
-while (( $# > 0 )); do
-	case "$1" in
-	"-b")
-		(( $# >= 2 )) || error "Missing argument to $1"
-		inspect_image "$2"
-		shift 2
-		;;
-	"-o")
-		(( $# >= 2 )) || error "Missing argument to $1"
-		OUTPUT="$2"
-		shift 2
-		;;
-	"-h"|"--help")
-		usage
-		exit 0
-		;;
-	"--")
-		shift
-		break
-		;;
-	"-"*)
-		error "Invalid argument $1"
-		;;
-	*)
-		break
-		;;
-	esac
-done
+main() {
+	local OUTPUT=image.tar
+	local tmpdir
 
-(( $# < 1 )) && usage && exit 1
+	command -v jq >/dev/null || error "You must install jq to use $0"
 
-trim_archives "$@"
+	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
+	trap "rm -rf \"$tmpdir\"" EXIT
+
+
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		"-b")
+			[ $# -ge 2 ] || error "Missing argument to $1"
+			inspect_image "$2"
+			shift 2
+			;;
+		"-o")
+			[ $# -ge 2 ] || error "Missing argument to $1"
+			OUTPUT="$2"
+			shift 2
+			;;
+		"-h"|"--help")
+			usage
+			exit 0
+			;;
+		"--")
+			shift
+			break
+			;;
+		"-"*)
+			error "Invalid argument $1"
+			;;
+		*)
+			break
+			;;
+		esac
+	done
+	
+	[ $# -lt 1 ] && usage && exit 1
+
+	trim_archives "$@"
+}
+
+main "$@"
