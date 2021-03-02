@@ -20,7 +20,7 @@ inspect_image() {
 }
 
 trim_archives() {
-	local archive checksum
+	local archive checksum tar_options=""
 
 	for archive; do
 		podman save --format=oci-archive "$archive" | tar -C "$tmpdir" -x || error "Could not extract $archive"
@@ -28,15 +28,21 @@ trim_archives() {
 	done
 	jq -s '.[0] + { manifests: [.[] | .manifests | .[]] }' "$tmpdir/index.json-"* > "$tmpdir/index.json"
 
-	shopt -s nullglob
 	for blob in "$tmpdir/blobs/sha256/"*; do
+		[ -e "$blob" ] || continue
 		checksum=$(gunzip < "$blob" 2>/dev/null | sha256sum | cut -d' ' -f1)
 		if grep -qx "sha256:$checksum" "$tmpdir/known_hashs"; then
 			rm -f "$blob"
 		fi
 	done
 
-	tar -C "$tmpdir" --owner root --group root -cf "$OUTPUT" blobs index.json oci-layout \
+	# podman generates archives in which owner is set to root,
+	# busybox tar doesn't allow that so only add option for GNU tar
+	if tar --version | grep -q GNU; then
+		tar_options="--owner root --group root"
+	fi
+
+	tar -C "$tmpdir" ${tar_options} -cf "$OUTPUT" blobs index.json oci-layout \
 		|| error "Could not create new archive"
 }
 
@@ -48,7 +54,7 @@ main() {
 
 	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
 	trap "rm -rf \"$tmpdir\"" EXIT
-
+	touch "$tmpdir/known_hashs"
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
