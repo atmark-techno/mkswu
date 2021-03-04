@@ -13,36 +13,37 @@ usage() {
 
 inspect_image() {
 	local image="$1"
-	local hash checksum
 
-	podman image inspect "$image" |
-		jq -r 'map(.RootFS.Layers) | .[] | .[] ' >> "$tmpdir/known_hashs"
+	podman inspect --format "{{.RootFS.Layers}}" "$image" |
+		sed -e 's/^\[\|\]$//g' -e 's/\<sha256://g' -e 's/ /\n/g' >> "$tmpdir/known_hashs"
 }
 
 trim_archives() {
-	local archive checksum tar_options=""
+	local archive hash tar_options="" tmpmanifest file
 
 	for archive; do
-		podman save --format=oci-archive "$archive" | tar -C "$tmpdir" -x || error "Could not extract $archive"
-		mv "$tmpdir/index.json" "$tmpdir/index.json-$archive"
+		podman save --format=docker-archive "$archive" | tar -C "$tmpdir/archive" -x || error "Could not extract $archive"
+		tmpmanifest=$(mktemp "$tmpdir/manifest.json-XXXXXX") || error "Could not create temporary manifest"
+		mv "$tmpdir/archive/manifest.json" "$tmpmanifest"
+		mv "$tmpdir/archive/repositories" "$tmpdir/repositories${tmpmanifest##*/manifest.json}"
 	done
-	jq -s '.[0] + { manifests: [.[] | .manifests | .[]] }' "$tmpdir/index.json-"* > "$tmpdir/index.json"
+	jq -s 'add' "$tmpdir/manifest.json-"* > "$tmpdir/archive/manifest.json"
+	jq -s 'reduce .[] as $item ({}; . * $item)' "$tmpdir/repositories-"* > "$tmpdir/archive/repositories"
 
-	for blob in "$tmpdir/blobs/sha256/"*; do
-		[ -e "$blob" ] || continue
-		checksum=$(gunzip < "$blob" 2>/dev/null | sha256sum | cut -d' ' -f1)
-		if grep -qx "sha256:$checksum" "$tmpdir/known_hashs"; then
-			rm -f "$blob"
-		fi
-	done
+	while read -r hash; do
+		file="$tmpdir/archive/$hash.tar"
+		[ -e "$file" ] || continue
+		# podman verifies the archive contains a tar for all layers even if they're not used
+		rm -f "$file" && touch -d "@0" "$file" && chmod 444 "$file" || error "Could not truncate layer in archive"
+	done < "$tmpdir/known_hashs"
 
 	# podman generates archives in which owner is set to root,
 	# busybox tar doesn't allow that so only add option for GNU tar
 	if tar --version | grep -q GNU; then
-		tar_options="--owner root --group root"
+		tar_options="--owner root --group root --numeric-owner"
 	fi
 
-	tar -C "$tmpdir" ${tar_options} -cf "$OUTPUT" blobs index.json oci-layout \
+	( cd "$tmpdir/archive"; tar ${tar_options} -c [0-9a-z]*; ) > "$OUTPUT" \
 		|| error "Could not create new archive"
 }
 
@@ -54,6 +55,7 @@ main() {
 
 	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
 	trap "rm -rf \"$tmpdir\"" EXIT
+	mkdir "$tmpdir/archive"
 	touch "$tmpdir/known_hashs"
 
 	while [ $# -gt 0 ]; do
