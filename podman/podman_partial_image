@@ -19,16 +19,9 @@ inspect_image() {
 }
 
 trim_archives() {
-	local archive hash tar_options="" tmpmanifest file
+	local hash tar_options="" tmpmanifest file
 
-	for archive; do
-		podman save --format=docker-archive "$archive" | tar -C "$tmpdir/archive" -x || error "Could not extract $archive"
-		tmpmanifest=$(mktemp "$tmpdir/manifest.json-XXXXXX") || error "Could not create temporary manifest"
-		mv "$tmpdir/archive/manifest.json" "$tmpmanifest"
-		mv "$tmpdir/archive/repositories" "$tmpdir/repositories${tmpmanifest##*/manifest.json}"
-	done
-	jq -s 'add' "$tmpdir/manifest.json-"* > "$tmpdir/archive/manifest.json"
-	jq -s 'reduce .[] as $item ({}; . * $item)' "$tmpdir/repositories-"* > "$tmpdir/archive/repositories"
+	podman save -m --format=docker-archive "$@" | tar -C "$tmpdir/archive" -x || error "Could not extract images: $*"
 
 	while read -r hash; do
 		file="$tmpdir/archive/$hash.tar"
@@ -50,8 +43,6 @@ trim_archives() {
 main() {
 	local OUTPUT=image.tar
 	local tmpdir
-
-	command -v jq >/dev/null || error "You must install jq to use $0"
 
 	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
 	trap "rm -rf \"$tmpdir\"" EXIT
