@@ -9,6 +9,12 @@ error() {
 
 usage() {
 	echo "Usage: $0 [-a|container [container...]]"
+	echo
+	echo "Helper to update containers"
+	echo
+	echo "  -a    Update all configured containers"
+	echo "  -l    Instead of normal internet updates, use podman load to"
+	echo "        install update from stdin"
 }
 
 update_container() {
@@ -44,12 +50,20 @@ update_containers() {
 	done
 }
 
+podman_load() {
+	podman load
+}
+
 [ $# -lt 1 ] && usage && exit 1
 
 case "$1" in
 	"-a")
 		[ $# -ne 1 ] && error "Trailing arguments after -a"
 		update_containers
+		exit
+		;;
+	"-l")
+		podman_load
 		exit
 		;;
 	"-h"|"--help")
