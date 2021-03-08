@@ -1,33 +1,64 @@
 #!/bin/sh
 
+CONF_DIR=/etc/atmark/containers
+
 error() {
 	echo "$@" >&2
 	exit 1
 }
 
-[ $# -ne 1 ] && error "Usage: $0 <container>"
+usage() {
+	echo "Usage: $0 [-a|container [container...]]"
+}
 
-container="$1"
+update_container() {
+	container="$1"
 
-current_image=$(podman inspect --format "{{.Image}}" "$container") \
-	|| error "Could not find container image"
-image_name=$(podman inspect --format "{{.ImageName}}" "$container") \
-	|| error "Could not find container image name"
+	current_image=$(podman inspect --format "{{.Image}}" "$container") \
+		|| error "Could not find container image"
+	image_name=$(podman inspect --format "{{.ImageName}}" "$container") \
+		|| error "Could not find container image name"
 
-[ "${image_name%/*}" = "localhost" ] && error "Image must not be local to pull: $image_name"
+	[ "${image_name%/*}" = "localhost" ] && error "Image must not be local to pull: $image_name"
 
-new_image=$(podman pull -q "$image_name") \
-	|| error "Could not pull $image_name"
+	new_image=$(podman pull -q "$image_name") \
+		|| error "Could not pull $image_name"
 
-if [ "$new_image" = "$current_image" ]; then
-	# nothing updated, all clear!
-	exit 0
-fi
+	if [ "$new_image" = "$current_image" ]; then
+		# nothing updated, all clear!
+		return
+	fi
 
-podman stop "$container"
-# podman currently has no way of cloning, or modifying a container,
-# so remove it and recreate it from config
-podman rm "$container"
-podman_start "$container"
+	podman stop "$container"
+	# podman currently has no way of cloning, or modifying a container,
+	# so remove it and recreate it from config
+	podman rm "$container"
+	podman_start "$container"
+}
 
+update_containers() {
+	for container in "$CONF_DIR/"*.conf; do
+		container="${container%.conf}"
+		container="${container##*/}"
+		update_container "$container"
+	done
+}
+
+[ $# -lt 1 ] && usage && exit 1
+
+case "$1" in
+	"-a")
+		[ $# -ne 1 ] && error "Trailing arguments after -a"
+		update_containers
+		exit
+		;;
+	"-h"|"--help")
+		usage
+		exit 0
+		;;
+esac
+
+for container; do
+	update_container "$@"
+done
 
