@@ -59,7 +59,7 @@ update_container() {
 	fi
 
 	echo -n "Pulling $image... "
-	new_image=$(podman pull --root "$podmanroot" -q "$image") \
+	new_image=$(podman pull --root "$podmanroot" --storage-opt additionalimagestore="" -q "$image") \
 		|| error "Could not pull $image"
 
 	if [ "$new_image" != "$current_image" ]; then
@@ -126,26 +126,45 @@ cleanup_snapshot() {
 }
 
 rotate_snapshot() {
+	local old_base new_base d
+
 	# nothing to do if disabled
 	[ "$SNAPSHOT" = "no" ] && return
+
+	# XXX make a list of used images and remove others ones?
+	# prune old images no longer reachable by name
+	podman image prune -f --root "$podmanroot" --storage-opt additionalimagestore=""
 
 	if [ "$SNAPSHOT" = "btrfs" ]; then
 		btrfs property set -ts "$podmanroot" ro true
 	fi
 
+	old_base="$(readlink "$STORAGE_BASE")"
+	new_base="${podmanroot##*/}"
+
 	if mv --help 2>&1 | grep -q coreutils; then
 		# coreutils mv can rename over symlink for atomic update
 		rm -f "$STORAGE_BASE.tmplink"
-		ln -s "${podmanroot##*/}" "$STORAGE_BASE.tmplink"
+		ln -s "$new_base" "$STORAGE_BASE.tmplink"
 		mv -f -T "$STORAGE_BASE.tmplink" "$STORAGE_BASE"
 	else
 		rm -f "$STORAGE_BASE"
-		ln -s "${podmanroot##*/}" "$STORAGE_BASE"
+		ln -s "$new_base" "$STORAGE_BASE"
 	fi
+
+	for d in "$STORAGE_BASE"_*; do
+		[ "${d##*/}" = "$new_base" ] && continue
+		[ "${d##*/}" = "$old_base" ] && continue
+		if btrfs property get -ts "$d" >/dev/null 2>&1; then
+			btrfs subvolume delete "$d"
+		else
+			rm -rf "$d"
+		fi
+	done
 }
 
 podman_load() {
-	TMPDIR=/app/tmp podman load --root "$podmanroot"
+	TMPDIR=/app/tmp podman load --root "$podmanroot" --storage-opt additionalimagestore=""
 
 	# check if something changed, and restart everything if it did
 	if [ "$(podman image list --storage-opt additionalimagestore="$STORAGE_BASE" --format "{{.Id}}" | sort | sha256sum)" != \
