@@ -2,6 +2,16 @@
 
 CONF_DIR=/etc/atmark/containers
 
+[ -z "${CONTAINERS_CONF+x}" ] && \
+	[ -e /etc/atmark/containers.conf ] && \
+	export CONTAINERS_CONF=/etc/atmark/containers.conf
+[ -z "${CONTAINERS_STORAGE_CONF+x}" ] && \
+	[ -e /etc/atmark/containers_storage.conf ] && \
+	export CONTAINERS_STORAGE_CONF=/etc/atmark/containers_storage.conf
+[ -z "${REGISTRIES_CONFIG_PATH+x}" ] && \
+	[ -e /etc/atmark/containers_registries.conf ] && \
+	export REGISTRIES_CONFIG_PATH=/etc/atmark/containers_registries.conf
+
 error() {
 	echo "$@" >&2
 	exit 1
