@@ -103,7 +103,12 @@ setup_snapshot() {
 		fi
 		;;
 	"copy")
-		cp -a "$STORAGE_BASE"/. "$podmanroot"
+		# hardlink if we can
+		if [ "$(stat -c %d%D "$STORAGE_BASE/.")" = "$(stat -c %d%D "$STORAGE_BASE/..")" ]; then
+			cp -al "$STORAGE_BASE"/. "$podmanroot"
+		else
+			cp -a "$STORAGE_BASE"/. "$podmanroot"
+		fi
 		;;
 	esac
 
