@@ -1,10 +1,12 @@
 #!/bin/sh
 
 CONF_DIR=/etc/atmark/containers
-STORAGE_BASE=/app/containers/storage_base
+STORAGE_BASE=/var/app/containers/storage_base
 SNAPSHOT=auto
 RESTART=yes
 PODMAN_LOAD=
+PUB_KEY=/etc/swupdate.pem
+TMPDIR=/var/app/tmp
 
 [ -z "${CONTAINERS_CONF+x}" ] && \
 	[ -e /etc/atmark/containers.conf ] && \
@@ -12,6 +14,8 @@ PODMAN_LOAD=
 [ -z "${CONTAINERS_STORAGE_CONF+x}" ] && \
 	[ -e /etc/atmark/containers_storage.conf ] && \
 	export CONTAINERS_STORAGE_CONF=/etc/atmark/containers_storage.conf
+# XXX https://github.com/containers/podman/pull/9668
+# change to CONTAINERS_REGISTRIES_CONF after podman update to 3.1
 [ -z "${REGISTRIES_CONFIG_PATH+x}" ] && \
 	[ -e /etc/atmark/containers_registries.conf ] && \
 	export REGISTRIES_CONFIG_PATH=/etc/atmark/containers_registries.conf
@@ -34,6 +38,8 @@ usage() {
 	echo " --copy      Force copy of podman store even if btrfs was detected"
 	echo " --inplace   Disable copy/snapshot mechanism (only works if not set ro)"
 	echo " --norestart Disable automatic restart after load/successful pull"
+	echo " --pubkey <key> Public key used to verify signed image (load from file only)"
+	echo "                Setting to empty string disables the check"
 }
 
 append_args() {}
@@ -168,8 +174,30 @@ rotate_snapshot() {
 	done
 }
 
+check_sig() {
+	local file="$1"
+
+	openssl dgst -sha256 -binary "$file" |
+		openssl pkeyutl -verify  -sigfile "$file.sig" \
+			-pkeyopt rsa_padding_mode:pss -pubin -inkey "$PUB_KEY" \
+			-pkeyopt rsa_pss_saltlen:-2 -pkeyopt digest:sha256 || \
+		error "Signature verification failed"
+}
+
 podman_load() {
-	TMPDIR=/app/tmp podman load --root "$podmanroot" --storage-opt additionalimagestore=""
+	local archive
+
+	if [ $# -eq 0 ]; then
+		TMPDIR="$TMPDIR" podman load --root "$podmanroot" \
+			--storage-opt additionalimagestore=""
+	else for archive; do
+		if [ -n "$PUB_KEY" ]; then
+			check_sig "$archive"
+		fi
+		TMPDIR="$TMPDIR" podman load --root "$podmanroot" \
+			--storage-opt additionalimagestore="" \
+			-i "$archive"
+	done fi
 
 	# check if something changed, and restart everything if it did
 	if [ "$(podman image list --storage-opt additionalimagestore="$STORAGE_BASE" --format "{{.Id}}" | sort | sha256sum)" != \
@@ -191,7 +219,7 @@ update_containers() {
 	setup_snapshot
 	trap "cleanup_snapshot" EXIT
 
-	[ -n "$PODMAN_LOAD" ] && podman_load
+	[ -n "$PODMAN_LOAD" ] && podman_load "$@"
 	for container do
 		container="${container%.conf}"
 		container="${container##*/}"
@@ -236,6 +264,11 @@ while [ $# -ge 1 ]; do
 	"--norestart")
 		RESTART=
 		shift
+		;;
+	"--pubkey")
+		[ $# -ge 2 ] || error "--pubkey needs an argument"
+		PUB_KEY="$2"
+		shift 2
 		;;
 	"--")
 		shift
