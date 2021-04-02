@@ -13,14 +13,24 @@ KERNEL_VERSION=""
 BASE_OS=""
 BASE_OS_VERSION=""
 EXTRA_OS=""
-PRE_SCRIPTS="atmark_swupdate_pre.sh"
-POST_SCRIPTS="atmark_swupdate_post.sh"
+PRE_SCRIPTS=""
+POST_SCRIPTS=""
+UPDATE_CONTAINERS=""
+EMBED_CONTAINERS=""
+DEBUG_SWDESC="# ATMARK_FLASH_DEV /dev/mmcblk2
+# ATMARK_FLASH_AB 0"
+FORCE=1
 
 usage() {
 	echo "usage: $0 [opts]"
 	echo
 	echo "options:"
 	echo "  --config path"
+}
+
+error() {
+	echo "$@" >&2
+	exit 1
 }
 
 write_line() {
@@ -79,6 +89,11 @@ write_uboot() {
 		# XXX copy to dest dir
 		truncate -s "$UBOOT_SIZE" "$UBOOT"
 	fi
+	
+	if [ -z "$FORCE" ] && [ -n "$UBOOT_VERSION" ]; then
+		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" || \
+			error "uboot version $UBOOT_VERSION was set, but string not present in binary: aborting"
+	fi
 
 	component=uboot version=$UBOOT_VERSION \
 		write_one_file "$UBOOT" "type = \"raw\";" \
@@ -102,6 +117,13 @@ write_files() {
 	write_tar "$file.tar" "$dest"
 }
 
+write_file() {
+	local file="$1"
+	local dest="$2"
+
+	write_one_file "$file" "type = \"rawfile\";" \
+		"installed-directly = true;" "path = \"/mnt$dest\";"
+}
 
 write_sw_desc() {
 	local IFS="
@@ -111,13 +133,23 @@ write_sw_desc() {
 	local version
 	local compress
 	local encrypt
-	local file
+	local file line
 
 	cat <<EOF
 software = {
   version = "0.1.0";
   description = "Firmware for yakushima";
   hardware-compatibility = [ "1.0" ];
+EOF
+
+	for line in $DEBUG_SWDESC; do
+		indent=2 write_line $line
+	done
+	if [ -n "$UPDATE_CONTAINERS" ]; then
+		indent=2 write_line "# ATMARK_CONTAINERS_UPDATE $UPDATE_CONTAINERS"
+	fi
+
+	cat <<EOF
 
   images: (
 EOF
@@ -139,6 +171,13 @@ EOF
 		write_tar "$file" "/"
 	done
 
+	cat <<EOF
+  );
+  files: (
+EOF
+	for file in $EMBED_CONTAINERS; do
+		write_file "$file" "/var/tmp/${file##*/}"
+	done
 	cat <<EOF
   );
   scripts: (
