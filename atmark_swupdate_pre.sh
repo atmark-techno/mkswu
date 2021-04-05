@@ -4,14 +4,14 @@ TMPDIR=/tmp
 
 mmcblk=/dev/mmcblk2
 ab=0
-update_id=$(date +%Y%m%d_%H%M%S)
+needs_reboot=
 
 error() {
 	echo "$@" >&2
 	exit 1
 }
 
-get_vers() {
+get_version() {
 	local component="$1"
 	local source="${2:-$TMPDIR/sw-versions.present}"
 
@@ -30,25 +30,42 @@ gen_newversion() {
 	# then appending other lines from new one in order as well.
 	# Could probably do better but it works and files are small..
 	while read -r component oldvers; do
-		newvers=$(get_vers "$component")
+		newvers=$(get_version "$component")
 		echo "$component ${newvers:-$oldvers}"
 	done < /etc/sw-versions > "$TMPDIR/sw-versions.merged"
 	while read -r component newvers; do
-		oldvers=$(get_vers "$component" /etc/sw-versions)
+		oldvers=$(get_version "$component" /etc/sw-versions)
 		[ -z "$oldvers" ] && echo "$component $newvers"
 	done < "$TMPDIR/sw-versions.present" >> "$TMPDIR/sw-versions.merged"
 }
 
-need_update() {
+needs_update() {
 	local component="$1"
 	local newvers oldvers
 
-	newvers=$(get_vers "$component")
+	newvers=$(get_version "$component")
 	[ -n "$newvers" ] || return 1
 
-	oldvers=$(get_vers "$component" /etc/sw-versions)
+	oldvers=$(get_version "$component" /etc/sw-versions)
 	[ "$newvers" != "$oldvers" ]
 }
+
+umount_if_mountpoint() {
+	local dir="$1"
+	if mountpoint -q "$dir"; then
+		umount "$dir" || error "Could not umount $dir"
+	fi
+}
+
+cleanup_previous_upgrade() {
+        umount_if_mountpoint /target/var/app/storage
+        umount_if_mountpoint /target/var/app/volumes
+        umount_if_mountpoint /target/var/app/volumes_persistent
+        umount_if_mountpoint /target/var/app/volumes_tmp
+        umount_if_mountpoint /target
+	rm -f "$TMPDIR/needs_reboot"
+}
+
 
 init_rootfs() {
 	local rootdev
@@ -75,7 +92,6 @@ init_rootfs() {
 		;;
 	esac
 
-
 	# override from sw-description
 	rootdev=$(awk '/ATMARK_FLASH_DEV/ { print $NF }' "$TMPDIR/sw-description")
 	[ -n "$rootdev" ] && mmcblk="$rootdev"
@@ -87,16 +103,26 @@ init_rootfs() {
 	# check if partitions exist and create them if not:
 	# - XXX boot partitions (always exist?)
 	# - XXX gpp partitions
-	# - XXX normal partitions
+	# sgdisk  --zap-all --new 1:20480:400M --new 2:0:400M --new 3:0:+50M --new 4:0:0 /dev/mmcblk2
+}
+
+needs_reboot() {
+	[ -n "$needs_reboot" ]
 }
 
 save_vars() {
-	echo "${update_id}" > "$TMPDIR/update_id"
 	echo "$mmcblk $ab" > "$TMPDIR/mmcblk"
+
+	needs_reboot && touch "$TMPDIR/needs_reboot"
 }
 
 init() {
 	gen_newversion
+
+	if needs_update uboot || needs_update baseos || needs_update kernel || needs_update extra_os; then
+		needs_reboot=1
+	fi
+	cleanup_previous_upgrade
 	init_rootfs
 	save_vars
 }
@@ -109,7 +135,7 @@ prepare_uboot() {
 	fi
 	rm -f /dev/swupdate_ubootdev
 
-	need_update "uboot" || return
+	needs_update "uboot" || return
 
 	if [ -e "${mmcblk}boot${ab}" ]; then
 		ln -s "${mmcblk}boot${ab}" /dev/swupdate_ubootdev \
@@ -125,16 +151,40 @@ prepare_uboot() {
 	fi
 }
 
+update_running_versions() {
+	# atomic update for running sw versions
+        mount --bind / /target || error "Could not bind mount rootfs"
+        mount -o remount,rw /target || error "Could not make rootfs rw"
+        "$@" < /target/etc/sw-versions > /target/etc/sw-versions.new \
+                && mv /target/etc/sw-versions.new /target/etc/sw-versions
+	umount /target || error "Could not umount rootfs rw copy"
+}
+
 prepare_rootfs() {
 	local dev="${mmcblk}p$((ab+1))"
+	local uptodate
+
 	# XXX cleanup unmount existing mount point
+
+	# Check if the current copy is up to date.
+	# If there is no need to reboot, we can use it -- otherwise we need
+	# to clear the flag.
+	if grep -q other_rootfs_uptodate /etc/sw-versions; then
+		if ! needs_reboot; then
+			mount "$dev" "/target" -o ro || error "Could not mount $dev"
+			return
+		fi
+		update_running_versions grep -v 'other_rootfs_uptodate'
+	fi
+
+
 
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
 	mkfs.ext4 -F "$dev" || error "Could not reformat $dev"
 	mount "$dev" "/target" || error "Could not mount $dev"
 
-	need_update "base_os" && return
+	needs_update "base_os" && return
 
 	# if no update is required copy current fs over
 	cp -ax / /target/ || error "Could not copy existing fs over"
@@ -147,6 +197,9 @@ btrfs_snapshot_or_create() {
 	[ -e "$basemount/$new" ] && return
 
 	if [ -n "$source" ] &&  [ -e "$basemount/$source" ]; then
+		if [ -e "$basemount/$new" ]; then
+			btrfs subvolume delete "$basename/$new"
+		fi
 		btrfs subvolume snapshot "$basemount/$source" "$basemount/$new"
 	else
 		btrfs subvolume create "$basemount/$new"
@@ -166,20 +219,23 @@ prepare_appfs() {
 		mkfs.btrfs "$dev" || error "$dev already contains another filesystem (or other mkfs error)"
 		mount "$dev" "$basemount" || error "Could not mount $dev"
 	fi
-	btrfs_snapshot_or_create "storage" "storage_${update_id}" \
+	btrfs_snapshot_or_create "storage_$((!ab))" "storage_${ab}" \
 		|| error "Could not create storage subvol"
-	btrfs_snapshot_or_create "volumes" "volumes_${update_id}" \
+	btrfs_snapshot_or_create "volumes_$((!ab))" "volumes_${ab}" \
 		|| error "Could not create volumes subvol"
 	btrfs_snapshot_or_create "" "volumes_persistent" \
 		|| error "Could not create volumes_persistent subvol"
 	btrfs_snapshot_or_create "" "tmp" || error "Could not create tmp subvol"
 
+	# wait for subvolume deletion to complete to make sure we can use
+	# any reclaimed space
+	btrfs subvolume sync "$basemount"
 	umount "$basemount"
 	rmdir "$basemount"
 
-	mount "$dev" "/target/var/app/storage" -o "subvol=storage_${update_id}" \
+	mount "$dev" "/target/var/app/storage" -o "subvol=storage_${ab}" \
 		|| error "Could not mount storage subvol"
-	mount "$dev" "/target/var/app/volumes" -o "subvol=volumes_${update_id}" \
+	mount "$dev" "/target/var/app/volumes" -o "subvol=volumes_${ab}" \
 		|| error "Could not mount volumes subvol"
 	mount "$dev" "/target/var/app/volumes_persistent" -o "subvol=volumes_persistent" \
 		|| error "Could not mount volumes_persistent subvol"

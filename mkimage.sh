@@ -13,6 +13,7 @@ KERNEL_VERSION=""
 BASE_OS=""
 BASE_OS_VERSION=""
 EXTRA_OS=""
+EXTRA_OS_VERSION=""
 PRE_SCRIPTS=""
 POST_SCRIPTS=""
 UPDATE_CONTAINERS=""
@@ -164,11 +165,13 @@ EOF
 
 	if [ -n "$BOOT_FILES" ]; then
 		set -- $BOOT_FILES
-		write_files boot /boot "$@"
+		component=kernel version=$KERNEL_VERSION \
+			write_files boot /boot "$@"
 	fi
 
 	for file in $EXTRA_OS; do
-		write_tar "$file" "/"
+		component=extra_os version=$EXTRA_OS_VERSION \
+			write_tar "$file" "/"
 	done
 
 	cat <<EOF
@@ -176,6 +179,7 @@ EOF
   files: (
 EOF
 	for file in $EMBED_CONTAINERS; do
+		# XXX assing component/version per file somehow
 		write_file "$file" "/var/tmp/${file##*/}"
 	done
 	cat <<EOF
@@ -183,13 +187,17 @@ EOF
   scripts: (
 EOF
 
-
 	for script in $PRE_SCRIPTS; do
 		write_one_file "$script" "type = \"preinstall\";"
 	done
 	for script in $POST_SCRIPTS; do
 		write_one_file "$script" "type = \"postinstall\";"
 	done
+
+	# swupdate fails if all updates are already installed and there
+	# is nothing to do, add a dummy empty script to avoid that
+	[ -e empty.sh ] || > empty.sh
+	write_one_file "empty.sh" "type = \"preinstall\";"
 
 	cat <<EOF
   );
