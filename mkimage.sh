@@ -4,23 +4,6 @@ OUT=out.swu
 CONFIG=./mkimage.conf
 FILES="sw-description
 sw-description.sig"
-PRIVKEY=swupdate.key
-UBOOT=""
-UBOOT_VERSION=""
-UBOOT_SIZE="4M"
-BOOT_FILES=""
-KERNEL_VERSION=""
-BASE_OS=""
-BASE_OS_VERSION=""
-EXTRA_OS=""
-EXTRA_OS_VERSION=""
-PRE_SCRIPTS=""
-POST_SCRIPTS=""
-UPDATE_CONTAINERS=""
-EMBED_CONTAINERS=""
-DEBUG_SWDESC="# ATMARK_FLASH_DEV /dev/mmcblk2
-# ATMARK_FLASH_AB 0"
-FORCE=1
 
 usage() {
 	echo "usage: $0 [opts]"
@@ -41,20 +24,22 @@ write_line() {
 	done
 }
 
-write_one_file() {
+write_entry() {
 	local file_src="$1"
 	local file="${file_src##*/}"
 	shift
-	local sha256 arg
+	local sha256 arg install_if
 
 	echo "$FILES" | grep -q -x "$file" || FILES="$FILES
 $file"
 
 	if [ -n "$compress" ]; then
+		# XXX
 		echo "compression not yet handled, ignoring" >&2
 	fi
 
 	if [ -n "$encrypt" ]; then
+		# XXX
 		echo "encryption not yet handled, ignoring" >&2
 	fi
 
@@ -71,9 +56,13 @@ $file"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
 	if [ -n "$component" ]; then
+		case "$component" in
+		uboot|kernel) install_if="different";;
+		*) install_if="higher";;
+		esac
 		write_line "name = \"$component\";"
 		[ -n "$version" ] && write_line "version = \"$version\";" \
-						"install-if-different = true;"
+						"install-if-${install_if} = true;"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
@@ -84,10 +73,24 @@ $file"
 	write_line "},"
 }
 
+write_entry_component() {
+	local component
+	local version
+	local file="$1"
+	shift
+
+	component="${file%% *}"
+	file="${file#* }"
+	version="${file%% *}"
+	file="${file#* }"
+	write_entry "$file" "$@"
+}
+
 write_uboot() {
 	if [ -n "$UBOOT_SIZE" ]; then
 		# pad to UBOOT_SIZE to clear environment
 		# XXX copy to dest dir
+		# XXX check new size is bigger
 		truncate -s "$UBOOT_SIZE" "$UBOOT"
 	fi
 	
@@ -97,7 +100,7 @@ write_uboot() {
 	fi
 
 	component=uboot version=$UBOOT_VERSION \
-		write_one_file "$UBOOT" "type = \"raw\";" \
+		write_entry "$UBOOT" "type = \"raw\";" \
 			"device = \"/dev/swupdate_ubootdev\";"
 }
 
@@ -105,7 +108,14 @@ write_tar() {
 	local source="$1"
 	local dest="$2"
 
-	write_one_file "$source" "type = \"archive\";" "dest = \"/mnt$dest\";"
+	write_entry "$source" "type = \"archive\";" "dest = \"/mnt$dest\";"
+}
+
+write_tar_component() {
+	local source="$1"
+	local dest="$2"
+
+	write_entry_component "$source" "type = \"archive\";" "dest = \"/mnt$dest\";"
 }
 
 write_files() {
@@ -118,11 +128,11 @@ write_files() {
 	write_tar "$file.tar" "$dest"
 }
 
-write_file() {
+write_file_component() {
 	local file="$1"
 	local dest="$2"
 
-	write_one_file "$file" "type = \"rawfile\";" \
+	write_entry_component "$file" "type = \"rawfile\";" \
 		"installed-directly = true;" "path = \"/mnt$dest\";"
 }
 
@@ -134,7 +144,7 @@ write_sw_desc() {
 	local version
 	local compress
 	local encrypt
-	local file line
+	local file line tmp_component tmp_version
 
 	cat <<EOF
 software = {
@@ -146,9 +156,6 @@ EOF
 	for line in $DEBUG_SWDESC; do
 		indent=2 write_line $line
 	done
-	if [ -n "$UPDATE_CONTAINERS" ]; then
-		indent=2 write_line "# ATMARK_CONTAINERS_UPDATE $UPDATE_CONTAINERS"
-	fi
 
 	cat <<EOF
 
@@ -169,9 +176,8 @@ EOF
 			write_files boot /boot "$@"
 	fi
 
-	for file in $EXTRA_OS; do
-		component=extra_os version=$EXTRA_OS_VERSION \
-			write_tar "$file" "/"
+	for file in $EXTRA_TARS; do
+		write_tar_component "$file" "/"
 	done
 
 	cat <<EOF
@@ -179,25 +185,21 @@ EOF
   files: (
 EOF
 	for file in $EMBED_CONTAINERS; do
-		# XXX assing component/version per file somehow
-		write_file "$file" "/var/tmp/${file##*/}"
+		write_file_component "$file" "/var/tmp/${file##*/}"
 	done
 	cat <<EOF
   );
   scripts: (
 EOF
 
-	for script in $PRE_SCRIPTS; do
-		write_one_file "$script" "type = \"preinstall\";"
-	done
-	for script in $POST_SCRIPTS; do
-		write_one_file "$script" "type = \"postinstall\";"
+	for script in $EXTRA_SCRIPTS; do
+		write_entry_component "$script" "type = \"postinstall\";"
 	done
 
 	# swupdate fails if all updates are already installed and there
 	# is nothing to do, add a dummy empty script to avoid that
 	[ -e empty.sh ] || > empty.sh
-	write_one_file "empty.sh" "type = \"preinstall\";"
+	write_entry "empty.sh" "type = \"preinstall\";"
 
 	cat <<EOF
   );

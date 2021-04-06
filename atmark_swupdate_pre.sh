@@ -18,25 +18,25 @@ get_version() {
 	awk '$1 == "'"$component"'" { print $2 }' < "$source"
 }
 
-gen_newversion() {
-	local component oldvers newvers
+# strict greater than
+version_higher() {
+	local oldvers="$1"
+	local newvers="$2"
 
-	awk -F'[" ]+' '$2 == "name" {component=$4}
-		component && $2 == "version" { print component, $4 }
-		/,/ { component="" }' < "$TMPDIR/sw-description" \
-			> "$TMPDIR/sw-versions.present"
-	
-	# Merge files, keeping order of original sw-versions,
-	# then appending other lines from new one in order as well.
-	# Could probably do better but it works and files are small..
-	while read -r component oldvers; do
-		newvers=$(get_version "$component")
-		echo "$component ${newvers:-$oldvers}"
-	done < /etc/sw-versions > "$TMPDIR/sw-versions.merged"
-	while read -r component newvers; do
-		oldvers=$(get_version "$component" /etc/sw-versions)
-		[ -z "$oldvers" ] && echo "$component $newvers"
-	done < "$TMPDIR/sw-versions.present" >> "$TMPDIR/sw-versions.merged"
+	! echo -e "$2\n$1" | sort -VC
+}
+
+version_update() {
+	local component="$1"
+	local oldvers="$2"
+	local newvers="$3"
+
+	[ -n "$newvers" ] || return 1
+
+	case "$component" in
+	uboot|kernel) [ "$newvers" != "$oldvers" ];;
+	*) version_higher "$oldvers" "$newvers";;
+	esac
 }
 
 needs_update() {
@@ -47,7 +47,30 @@ needs_update() {
 	[ -n "$newvers" ] || return 1
 
 	oldvers=$(get_version "$component" /etc/sw-versions)
-	[ "$newvers" != "$oldvers" ]
+	version_update "$component" "$oldvers" "$newvers"
+}
+
+gen_newversion() {
+	local component oldvers newvers
+
+	# extract all present component versions then keep whatever is biggest
+	awk -F'[" ]+' '$2 == "name" {component=$4}
+		component && $2 == "version" { print component, $4 }
+		/,/ { component="" }' < "$TMPDIR/sw-description" |
+		sort -Vr | sort -u -k 1,1 > "$TMPDIR/sw-versions.present"
+	
+	# Merge files, keeping order of original sw-versions,
+	# then appending other lines from new one in order as well.
+	# Could probably do better but it works and files are small..
+	while read -r component oldvers; do
+		newvers=$(get_version "$component")
+		version_update "$component" "$oldvers" "$newvers" || newvers="$oldvers"
+		echo "$component $newvers"
+	done < /etc/sw-versions > "$TMPDIR/sw-versions.merged"
+	while read -r component newvers; do
+		oldvers=$(get_version "$component" /etc/sw-versions)
+		[ -z "$oldvers" ] && echo "$component $newvers"
+	done < "$TMPDIR/sw-versions.present" >> "$TMPDIR/sw-versions.merged"
 }
 
 umount_if_mountpoint() {
@@ -69,7 +92,6 @@ cleanup_previous_upgrade() {
 
 init_rootfs() {
 	local rootdev
-
 
 	rootdev=$(sed -ne 's/.*root=\([^ ]*\).*/\1/p' < /proc/cmdline)
 
@@ -119,6 +141,15 @@ save_vars() {
 init() {
 	gen_newversion
 
+	# if no version changed, don't do anything except signaling for post
+	# script. Remove file if things changed just in case.
+	if cmp -s /etc/sw-versions $TMPDIR/sw-versions.merged; then
+		touch "$TMPDIR/nothing_to_do"
+		rm -f "$TMPDIR/sw-versions.present" "$TMPDIR/sw-versions.merged"
+		exit 0
+	fi
+	rm -f "$TMPDIR/nothing_to_do"
+
 	if needs_update uboot || needs_update baseos || needs_update kernel || needs_update extra_os; then
 		needs_reboot=1
 	fi
@@ -164,8 +195,6 @@ prepare_rootfs() {
 	local dev="${mmcblk}p$((ab+1))"
 	local uptodate
 
-	# XXX cleanup unmount existing mount point
-
 	# Check if the current copy is up to date.
 	# If there is no need to reboot, we can use it -- otherwise we need
 	# to clear the flag.
@@ -176,7 +205,6 @@ prepare_rootfs() {
 		fi
 		update_running_versions grep -v 'other_rootfs_uptodate'
 	fi
-
 
 
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted

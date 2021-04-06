@@ -30,6 +30,11 @@ need_update() {
 }
 
 init() {
+	if [ -e "$TMPDIR/nothing_to_do" ]; then
+		rm -f "$TMPDIR/nothing_to_do"
+		exit 0
+	fi
+
 	mmcblk="$(cat "$TMPDIR/mmcblk")" \
 		|| error "Could not read mmcblk from prepare step?!"
 	ab="${mmcblk##* }"
@@ -61,6 +66,12 @@ sideload_containers() {
 
 swap_btrfs_snapshots() {
 	# XXX racy/not failure-safe
+	# XXX also check return codes, but what if it fails in the middle?...
+	# Could make the directory containing storages/volumes_ab a subvolume
+	# itself (or just a subdirectory) and swap just that single directory
+	# with renameat(.., RENAME_EXCHANGE) -- but no existing program expose
+	# this feature.
+	rm -rf "$basemount/storage_tmp" "$basemount/volumes_tmp"
 	mv "$basemount/storage_0" "$basemount/storage_tmp"
 	mv "$basemount/storage_1" "$basemount/storage_0"
 	mv "$basemount/storage_tmp" "$basemount/storage_1"
