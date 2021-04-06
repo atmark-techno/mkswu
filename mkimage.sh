@@ -28,7 +28,15 @@ write_line() {
 link() {
 	local src="$1"
 	local dest="$2"
+	local existing
 
+	src=$(readlink -e "$src") || error "Cannot find source file: $1"
+
+	if [ -e "$dest" ]; then
+		existing=$(readlink "$dest")
+		[ "$src" = "$existing" ] && return
+		rm -f "$dest"
+	fi
 	ln -s "$(readlink -e "$src")" "$dest"
 }
 
@@ -52,10 +60,10 @@ $file"
 		echo "encryption not yet handled, ignoring" >&2
 	fi
 
-	[ -e "$file_out" ] || link "$file" "$file_out"
+	[ "$file_src" = "$file_out" ] || link "$file_src" "$file_out"
 
 	if [ -e "$file_out.sha256sum" ] && [ "$file_out.sha256sum" -nt "$file_out" ]; then
-		sha256=$(cat "$file.sha256sum")
+		sha256=$(cat "$file_out.sha256sum")
 	else
 		sha256=$(sha256sum < "$file_out")
 		sha256=${sha256%% *}
@@ -99,24 +107,27 @@ write_entry_component() {
 
 pad_uboot() {
 	local file="${UBOOT##*/}"
+	local src="$UBOOT"
 	local size
 
 	UBOOT_SIZE=$(numfmt --from=iec "$UBOOT_SIZE")
+	UBOOT="$OUTDIR/$file"
 
-	if [ "$UBOOT" -ot "$OUTDIR/$file" ]; then
-		size=$(stat -c "%s" "$OUTDIR/$file")
+	if [ "$src" -ot "$UBOOT" ]; then
+		size=$(stat -c "%s" "$UBOOT")
 		if [ "$size" -eq "$UBOOT_SIZE" ]; then
 			# already up to date
 			return
 		fi
 	fi
 
-	size=$(stat -c "%s" "$UBOOT")
+	size=$(stat -c "%s" "$src") || error "Cannot stat uboot: $src"
 	if [ "$size" -gt "$UBOOT_SIZE" ]; then
 		error "UBOOT_SIZE set smaller than uboot actual size"
 	fi
-	cp "$UBOOT" "$OUTDIR/$file"
-	truncate -s "$UBOOT_SIZE" "$OUTDIR/$file"
+	rm -f "$UBOOT"
+	cp "$src" "$UBOOT"
+	truncate -s "$UBOOT_SIZE" "$UBOOT"
 }
 
 write_uboot() {
@@ -136,24 +147,32 @@ write_tar() {
 	local source="$1"
 	local dest="$2"
 
-	write_entry "$source" "type = \"archive\";" "dest = \"/mnt$dest\";"
+	write_entry "$source" "type = \"archive\";" "path = \"/target$dest\";"
 }
 
 write_tar_component() {
 	local source="$1"
 	local dest="$2"
 
-	write_entry_component "$source" "type = \"archive\";" "dest = \"/mnt$dest\";"
+	write_entry_component "$source" "type = \"archive\";" "path = \"/target$dest\";"
 }
 
 write_files() {
 	local file="$1"
 	local dest="$2"
-	shift
+	local tarfiles="$3"
+	local tarfile_src tarfile tarfiles_out
+	shift 2
 	# other args are source files
 
-	tar -cf "$file.tar" "$@" || error "Could not create tar for $file"
-	write_tar "$file.tar" "$dest"
+	for tarfile_src in $tarfiles; do
+		tarfile="${tarfile_src##*/}"
+		link "$tarfile_src" "$OUTDIR/$tarfile"
+		tarfiles_out="${tarfiles_out+$tarfiles_out
+}$tarfile"
+	done
+	tar -cf "$OUTDIR/$file.tar" -C "$OUTDIR" $tarfiles_out || error "Could not create tar for $file"
+	write_tar "$OUTDIR/$file.tar" "$dest"
 }
 
 write_file_component() {
@@ -161,7 +180,7 @@ write_file_component() {
 	local dest="$2"
 
 	write_entry_component "$file" "type = \"rawfile\";" \
-		"installed-directly = true;" "path = \"/mnt$dest\";"
+		"installed-directly = true;" "path = \"/target$dest\";"
 }
 
 write_sw_desc() {
@@ -194,14 +213,13 @@ EOF
 	fi
 
 	if [ -n "$BASE_OS" ]; then
-		component=baseos version=$BASEOS_VERSION compress=1 \
+		component=base_os version=$BASE_OS_VERSION compress=1 \
 			write_tar "$BASE_OS" "/"
 	fi
 
 	if [ -n "$BOOT_FILES" ]; then
-		set -- $BOOT_FILES
 		component=kernel version=$KERNEL_VERSION \
-			write_files boot /boot "$@"
+			write_files boot /boot "$BOOT_FILES"
 	fi
 
 	for file in $EXTRA_TARS; do
@@ -226,8 +244,8 @@ EOF
 
 	# swupdate fails if all updates are already installed and there
 	# is nothing to do, add a dummy empty script to avoid that
-	[ -e empty.sh ] || > empty.sh
-	write_entry "empty.sh" "type = \"preinstall\";"
+	#[ -e "$OUTDIR/empty.sh" ] || > "$OUTDIR/empty.sh"
+	#write_entry "$OUTDIR/empty.sh" "type = \"preinstall\";"
 
 	cat <<EOF
   );
