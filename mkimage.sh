@@ -1,6 +1,7 @@
 #!/bin/sh
 
 OUT=out.swu
+OUTDIR=./out/
 CONFIG=./mkimage.conf
 FILES="sw-description
 sw-description.sig"
@@ -24,9 +25,17 @@ write_line() {
 	done
 }
 
+link() {
+	local src="$1"
+	local dest="$2"
+
+	ln -s "$(readlink -e "$src")" "$dest"
+}
+
 write_entry() {
 	local file_src="$1"
 	local file="${file_src##*/}"
+	local file_out="$OUTDIR/$file"
 	shift
 	local sha256 arg install_if
 
@@ -43,12 +52,14 @@ $file"
 		echo "encryption not yet handled, ignoring" >&2
 	fi
 
-	if [ -e "$file.sha256sum" ] && [ "$file.sha256sum" -nt "$file" ]; then
+	[ -e "$file_out" ] || link "$file" "$file_out"
+
+	if [ -e "$file_out.sha256sum" ] && [ "$file_out.sha256sum" -nt "$file_out" ]; then
 		sha256=$(cat "$file.sha256sum")
 	else
-		sha256=$(sha256sum < "$file")
+		sha256=$(sha256sum < "$file_out")
 		sha256=${sha256%% *}
-		echo "$sha256" > "$file.sha256sum"
+		echo "$sha256" > "$file_out.sha256sum"
 	fi
 
 
@@ -86,13 +97,30 @@ write_entry_component() {
 	write_entry "$file" "$@"
 }
 
-write_uboot() {
-	if [ -n "$UBOOT_SIZE" ]; then
-		# pad to UBOOT_SIZE to clear environment
-		# XXX copy to dest dir
-		# XXX check new size is bigger
-		truncate -s "$UBOOT_SIZE" "$UBOOT"
+pad_uboot() {
+	local file="${UBOOT##*/}"
+	local size
+
+	UBOOT_SIZE=$(numfmt --from=iec "$UBOOT_SIZE")
+
+	if [ "$UBOOT" -ot "$OUTDIR/$file" ]; then
+		size=$(stat -c "%s" "$OUTDIR/$file")
+		if [ "$size" -eq "$UBOOT_SIZE" ]; then
+			# already up to date
+			return
+		fi
 	fi
+
+	size=$(stat -c "%s" "$UBOOT")
+	if [ "$size" -gt "$UBOOT_SIZE" ]; then
+		error "UBOOT_SIZE set smaller than uboot actual size"
+	fi
+	cp "$UBOOT" "$OUTDIR/$file"
+	truncate -s "$UBOOT_SIZE" "$OUTDIR/$file"
+}
+
+write_uboot() {
+	[ -n "$UBOOT_SIZE" ] && pad_uboot
 	
 	if [ -z "$FORCE" ] && [ -n "$UBOOT_VERSION" ]; then
 		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" || \
@@ -208,12 +236,18 @@ EOF
 }
 
 make_cpio() {
-	openssl dgst -sha256 -sign "$PRIVKEY" -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-2 sw-description > sw-description.sig
-	echo "$FILES" | cpio -ov -H crc > $OUT
+	openssl dgst -sha256 -sign "$PRIVKEY" -sigopt rsa_padding_mode:pss \
+		-sigopt rsa_pss_saltlen:-2 "$OUTDIR/sw-description" \
+			> "$OUTDIR/sw-description.sig"
+	(
+		cd $OUTDIR
+		echo "$FILES" | cpio -ov -H crc -L
+	) > $OUT
 }
 
 make_image() {
-	write_sw_desc > sw-description
+	mkdir -p "$OUTDIR"
+	write_sw_desc > "$OUTDIR/sw-description"
 	make_cpio
 }
 
