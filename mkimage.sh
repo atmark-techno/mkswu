@@ -1,7 +1,7 @@
 #!/bin/sh
 
 OUT=out.swu
-OUTDIR=./out/
+OUTDIR=./out
 CONFIG=./mkimage.conf
 FILES="sw-description
 sw-description.sig"
@@ -37,7 +37,7 @@ link() {
 		[ "$src" = "$existing" ] && return
 		rm -f "$dest"
 	fi
-	ln -s "$(readlink -e "$src")" "$dest"
+	ln -s "$(readlink -e "$src")" "$dest" || error "Could not link to $src"
 }
 
 write_entry() {
@@ -53,6 +53,9 @@ $file"
 	if [ -n "$compress" ]; then
 		# XXX
 		echo "compression not yet handled, ignoring" >&2
+		# note: also handle already compressed files,
+		# use compression as is. compress=1 -> zstd otherwise pick
+		# from suffix
 	fi
 
 	if [ -n "$encrypt" ]; then
@@ -171,7 +174,8 @@ write_files() {
 		tarfiles_out="${tarfiles_out+$tarfiles_out
 }$tarfile"
 	done
-	tar -cf "$OUTDIR/$file.tar" -C "$OUTDIR" $tarfiles_out || error "Could not create tar for $file"
+	tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" $tarfiles_out \
+		|| error "Could not create tar for $file"
 	write_tar "$OUTDIR/$file.tar" "$dest"
 }
 
@@ -191,7 +195,7 @@ write_sw_desc() {
 	local version
 	local compress
 	local encrypt
-	local file line tmp_component tmp_version
+	local file line tmp tmp2
 
 	cat <<EOF
 software = {
@@ -231,8 +235,35 @@ EOF
   files: (
 EOF
 	for file in $EMBED_CONTAINERS; do
-		write_file_component "$file" "/var/tmp/${file##*/}"
+		tmp=${file##*/}
+		tmp=${tmp%.tar*}
+		compress=1 write_file_component "$file" \
+			"/var/tmp/podman_update/container_$tmp.tar"
 	done
+
+	for tmp in $PULL_CONTAINERS; do
+		tmp2="${tmp##* }"
+		file=$(echo -n "${tmp2}" | tr -c '[:alnum:]' '_')
+		file="$OUTDIR/container_$file.pull"
+		[ -e "$file" ] && [ "$(cat "$file")" = "$tmp2" ] \
+			|| echo "$tmp2" > "$file"
+		write_file_component "${tmp% *} $file" \
+			"/var/tmp/podman_update/${file##*/}"
+	done
+
+	for tmp in $USB_CONTAINERS; do
+		tmp2=${tmp##*/}
+		tmp2=${tmp2%.tar*}
+		file="container_$tmp2.tar"
+		link "${tmp##* }" "$OUTDIR/$file"
+		sign "$file"
+		echo "Copy $OUTDIR/$file $OUTDIR/$file.sig to USB drive" >&2
+		file="$OUTDIR/container_$tmp2.usb"
+		[ -e "$file" ] || > "$file"
+		write_file_component "${tmp% *} $file" \
+			"/var/tmp/podman_update/${file##*/}"
+	done
+
 	cat <<EOF
   );
   scripts: (
@@ -253,10 +284,16 @@ EOF
 EOF
 }
 
-make_cpio() {
+sign() {
+	local file="$OUTDIR/$1"
+
 	openssl dgst -sha256 -sign "$PRIVKEY" -sigopt rsa_padding_mode:pss \
-		-sigopt rsa_pss_saltlen:-2 "$OUTDIR/sw-description" \
-			> "$OUTDIR/sw-description.sig"
+		-sigopt rsa_pss_saltlen:-2 "$file" > "$file.sig" \
+		|| error "Could not sign $file"
+}
+
+make_cpio() {
+	sign sw-description
 	(
 		cd $OUTDIR
 		echo "$FILES" | cpio -ov -H crc -L
@@ -271,20 +308,20 @@ make_image() {
 
 
 while [ $# -ge 1 ]; do
-        case "$1" in
+	case "$1" in
 	"-c"|"--config")
 		[ $# -lt 2 ] && error "$1 requires an argument"
 		CONFIG="$2"
 		shift 2
 		;;
-        "-h"|"--help"|"-"*)
-                usage
-                exit 0
-                ;;
-        *)
-                break
-                ;;
-        esac
+	"-h"|"--help"|"-"*)
+		usage
+		exit 0
+		;;
+	*)
+		break
+		;;
+	esac
 done
 
 . "$CONFIG"

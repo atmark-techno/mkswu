@@ -1,12 +1,8 @@
 #!/bin/sh
 
-CONF_DIR=/etc/atmark/containers
-STORAGE_BASE=/var/app/containers/storage_base
-SNAPSHOT=auto
-RESTART=yes
+PODMAN_ROOT=/var/app/storage
 PODMAN_LOAD=
-PUB_KEY=/etc/swupdate.pem
-TMPDIR=/var/app/tmp
+PUB_KEY=
 
 [ -z "${CONTAINERS_CONF+x}" ] && \
 	[ -e /etc/atmark/containers.conf ] && \
@@ -26,152 +22,38 @@ error() {
 }
 
 usage() {
-	echo "Usage: $0 [options] [-l|-a|container [container...]]"
+	echo "Usage: $0 [options] [-l [archive...]|uri...]"
 	echo
 	echo "Helper to update containers"
 	echo
-	echo "  -a    Update all configured containers"
-	echo "  -l    Instead of normal internet updates, use podman load to"
-	echo "        install update from stdin"
+	echo "  -l    Instead of podman pull, use podman load to install update"
+	echo "        In this case if no argument is provided tries to load from stdin"
 	echo
 	echo "Options:"
-	echo " --copy      Force copy of podman store even if btrfs was detected"
-	echo " --inplace   Disable copy/snapshot mechanism (only works if not set ro)"
-	echo " --norestart Disable automatic restart after load/successful pull"
-	echo " --pubkey <key> Public key used to verify signed image (load from file only)"
-	echo "                Setting to empty string disables the check"
+	echo " --storage <path> Path to podman storage to update"
+	echo " --pubkey <key>   Public key used to verify signed image (load with parameter only)"
+	echo "                  Setting to empty string disables the check"
 }
 
-append_args() {}
-set_command() {}
-
-update_container() {
-	local container="$1"
-	local port device volume image="$container" command
+podman_pull() {
+	local uri="$1"
+	local old_image new_image
 
 
-	[ -e "$CONF_DIR/$container.conf" ] || error "$container does not have any config file"
-	. "$CONF_DIR/$container.conf"
+	old_image=$(podman image --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			inspect --format "{{.Id}}" "$uri" 2>/dev/null)
 
-	# Try to get image from running config first
-	if ! current_image=$(podman inspect --format "{{.Image}}" "$container" 2>/dev/null); then
-		# this is ok if this fails (no image downloaded yet): anything new will
-		# be considered an update
-		current_image=$(podman image inspect --format "{{.Id}}" "$image" 2>/dev/null) || true
-	fi
-
-	if [ "${image%/*}" = "localhost" ] || [ "${image%/*}" = "$image" ]; then
-		error "Image must not be local to pull: $image"
-	fi
-
-	echo -n "Pulling $image... "
-	new_image=$(podman pull --root "$podmanroot" --storage-opt additionalimagestore="" -q "$image") \
+	echo -n "Pulling $uri... "
+	new_image=$(podman pull --root "$PODMAN_ROOT" \
+		--storage-opt additionalimagestore="" -q "$uri") \
 		|| error "Could not pull $image"
 
-	if [ "$new_image" != "$current_image" ]; then
+	if [ "$new_image" != "$old_image" ]; then
 		echo "Updated"
-		restart_containers="$restart_containers $container"
 	else
 		echo "No update"
 	fi
-}
-
-restart_containers() {
-	for container in $restart_containers; do
-		# podman currently has no way of cloning, or modifying a container,
-		# so remove it and recreate it from config
-		podman_start "$container"
-	done
-}
-
-setup_snapshot() {
-	# nothing to do if disabled
-	[ "$SNAPSHOT" = "no" ] && return
-
-	if [ "$SNAPSHOT" = "auto" ]; then
-		if df -TP /app/containers | grep -q btrfs; then
-			SNAPSHOT=btrfs
-		else
-			SNAPSHOT=copy
-		fi
-	fi
-
-	podmanroot="${STORAGE_BASE}_$(date +%Y%m%d_%H%M%S)"
-	[ -e "$podmanroot" ] && error "Already a snapshot with same time: $podmanroot"
-
-	case "$SNAPSHOT" in
-	"btrfs")
-		if btrfs property get -ts "$STORAGE_BASE" >/dev/null 2>&1; then
-			btrfs subvolume snapshot "$STORAGE_BASE" "$podmanroot"
-		else
-			btrfs subvolume create "$podmanroot"
-			cp -a "$STORAGE_BASE"/. "$podmanroot/."
-		fi
-		;;
-	"copy")
-		# hardlink if we can
-		if [ "$(stat -c %d%D "$STORAGE_BASE/.")" = "$(stat -c %d%D "$STORAGE_BASE/..")" ]; then
-			cp -al "$STORAGE_BASE"/. "$podmanroot"
-		else
-			cp -a "$STORAGE_BASE"/. "$podmanroot"
-		fi
-		;;
-	esac
-
-	# remove pesky libpod state file (doesn't like being moved)
-	rm -f "$podmanroot/libpod/bolt_state.db"
-}
-
-cleanup_snapshot() {
-	# nothing to do if disabled
-	[ "$SNAPSHOT" = "no" ] && return
-
-	case "$SNAPSHOT" in
-	"btrfs")
-		btrfs subvolume delete "$podmanroot"
-		;;
-	"copy")
-		rm -rf "$podmanroot"
-		;;
-	esac
-}
-
-rotate_snapshot() {
-	local old_base new_base d
-
-	# nothing to do if disabled
-	[ "$SNAPSHOT" = "no" ] && return
-
-	# XXX make a list of used images and remove others ones?
-	# prune old images no longer reachable by name
-	podman image prune -f --root "$podmanroot" --storage-opt additionalimagestore=""
-
-	if [ "$SNAPSHOT" = "btrfs" ]; then
-		btrfs property set -ts "$podmanroot" ro true
-	fi
-
-	old_base="$(readlink "$STORAGE_BASE")"
-	new_base="${podmanroot##*/}"
-
-	if mv --help 2>&1 | grep -q coreutils; then
-		# coreutils mv can rename over symlink for atomic update
-		rm -f "$STORAGE_BASE.tmplink"
-		ln -s "$new_base" "$STORAGE_BASE.tmplink"
-		mv -f -T "$STORAGE_BASE.tmplink" "$STORAGE_BASE"
-	else
-		rm -f "$STORAGE_BASE"
-		ln -s "$new_base" "$STORAGE_BASE"
-	fi
-
-	for d in "$STORAGE_BASE"_*; do
-		[ "${d##*/}" = "$new_base" ] && continue
-		[ "${d##*/}" = "$old_base" ] && continue
-		if btrfs property get -ts "$d" >/dev/null 2>&1; then
-			btrfs subvolume delete "$d"
-		else
-			rm -rf "$d"
-		fi
-	done
 }
 
 check_sig() {
@@ -188,86 +70,46 @@ podman_load() {
 	local archive
 
 	if [ $# -eq 0 ]; then
-		TMPDIR="$TMPDIR" podman load --root "$podmanroot" \
+		podman load --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore=""
 	else for archive; do
 		if [ -n "$PUB_KEY" ]; then
 			check_sig "$archive"
 		fi
-		TMPDIR="$TMPDIR" podman load --root "$podmanroot" \
+		podman load --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore="" \
 			-i "$archive"
 	done fi
-
-	# check if something changed, and restart everything if it did
-	if [ "$(podman image list --storage-opt additionalimagestore="$STORAGE_BASE" --format "{{.Id}}" | sort | sha256sum)" != \
-		"$(podman image list --storage-opt additionalimagestore="$podmanroot" --format "{{.Id}}" | sort | sha256sum)" ]; then
-		restart_containers="-a"
-	fi
-
 }
 
 update_containers() {
-	local podmanroot="$STORAGE_BASE" restart_containers=""
+	local uri
 
-	case "$1" in
-	"-a")
-		set -- "$CONF_DIR/"*.conf
-		;;
-	esac
-
-	setup_snapshot
-	trap "cleanup_snapshot" EXIT
-
-	[ -n "$PODMAN_LOAD" ] && podman_load "$@"
-	for container do
-		container="${container%.conf}"
-		container="${container##*/}"
-		update_container "$container"
-	done
-
-
-	trap - EXIT
-	# only keep new snapshot if there was a change
-	if [ -n "$restart_containers" ]; then
-		rotate_snapshot
+	if [ -n "$PODMAN_LOAD" ]; then
+		podman_load "$@"
 	else
-		cleanup_snapshot
+		for uri do
+			podman_pull "$uri"
+		done
 	fi
-
-	# stop here if --norestart
-	[ -z "$RESTART" ] && return
-
-	restart_containers
 }
 
 [ $# -lt 1 ] && usage && exit 1
 
 while [ $# -ge 1 ]; do
 	case "$1" in
-	"-a")
-		[ $# -ne 1 ] && error "Trailing arguments after -a"
-		break
-		;;
 	"-l")
 		PODMAN_LOAD=yes
 		shift
 		;;
-	"--inplace")
-		SNAPSHOT=no
-		shift
-		;;
-	"--copy")
-		SNAPSHOT=copy
-		shift
-		;;
-	"--norestart")
-		RESTART=
-		shift
-		;;
 	"--pubkey")
-		[ $# -ge 2 ] || error "--pubkey needs an argument"
+		[ $# -ge 2 ] || error "$1 needs an argument"
 		PUB_KEY="$2"
+		shift 2
+		;;
+	"--storage")
+		[ $# -ge 2 ] || error "$1 needs an argument"
+		PODMAN_ROOT="$2"
 		shift 2
 		;;
 	"--")

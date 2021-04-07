@@ -1,0 +1,96 @@
+#!/bin/sh
+
+PODMAN_ROOT=/var/app/storage
+CONFDIR=/etc/atmark/containers
+
+error() {
+	echo "$@" >&2
+	exit 1
+}
+
+usage() {
+	echo "Usage: $0 [options]"
+	echo
+	echo "Options:"
+	echo " --storage <path> Path to podman storage to cleanup"
+	echo " --confdir <path> Path to atmark config directory to check in-use image"
+	echo "                  If path is empty, all images with a tag are kept"
+}
+
+tag_in_use() {
+	local tag="$1"
+
+	grep -qxF "image=$tag" "$CONFDIR/"*.conf && return
+	case "$tag" in
+	*:latest)
+		# :latest is implicit if no tag given
+		tag_in_use "${tag%:latest}" && return
+		;;
+	esac
+	case "$tag" in
+	*/*/*)
+		# docker.io/library/alpine -> docker.io/alpine
+		tag_in_use "${tag%%/*}/${tag##*/}" && return
+		;;
+	*/*)	# docker.io/alpine -> alpine
+		tag_in_use "${tag#*/}" && return
+		;;
+	esac
+
+	return 1
+}
+
+trim_tags() {
+	[ -n "$CONFDIR" ] || return
+	# if no configuration is present, skip this step
+	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
+
+	podman --root "$PODMAN_ROOT" image list \
+		--format '{{range .Names}}{{.}}{{println}}{{end}}' |
+		while read -r tag; do
+			[ -n "$tag" ] || continue
+			tag_in_use "$tag" && continue
+			podman --root "$PODMAN_ROOT" untag "$tag"
+		done
+}
+
+podman_prune() {
+	podman --root "$PODMAN_ROOT" image prune -f
+}
+
+cleanup_images() {
+	trim_tags
+	podman_prune
+
+	# storage directory cannot be moved if that file is kept around
+	# it only contains state data that is safe to delete
+	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+}
+
+while [ $# -ge 1 ]; do
+	case "$1" in
+	"--storage")
+		[ $# -ge 2 ] || error "$1 needs an argument"
+		PODMAN_ROOT="$2"
+		shift 2
+		;;
+	"--confdir")
+		[ $# -ge 2 ] || error "$1 needs an argument"
+		CONFDIR="$2"
+		shift 2
+		;;
+	"--")
+		shift
+		break
+		;;
+	"-h"|"--help"|"-"*)
+		usage
+		exit 0
+		;;
+	*)
+		break
+		;;
+	esac
+done
+
+cleanup_images
