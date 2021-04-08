@@ -40,28 +40,78 @@ link() {
 	ln -s "$(readlink -e "$src")" "$dest" || error "Could not link to $src"
 }
 
+gen_iv() {
+	openssl rand -hex 16
+}
+
+encrypt_file() {
+	local src="$1"
+	local dest="$2"
+	local iv
+
+	iv=$(gen_iv) || return 1
+	openssl enc -aes-256-cbc -in "$src" -out "$dest" \
+		-K "$ENCRYPT_KEY" -iv "$iv" || return 1
+
+	echo "$iv"
+}
+
+setup_encryption() {
+	local oldumask
+	[ -z "$ENCRYPT_KEYFILE" ] && return
+	if ! [ -e "$ENCRYPT_KEYFILE" ]; then
+		echo "Creating encryption keyfile $ENCRYPT_KEYFILE"
+		echo "That file must be copied over to /etc/swupdate.aes-key as 0400 on boards"
+		oldumask=$(umask)
+		umask 0077
+		ENCRYPT_KEY="$(openssl rand -hex 32)" || error "No openssl?"
+		echo "$ENCRYPT_KEY $(gen_iv)" > "$ENCRYPT_KEYFILE"
+		umask "$oldumask"
+	else
+		ENCRYPT_KEY=$(cat "$ENCRYPT_KEYFILE")
+		# XXX if sw-description gets encrypted, its iv is here
+		ENCRYPT_KEY="${ENCRYPT_KEY% *}"
+	fi
+}
+
 write_entry() {
 	local file_src="$1"
 	local file="${file_src##*/}"
 	local file_out="$OUTDIR/$file"
 	shift
-	local sha256 arg install_if
+	local sha256 arg install_if iv
+
+	if [ -n "$compress" ]; then
+		# Check if already compressed
+		case "$file" in
+		*.tar.*)
+			# archive handler will handle it
+			compress=""
+			;;
+		*.zst)
+			compress=zstd
+			;;
+		*)
+			compress=zstd
+			file="$file.zst"
+			file_out="$file_out.zst"
+			file_src="$file_out"
+			zst "$file_src" > "$file_out".zst
+			;;
+		esac
+	fi
+
+	if [ -n "$ENCRYPT_KEY" ] && [ -z "$noencrypt" ]; then
+		file="$file.enc"
+		file_out="$file_out.enc"
+		iv=$(encrypt_file "$file_src" "$file_out") \
+			|| error "failed to encrypt $file_src"
+		file_src="$file_out"
+
+	fi
 
 	echo "$FILES" | grep -q -x "$file" || FILES="$FILES
 $file"
-
-	if [ -n "$compress" ]; then
-		# XXX
-		echo "compression not yet handled, ignoring" >&2
-		# note: also handle already compressed files,
-		# use compression as is. compress=1 -> zstd otherwise pick
-		# from suffix
-	fi
-
-	if [ -n "$encrypt" ]; then
-		# XXX
-		echo "encryption not yet handled, ignoring" >&2
-	fi
 
 	[ "$file_src" = "$file_out" ] || link "$file_src" "$file_out"
 
@@ -88,6 +138,8 @@ $file"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
+	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
+	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
 	write_line "$@"
 
 	write_line "sha256 = \"$sha256\";"
@@ -150,14 +202,16 @@ write_tar() {
 	local source="$1"
 	local dest="$2"
 
-	write_entry "$source" "type = \"archive\";" "path = \"/target$dest\";"
+	write_entry "$source" "type = \"archive\";" \
+	       "installed-directly = true;" "path = \"/target$dest\";"
 }
 
 write_tar_component() {
 	local source="$1"
 	local dest="$2"
 
-	write_entry_component "$source" "type = \"archive\";" "path = \"/target$dest\";"
+	write_entry_component "$source" "type = \"archive\";" \
+	       "installed-directly = true;" "path = \"/target$dest\";"
 }
 
 write_files() {
@@ -194,7 +248,7 @@ write_sw_desc() {
 	local component
 	local version
 	local compress
-	local encrypt
+	local noencrypt
 	local file line tmp tmp2
 
 	cat <<EOF
@@ -247,7 +301,7 @@ EOF
 		file="$OUTDIR/container_$file.pull"
 		[ -e "$file" ] && [ "$(cat "$file")" = "$tmp2" ] \
 			|| echo "$tmp2" > "$file"
-		write_file_component "${tmp% *} $file" \
+		noencrypt=1 write_file_component "${tmp% *} $file" \
 			"/var/tmp/podman_update/${file##*/}"
 	done
 
@@ -260,7 +314,7 @@ EOF
 		echo "Copy $OUTDIR/$file $OUTDIR/$file.sig to USB drive" >&2
 		file="$OUTDIR/container_$tmp2.usb"
 		[ -e "$file" ] || > "$file"
-		write_file_component "${tmp% *} $file" \
+		noencrypt=1 write_file_component "${tmp% *} $file" \
 			"/var/tmp/podman_update/${file##*/}"
 	done
 
@@ -276,7 +330,7 @@ EOF
 	# swupdate fails if all updates are already installed and there
 	# is nothing to do, add a dummy empty script to avoid that
 	#[ -e "$OUTDIR/empty.sh" ] || > "$OUTDIR/empty.sh"
-	#write_entry "$OUTDIR/empty.sh" "type = \"preinstall\";"
+	#noencrypt=1 write_entry "$OUTDIR/empty.sh" "type = \"preinstall\";"
 
 	cat <<EOF
   );
@@ -302,6 +356,7 @@ make_cpio() {
 
 make_image() {
 	mkdir -p "$OUTDIR"
+	setup_encryption
 	write_sw_desc > "$OUTDIR/sw-description"
 	make_cpio
 }
