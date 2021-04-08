@@ -330,7 +330,7 @@ EOF
 	# swupdate fails if all updates are already installed and there
 	# is nothing to do, add a dummy empty script to avoid that
 	#[ -e "$OUTDIR/empty.sh" ] || > "$OUTDIR/empty.sh"
-	#noencrypt=1 write_entry "$OUTDIR/empty.sh" "type = \"preinstall\";"
+	#noencrypt=1 write_entry "$OUTDIR/empty.sh" "type = \"dummy\";"
 
 	cat <<EOF
   );
