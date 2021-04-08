@@ -45,17 +45,23 @@ trim_tags() {
 	# if no configuration is present, skip this step
 	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
 
-	podman --root "$PODMAN_ROOT" image list \
+	podman --root "$PODMAN_ROOT" \
+		--storage-opt additionalimagestore="" \
+		image list \
 		--format '{{range .Names}}{{.}}{{println}}{{end}}' |
 		while read -r tag; do
 			[ -n "$tag" ] || continue
 			tag_in_use "$tag" && continue
-			podman --root "$PODMAN_ROOT" untag "$tag"
+			podman --root "$PODMAN_ROOT" \
+				--storage-opt additionalimagestore="" \
+				untag "$tag"
 		done
 }
 
 podman_prune() {
-	podman --root "$PODMAN_ROOT" image prune -f
+	podman --root "$PODMAN_ROOT" \
+		--storage-opt additionalimagestore="" \
+		image prune -f
 }
 
 cleanup_images() {
