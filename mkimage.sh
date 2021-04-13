@@ -1,10 +1,14 @@
 #!/bin/sh
 
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 OUT=out.swu
 OUTDIR=./out
 CONFIG=./mkimage.conf
 FILES="sw-description
 sw-description.sig"
+EMBEDDED_SCRIPT="$SCRIPT_DIR/embedded_script.lua"
+EMBEDDED_SCRIPTS_DIR="embedded_scripts"
+POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 
 usage() {
 	echo "usage: $0 [opts]"
@@ -21,7 +25,7 @@ error() {
 write_line() {
 	local line
 	for line; do
-		printf "%*s%s\n" "$indent" "" "$line"
+		printf "%*s%s\n" "${line:+$indent}" "" "$line"
 	done
 }
 
@@ -81,6 +85,8 @@ write_entry() {
 	shift
 	local sha256 arg install_if iv
 
+	[ -e "$file_src" ] || error "Missing source file: $file_src"
+
 	if [ -n "$compress" ]; then
 		# Check if already compressed
 		case "$file" in
@@ -96,7 +102,8 @@ write_entry() {
 			file="$file.zst"
 			file_out="$file_out.zst"
 			file_src="$file_out"
-			zst "$file_src" > "$file_out".zst
+			zst "$file_src" > "$file_out".zst \
+				|| error "failed to compress $file_src"
 			;;
 		esac
 	fi
@@ -262,10 +269,8 @@ EOF
 		indent=2 write_line $line
 	done
 
-	cat <<EOF
+	indent=2 write_line "" "images: ("
 
-  images: (
-EOF
 	if [ -n "$UBOOT" ]; then
 		write_uboot
 	fi
@@ -284,10 +289,8 @@ EOF
 		write_tar_component "$file" "/"
 	done
 
-	cat <<EOF
-  );
-  files: (
-EOF
+	indent=2 write_line ");" "files: ("
+
 	for file in $EMBED_CONTAINERS; do
 		tmp=${file##*/}
 		tmp=${tmp%.tar*}
@@ -318,24 +321,28 @@ EOF
 			"/var/tmp/podman_update/${file##*/}"
 	done
 
-	cat <<EOF
-  );
-  scripts: (
-EOF
+	indent=2 write_line ");" "scripts: ("
 
 	for script in $EXTRA_SCRIPTS; do
 		write_entry_component "$script" "type = \"postinstall\";"
 	done
 
-	# swupdate fails if all updates are already installed and there
-	# is nothing to do, add a dummy empty script to avoid that
-	#[ -e "$OUTDIR/empty.sh" ] || > "$OUTDIR/empty.sh"
-	#noencrypt=1 write_entry "$OUTDIR/empty.sh" "type = \"dummy\";"
+	write_entry "$POST_SCRIPT" "type = \"postinstall\";"
 
+	indent=2 write_line ");" "embedded-script = \""
+	sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' < "$EMBEDDED_SCRIPT"
+
+	echo 'archive = \"\'
+	tar -C "$(dirname "$EMBEDDED_SCRIPT")" -chJ "$EMBEDDED_SCRIPTS_DIR" \
+		| base64 | sed -e 's/$/\\/'
 	cat <<EOF
-  );
-}
+\"
+exec_pipe(\"base64 -d | xzcat | tar -C ${TMPDIR:-/tmp} -xv\", archive)
+exec(\"${TMPDIR:-/tmp}/$EMBEDDED_SCRIPTS_DIR/swupdate_pre.sh\")
 EOF
+
+	indent=2 write_line "\";"
+	indent=0 write_line "};"
 }
 
 sign() {
@@ -358,6 +365,9 @@ make_image() {
 	mkdir -p "$OUTDIR"
 	setup_encryption
 	write_sw_desc > "$OUTDIR/sw-description"
+	# XXX debian's libconfig is obsolete and does not allow
+	# trailing commas at the end of lists (allowed from 1.7.0)
+	# probably want to sed these out at some point for compatibility
 	make_cpio
 }
 
