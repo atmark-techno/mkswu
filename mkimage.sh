@@ -145,6 +145,9 @@ $file"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
+	case "$component" in
+		uboot) write_line "hook = \"uboot_hook\";";;
+	esac
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
 	write_line "$@"

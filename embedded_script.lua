@@ -26,3 +26,37 @@ function exec(cmd)
   end
   assert(rc)
 end
+
+tmpdir = os.getenv("TMPDIR")
+if not tmpdir then
+  tmpdir = "/tmp"
+end
+tmpdir = tmpdir .. "/embedded_scripts"
+
+function uboot_hook(image)
+  -- image.skip will be set by swupdate if versions match
+  exec("echo test error && false");
+  if image.skip then
+    return true, image
+  end
+  exec(tmpdir .. "/prepare_uboot.sh")
+  return true, image
+end
+
+function os_hook(image)
+  if image.skip then
+    return true, image
+  end
+  exec(tmpdir .. "/prepare_os.sh")
+  return true, image
+end
+
+function app_hook(image)
+  if image.skip then
+    return true, image
+  end
+  exec(tmpdir .. "/prepare_container.sh")
+  return true, image
+end
+
+swupdate.trace("Embedded script loaded")

@@ -10,45 +10,6 @@ error() {
 	exit 1
 }
 
-get_version() {
-	local component="$1"
-	local source="${2:-$TMPDIR/sw-versions.present}"
-
-	awk '$1 == "'"$component"'" { print $2 }' < "$source"
-}
-
-# strict greater than
-version_higher() {
-	local oldvers="$1"
-	local newvers="$2"
-
-	! echo -e "$2\n$1" | sort -VC
-}
-
-version_update() {
-	local component="$1"
-	local oldvers="$2"
-	local newvers="$3"
-
-	[ -n "$newvers" ] || return 1
-
-	case "$component" in
-	uboot|kernel) [ "$newvers" != "$oldvers" ];;
-	*) version_higher "$oldvers" "$newvers";;
-	esac
-}
-
-needs_update() {
-	local component="$1"
-	local newvers oldvers
-
-	newvers=$(get_version "$component")
-	[ -n "$newvers" ] || return 1
-
-	oldvers=$(get_version "$component" /etc/sw-versions)
-	version_update "$component" "$oldvers" "$newvers"
-}
-
 gen_newversion() {
 	local component oldvers newvers
 
