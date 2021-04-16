@@ -7,7 +7,7 @@ CONFIG=./mkimage.conf
 FILES="sw-description
 sw-description.sig"
 EMBEDDED_SCRIPT="$SCRIPT_DIR/embedded_script.lua"
-EMBEDDED_SCRIPTS_DIR="embedded_scripts"
+EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 
 usage() {
@@ -336,12 +336,13 @@ EOF
 	sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' < "$EMBEDDED_SCRIPT"
 
 	echo 'archive = \"\'
-	tar -C "$(dirname "$EMBEDDED_SCRIPT")" -chJ "$EMBEDDED_SCRIPTS_DIR" \
-		| base64 | sed -e 's/$/\\/'
+	tar -C "$EMBEDDED_SCRIPTS_DIR" -chJ . | base64 | sed -e 's/$/\\/'
 	cat <<EOF
 \"
-exec_pipe(\"base64 -d | xzcat | tar -C ${TMPDIR:-/tmp} -xv\", archive)
-exec(\"${TMPDIR:-/tmp}/$EMBEDDED_SCRIPTS_DIR/swupdate_pre.sh\")
+exec_pipe(\"rm -rf ${TMPDIR:-/tmp}/scripts && \
+	    mkdir ${TMPDIR:-/tmp}/scripts && \
+	    base64 -d | xzcat | tar -C ${TMPDIR:-/tmp}/scripts -xv\", archive)
+exec(\"${TMPDIR:-/tmp}/scripts/swupdate_pre.sh\")
 EOF
 
 	indent=2 write_line "\";"
