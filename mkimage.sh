@@ -78,6 +78,19 @@ setup_encryption() {
 	fi
 }
 
+compress() {
+	local file_src="$1"
+	local file_out="$2"
+
+	# zstd copies timestamp and test -nt/-ot are strict,
+	# "! newer than" is equivalent to "older or equal than"
+	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
+
+	zstd "$file_src" -o "$file_out.tmp" \
+		|| error "failed to compress $file_src"
+	mv "$file_out.tmp" "$file_out"
+}
+
 write_entry() {
 	local file_src="$1"
 	local file="${file_src##*/}"
@@ -101,14 +114,13 @@ write_entry() {
 			compress=zstd
 			file="$file.zst"
 			file_out="$file_out.zst"
+			compress "$file_src" "$file_out"
 			file_src="$file_out"
-			zst "$file_src" > "$file_out".zst \
-				|| error "failed to compress $file_src"
 			;;
 		esac
 	fi
 
-	if [ -n "$ENCRYPT_KEY" ] && [ -z "$noencrypt" ]; then
+	if [ -n "$ENCRYPT_KEY" ] && [ -s "$file_src" ]; then
 		file="$file.enc"
 		file_out="$file_out.enc"
 		iv=$(encrypt_file "$file_src" "$file_out") \
@@ -125,7 +137,8 @@ $file"
 	if [ -e "$file_out.sha256sum" ] && [ "$file_out.sha256sum" -nt "$file_out" ]; then
 		sha256=$(cat "$file_out.sha256sum")
 	else
-		sha256=$(sha256sum < "$file_out")
+		sha256=$(sha256sum < "$file_out") \
+			|| error "Checksumming $file_out failed"
 		sha256=${sha256%% *}
 		echo "$sha256" > "$file_out.sha256sum"
 	fi
@@ -243,12 +256,13 @@ write_files() {
 	write_tar "$OUTDIR/$file.tar" "$dest"
 }
 
-write_file_component() {
+write_exec_component() {
 	local file="$1"
-	local dest="$2"
+	local command="$2"
 
-	write_entry_component "$file" "type = \"rawfile\";" \
-		"installed-directly = true;" "path = \"/target$dest\";"
+	write_entry_component "$file" "type = \"exec\";" \
+		"installed-directly = true;" "properties: {" \
+		"  cmd: \"$command\"" "}"
 }
 
 write_sw_desc() {
@@ -307,31 +321,30 @@ EOF
 	for file in $EMBED_CONTAINERS; do
 		tmp=${file##*/}
 		tmp=${tmp%.tar*}
-		compress=1 write_file_component "$file" \
-			"/var/tmp/podman_update/container_$tmp.tar"
+		compress=1 write_exec_component "$file" \
+			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 	done
 
 	for tmp in $PULL_CONTAINERS; do
 		tmp2="${tmp##* }"
 		file=$(echo -n "${tmp2}" | tr -c '[:alnum:]' '_')
 		file="$OUTDIR/container_$file.pull"
-		[ -e "$file" ] && [ "$(cat "$file")" = "$tmp2" ] \
-			|| echo "$tmp2" > "$file"
-		noencrypt=1 write_file_component "${tmp% *} $file" \
-			"/var/tmp/podman_update/${file##*/}"
+		[ -e "$file" ] || > "$file"
+		write_exec_component "${tmp% *} $file" \
+			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp2\\\" #"
 	done
 
 	for tmp in $USB_CONTAINERS; do
 		tmp2=${tmp##*/}
 		tmp2=${tmp2%.tar*}
-		file="container_$tmp2.tar"
+		file="$tmp2.tar"
 		link "${tmp##* }" "$OUTDIR/$file"
 		sign "$file"
-		echo "Copy $OUTDIR/$file $OUTDIR/$file.sig to USB drive" >&2
+		echo "Copy $OUTDIR/$file and $file.sig to USB drive" >&2
 		file="$OUTDIR/container_$tmp2.usb"
 		[ -e "$file" ] || > "$file"
-		noencrypt=1 write_file_component "${tmp% *} $file" \
-			"/var/tmp/podman_update/${file##*/}"
+		write_exec_component "${tmp% *} $file" \
+			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$tmp2.tar #"
 	done
 
 	indent=2 write_line ");" "scripts: ("
@@ -349,9 +362,12 @@ EOF
 sign() {
 	local file="$OUTDIR/$1"
 
+	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
+
 	openssl dgst -sha256 -sign "$PRIVKEY" -sigopt rsa_padding_mode:pss \
-		-sigopt rsa_pss_saltlen:-2 "$file" > "$file.sig" \
+		-sigopt rsa_pss_saltlen:-2 -out "$file.sig.tmp" "$file" \
 		|| error "Could not sign $file"
+	mv "$file.sig.tmp" "$file.sig"
 }
 
 make_cpio() {

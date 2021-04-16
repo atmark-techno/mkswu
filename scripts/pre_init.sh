@@ -6,7 +6,7 @@ probe_current() {
 	case "$rootdev" in
 	/dev/mmcblk*p*)
 		mmcblk="${rootdev%p*}"
-		if [ "${mmcblk##*p}" = "1" ]; then
+		if [ "${rootdev##*p}" = "1" ]; then
 			ab=1
 		else
 			ab=0

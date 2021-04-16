@@ -1,5 +1,6 @@
 error() {
 	echo "$@" >&2
+	cleanup
 	exit 1
 }
 

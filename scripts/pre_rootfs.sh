@@ -13,7 +13,9 @@ prepare_rootfs() {
 			return
 		fi
 		echo "Clearing other fs up to date flag"
-		update_running_versions grep -v 'other_rootfs_uptodate'
+		grep -v 'other_rootfs_uptodate' /etc/sw-versions \
+			> "$TMPDIR/sw-versions.nouptodate"
+		update_running_versions "$TMPDIR/sw-versions.nouptodate"
 	fi
 
 	# check if partitions exist and create them if not:

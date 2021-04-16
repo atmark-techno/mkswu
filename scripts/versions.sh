@@ -87,7 +87,6 @@ update_running_versions() {
         # atomic update for running sw versions
         mount --bind / /target || error "Could not bind mount rootfs"
         mount -o remount,rw /target || error "Could not make rootfs rw"
-        "$@" < /target/etc/sw-versions > /target/etc/sw-versions.new \
-                && mv /target/etc/sw-versions.new /target/etc/sw-versions
+        mv "$1" /target/etc/sw-versions || error "Could not write $1 to /etc/sw-versions"
         umount /target || error "Could not umount rootfs rw copy"
 }
