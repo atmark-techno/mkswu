@@ -75,9 +75,9 @@ gen_newversion() {
 		[ -z "$oldvers" ] && echo "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
 
-	# if no version changed, cleanup early to signal to post script not to run
+	# if no version changed, signal it and bail out
 	if cmp -s /etc/sw-versions $SCRIPTSDIR/sw-versions.merged; then
-		rm -rf "$SCRIPTSDIR"
+		touch "$SCRIPTSDIR/nothing_to_do"
 		exit 0
 	fi
 

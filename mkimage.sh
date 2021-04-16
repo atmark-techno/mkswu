@@ -4,11 +4,11 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 OUT=out.swu
 OUTDIR=./out
 CONFIG=./mkimage.conf
+EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+PRE_SCRIPT="swupdate_pre.sh"
+POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 FILES="sw-description
 sw-description.sig"
-EMBEDDED_SCRIPT="$SCRIPT_DIR/embedded_script.lua"
-EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
-POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 
 usage() {
 	echo "usage: $0 [opts]"
@@ -150,9 +150,9 @@ $file"
 	esac
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
+	write_line "sha256 = \"$sha256\";"
 	write_line "$@"
 
-	write_line "sha256 = \"$sha256\";"
 	indent=$((indent-2))
 	write_line "},"
 }
@@ -274,6 +274,16 @@ EOF
 
 	indent=2 write_line "" "images: ("
 
+	tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
+	write_entry "$OUTDIR/scripts.tar" "type = \"exec\";" \
+		"installed-directly = true;" "properties: {" \
+		"  cmd: \"sh -c 'rm -rf \${TMPDIR:-/tmp}/scripts; \\
+			mkdir \${TMPDIR:-/tmp}/scripts && \\
+			cd \${TMPDIR:-/tmp}/scripts && \\
+			tar x -vf \$1 && \\
+			./$PRE_SCRIPT' -- \"" \
+		"}"
+
 	if [ -n "$UBOOT" ]; then
 		write_uboot
 	fi
@@ -332,20 +342,7 @@ EOF
 
 	write_entry "$POST_SCRIPT" "type = \"postinstall\";"
 
-	indent=2 write_line ");" "embedded-script = \""
-	sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' < "$EMBEDDED_SCRIPT"
-
-	echo 'archive = \"\'
-	tar -C "$EMBEDDED_SCRIPTS_DIR" -chJ . | base64 | sed -e 's/$/\\/'
-	cat <<EOF
-\"
-exec_pipe(\"rm -rf ${TMPDIR:-/tmp}/scripts && \
-	    mkdir ${TMPDIR:-/tmp}/scripts && \
-	    base64 -d | xzcat | tar -C ${TMPDIR:-/tmp}/scripts -xv\", archive)
-exec(\"${TMPDIR:-/tmp}/scripts/swupdate_pre.sh\")
-EOF
-
-	indent=2 write_line "\";"
+	indent=2 write_line ");"
 	indent=0 write_line "};"
 }
 
