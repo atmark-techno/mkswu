@@ -39,7 +39,7 @@ link() {
 
 	if [ -e "$dest" ]; then
 		existing=$(readlink "$dest")
-		[ "$src" = "$existing" ] && return
+		[ "$src" = "$existing" ] && return 1
 		rm -f "$dest"
 	fi
 	ln -s "$(readlink -e "$src")" "$dest" || error "Could not link to $src"
@@ -96,6 +96,7 @@ write_entry() {
 	local file_src="$1"
 	local file="${file_src##*/}"
 	local file_out="$OUTDIR/$file"
+	local compress="$compress"
 	shift
 	local sha256 arg install_if iv
 
@@ -246,16 +247,20 @@ write_files() {
 	local dest="$2"
 	local tarfiles="$3"
 	local tarfile_src tarfile tarfiles_out
+	local update=
 	shift 2
 	# other args are source files
 
+	[ -e "$OUTDIR/$file.tar" ] || update=1
+
 	for tarfile_src in $tarfiles; do
 		tarfile="${tarfile_src##*/}"
-		link "$tarfile_src" "$OUTDIR/$tarfile"
+		link "$tarfile_src" "$OUTDIR/$tarfile" && update=1
+		[ -z "$update" ] && [ "$tarfile_src" -nt "$OUTDIR/$file.tar" ] && update=1
 		tarfiles_out="${tarfiles_out+$tarfiles_out
 }$tarfile"
 	done
-	tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" $tarfiles_out \
+	[ -z "$update" ] || tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" $tarfiles_out \
 		|| error "Could not create tar for $file"
 	write_tar "$OUTDIR/$file.tar" "$dest"
 }
@@ -269,14 +274,28 @@ write_exec_component() {
 		"  cmd: \"$command\"" "}"
 }
 
+update_scripts_tar() {
+	local f update=
+
+	[ -e "$OUTDIR/scripts.tar" ] || update=1
+	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
+		if [ "$f" -nt "$OUTDIR/scripts.tar" ]; then
+			update=1
+			break
+		fi
+	done
+	[ -z "$update" ] && return
+
+	tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
+}
+
 write_sw_desc() {
 	local IFS="
 "
 	local indent=4
 	local component
 	local version
-	local compress
-	local noencrypt
+	local compress=1
 	local file line tmp tmp2
 
 	cat <<EOF
@@ -292,7 +311,7 @@ EOF
 
 	indent=2 write_line "" "images: ("
 
-	tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
+	update_scripts_tar
 	write_entry "$OUTDIR/scripts.tar" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
 		"  cmd: \"sh -c 'rm -rf \${TMPDIR:-/tmp}/scripts; \\
@@ -307,7 +326,7 @@ EOF
 	fi
 
 	if [ -n "$BASE_OS" ]; then
-		component=base_os version=$BASE_OS_VERSION compress=1 \
+		component=base_os version=$BASE_OS_VERSION \
 			write_tar "$BASE_OS" "/"
 	fi
 
@@ -325,7 +344,7 @@ EOF
 	for file in $EMBED_CONTAINERS; do
 		tmp=${file##*/}
 		tmp=${tmp%.tar*}
-		compress=1 write_exec_component "$file" \
+		write_exec_component "$file" \
 			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 	done
 
@@ -334,7 +353,7 @@ EOF
 		file=$(echo -n "${tmp2}" | tr -c '[:alnum:]' '_')
 		file="$OUTDIR/container_$file.pull"
 		[ -e "$file" ] || > "$file"
-		write_exec_component "${tmp% *} $file" \
+		compress= write_exec_component "${tmp% *} $file" \
 			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp2\\\" #"
 	done
 
@@ -347,7 +366,7 @@ EOF
 		echo "Copy $OUTDIR/$file and $file.sig to USB drive" >&2
 		file="$OUTDIR/container_$tmp2.usb"
 		[ -e "$file" ] || > "$file"
-		write_exec_component "${tmp% *} $file" \
+		compress= write_exec_component "${tmp% *} $file" \
 			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$tmp2.tar #"
 	done
 
