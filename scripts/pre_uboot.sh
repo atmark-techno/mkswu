@@ -10,8 +10,8 @@ copy_uboot() {
 	flash_dev="${mmcblk#/dev/}boot${ab}"
 	cur_dev="${mmcblk}boot$((!ab))"
 	if ! echo 0 > /sys/block/$flash_dev/force_ro \
-		|| ! dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=3 status=none \
-		|| ! dd if=/dev/zero of="/dev/$flash_dev" bs=1M seek=3 count=1 status=none; then
+		|| ! dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=3 conv=fdatasync status=none \
+		|| ! dd if=/dev/zero of="/dev/$flash_dev" bs=1M seek=3 count=1 conv=fdatasync status=none; then
 		echo 1 > /sys/block/$flash_dev/force_ro
 		error "Could not copy uboot over"
 	fi

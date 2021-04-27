@@ -6,7 +6,7 @@ prepare_rootfs() {
 	# Check if the current copy is up to date.
 	# If there is no need to reboot, we can use it -- otherwise we need
 	# to clear the flag.
-	if grep -q other_rootfs_uptodate /etc/sw-versions; then
+	if grep -q other_rootfs_uptodate /etc/sw-versions 2>/dev/null; then
 		if ! needs_reboot; then
 			echo "Other fs up to date, reformat"
 			mount "$dev" "/target" -o ro || error "Could not mount $dev"

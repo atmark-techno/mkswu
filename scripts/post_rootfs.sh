@@ -1,6 +1,6 @@
 post_rootfs() {
 	# if other fs wasn't up to date: fix partition-specific things
-	if ! grep -q "other_rootfs_uptodate" "/etc/sw-versions"; then
+	if ! grep -q "other_rootfs_uptodate" "/etc/sw-versions" 2>/dev/null; then
 		if [ "$mmcblk" = "/dev/mmcblk2" ]; then
 			cat > /target/etc/fw_env.config <<EOF
 ${mmcblk}boot${ab} 0x3fe000 0x2000
