@@ -2,7 +2,7 @@
 
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 OUT=out.swu
-OUTDIR=./out
+OUTDIR=out
 CONFIG=./mkimage.conf
 EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 PRE_SCRIPT="swupdate_pre.sh"
@@ -15,6 +15,7 @@ usage() {
 	echo
 	echo "options:"
 	echo "  --config path"
+	echo "  --out path.swu"
 }
 
 error() {
@@ -149,8 +150,14 @@ $file"
 	write_line "filename = \"$file\";"
 	if [ -n "$component" ]; then
 		case "$component" in
-		uboot|kernel) install_if="different";;
-		*) install_if="higher";;
+		uboot|kernel)
+			install_if="different";;
+		extra_os)
+			install_if="higher"
+			# make sure to reinstall on base os change
+			version="$BASE_OS_VERSION.$version";;
+		*)
+			install_if="higher";;
 		esac
 		write_line "name = \"$component\";"
 		[ -n "$version" ] && write_line "version = \"$version\";" \
@@ -158,9 +165,6 @@ $file"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
-	case "$component" in
-		uboot) write_line "hook = \"uboot_hook\";";;
-	esac
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
 	write_line "sha256 = \"$sha256\";"
@@ -394,6 +398,14 @@ while [ $# -ge 1 ]; do
 	"-c"|"--config")
 		[ $# -lt 2 ] && error "$1 requires an argument"
 		CONFIG="$2"
+		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
+		shift 2
+		;;
+	"-o"|"--out")
+		[ $# -lt 2 ] && error "$1 requires an argument"
+		OUT="$2"
+		OUTDIR="${OUT%.swu}"
+		[ "$OUT" != "$OUTDIR" ] || error "$OUT must end with .swu"
 		shift 2
 		;;
 	"-h"|"--help"|"-"*)
