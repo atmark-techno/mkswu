@@ -75,10 +75,11 @@ gen_newversion() {
 		[ -z "$oldvers" ] && echo "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
 
-	# if no version changed, signal it and bail out
+	# if no version changed, clean up and fail script to avoid
+	# downloading the rest of the image
 	if cmp -s /etc/sw-versions $SCRIPTSDIR/sw-versions.merged; then
-		touch "$SCRIPTSDIR/nothing_to_do"
-		exit 0
+		rm -rf "$SCRIPTSDIR"
+		error "Nothing to do -- failing on purpose to save bandwidth"
 	fi
 
 }
