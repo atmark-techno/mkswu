@@ -51,7 +51,7 @@ init() {
 	gen_newversion
 
 	init_vars
-        save_vars
+	save_vars
 }
 
 init

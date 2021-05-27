@@ -58,6 +58,9 @@ encrypt_file() {
 	openssl enc -aes-256-cbc -in "$src" -out "$dest" \
 		-K "$ENCRYPT_KEY" -iv "$iv" || return 1
 
+	# Note if anyone needs debugging, can be decrypted with:
+	# openssl enc -aes-256-cbc -d -in encrypted_file -out decrypted_file -K key -iv iv
+
 	echo "$iv"
 }
 
@@ -218,7 +221,7 @@ write_uboot() {
 	
 	if [ -z "$FORCE" ] && [ -n "$UBOOT_VERSION" ]; then
 		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" || \
-			error "uboot version $UBOOT_VERSION was set, but string not present in binary: aborting"
+			error "uboot version $UBOOT_VERSION was set, but string not present in $UBOOT: aborting"
 	fi
 
 	component=uboot version=$UBOOT_VERSION \
@@ -231,7 +234,7 @@ write_tar() {
 	local dest="$2"
 
 	write_entry "$source" "type = \"archive\";" \
-	       "installed-directly = true;" "path = \"/target$dest\";"
+		"installed-directly = true;" "path = \"/target$dest\";"
 }
 
 write_tar_component() {
@@ -239,7 +242,7 @@ write_tar_component() {
 	local dest="$2"
 
 	write_entry_component "$source" "type = \"archive\";" \
-	       "installed-directly = true;" "path = \"/target$dest\";"
+		"installed-directly = true;" "path = \"/target$dest\";"
 }
 
 write_files() {

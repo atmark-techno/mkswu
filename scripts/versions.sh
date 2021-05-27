@@ -61,10 +61,9 @@ gen_newversion() {
 	# then appending other lines from new one in order as well.
 	# Could probably do better but it works and files are small..
 	while read -r component oldvers; do
-		if [ "$component" = "other_uboot" ]; then
-			newvers=$(get_version "uboot" /etc/sw-versions)
-			[ -n "$newvers" ] && echo "other_uboot $newvers"
-			continue
+		[ "$component" = "other_uboot" ] && continue
+		if [ "$component" = "uboot" ]; then
+			echo "other_uboot $oldvers"
 		fi
 		newvers=$(get_version "$component")
 		version_update "$component" "$oldvers" "$newvers" || newvers="$oldvers"
@@ -77,7 +76,7 @@ gen_newversion() {
 
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
-	if cmp -s /etc/sw-versions $SCRIPTSDIR/sw-versions.merged; then
+	if cmp -s /etc/sw-versions "$SCRIPTSDIR/sw-versions.merged"; then
 		rm -rf "$SCRIPTSDIR"
 		error "Nothing to do -- failing on purpose to save bandwidth"
 	fi
@@ -85,9 +84,13 @@ gen_newversion() {
 }
 
 update_running_versions() {
-        # atomic update for running sw versions
-        mount --bind / /target || error "Could not bind mount rootfs"
-        mount -o remount,rw /target || error "Could not make rootfs rw"
-        mv "$1" /target/etc/sw-versions || error "Could not write $1 to /etc/sw-versions"
-        umount /target || error "Could not umount rootfs rw copy"
+	mv "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
+
+	[ "$(stat -f -c %T /etc/sw-versions)" = "overlayfs" ] || return
+
+	# bind-mount / somewhere else to write below it as well
+	mount --bind / /target || error "Could not bind mount rootfs"
+	mount -o remount,rw /target || error "Could not make rootfs rw"
+	cp /etc/sw-versions /target/etc/sw-versions || error "Could not write $1 to /etc/sw-versions"
+	umount /target || error "Could not umount rootfs rw copy"
 }

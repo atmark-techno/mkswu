@@ -7,6 +7,7 @@ copy_uboot() {
 
 	[ "$other_vers" = "$cur_vers" ] && return
 
+	echo "Copying uboot over from existing"
 	flash_dev="${mmcblk#/dev/}boot${ab}"
 	cur_dev="${mmcblk}boot$((!ab))"
 	if ! echo 0 > /sys/block/$flash_dev/force_ro \

@@ -41,7 +41,7 @@ cleanup_appfs() {
 		mount "$dev" "$basemount" || error "Could not mount app root"
 
 		# We're not rebooting, since we got here there was something
-	        # to do and want to use updated apps on currenet os (old apps
+		# to do and want to use updated apps on currenet os (old apps
 		# now being backup for fallback)
 		if ! swap_btrfs_snapshots; then
 			echo "Could not swap btrfs subvolumes, forcing reboot"
