@@ -1,0 +1,67 @@
+## genkey.sh
+
+Generate a private/public key pair to use for rsa pss signing of files.
+generated files:
+ - swupdate.key is the private signing key that should be kept private.
+ - swupdate.pem should be installed to /etc/swupdate.pem and is used
+for verification of sw-description and container images if side-loaded.
+
+Note that encryption does not use this key.
+
+## mkimage.sh
+
+Helper to generate swupdate image.
+
+Configurable options (shell format):
+PRIVKEY: path to key for signing
+ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
+                 on first use
+UBOOT: path to uboot image
+UBOOT_VERSION: uboot version, used to not overwrite uboot if no change
+UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
+            set to blank to keep original file size.
+BOOT_FILES: newline delimited list of paths to boot files,
+            extracted with same filename in /boot
+KERNEL_VERSION: if set, BOOT_FILES are not extracted unless different
+BASE_OS: path to tarball to base OS. If installed, the partition is
+         wiped beforehand so BOOT_FILES must also be set.
+BASE_OS_VERSION: in case of identical version the partition is copied
+         as is from the running system. It is read-only, right?
+EXTRA_TARS: newline delimited list of versioned tarballs to extract on
+            new os.
+	    Each line must be of form "component version path_to.tar"
+            Component has to be base_os or extra_os if the tar wants
+            to write in base os partition.
+            Tars are only downloaded/extracted if version is greater
+            than whatever has previously been installed.
+EXTRA_SCRIPTS: versioned list of scripts to run after install, before
+               cleanup.
+               The format is the same as EXTRA_TARS above with the
+               same logic (write to base os and install if higher)
+EMBED_CONTAINERS: versioned list of podman archives.
+                  Same "component version archive_path" format, and
+                  will only be installed if the component is upgraded
+USB_CONTAINERS: Same, except files are not included in swu.
+                USB containers are signed and must be copied along with .sig
+                to USB drive root
+PULL_CONTAINERS: Same, except archive is replaced by an URL to pull from.
+
+## podman/podman_partial_image
+
+Generate image file from tags or image ids.
+If a base image/tag is given, remove objects from image file that
+were used in base image.
+
+## podman/podman_update
+
+Pull image from registry and if an update was downloaded restart
+container with podman_start
+
+The default behaviour will protect the running image store and depends
+on paths defined in config_sample/storage.conf that should be installed
+in /etc/containers/storage.conf or /etc/atmark/containers_storage.conf
+That can be overriden with command line options.
+
+## podman/podman_cleanup
+
+If images are configured for podman_start, remove images deemed useless
