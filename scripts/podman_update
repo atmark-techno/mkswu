@@ -1,1 +1,130 @@
-../podman/podman_update
+#!/bin/sh
+
+PODMAN_ROOT=/var/app/storage
+PODMAN_LOAD=
+PUB_KEY=
+
+[ -z "${CONTAINERS_CONF+x}" ] && \
+	[ -e /etc/atmark/containers.conf ] && \
+	export CONTAINERS_CONF=/etc/atmark/containers.conf
+[ -z "${CONTAINERS_STORAGE_CONF+x}" ] && \
+	[ -e /etc/atmark/containers_storage.conf ] && \
+	export CONTAINERS_STORAGE_CONF=/etc/atmark/containers_storage.conf
+# XXX https://github.com/containers/podman/pull/9668
+# change to CONTAINERS_REGISTRIES_CONF after podman update to 3.1
+[ -z "${REGISTRIES_CONFIG_PATH+x}" ] && \
+	[ -e /etc/atmark/containers_registries.conf ] && \
+	export REGISTRIES_CONFIG_PATH=/etc/atmark/containers_registries.conf
+
+error() {
+	echo "$@" >&2
+	exit 1
+}
+
+usage() {
+	echo "Usage: $0 [options] [-l [archive...]|uri...]"
+	echo
+	echo "Helper to update containers"
+	echo
+	echo "  -l    Instead of podman pull, use podman load to install update"
+	echo "        In this case if no argument is provided tries to load from stdin"
+	echo
+	echo "Options:"
+	echo " --storage <path> Path to podman storage to update"
+	echo " --pubkey <key>   Public key used to verify signed image (load with parameter only)"
+	echo "                  Setting to empty string disables the check"
+}
+
+podman_pull() {
+	local uri="$1"
+	local old_image new_image
+
+
+	old_image=$(podman image --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			inspect --format "{{.Id}}" "$uri" 2>/dev/null)
+
+	echo -n "Pulling $uri... "
+	new_image=$(podman pull --root "$PODMAN_ROOT" \
+		--storage-opt additionalimagestore="" -q "$uri") \
+		|| error "Could not pull $image"
+
+	if [ "$new_image" != "$old_image" ]; then
+		echo "Updated"
+	else
+		echo "No update"
+	fi
+}
+
+check_sig() {
+	local file="$1"
+
+	openssl dgst -sha256 -binary "$file" |
+		openssl pkeyutl -verify  -sigfile "$file.sig" \
+			-pkeyopt rsa_padding_mode:pss -pubin -inkey "$PUB_KEY" \
+			-pkeyopt rsa_pss_saltlen:-2 -pkeyopt digest:sha256 || \
+		error "Signature verification failed"
+}
+
+podman_load() {
+	local archive
+
+	if [ $# -eq 0 ]; then
+		podman load --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore=""
+	else for archive; do
+		if [ -n "$PUB_KEY" ]; then
+			check_sig "$archive"
+		fi
+		podman load --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			-i "$archive"
+	done fi
+}
+
+update_containers() {
+	local uri
+
+	if [ -n "$PODMAN_LOAD" ]; then
+		podman_load "$@"
+	else
+		for uri do
+			podman_pull "$uri"
+		done
+	fi
+}
+
+[ $# -lt 1 ] && usage && exit 1
+
+while [ $# -ge 1 ]; do
+	case "$1" in
+	"-l")
+		PODMAN_LOAD=yes
+		shift
+		;;
+	"--pubkey")
+		[ $# -ge 2 ] || error "$1 needs an argument"
+		PUB_KEY="$2"
+		shift 2
+		;;
+	"--storage")
+		[ $# -ge 2 ] || error "$1 needs an argument"
+		PODMAN_ROOT="$2"
+		shift 2
+		;;
+	"--")
+		shift
+		break
+		;;
+	"-h"|"--help"|"-"*)
+		usage
+		exit 0
+		;;
+	*)
+		break
+		;;
+	esac
+done
+
+update_containers "$@"
+

@@ -46,22 +46,8 @@ USB_CONTAINERS: Same, except files are not included in swu.
                 to USB drive root
 PULL_CONTAINERS: Same, except archive is replaced by an URL to pull from.
 
-## podman/podman_partial_image
+## podman_partial_image.sh
 
 Generate image file from tags or image ids.
 If a base image/tag is given, remove objects from image file that
 were used in base image.
-
-## podman/podman_update
-
-Pull image from registry and if an update was downloaded restart
-container with podman_start
-
-The default behaviour will protect the running image store and depends
-on paths defined in config_sample/storage.conf that should be installed
-in /etc/containers/storage.conf or /etc/atmark/containers_storage.conf
-That can be overriden with command line options.
-
-## podman/podman_cleanup
-
-If images are configured for podman_start, remove images deemed useless
