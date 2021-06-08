@@ -19,7 +19,10 @@ usage() {
 }
 
 error() {
-	echo "$@" >&2
+	local line
+	for line; do
+		echo "$line" >&2
+	done
 	exit 1
 }
 
@@ -65,21 +68,13 @@ encrypt_file() {
 }
 
 setup_encryption() {
-	local oldumask
 	[ -z "$ENCRYPT_KEYFILE" ] && return
-	if ! [ -e "$ENCRYPT_KEYFILE" ]; then
-		echo "Creating encryption keyfile $ENCRYPT_KEYFILE"
-		echo "That file must be copied over to /etc/swupdate.aes-key as 0400 on boards"
-		oldumask=$(umask)
-		umask 0077
-		ENCRYPT_KEY="$(openssl rand -hex 32)" || error "No openssl?"
-		echo "$ENCRYPT_KEY $(gen_iv)" > "$ENCRYPT_KEYFILE"
-		umask "$oldumask"
-	else
-		ENCRYPT_KEY=$(cat "$ENCRYPT_KEYFILE")
-		# XXX if sw-description gets encrypted, its iv is here
-		ENCRYPT_KEY="${ENCRYPT_KEY% *}"
-	fi
+	[ -e "$ENCRYPT_KEYFILE" ] || \
+		error "AES encryption key $ENCRYPT_KEYFILE was set but not found." \
+		      "Please create it with genkey.sh --aes \"$ENCRYPT_KEYFILE\""
+	ENCRYPT_KEY=$(cat "$ENCRYPT_KEYFILE")
+	# XXX if sw-description gets encrypted, its iv is here
+	ENCRYPT_KEY="${ENCRYPT_KEY% *}"
 }
 
 compress() {
