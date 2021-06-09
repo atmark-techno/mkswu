@@ -14,6 +14,8 @@ Helper to generate swupdate image.
 
 Configurable options (shell format):
 PRIVKEY: path to key for signing
+PRIVKEY_PASS: passphrase for private key, see openssl(1) "Pass Phrase
+              Options" for examples (e.g. file:pathname)
 ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
 UBOOT: path to uboot image

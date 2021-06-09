@@ -385,8 +385,11 @@ sign() {
 
 	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
 
-	openssl dgst -sha256 -sign "$PRIVKEY" -sigopt rsa_padding_mode:pss \
-		-sigopt rsa_pss_saltlen:-2 -out "$file.sig.tmp" "$file" \
+	openssl dgst -sha256 -sign "$PRIVKEY" \
+		-sigopt rsa_padding_mode:pss \
+		-sigopt rsa_pss_saltlen:-2 \
+		${PRIVKEY_PASS:+-passin $PRIVKEY_PASS} \
+		-out "$file.sig.tmp" "$file" \
 		|| error "Could not sign $file"
 
 	# Note if anyone needs debugging, can be verified with:
