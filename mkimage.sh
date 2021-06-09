@@ -222,7 +222,7 @@ write_uboot() {
 			error "uboot version $UBOOT_VERSION was set, but string not present in $UBOOT: aborting"
 	else
 		UBOOT_VERSION=$(strings "$UBOOT" |
-				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-[0-9]*-g[0-9a-f]*')
+				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
 		[ -n "$UBOOT_VERSION" ] || \
 			error "Could not guess uboot version in $UBOOT"
 	fi
