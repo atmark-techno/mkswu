@@ -54,9 +54,13 @@ genkey_rsa() {
 	oldumask=$(umask)
 	umask 0077
 	openssl genpkey -out "$PRIVKEY" -algorithm rsa-pss \
-		-pkeyopt rsa_keygen_bits:4096 $RSA_CIPHER
+		-pkeyopt rsa_keygen_bits:4096 $RSA_CIPHER \
+		${PRIVKEY_PASS:+-pass $PRIVKEY_PASS}
 	umask "$oldumask"
-	openssl rsa -in "$PRIVKEY" -out "$PUBKEY" -outform PEM -pubout
+	openssl rsa -in "$PRIVKEY" -out "$PUBKEY" -outform PEM \
+		${PRIVKEY_PASS:+-passin $PRIVKEY_PASS} \
+		-pubout
+
 }
 
 while [ $# -ge 1 ]; do
