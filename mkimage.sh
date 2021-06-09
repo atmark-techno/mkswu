@@ -214,9 +214,14 @@ pad_uboot() {
 write_uboot() {
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
 	
-	if [ -z "$FORCE" ] && [ -n "$UBOOT_VERSION" ]; then
+	if [ -n "$UBOOT_VERSION" ]; then
 		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" || \
 			error "uboot version $UBOOT_VERSION was set, but string not present in $UBOOT: aborting"
+	else
+		UBOOT_VERSION=$(strings "$UBOOT" |
+				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-[0-9]*-g[0-9a-f]*')
+		[ -n "$UBOOT_VERSION" ] || \
+			error "Could not guess uboot version in $UBOOT"
 	fi
 
 	component=uboot version=$UBOOT_VERSION \
