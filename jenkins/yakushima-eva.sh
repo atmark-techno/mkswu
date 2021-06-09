@@ -5,8 +5,7 @@ error() {
 	exit 1
 }
 
-[[ -n "$SWU_SKEY" ]] || error "Please set SWU_SKEY to private key location"
-[[ -r "$SWU_SKEY" ]] || error "Cannot read $SWU_SKEY"
+[[ -r "swupdate.key" ]] || error "Cannot read swupdate.key"
 
 for ROOTFS in alpine-aarch64-*.tar.gz; do
 	[[ -e  "$ROOTFS" ]] || error "rootfs not found"
@@ -17,7 +16,7 @@ ROOTFS_VERSION=${ROOTFS#alpine-aarch64-}
 ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
 cat >> yakushima-eva.conf <<EOF
-PRIVKEY="$SWU_SKEY"
+PRIVKEY=swupdate.key
 UBOOT=imx-boot_yakushima-eva
 BASE_OS="$ROOTFS"
 BASE_OS_VERSION="${ROOTFS_VERSION}"
