@@ -1,3 +1,5 @@
 /out
 /out.swu
 /swupdate.key
+/swupdate.pem
+/swupdate.aes-key
