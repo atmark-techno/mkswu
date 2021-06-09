@@ -388,6 +388,11 @@ sign() {
 	openssl dgst -sha256 -sign "$PRIVKEY" -sigopt rsa_padding_mode:pss \
 		-sigopt rsa_pss_saltlen:-2 -out "$file.sig.tmp" "$file" \
 		|| error "Could not sign $file"
+
+	# Note if anyone needs debugging, can be verified with:
+	# openssl dgst -sha256 -verify "$PUBKEY" -sigopt rsa_padding_mode:pss \
+	#    -sigopt rsa_pss_saltlen:-2 -signature "$file.sig" "$file"
+
 	mv "$file.sig.tmp" "$file.sig"
 }
 
