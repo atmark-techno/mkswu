@@ -12,6 +12,14 @@ error() {
 	exit 1
 }
 
+usage() {
+	echo "Usage: $0 [options]"
+	echo
+	echo "Options:"
+	echo "  -c, --config  path"
+	echo "  --aes         generate aes key instead of default rsa key pair"
+}
+
 genkey_aes() {
 	local oldumask
 

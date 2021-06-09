@@ -11,11 +11,11 @@ FILES="sw-description
 sw-description.sig"
 
 usage() {
-	echo "usage: $0 [opts]"
+	echo "Usage: $0 [opts]"
 	echo
-	echo "options:"
-	echo "  --config path"
-	echo "  --out path.swu"
+	echo "Options:"
+	echo "  -c, --config  path"
+	echo "  -o, --out     path.swu"
 }
 
 error() {
