@@ -10,6 +10,9 @@ POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 FILES="sw-description
 sw-description.sig"
 
+# default values for required keys, should be set in config file
+UBOOT_SIZE="4M"
+
 usage() {
 	echo "Usage: $0 [opts]"
 	echo
