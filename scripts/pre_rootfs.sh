@@ -15,6 +15,32 @@ prepare_rootfs() {
 	local dev="${mmcblk}p$((ab+1))"
 	local uptodate
 	local basemount
+	local tmp fail
+
+	# We need /target to exist for update, try hard to create it
+	# Note:
+	# - we need a known path because that path is used in sw-description
+	#   for archives as well as post scripts
+	# - we want a path regular users can't hijack e.g. not /tmp or similar
+	# - it should almost always already exist, as created for next update
+	if ! [ -d /target ]; then
+		[ -e /target ] && error "/target exists but is not a directory, update failing"
+		if ! mkdir /target 2>/dev/null; then
+			# read-only filesystem, remount somewhere else as rw
+			# to not impact current fs
+			tmp=$(mktemp -d) \
+			    && mount --bind / "$tmp" \
+			    && mount -o remount,rw "$tmp" \
+			    && mkdir "$tmp/target" \
+			    || fail=1
+
+			if [ -n "$tmp" ]; then
+				umount "$tmp"
+				rmdir "$tmp"
+			fi
+			[ -n "$fail" ] && error "Could not create /target for upgrade, aborting"
+		fi
+	fi
 
 	# Check if the current copy is up to date.
 	# If there is no need to reboot, we can use it -- otherwise we need
