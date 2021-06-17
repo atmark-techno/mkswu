@@ -7,15 +7,14 @@ error() {
 
 [[ -r "swupdate.key" ]] || error "Cannot read swupdate.key"
 
-for ROOTFS in alpine-aarch64-*.tar.gz; do
-	[[ -e  "$ROOTFS" ]] || error "rootfs not found"
-	break
-done
-[[ -e  "$ROOTFS" ]] || error "rootfs not found (should never see this)"
+ROOTFS=$(ls --sort=time alpine-aarch64-*.tar.gz | head -n 1)
+[[ -e  "$ROOTFS" ]] || error "rootfs not found"
 ROOTFS_VERSION=${ROOTFS#alpine-aarch64-}
+ROOTFS_VERSION=${ROOTFS_VERSION%.tar.*}
+# if multiple dashes only keep until first one
 ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
-cat >> yakushima-eva.conf <<EOF
+cat > yakushima-eva.conf <<EOF
 PRIVKEY=swupdate.key
 PUBKEY=swupdate.pem
 UBOOT=imx-boot_yakushima-eva
