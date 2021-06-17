@@ -40,7 +40,12 @@ cleanup_appfs() {
 
 	# sometimes podman mounts this on pull?
 	umount_if_mountpoint /target/var/app/storage/overlay
-	btrfs property set -ts /target/var/app/storage ro true
+
+	# set storage ro unless main storage
+	if [ "$(readlink /etc/containers/storage.conf)" != "storage.conf-persistent" ] &&
+	   ! grep -q 'graphroot = "/var/app/storage' /target/etc/atmark/containers-storage.conf 2>/dev/null; then
+		btrfs property set -ts /target/var/app/storage ro true
+	fi
 
 	if ! needs_reboot; then
 		basemount=$(mktemp -d -t btrfs-root.XXXXXX)
