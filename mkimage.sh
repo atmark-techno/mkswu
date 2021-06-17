@@ -392,17 +392,18 @@ sign() {
 	local file="$OUTDIR/$1"
 
 	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
+	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: $PRIVKEY"
+	[ -r "$PUBKEY" ] || error "Cannot read PUBKEY: $PUBKEY"
 
-	openssl dgst -sha256 -sign "$PRIVKEY" \
-		-sigopt rsa_padding_mode:pss \
-		-sigopt rsa_pss_saltlen:-2 \
+	openssl cms -sign -in "$file" -out "$file.sig.tmp" \
+		-signer "$PUBKEY" -inkey "$PRIVKEY" \
+		-outform DER -nosmimecap -binary \
 		${PRIVKEY_PASS:+-passin $PRIVKEY_PASS} \
-		-out "$file.sig.tmp" "$file" \
 		|| error "Could not sign $file"
 
 	# Note if anyone needs debugging, can be verified with:
-	# openssl dgst -sha256 -verify "$PUBKEY" -sigopt rsa_padding_mode:pss \
-	#    -sigopt rsa_pss_saltlen:-2 -signature "$file.sig" "$file"
+	# openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
+	#     -nosmimecap -binary -CAfile "$PUBKEY"
 
 	mv "$file.sig.tmp" "$file.sig"
 }

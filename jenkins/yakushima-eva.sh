@@ -17,6 +17,7 @@ ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
 cat >> yakushima-eva.conf <<EOF
 PRIVKEY=swupdate.key
+PUBKEY=swupdate.pem
 UBOOT=imx-boot_yakushima-eva
 BASE_OS="$ROOTFS"
 BASE_OS_VERSION="${ROOTFS_VERSION}"
