@@ -1,3 +1,16 @@
+copy_to_target() {
+	local file
+	local dir
+
+	for file; do
+		[ -e "$file" ] || continue
+
+		dir=$(dirname "$file")
+		[ -d "/target/$dir" ] || mkdir -p "/target/$dir"
+		cp -a "$file" "/target/$file"
+	done
+}
+
 prepare_rootfs() {
 	local dev="${mmcblk}p$((ab+1))"
 	local uptodate
@@ -31,9 +44,24 @@ prepare_rootfs() {
 	mkdir -p /target/boot /target/mnt /target/target
 
 	if needs_update "base_os"; then
-		if ! needs_update "kernel"; then
+		if get_version "kernel" && ! needs_update "kernel"; then
 			cp -ax /boot/. /target/boot
 		fi
+
+		# copy some files regardless - this echoes the fixups in post_rootfs,
+		# but these files can be overriden by update
+		copy_to_target /etc/hostname /etc/atmark /etc/motd
+		copy_to_target /etc/hwrevision /etc/fstab
+
+		copy_to_target /etc/swupdate.cfg
+		copy_to_target /etc/swupdate.pem /etc/swupdate.aes-key
+
+		# sshd
+		copy_to_target /etc/runlevels/default/sshd
+		copy_to_target /etc/ssh /root/.ssh /home/atmark/.ssh
+
+		# network conf
+		copy_to_target /etc/network
 		return
 	fi
 
