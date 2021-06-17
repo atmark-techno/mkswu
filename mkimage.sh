@@ -12,6 +12,7 @@ sw-description.sig"
 
 # default values for required keys, should be set in config file
 UBOOT_SIZE="4M"
+HW_COMPAT="yakushima-1.0"
 
 usage() {
 	echo "Usage: $0 [opts]"
@@ -308,7 +309,7 @@ write_sw_desc() {
 software = {
   version = "0.1.0";
   description = "Firmware for yakushima";
-  hardware-compatibility = [ "1.0" ];
+  hardware-compatibility = [ "$HW_COMPAT" ];
 EOF
 
 	for line in $DEBUG_SWDESC; do
