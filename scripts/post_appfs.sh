@@ -1,18 +1,24 @@
 swap_btrfs_snapshots() {
-	# XXX racy/not failure-safe
-	# XXX also check return codes, but what if it fails in the middle?...
-	# Could make the directory containing storages/volumes_ab a subvolume
-	# itself (or just a subdirectory) and swap just that single directory
-	# with renameat(.., RENAME_EXCHANGE) -- but no existing program expose
-	# this feature.
-	rm -rf "$basemount/storage_tmp" "$basemount/volumes_tmp"
-	mv "$basemount/storage_0" "$basemount/storage_tmp" \
-		&& mv "$basemount/storage_1" "$basemount/storage_0" \
-		&& mv "$basemount/storage_tmp" "$basemount/storage_1" \
-		&& mv "$basemount/volumes_0" "$basemount/volumes_tmp" \
-		&& mv "$basemount/volumes_1" "$basemount/volumes_0" \
-		&& mv "$basemount/volumes_tmp" "$basemount/volumes_1" \
-		|| error "Could not swap podman storage/volumes subvolumes"
+	if command -v renameat2 >/dev/null; then
+		renameat2 --exchange "$basemount/boot_0" "$basemount/boot_1"
+	else
+		# racy implementation, let's hope we don't power down at this point...
+		rm -rf "$basemount/boot_tmp"
+		if ! mv "$basemount/boot_0" "$basemount/boot_tmp"; then
+			return 1
+		fi
+		if ! mv "$basemount/boot_1" "$basemount/boot_0"; then
+			# hope rollback works!!
+			mv "$basemount/boot_tmp" "$basemount/boot_0"
+			return 1
+		fi
+		if ! mv "$basemount/boot_tmp" "$basemount/boot_1"; then
+			mv "$basemount/boot_0" "$basemount/boot_1"
+			mv "$basemount/boot_tmp" "$basemount/boot_0"
+			return 1
+		fi
+
+	fi
 
 	# we need to now remount the volumes with the new data,
 	# so stop all countainers and restart them

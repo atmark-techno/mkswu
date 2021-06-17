@@ -8,8 +8,8 @@ ${mmcblk}boot${ab} 0x3fa000 0x2000
 EOF
 		fi
 
-		sed -i -e "s/storage_[01]/storage_${ab}/" \
-			-e "s/volumes_[01]/volumes_${ab}/" /target/etc/fstab
+		# adjust ab_boot
+		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab
 	fi
 
 	# Three patterns:
