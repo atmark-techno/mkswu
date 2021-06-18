@@ -53,3 +53,10 @@ PULL_CONTAINERS: Same, except archive is replaced by an URL to pull from.
 Generate image file from tags or image ids.
 If a base image/tag is given, remove objects from image file that
 were used in base image.
+
+## examples
+
+Sample config files, try from git root:
+ ./mkimage.sh -c examples/foo.conf -o foo.swu
+
+read each .conf file for their requirements (files to pre-create)
