@@ -7,7 +7,7 @@ error() {
 
 [[ -r "swupdate.key" ]] || error "Cannot read swupdate.key"
 
-ROOTFS=$(ls --sort=time alpine-aarch64-*.tar.gz | head -n 1)
+ROOTFS=$(ls --sort=time alpine-aarch64-*.tar* | head -n 1)
 [[ -e  "$ROOTFS" ]] || error "rootfs not found"
 ROOTFS_VERSION=${ROOTFS#alpine-aarch64-}
 ROOTFS_VERSION=${ROOTFS_VERSION%.tar.*}

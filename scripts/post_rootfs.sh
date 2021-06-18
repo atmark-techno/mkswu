@@ -28,6 +28,11 @@ update_shadow() {
 
 post_rootfs() {
 	local storage_conf_link
+	# Sanity check: refuse to continue if someone tries to write a
+	# rootfs that was corrupted or "too wrong": check for /bin/sh
+	if ! [ -e /target/bin/sh ]; then
+		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
+	fi
 
 	# if other fs wasn't up to date: fix partition-specific things
 	# note that this means these files cannot be updated through swupdate
