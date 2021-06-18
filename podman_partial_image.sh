@@ -19,7 +19,7 @@ inspect_image() {
 }
 
 trim_archives() {
-	local hash tar_options="" tmpmanifest file
+	local hash tar_options="" file
 
 	podman save -m --format=docker-archive "$@" | tar -C "$tmpdir/archive" -x || error "Could not extract images: $*"
 
@@ -29,6 +29,10 @@ trim_archives() {
 		# podman verifies the archive contains a tar for all layers even if they're not used
 		rm -f "$file" && touch -d "@0" "$file" && chmod 444 "$file" || error "Could not truncate layer in archive"
 	done < "$tmpdir/known_hashs"
+
+	if [ -n "$RENAME" ]; then
+		sed -i $RENAME "$tmpdir/archive/manifest.json" "$tmpdir/archive/repositories"
+	fi
 
 	# podman generates archives in which owner is set to root,
 	# busybox tar doesn't allow that so only add option for GNU tar
@@ -42,6 +46,7 @@ trim_archives() {
 
 main() {
 	local OUTPUT=image.tar
+	local RENAME
 	local tmpdir
 
 	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
@@ -51,25 +56,31 @@ main() {
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
-		"-b")
+		-b|--base)
 			[ $# -ge 2 ] || error "Missing argument to $1"
 			inspect_image "$2"
 			shift 2
 			;;
-		"-o")
+		-o|--output)
 			[ $# -ge 2 ] || error "Missing argument to $1"
 			OUTPUT="$2"
 			shift 2
 			;;
-		"-h"|"--help")
+		-R|--rename)
+			[ $# -ge 2 ] || error "Missing argument to $1"
+			RENAME="$RENAME -e $2"
+			shift 2
+			;;
+
+		-h|--help)
 			usage
 			exit 0
 			;;
-		"--")
+		--)
 			shift
 			break
 			;;
-		"-"*)
+		-*)
 			error "Invalid argument $1"
 			;;
 		*)
