@@ -57,10 +57,8 @@ podman_pull() {
 check_sig() {
 	local file="$1"
 
-	openssl dgst -sha256 -binary "$file" |
-		openssl pkeyutl -verify  -sigfile "$file.sig" \
-			-pkeyopt rsa_padding_mode:pss -pubin -inkey "$PUB_KEY" \
-			-pkeyopt rsa_pss_saltlen:-2 -pkeyopt digest:sha256 || \
+	openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
+		    -nosmimecap -binary -CAfile "$PUB_KEY" > /dev/null ||
 		error "Signature verification failed"
 }
 

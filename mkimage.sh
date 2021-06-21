@@ -404,7 +404,7 @@ sign() {
 
 	# Note if anyone needs debugging, can be verified with:
 	# openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
-	#     -nosmimecap -binary -CAfile "$PUBKEY"
+	#     -nosmimecap -binary -CAfile "$PUBKEY" > /dev/null
 
 	mv "$file.sig.tmp" "$file.sig"
 }
