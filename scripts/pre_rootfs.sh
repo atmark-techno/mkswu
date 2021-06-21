@@ -87,7 +87,7 @@ prepare_rootfs() {
 		copy_to_target /etc/ssh /root/.ssh /home/atmark/.ssh
 
 		# network conf
-		copy_to_target /etc/network
+		copy_to_target /etc/network /etc/resolv.conf
 		return
 	fi
 
