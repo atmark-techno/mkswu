@@ -81,6 +81,9 @@ podman_load() {
 update_containers() {
 	local uri
 
+	# cleanup podman silly location-binding db before using directory.
+	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+
 	if [ -n "$PODMAN_LOAD" ]; then
 		podman_load "$@"
 	else
