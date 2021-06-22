@@ -11,6 +11,8 @@ FILES="sw-description
 sw-description.sig"
 
 # default values for required keys, should be set in config file
+PRIVKEY=swupdate.key
+PUBKEY=swupdate.pem
 UBOOT_SIZE="4M"
 HW_COMPAT="yakushima-1.0"
 

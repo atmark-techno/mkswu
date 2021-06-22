@@ -60,3 +60,5 @@ Sample config files, try from git root:
  ./mkimage.sh -c examples/foo.conf -o foo.swu
 
 read each .conf file for their requirements (files to pre-create)
+all examples expect keys to have been generated before (./genkey.sh),
+in default path, and public key must be installed on device to use.
