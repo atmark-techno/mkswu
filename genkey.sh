@@ -57,13 +57,14 @@ genkey_rsa() {
 	[ -n "$CN" ] || error "Certificate common name must be provided with --cn <name>"
 
 	echo "Creating signing key $PRIVKEY and its public counterpart ${PUBKEY##*/}"
-	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards"
-	echo "Please append it to the existing key if you plan on using vendor updates,"
-	echo "or replace the file to allow only your own."
 
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:"$CURVE" \
 		-keyout "$PRIVKEY" -out "$PUBKEY" -subj "/O=SWUpdate/CN=$CN" \
 		${PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS}
+
+	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards"
+	echo "Please append it to the existing key if you plan on using vendor updates,"
+	echo "or replace the file to allow only your own."
 }
 
 while [ $# -ge 1 ]; do
