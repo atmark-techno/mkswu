@@ -356,32 +356,39 @@ EOF
 	indent=2 write_line ");" "files: ("
 
 	for file in $EMBED_CONTAINERS; do
-		tmp=${file##*/}
-		tmp=${tmp%.tar*}
+		# format: version_tag version file
 		write_exec_component "$file" \
 			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 	done
 
 	for tmp in $PULL_CONTAINERS; do
-		tmp2="${tmp##* }"
-		file=$(echo -n "${tmp2}" | tr -c '[:alnum:]' '_')
+		# format: version_tag version container_tag
+		component=${tmp%% *}
+		tmp=${tmp#* }
+		version=${tmp%% *}
+		tmp=${tmp#* }
+		file=$(echo -n "${tmp}" | tr -c '[:alnum:]' '_')
 		file="$OUTDIR/container_$file.pull"
 		[ -e "$file" ] || : > "$file"
-		compress="" write_exec_component "${tmp% *} $file" \
-			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp2\\\" #"
+		write_exec_component "$component $version $file" \
+			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp\\\" #"
 	done
 
 	for tmp in $USB_CONTAINERS; do
-		tmp2=${tmp##*/}
-		tmp2=${tmp2%.tar*}
-		file="$tmp2.tar"
-		link "${tmp##* }" "$OUTDIR/$file"
+		# format: version_tag version filename
+		component=${tmp%% *}
+		tmp=${tmp#* }
+		version=${tmp%% *}
+		tmp=${tmp#* }
+		file="${tmp##*/}"
+		file="${file%.tar*}.tar"
+		link "$tmp" "$OUTDIR/$file"
 		sign "$file"
 		echo "Copy $OUTDIR/$file and $file.sig to USB drive" >&2
-		file="$OUTDIR/container_$tmp2.usb"
-		[ -e "$file" ] || : > "$file"
-		compress="" write_exec_component "${tmp% *} $file" \
-			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$tmp2.tar #"
+		tmp="$OUTDIR/container_${file%.tar}.usb"
+		[ -e "$tmp" ] || : > "$tmp"
+		write_exec_component "$component $version $tmp" \
+			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$file #"
 	done
 
 	indent=2 write_line ");" "scripts: ("
