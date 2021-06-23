@@ -1,7 +1,7 @@
 #!/bin/sh
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-SCRIPTSDIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+SCRIPTSDIR="$TMPDIR/scripts"
 
 . "$SCRIPTSDIR/common.sh"
 . "$SCRIPTSDIR/versions.sh"
