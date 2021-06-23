@@ -68,3 +68,10 @@ Sample config files, try from git root:
 read each .conf file for their requirements (files to pre-create)
 all examples expect keys to have been generated before (./genkey.sh),
 in default path, and public key must be installed on device to use.
+
+## tests
+
+conf files in the test directory will use internal variables to
+disable part or all the scripts, allowing to test specific components
+of the system.
+Please do not rely on these and ask for supporting features you need!

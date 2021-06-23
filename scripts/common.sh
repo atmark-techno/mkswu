@@ -19,3 +19,18 @@ cleanup() {
 	umount_if_mountpoint /target/var/tmp
 	umount_if_mountpoint /target
 }
+
+init_commmon() {
+	if [ -e "$TMPDIR/sw-description" ]; then
+		SWDESC="$TMPDIR/sw-description"
+	elif [ -e "/tmp/sw-description" ]; then
+		SWDESC="/tmp/sw-description"
+	else
+		error "sw-description not found!"
+	fi
+
+	# debug tests
+	grep -q "ATMARK_SKIP_SCRIPTS" "$SWDESC" && exit 0
+}
+
+init_common
