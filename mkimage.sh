@@ -116,11 +116,16 @@ write_entry() {
 			compress=zstd
 			;;
 		*)
-			compress=zstd
-			file="$file.zst"
-			file_out="$file_out.zst"
-			compress "$file_src" "$file_out"
-			file_src="$file_out"
+			# do not compress files < 128 bytes
+			if [ $(stat -c "%s" "$file_src") -lt 128 ]; then
+				compress=""
+			else
+				compress=zstd
+				file="$file.zst"
+				file_out="$file_out.zst"
+				compress "$file_src" "$file_out"
+				file_src="$file_out"
+			fi
 			;;
 		esac
 	fi
