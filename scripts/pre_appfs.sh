@@ -69,7 +69,11 @@ prepare_appfs() {
 
 	# wait for subvolume deletion to complete to make sure we can use
 	# any reclaimed space
-	btrfs subvolume sync "$basemount"
+	# In some rare case this can get stuck (files open or subvolume
+	# explicitely mounted by name, which can happen if fstab got setup
+	# incorrectly somehow).
+	# add an unreasonably long timeout just in case.
+	timeout 30m btrfs subvolume sync "$basemount"
 	umount "$basemount"
 	rmdir "$basemount"
 }
