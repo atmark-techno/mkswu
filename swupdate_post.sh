@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TMPDIR="${TMPDIR:-/tmp}"
+TMPDIR="${TMPDIR:-/var/tmp}"
 SCRIPTSDIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 
 . "$SCRIPTSDIR/common.sh"

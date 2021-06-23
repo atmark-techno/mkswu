@@ -323,9 +323,9 @@ EOF
 	update_scripts_tar
 	write_entry "$OUTDIR/scripts.tar" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
-		"  cmd: \"sh -c 'rm -rf \${TMPDIR:-/tmp}/scripts; \\
-			mkdir \${TMPDIR:-/tmp}/scripts && \\
-			cd \${TMPDIR:-/tmp}/scripts && \\
+		"  cmd: \"sh -c 'rm -rf \${TMPDIR:-/var/tmp}/scripts; \\
+			mkdir \${TMPDIR:-/var/tmp}/scripts && \\
+			cd \${TMPDIR:-/var/tmp}/scripts && \\
 			tar x -vf \$1 && \\
 			./$PRE_SCRIPT' -- \"" \
 		"}"
@@ -354,7 +354,7 @@ EOF
 		tmp=${file##*/}
 		tmp=${tmp%.tar*}
 		write_exec_component "$file" \
-			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
+			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 	done
 
 	for tmp in $PULL_CONTAINERS; do
@@ -363,7 +363,7 @@ EOF
 		file="$OUTDIR/container_$file.pull"
 		[ -e "$file" ] || : > "$file"
 		compress="" write_exec_component "${tmp% *} $file" \
-			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp2\\\" #"
+			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp2\\\" #"
 	done
 
 	for tmp in $USB_CONTAINERS; do
@@ -376,7 +376,7 @@ EOF
 		file="$OUTDIR/container_$tmp2.usb"
 		[ -e "$file" ] || : > "$file"
 		compress="" write_exec_component "${tmp% *} $file" \
-			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$tmp2.tar #"
+			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$tmp2.tar #"
 	done
 
 	indent=2 write_line ");" "scripts: ("

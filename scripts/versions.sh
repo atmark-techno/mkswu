@@ -49,7 +49,7 @@ gen_newversion() {
 	# extract all present component versions then keep whatever is biggest
 	awk -F'[" ]+' '$2 == "name" {component=$4}
 		component && $2 == "version" { print component, $4 }
-		/,/ { component="" }' < "$TMPDIR/sw-description" |
+		/,/ { component="" }' < "$SWDESC" |
 		sort -Vr | sort -u -k 1,1 > "$SCRIPTSDIR/sw-versions.present"
 
 	if ! [ -e "/etc/sw-versions" ]; then
