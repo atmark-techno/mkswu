@@ -102,7 +102,7 @@ write_entry() {
 	local file_out="$OUTDIR/$file"
 	local compress="$compress"
 	shift
-	local sha256 arg install_if iv
+	local sha256 install_if iv
 
 	[ -e "$file_src" ] || error "Missing source file: $file_src"
 
@@ -315,7 +315,7 @@ software = {
 EOF
 
 	for line in $DEBUG_SWDESC; do
-		indent=2 write_line $line
+		indent=2 write_line "$line"
 	done
 
 	indent=2 write_line "" "images: ("
@@ -361,8 +361,8 @@ EOF
 		tmp2="${tmp##* }"
 		file=$(echo -n "${tmp2}" | tr -c '[:alnum:]' '_')
 		file="$OUTDIR/container_$file.pull"
-		[ -e "$file" ] || > "$file"
-		compress= write_exec_component "${tmp% *} $file" \
+		[ -e "$file" ] || : > "$file"
+		compress="" write_exec_component "${tmp% *} $file" \
 			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp2\\\" #"
 	done
 
@@ -374,8 +374,8 @@ EOF
 		sign "$file"
 		echo "Copy $OUTDIR/$file and $file.sig to USB drive" >&2
 		file="$OUTDIR/container_$tmp2.usb"
-		[ -e "$file" ] || > "$file"
-		compress= write_exec_component "${tmp% *} $file" \
+		[ -e "$file" ] || : > "$file"
+		compress="" write_exec_component "${tmp% *} $file" \
 			"${TMPDIR:-/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$tmp2.tar #"
 	done
 
@@ -414,7 +414,7 @@ sign() {
 make_cpio() {
 	sign sw-description
 	(
-		cd $OUTDIR
+		cd "$OUTDIR" || error "Could not enter $OUTDIR"
 		echo "$FILES" | cpio -ov -H crc -L
 	) > $OUT
 }
