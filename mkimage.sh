@@ -35,7 +35,7 @@ error() {
 write_line() {
 	local line
 	for line; do
-		printf "%*s%s\n" "${line:+$indent}" "" "$line"
+		printf "%*s%s\n" "$((0${line:+1}?indent:0))" "" "$line"
 	done
 }
 
