@@ -3,24 +3,23 @@
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 OUT=out.swu
 OUTDIR=out
-CONFIG=./mkimage.conf
+DEFAULT_CONFIG="$SCRIPT_DIR/mkimage.conf"
+CONFIG=""
 EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 PRE_SCRIPT="swupdate_pre.sh"
 POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 FILES="sw-description
 sw-description.sig"
 
-# default values for required keys, should be set in config file
-PRIVKEY=swupdate.key
-PUBKEY=swupdate.pem
+# default default values
 UBOOT_SIZE="4M"
-HW_COMPAT="yakushima-1.0"
 
 usage() {
 	echo "Usage: $0 [opts]"
 	echo
 	echo "Options:"
 	echo "  -c, --config  path"
+	echo "  --no-default  do not load default mkimage.conf"
 	echo "  -o, --out     path.swu"
 }
 
@@ -307,6 +306,7 @@ write_sw_desc() {
 	local compress=1
 	local file line tmp tmp2
 
+	[ -n "$HW_COMPAT" ] || error "HW_COMPAT must be set"
 	cat <<EOF
 software = {
   version = "0.1.0";
@@ -395,6 +395,8 @@ sign() {
 	local file="$OUTDIR/$1"
 
 	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
+	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
+	[ -n "$PUBKEY" ] || error "PUBKEY must be set"
 	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: $PRIVKEY"
 	[ -r "$PUBKEY" ] || error "Cannot read PUBKEY: $PUBKEY"
 
@@ -438,6 +440,10 @@ while [ $# -ge 1 ]; do
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
 		shift 2
 		;;
+	"--no-default"*)
+		DEFAULT_CONFIG=""
+		shift
+		;;
 	"-o"|"--out")
 		[ $# -lt 2 ] && error "$1 requires an argument"
 		OUT="$2"
@@ -455,6 +461,13 @@ while [ $# -ge 1 ]; do
 	esac
 done
 
-. "$CONFIG"
+if [ -n "$DEFAULT_CONFIG" ]; then
+	[ -e "$DEFAULT_CONFIG" ] || error "$DEFAULT_CONFIG does not exist"
+	. "$DEFAULT_CONFIG"
+fi
+if [ -n "$CONFIG" ]; then
+	[ -e "$CONFIG" ] || error "$CONFIG does not exist"
+	. "$CONFIG"
+fi
 
 make_image
