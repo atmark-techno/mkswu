@@ -282,6 +282,8 @@ write_exec_component() {
 	local file="$1"
 	local command="$2"
 
+	[ -n "$command" ] || error "exec $file has no command"
+
 	write_entry_component "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
 		"  cmd: \"$command\"" "}"
@@ -396,6 +398,7 @@ EOF
 		# filename must not contain ' -- ' for obvious reasons...
 		file="${script%% -- *}"
 		script="${script##* -- }"
+		[ "$file" != "$script" ] || error "$file has no -- separator for command. syntax is 'component version file -- command'"
 		write_exec_component "$file" "$script"
 	done
 

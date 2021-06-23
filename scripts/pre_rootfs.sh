@@ -60,7 +60,6 @@ prepare_rootfs() {
 	# check if partitions exist and create them if not:
 	# - XXX boot partitions (always exist?)
 	# - XXX gpp partitions
-	# sgdisk  --zap-all --new 1:20480:+400M --new 2:0:+400M --new 3:0:+50M --new 4:0:0 /dev/mmcblk2
 
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
