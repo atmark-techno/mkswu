@@ -391,6 +391,14 @@ EOF
 			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$file #"
 	done
 
+	for script in $EXTRA_EXECS; do
+		# format: version_tag version filename -- command
+		# filename must not contain ' -- ' for obvious reasons...
+		file="${script%% -- *}"
+		script="${script##* -- }"
+		write_exec_component "$file" "$script"
+	done
+
 	indent=2 write_line ");" "scripts: ("
 
 	for script in $EXTRA_SCRIPTS; do

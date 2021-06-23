@@ -40,6 +40,12 @@ EXTRA_SCRIPTS: versioned list of scripts to run after install, before
                cleanup.
                The format is the same as EXTRA_TARS above with the
                same logic (write to base os and install if higher)
+EXTRA_EXECS: versioned list of commands to execute through the swupdate
+             exec handler, specifying both filename and command.
+	     The format is lines of "component version path -- command"
+	     path cannot contain the ' -- ' litteral.
+	     As for other EXTRA_* variables, this must use extra_os
+	     if writting to the rootfs is required.
 EMBED_CONTAINERS: versioned list of podman archives.
                   Same "component version archive_path" format, and
                   will only be installed if the component is upgraded
