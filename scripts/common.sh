@@ -20,7 +20,7 @@ cleanup() {
 	umount_if_mountpoint /target
 }
 
-init_commmon() {
+init_common() {
 	if [ -e "$TMPDIR/sw-description" ]; then
 		SWDESC="$TMPDIR/sw-description"
 	elif [ -e "/tmp/sw-description" ]; then
