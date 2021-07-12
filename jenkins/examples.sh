@@ -59,10 +59,16 @@ build_check() {
 	done
 }
 
-# no prereqs
-build_check enable_sshd "version extra_os .+" "file enable_sshd_genkeys.sh" "file-tar enable_sshd.tar.zst ./etc/runlevels/default/sshd ./root/.ssh/authorized_keys"
+# custom script: no prereq
 build_check custom_script "file custom_script_app.sh"
-build_check pull_container_nginx "file-tar nginx_start.tar.zst etc/atmark/containers/nginx.conf" "file container_docker_io_nginx_alpine.pull"
+
+# sshd: build tar
+tar -C examples/enable_sshd -cf examples/enable_sshd.tar .
+build_check enable_sshd "version extra_os .+" "file enable_sshd_genkeys.sh" "file-tar enable_sshd.tar.zst ./etc/runlevels/default/sshd ./root/.ssh/authorized_keys"
+
+# pull container: build tar
+tar -C examples/nginx_start -cf examples/nginx_start.tar .
+build_check pull_container_nginx "file-tar nginx_start.tar.zst ./etc/atmark/containers/nginx.conf" "file container_docker_io_nginx_alpine.pull"
 
 # uboot: prereq fullfilled by yakushima tar
 build_check uboot "file imx-boot_yakushima-eva.zst" "version uboot 202.*"
