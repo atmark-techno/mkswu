@@ -14,5 +14,7 @@ SCRIPTSDIR="$TMPDIR/scripts"
 cleanup
 rm -rf "$SCRIPTSDIR"
 
-needs_reboot && reboot
-[ -z "$force_reboot" ] || reboot
+if needs_reboot || [ -n "$force_reboot" ]; then
+	echo "swupdate triggering reboot!" >&2
+	reboot
+fi
