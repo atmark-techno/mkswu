@@ -20,4 +20,6 @@ BASE_OS="$ROOTFS"
 BASE_OS_VERSION="${ROOTFS_VERSION}"
 EOF
 
-./mkimage.sh -o yakushima-eva.swu yakushima-eva.conf
+. jenkins/common.sh
+
+build_check "yakushima-eva" "version uboot 20.*" "version base_os .+"
