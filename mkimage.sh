@@ -107,8 +107,8 @@ write_entry() {
 	if [ -n "$compress" ]; then
 		# Check if already compressed
 		case "$file" in
-		*.tar.*)
-			# archive handler will handle it
+		*.tar.*|*.apk)
+			# archive handler will handle tar, apk already compressed
 			compress=""
 			;;
 		*.zst)
