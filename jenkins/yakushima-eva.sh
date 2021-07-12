@@ -21,4 +21,3 @@ BASE_OS_VERSION="${ROOTFS_VERSION}"
 EOF
 
 ./mkimage.sh -o yakushima-eva.swu yakushima-eva.conf
-
