@@ -63,7 +63,7 @@ were used in base image.
 ## examples
 
 Sample config files, try from git root:
- ./mkimage.sh -c examples/foo.conf -o foo.swu
+ ./mkimage.sh -o foo.swu examples/foo.conf
 
 read each .conf file for their requirements (files to pre-create)
 all examples expect keys to have been generated before (./genkey.sh),

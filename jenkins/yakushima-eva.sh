@@ -15,12 +15,10 @@ ROOTFS_VERSION=${ROOTFS_VERSION%.tar.*}
 ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
 cat > yakushima-eva.conf <<EOF
-PRIVKEY=swupdate.key
-PUBKEY=swupdate.pem
 UBOOT=imx-boot_yakushima-eva
 BASE_OS="$ROOTFS"
 BASE_OS_VERSION="${ROOTFS_VERSION}"
 EOF
 
-./mkimage.sh -c yakushima-eva.conf -o yakushima-eva.swu
+./mkimage.sh -o yakushima-eva.swu yakushima-eva.conf
 
