@@ -43,14 +43,18 @@ needs_reboot() {
 	[ -n "$needs_reboot" ]
 }
 
-gen_newversion() {
-	local component oldvers newvers
-
+parse_swdesc() {
 	# extract all present component versions then keep whatever is biggest
 	awk -F'[" ]+' '$2 == "name" {component=$4}
 		component && $2 == "version" { print component, $4 }
-		/,/ { component="" }' < "$SWDESC" |
-		sort -Vr | sort -u -k 1,1 > "$SCRIPTSDIR/sw-versions.present"
+		/,/ { component="" }' |
+		sort -Vr | sort -u -k 1,1
+}
+
+gen_newversion() {
+	local component oldvers newvers
+
+	parse_swdesc < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present"
 
 	if ! [ -e "/etc/sw-versions" ]; then
 		cp "$SCRIPTSDIR/sw-versions.present" "$SCRIPTSDIR/sw-versions.merged"
