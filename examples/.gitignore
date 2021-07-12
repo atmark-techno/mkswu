@@ -1,1 +1,7 @@
-*.tar
+/*.tar
+# kernel_update_plain
+/Image
+/*.dtb
+# kernel_update_apk
+/linux-at-*apk
+/apk-add

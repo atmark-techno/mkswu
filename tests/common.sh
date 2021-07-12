@@ -47,6 +47,7 @@ check() {
 build_check() {
 	local conf="$1"
 	local name="${conf##*/}"
+	local name="tests/out/$name"
 	local check
 	shift
 

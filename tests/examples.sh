@@ -3,7 +3,7 @@
 set -e
 
 # build examples swu and check basic things (e.g. version included in sw-description)
-. jenkins/common.sh
+. ./tests/common.sh
 
 # custom script: no prereq
 build_check examples/custom_script "file custom_script_app.sh"
@@ -20,7 +20,7 @@ build_check examples/pull_container_nginx "file-tar nginx_start.tar.zst ./etc/at
 build_check examples/uboot "file imx-boot_yakushima-eva.zst" "version uboot 202.*"
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
-touch Image imx8mp-yakushima-eva.dtb
+touch examples/Image examples/imx8mp-yakushima-eva.dtb
 build_check examples/kernel_update_plain "file-tar boot.tar.zst Image imx8mp-yakushima-eva.dtb"
 
 # kernel apk: likewise we don't actually test install here,

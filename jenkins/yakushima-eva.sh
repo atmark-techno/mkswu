@@ -20,6 +20,6 @@ BASE_OS="$ROOTFS"
 BASE_OS_VERSION="${ROOTFS_VERSION}"
 EOF
 
-. jenkins/common.sh
+. ./tests/common.sh
 
 build_check "yakushima-eva" "version uboot 20.*" "version base_os .+"
