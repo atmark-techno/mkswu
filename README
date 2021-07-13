@@ -22,10 +22,6 @@ ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
-EXTRA_SCRIPTS: versioned list of scripts to run after install, before
-               cleanup.
-               The format is the same as EXTRA_TARS above with the
-               same logic (write to base os and install if higher)
 EXTRA_EXECS: versioned list of commands to execute through the swupdate
              exec handler, specifying both filename and command.
 	     The format is lines of "component version path -- command"
@@ -71,6 +67,8 @@ swdesc_files <name> <component> <version> <path> <file> [<more files>]
   Copy files directly into <path> (no subdirectory are kept)
   <name> is an arbitrary name (cannot reuse the same name twice)
 
+swdesc_script <script> <component> <version>
+  Run script at the end of the install (use exec for pre script)
 
 ## podman_partial_image.sh
 

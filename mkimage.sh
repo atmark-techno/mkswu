@@ -295,6 +295,15 @@ swdesc_files() {
 	swdesc_tar "$OUTDIR/$file.tar" "$component" "$version" "$dest"
 }
 
+swdesc_script() {
+	local script="$1"
+	local component="$2"
+	local version="$3"
+
+	write_entry "$script" "type = \"postinstall\";" \
+		>> "$OUTDIR/sw-description-scripts"
+}
+
 write_exec_component() {
 	local file="$1"
 	local command="$2"
@@ -405,9 +414,8 @@ EOF
 
 	indent=2 write_line ");" "scripts: ("
 
-	for script in $EXTRA_SCRIPTS; do
-		write_entry_component "$script" "type = \"postinstall\";"
-	done
+	[ -e "$OUTDIR/sw-description-scripts" ] && \
+		reindent "$OUTDIR/sw-description-scripts"
 
 	write_entry "$POST_SCRIPT" "type = \"postinstall\";"
 
