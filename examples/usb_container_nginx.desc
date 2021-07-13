@@ -3,4 +3,4 @@
 # $ ./podman_partial_image.sh -R s@docker.io/arm64v8/nginx@docker.io/nginx@g -o examples/nginx_alpine.tar docker.io/arm64v8/nginx:alpine
 swdesc_usb_container "examples/nginx_alpine.tar" container_nginx 1
 # $ tar -C examples/nginx_start -cf examples/nginx_start.tar .
-swdesc_tar examples/nginx_start.tar extra_os 1
+swdesc_tar examples/nginx_start.tar extra_os.nginx 1

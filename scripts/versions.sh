@@ -39,6 +39,17 @@ needs_update() {
 	version_update "$component" "$oldvers" "$newvers"
 }
 
+needs_update_regex() {
+	# returns true if any need update, false if all fail
+	local regex="$1"
+	local component
+
+	for component in $(awk '$1 ~ /^'"$regex"'$/ { print $1 }' "$SCRIPTSDIR/sw-versions.present"); do
+		needs_update "$component" && return
+	done
+	return 1
+}
+
 needs_reboot() {
 	[ -n "$needs_reboot" ]
 }

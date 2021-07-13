@@ -10,7 +10,7 @@ build_check examples/custom_script "file custom_script_app.sh"
 
 # sshd: build tar
 tar -C examples/enable_sshd -cf examples/enable_sshd.tar .
-build_check examples/enable_sshd "version extra_os .+" "file enable_sshd_genkeys.sh" "file-tar enable_sshd.tar.zst ./etc/runlevels/default/sshd ./root/.ssh/authorized_keys"
+build_check examples/enable_sshd "version extra_os.sshd .+" "file enable_sshd_genkeys.sh" "file-tar enable_sshd.tar.zst ./etc/runlevels/default/sshd ./root/.ssh/authorized_keys"
 
 # pull container: build tar
 tar -C examples/nginx_start -cf examples/nginx_start.tar .

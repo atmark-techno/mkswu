@@ -182,10 +182,6 @@ $file"
 		case "$component" in
 		uboot|kernel)
 			install_if="different";;
-		extra_os)
-			install_if="higher"
-			# make sure to reinstall on base os change
-			version="$BASE_OS_VERSION.$version";;
 		*)
 			install_if="higher";;
 		esac
@@ -274,7 +270,7 @@ swdesc_tar() {
 	local dest="$4"
 
 	case "$component" in
-	base_os|extra_os|kernel)
+	base_os|extra_os*|kernel)
 		dest=${dest:-/}
 		;;
 	*)
@@ -320,7 +316,7 @@ swdesc_script() {
 	local compress=""
 
 	case "$component" in
-	base_os|extra_os|kernel)
+	base_os|extra_os*|kernel)
 		cmd="podman run --rm --rootfs /target sh"
 		;;
 	*)

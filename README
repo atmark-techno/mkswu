@@ -35,7 +35,7 @@ Glossary:
   - Components can be defined freely for updates referring to
     containers (container image or files within volumes);
     if an update writes to rootfs then it must be named "base_os"
-    (in which case OS is wiped first) or "extra_os"/"kernel" (in
+    (in which case OS is wiped first) or extra_os*/kernel (in
     which case the OS is copied over first)
   - In most case component/version can be skipped (or component set
     to an empty string), in which case the file will always be

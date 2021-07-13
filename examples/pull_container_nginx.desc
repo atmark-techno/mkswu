@@ -1,3 +1,3 @@
 swdesc_pull_container "docker.io/nginx:alpine" container_nginx 1
 # $ tar -C examples/nginx_start -cf examples/nginx_start.tar .
-swdesc_tar examples/nginx_start.tar extra_os 1
+swdesc_tar examples/nginx_start.tar extra_os.nginx 1

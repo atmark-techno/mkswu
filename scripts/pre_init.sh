@@ -29,7 +29,8 @@ init_vars() {
 		probe_current
 	fi
 
-	if needs_update uboot || needs_update base_os || needs_update kernel || needs_update extra_os; then
+	if needs_update uboot || needs_update base_os \
+	    || needs_update kernel || needs_update_regex "extra_os.*"; then
 		needs_reboot=1
 	fi
 	printf "Using %s on boot %s. Reboot%s required.\n" "$mmcblk" "$ab" \
