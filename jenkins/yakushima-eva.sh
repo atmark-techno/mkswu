@@ -16,8 +16,7 @@ ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
 cat > yakushima-eva.conf <<EOF
 swdesc_uboot imx-boot_yakushima-eva
-BASE_OS="$ROOTFS"
-BASE_OS_VERSION="${ROOTFS_VERSION}"
+swdesc_tar "$ROOTFS" base_os "$ROOTFS_VERSION"
 EOF
 
 . ./tests/common.sh

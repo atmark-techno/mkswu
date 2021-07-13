@@ -246,46 +246,53 @@ swdesc_uboot() {
 
 	component=uboot version=$UBOOT_VERSION \
 		write_entry "$UBOOT" "type = \"raw\";" \
-			"device = \"/dev/swupdate_ubootdev\";" >> "$OUTDIR/sw-description-images"
+			"device = \"/dev/swupdate_ubootdev\";" \
+			>> "$OUTDIR/sw-description-images"
 }
 
-write_tar() {
+swdesc_tar() {
 	local source="$1"
-	local dest="$2"
+	local component="$2"
+	local version="$3"
+	local dest="$4"
+
+	case "$component" in
+	base_os|extra_os|kernel)
+		dest=${dest:-/}
+		;;
+	*)
+		dest=${dest:-/var/app/volumes}
+		[ "${dest#/var/app/volumes}" != "$dest" ] \
+			|| error "OS is only writable for base/extra_os updates and $dest is not within volumes"
+	esac
 
 	write_entry "$source" "type = \"archive\";" \
-		"installed-directly = true;" "path = \"/target$dest\";"
+		"installed-directly = true;" "path = \"/target$dest\";" \
+		>> "$OUTDIR/sw-description-images"
 }
 
-write_tar_component() {
-	local source="$1"
-	local dest="$2"
-
-	write_entry_component "$source" "type = \"archive\";" \
-		"installed-directly = true;" "path = \"/target$dest\";"
-}
-
-write_files() {
+swdesc_files() {
 	local file="$1"
-	local dest="$2"
-	local tarfiles="$3"
-	local tarfile_src tarfile tarfiles_out
+	local component="$2"
+	local version="$3"
+	local dest="$4"
+	local tarfile_src tarfile
 	local update=
-	shift 2
+	shift 4
 	# other args are source files
 
 	[ -e "$OUTDIR/$file.tar" ] || update=1
 
-	for tarfile_src in $tarfiles; do
+	for tarfile_src; do
 		tarfile="${tarfile_src##*/}"
 		link "$tarfile_src" "$OUTDIR/$tarfile" && update=1
 		[ -z "$update" ] && [ "$tarfile_src" -nt "$OUTDIR/$file.tar" ] && update=1
-		tarfiles_out="${tarfiles_out+$tarfiles_out
-}$tarfile"
+		shift
+		set -- "$@" "$tarfile"
 	done
-	[ -z "$update" ] || tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" $tarfiles_out \
+	[ -z "$update" ] || tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" "$@" \
 		|| error "Could not create tar for $file"
-	write_tar "$OUTDIR/$file.tar" "$dest"
+	swdesc_tar "$OUTDIR/$file.tar" "$component" "$version" "$dest"
 }
 
 write_exec_component() {
@@ -348,20 +355,6 @@ EOF
 
 	[ -e "$OUTDIR/sw-description-images" ] && \
 		reindent "$OUTDIR/sw-description-images"
-
-	if [ -n "$BASE_OS" ]; then
-		component=base_os version=$BASE_OS_VERSION \
-			write_tar "$BASE_OS" "/"
-	fi
-
-	if [ -n "$BOOT_FILES" ]; then
-		component=kernel version=$KERNEL_VERSION \
-			write_files boot /boot "$BOOT_FILES"
-	fi
-
-	for file in $EXTRA_TARS; do
-		write_tar_component "$file" "/"
-	done
 
 	indent=2 write_line ");" "files: ("
 

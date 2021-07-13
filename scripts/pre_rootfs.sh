@@ -47,7 +47,7 @@ prepare_rootfs() {
 	# to clear the flag.
 	if grep -q other_rootfs_uptodate /etc/sw-versions 2>/dev/null; then
 		if ! needs_reboot; then
-			echo "Other fs up to date, reformat"
+			echo "Other fs up to date, mounting read-only"
 			mount "$dev" "/target" -o ro || error "Could not mount $dev"
 			return
 		fi

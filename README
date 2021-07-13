@@ -8,11 +8,13 @@ for verification of sw-description and container images if side-loaded.
 
 Note that encryption does not use this key.
 
+
 ## mkimage.sh
 
 Helper to generate swupdate image.
 
 Configurable options (shell format):
+
 PRIVKEY: path to key for signing
 PRIVKEY_PASS: passphrase for private key, see openssl(1) "Pass Phrase
               Options" for examples (e.g. file:pathname)
@@ -20,20 +22,6 @@ ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
-BOOT_FILES: newline delimited list of paths to boot files,
-            extracted with same filename in /boot
-KERNEL_VERSION: if set, BOOT_FILES are not extracted unless different
-BASE_OS: path to tarball to base OS. If installed, the partition is
-         wiped beforehand so BOOT_FILES must also be set.
-BASE_OS_VERSION: in case of identical version the partition is copied
-         as is from the running system. It is read-only, right?
-EXTRA_TARS: newline delimited list of versioned tarballs to extract on
-            new os.
-	    Each line must be of form "component version path_to.tar"
-            Component has to be base_os or extra_os if the tar wants
-            to write in base os partition.
-            Tars are only downloaded/extracted if version is greater
-            than whatever has previously been installed.
 EXTRA_SCRIPTS: versioned list of scripts to run after install, before
                cleanup.
                The format is the same as EXTRA_TARS above with the
@@ -52,9 +40,36 @@ USB_CONTAINERS: Same, except files are not included in swu.
                 to USB drive root
 PULL_CONTAINERS: Same, except archive is replaced by an URL to pull from.
 
+
+Glossary:
+
+<component> and <version>:
+  We define arbitrary components for swupdate to only install update
+  if required.
+  - Updates are installed only if version is higher than what is on
+    the system, or if not present on the system, except for "uboot"
+    and "kernel" which are installed if different
+  - Components can be defined freely for updates referring to
+    containers (container image or files within volumes);
+    if an update writes to rootfs then it must be named "base_os"
+    (in which case OS is wiped first) or "extra_os"/"kernel" (in
+    which case the OS is copied over first)
+
+
 Images are then built by calling the following helpers:
+
 swdesc_uboot <uboot> [<version>]
-  include uboot file, version is automatically set from file if not set
+  Include uboot file, version is automatically set from file if not set
+
+swdesc_tar <tar file> <component> <version> [<path>]
+  Extract <tar file> at <path> within new system.
+  Destination path must be within /var/app/volumes (or volumes_persistent)
+  unless rootfs is targeted (see <component> in Glossary), and defaults
+  to / for os variants and /var/app/volumes otherwise
+
+swdesc_files <name> <component> <version> <path> <file> [<more files>]
+  Copy files directly into <path> (no subdirectory are kept)
+  <name> is an arbitrary name (cannot reuse the same name twice)
 
 
 ## podman_partial_image.sh
@@ -62,6 +77,7 @@ swdesc_uboot <uboot> [<version>]
 Generate image file from tags or image ids.
 If a base image/tag is given, remove objects from image file that
 were used in base image.
+
 
 ## examples
 
@@ -71,6 +87,7 @@ Sample config files, try from git root:
 read each .conf file for their requirements (files to pre-create)
 all examples expect keys to have been generated before (./genkey.sh),
 in default path, and public key must be installed on device to use.
+
 
 ## tests
 
