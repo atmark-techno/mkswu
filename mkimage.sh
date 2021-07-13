@@ -410,10 +410,11 @@ write_sw_desc() {
 	local file line tmp tmp2
 
 	[ -n "$HW_COMPAT" ] || error "HW_COMPAT must be set"
+	[ -n "$DESCRIPTION" ] || error "DESCRIPTION must be set"
 	cat <<EOF
 software = {
   version = "0.1.0";
-  description = "Firmware for yakushima";
+  description = "$DESCRIPTION";
   hardware-compatibility = [ "$HW_COMPAT" ];
 EOF
 
