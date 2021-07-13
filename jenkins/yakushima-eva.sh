@@ -23,3 +23,4 @@ EOF
 . ./tests/common.sh
 
 build_check "yakushima-eva" "version uboot 20.*" "version base_os .+"
+mv tests/out/yakushima-eva.swu .

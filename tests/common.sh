@@ -16,20 +16,20 @@ check() {
 	shift
 	case "$type" in
 	file)
-		(( $# > 0 )) || error "file check has no argument"
+		[ $# -gt 0 ] || error "file check has no argument"
 		for file; do
 			cpio -t < "$name".swu | grep -qx "$file" ||
 				error "$file not in swu"
 		done
 		;;
 	file-tar)
-		(( $# > 1 )) || error "file-tar needs tar and content args"
+		[ $# -gt 1 ] || error "file-tar needs tar and content args"
 		tar="$1"
 		shift
 		tar tf "$name/$tar" "$@" > /dev/null || error "Missing files in $tar"
 		;;
 	version)
-		(( $# == 2 )) || error "version usage: <component> <version regex>"
+		[ $# -eq 2 ] || error "version usage: <component> <version regex>"
 		component="$1"
 		version="$2"
 

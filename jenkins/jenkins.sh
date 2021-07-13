@@ -4,4 +4,4 @@
 set -ex
 
 ./jenkins/yakushima-eva.sh
-./tests/examples.sh
+./tests/run.sh
