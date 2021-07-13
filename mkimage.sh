@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 OUT=out.swu
 OUTDIR=out
-BASE_CONFIG="$SCRIPT_DIR/mkimage.conf"
+CONFIG="$SCRIPT_DIR/mkimage.conf"
 EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 PRE_SCRIPT="swupdate_pre.sh"
 POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
@@ -15,10 +15,10 @@ scripts.tar.zst"
 UBOOT_SIZE="4M"
 
 usage() {
-	echo "Usage: $0 [opts] config [config...]"
+	echo "Usage: $0 [opts] desc [desc...]"
 	echo
 	echo "Options:"
-	echo "  -c, --config  path to base config e.g. mkimage.conf"
+	echo "  -c, --config  path to config e.g. mkimage.conf"
 	echo "  -o, --out     out.swu"
 }
 
@@ -472,12 +472,11 @@ make_image() {
 	make_cpio
 }
 
-
 while [ $# -ge 1 ]; do
 	case "$1" in
 	"-c"|"--config")
 		[ $# -lt 2 ] && error "$1 requires an argument"
-		BASE_CONFIG="$2"
+		CONFIG="$2"
 		shift 2
 		;;
 	"-o"|"--out")
@@ -497,10 +496,10 @@ while [ $# -ge 1 ]; do
 	esac
 done
 
-if [ -n "$BASE_CONFIG" ]; then
-	[ -e "$BASE_CONFIG" ] || error "$BASE_CONFIG does not exist"
-	[ "${BASE_CONFIG#/}" = "$BASE_CONFIG" ] && BASE_CONFIG="./$BASE_CONFIG"
-	. "$BASE_CONFIG"
+if [ -n "$CONFIG" ]; then
+	[ -e "$CONFIG" ] || error "$CONFIG does not exist"
+	[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
+	. "$CONFIG"
 fi
 
 make_image "$@"
