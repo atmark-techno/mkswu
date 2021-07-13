@@ -115,8 +115,22 @@ write_entry() {
 	if [ -n "$compress" ]; then
 		# Check if already compressed
 		case "$file" in
-		*.tar.*|*.apk)
-			# archive handler will handle tar, apk already compressed
+		*.tar.*)
+			if [ "$compress" = force ]; then
+				# Force decompression through swupdate.
+				# Only gzip and zstd are supported
+				case "$file" in
+				*.gz) compress=zlib;;
+				*.zst) compress=zstd;;
+				*) compress="";;
+				esac
+			else
+				# archive handle will handle it
+				compress=""
+			fi
+			;;
+		*.apk)
+			# already compressed
 			compress=""
 			;;
 		*.zst)
@@ -325,8 +339,7 @@ swdesc_embed_container() {
 	local image="$1"
 	local component="$2"
 	local version="$3"
-
-	# XXX force compression to go through swupdate
+	local compress="force"
 
 	swdesc_exec "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l" "$component" "$version"
 }
@@ -348,9 +361,11 @@ swdesc_usb_container() {
 	local component="$2"
 	local version="$3"
 
-	# XXX test compressed images are handled correctly
 	local image_usb=${image##*/}
-	image_usb="${image_usb%.tar*}.tar"
+	if [ "${image_usb%.tar.*}" != "$image_usb" ]; then
+		echo "Warning: podman does not handle compressed container images without an extra uncompressed copy"
+		echo "you might want to keep the archive as simple .tar"
+	fi
 	link "$image" "$OUTDIR/$image_usb"
 	sign "$image_usb"
 	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive" >&2
