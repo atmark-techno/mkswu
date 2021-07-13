@@ -52,7 +52,7 @@ build_check() {
 	shift
 
 	echo "Building $name"
-	./mkimage.sh -o "$name.swu" "$conf.conf"
+	./mkimage.sh -o "$name.swu" "$conf.desc"
 
 	for check; do
 		check $check
