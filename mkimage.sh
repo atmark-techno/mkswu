@@ -9,7 +9,8 @@ EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 PRE_SCRIPT="swupdate_pre.sh"
 POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 FILES="sw-description
-sw-description.sig"
+sw-description.sig
+scripts.tar.zst"
 
 # default default values
 UBOOT_SIZE="4M"
