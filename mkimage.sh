@@ -320,7 +320,6 @@ write_sw_desc() {
 	local indent=4
 	local component
 	local version
-	local compress=1
 	local file line tmp tmp2
 
 	[ -n "$HW_COMPAT" ] || error "HW_COMPAT must be set"
@@ -454,6 +453,8 @@ make_cpio() {
 }
 
 make_image() {
+	local compress=1
+
 	mkdir -p "$OUTDIR"
 	setup_encryption
 
