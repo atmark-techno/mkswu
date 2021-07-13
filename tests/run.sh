@@ -22,7 +22,7 @@ HWREV="${HWREV:-/etc/hwrevision}"
 if command -v "$SWUPDATE" > /dev/null; then
 	# setup
 	if [ "$(id -u)" = "0" ] || [ -w "$HWREV" ]; then
-		echo "armadillo yakushima-1.0" > "$HWREV"
+		echo "yakushima-es1 at1" > "$HWREV"
 	fi
 	# tests/install_files
 	rm -rf /tmp/swupdate-test
