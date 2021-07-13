@@ -18,8 +18,6 @@ PRIVKEY_PASS: passphrase for private key, see openssl(1) "Pass Phrase
               Options" for examples (e.g. file:pathname)
 ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
-UBOOT: path to uboot image
-UBOOT_VERSION: uboot version, used to not overwrite uboot if no change
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
 BOOT_FILES: newline delimited list of paths to boot files,
@@ -53,6 +51,11 @@ USB_CONTAINERS: Same, except files are not included in swu.
                 USB containers are signed and must be copied along with .sig
                 to USB drive root
 PULL_CONTAINERS: Same, except archive is replaced by an URL to pull from.
+
+Images are then built by calling the following helpers:
+swdesc_uboot <uboot> [<version>]
+  include uboot file, version is automatically set from file if not set
+
 
 ## podman_partial_image.sh
 

@@ -4,7 +4,6 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 OUT=out.swu
 OUTDIR=out
 BASE_CONFIG="$SCRIPT_DIR/mkimage.conf"
-CONFIG=""
 EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 PRE_SCRIPT="swupdate_pre.sh"
 POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
@@ -37,6 +36,14 @@ write_line() {
 		printf "%*s%s\n" "$((0${line:+1}?indent:0))" "" "$line"
 	done
 }
+
+reindent() {
+	local padding
+	padding=$(printf "%*s" "${indent:-0}" "")
+
+	sed -e "s/^/$padding/" "$@"
+}
+
 
 link() {
 	local src="$1"
@@ -221,7 +228,10 @@ pad_uboot() {
 	truncate -s "$UBOOT_SIZE" "$UBOOT"
 }
 
-write_uboot() {
+swdesc_uboot() {
+	local UBOOT="$1"
+	local UBOOT_VERSION="$2"
+
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
 	
 	if [ -n "$UBOOT_VERSION" ]; then
@@ -236,7 +246,7 @@ write_uboot() {
 
 	component=uboot version=$UBOOT_VERSION \
 		write_entry "$UBOOT" "type = \"raw\";" \
-			"device = \"/dev/swupdate_ubootdev\";"
+			"device = \"/dev/swupdate_ubootdev\";" >> "$OUTDIR/sw-description-images"
 }
 
 write_tar() {
@@ -337,9 +347,8 @@ EOF
 			./$PRE_SCRIPT' -- \"" \
 		"}"
 
-	if [ -n "$UBOOT" ]; then
-		write_uboot
-	fi
+	[ -e "$OUTDIR/sw-description-images" ] && \
+		reindent "$OUTDIR/sw-description-images"
 
 	if [ -n "$BASE_OS" ]; then
 		component=base_os version=$BASE_OS_VERSION \
@@ -447,6 +456,15 @@ make_cpio() {
 make_image() {
 	mkdir -p "$OUTDIR"
 	setup_encryption
+
+	# clean and build sw-desc fragments
+	rm -f "$OUTDIR/sw-description-"*
+	for DESC; do
+		[ -e "$DESC" ] || error "$DESC does not exist"
+		[ "${DESC#/}" = "$DESC" ] && DESC="./$DESC"
+		. "$DESC"
+	done
+
 	write_sw_desc > "$OUTDIR/sw-description"
 	# XXX debian's libconfig is obsolete and does not allow
 	# trailing commas at the end of lists (allowed from 1.7.0)
@@ -484,10 +502,5 @@ if [ -n "$BASE_CONFIG" ]; then
 	[ "${BASE_CONFIG#/}" = "$BASE_CONFIG" ] && BASE_CONFIG="./$BASE_CONFIG"
 	. "$BASE_CONFIG"
 fi
-for CONFIG; do
-	[ -e "$CONFIG" ] || error "$CONFIG does not exist"
-	[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
-	. "$CONFIG"
-done
 
-make_image
+make_image "$@"
