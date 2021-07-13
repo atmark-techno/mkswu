@@ -316,22 +316,37 @@ swdesc_script() {
 	local script="$1"
 	local component="$2"
 	local version="$3"
+	local cmd
+	local compress=""
 
-	write_entry "$script" "type = \"postinstall\";" \
-		>> "$OUTDIR/sw-description-scripts"
+	case "$component" in
+	base_os|extra_os|kernel)
+		cmd="podman run --rm --rootfs /target sh"
+		;;
+	*)
+		# If target is read-only we need special handling to run (silly podman tries
+		# to write to / otherwise) but keep volumes writable
+		cmd="podman run --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
+		cmd="$cmd -v /target/var/app/volumes_persistent:/var/app/volumes_persistent"
+		cmd="$cmd --rootfs /target sh"
+		;;
+	esac
+	write_entry "$script" "type = \"exec\";" \
+		"properties: {" "  cmd: \"$cmd\"" "}" \
+		>> "$OUTDIR/sw-description-files"
 }
 
 swdesc_exec() {
 	local file="$1"
-	local command="$2"
+	local cmd="$2"
 	local component="$3"
 	local version="$4"
 
-	[ -n "$command" ] || error "exec $file has no command"
+	[ -n "$cmd" ] || error "exec $file has no cmd"
 
 	write_entry "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
-		"  cmd: \"$command\"" "}" \
+		"  cmd: \"$cmd\"" "}" \
 		>> "$OUTDIR/sw-description-files"
 }
 
