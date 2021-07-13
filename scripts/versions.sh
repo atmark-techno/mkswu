@@ -61,6 +61,7 @@ parse_swdesc() {
 
 gen_newversion() {
 	local component oldvers newvers
+	local base_os
 
 	parse_swdesc < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present"
 
@@ -69,20 +70,28 @@ gen_newversion() {
 		return
 	fi
 
+	needs_update "base_os" && base_os=1
+
 	# Merge files, keeping order of original sw-versions,
 	# then appending other lines from new one in order as well.
 	# Could probably do better but it works and files are small..
 	while read -r component oldvers; do
-		[ "$component" = "other_uboot" ] && continue
-		if [ "$component" = "uboot" ]; then
-			echo "other_uboot $oldvers"
-		fi
+		case "$component" in
+		other_uboot) continue;;
+		uboot) echo "other_uboot $oldvers";;
+		extra_os*) [ -n "$base_os" ] && continue;;
+		esac
 		newvers=$(get_version "$component")
 		version_update "$component" "$oldvers" "$newvers" || newvers="$oldvers"
 		echo "$component $newvers"
 	done < /etc/sw-versions > "$SCRIPTSDIR/sw-versions.merged"
 	while read -r component newvers; do
 		oldvers=$(get_version "$component" /etc/sw-versions)
+		if [ -n "$base_os" ] && [ "${component#extra_os}" != "$component" ]; then
+			# extra_os likely won't be installed, skip for next run
+			# in genral extra_os and base_os shouldn't be mixed anyway
+			needs_update "$component" || continue
+		fi
 		[ -z "$oldvers" ] && echo "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
 
