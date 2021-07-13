@@ -44,11 +44,8 @@ needs_reboot() {
 }
 
 parse_swdesc() {
-	# extract all present component versions then keep whatever is biggest
-	awk -F'[" ]+' '$2 == "name" {component=$4}
-		component && $2 == "version" { print component, $4 }
-		/,/ { component="" }' |
-		sort -Vr | sort -u -k 1,1
+	# extract version comments
+	sed -ne "s/.*#VERSION //p"
 }
 
 gen_newversion() {

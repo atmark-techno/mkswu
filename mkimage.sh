@@ -178,6 +178,9 @@ $file"
 		write_line "name = \"$component\";"
 		[ -n "$version" ] && write_line "version = \"$version\";" \
 						"install-if-${install_if} = true;"
+
+		# remember version for scripts
+		echo "$component $version" >> "$OUTDIR/sw-description-versions"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
@@ -420,6 +423,11 @@ EOF
 	write_entry "$POST_SCRIPT" "type = \"postinstall\";"
 
 	indent=2 write_line ");"
+
+	# Keep only highest
+	sort -Vr < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 | \
+		sed -e 's/^/  #VERSION /'
+
 	indent=0 write_line "};"
 }
 
