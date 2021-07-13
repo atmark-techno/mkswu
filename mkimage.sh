@@ -304,15 +304,57 @@ swdesc_script() {
 		>> "$OUTDIR/sw-description-scripts"
 }
 
-write_exec_component() {
+swdesc_exec() {
 	local file="$1"
 	local command="$2"
+	local component="$3"
+	local version="$4"
 
 	[ -n "$command" ] || error "exec $file has no command"
 
-	write_entry_component "$file" "type = \"exec\";" \
+	write_entry "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
-		"  cmd: \"$command\"" "}"
+		"  cmd: \"$command\"" "}" \
+		>> "$OUTDIR/sw-description-files"
+}
+
+swdesc_embed_container() {
+	local image="$1"
+	local component="$2"
+	local version="$3"
+
+	# XXX force compression to go through swupdate
+
+	swdesc_exec "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l" "$component" "$version"
+}
+
+swdesc_pull_container() {
+	local image="$1"
+	local component="$2"
+	local version="$3"
+
+	local image_file=$(echo -n "$image" | tr -c '[:alnum:]' '_')
+	image_file="$OUTDIR/container_$image_file.pull"
+	[ -e "$image_file" ] || : > "$image_file"
+
+	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$image\\\" #" "$component" "$version"
+}
+
+swdesc_usb_container() {
+	local image="$1"
+	local component="$2"
+	local version="$3"
+
+	# XXX test compressed images are handled correctly
+	local image_usb=${image##*/}
+	image_usb="${image_usb%.tar*}.tar"
+	link "$image" "$OUTDIR/$image_usb"
+	sign "$image_usb"
+	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive" >&2
+
+	local image_file="$OUTDIR/container_${image_usb%.tar}.usb"
+	[ -e "$image_file" ] || : > "$image_file"
+	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$image_usb #" "$component" "$version"
 }
 
 update_scripts_tar() {
@@ -365,52 +407,10 @@ EOF
 	[ -e "$OUTDIR/sw-description-images" ] && \
 		reindent "$OUTDIR/sw-description-images"
 
-	indent=2 write_line ");" "files: ("
-
-	for file in $EMBED_CONTAINERS; do
-		# format: version_tag version file
-		write_exec_component "$file" \
-			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
-	done
-
-	for tmp in $PULL_CONTAINERS; do
-		# format: version_tag version container_tag
-		component=${tmp%% *}
-		tmp=${tmp#* }
-		version=${tmp%% *}
-		tmp=${tmp#* }
-		file=$(echo -n "${tmp}" | tr -c '[:alnum:]' '_')
-		file="$OUTDIR/container_$file.pull"
-		[ -e "$file" ] || : > "$file"
-		write_exec_component "$component $version $file" \
-			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$tmp\\\" #"
-	done
-
-	for tmp in $USB_CONTAINERS; do
-		# format: version_tag version filename
-		component=${tmp%% *}
-		tmp=${tmp#* }
-		version=${tmp%% *}
-		tmp=${tmp#* }
-		file="${tmp##*/}"
-		file="${file%.tar*}.tar"
-		link "$tmp" "$OUTDIR/$file"
-		sign "$file"
-		echo "Copy $OUTDIR/$file and $file.sig to USB drive" >&2
-		tmp="$OUTDIR/container_${file%.tar}.usb"
-		[ -e "$tmp" ] || : > "$tmp"
-		write_exec_component "$component $version $tmp" \
-			"${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$file #"
-	done
-
-	for script in $EXTRA_EXECS; do
-		# format: version_tag version filename -- command
-		# filename must not contain ' -- ' for obvious reasons...
-		file="${script%% -- *}"
-		script="${script##* -- }"
-		[ "$file" != "$script" ] || error "$file has no -- separator for command. syntax is 'component version file -- command'"
-		write_exec_component "$file" "$script"
-	done
+	if [ -e "$OUTDIR/sw-description-files" ]; then
+		indent=2 write_line ");" "files: ("
+		reindent "$OUTDIR/sw-description-files"
+	fi
 
 	indent=2 write_line ");" "scripts: ("
 

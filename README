@@ -22,19 +22,6 @@ ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
-EXTRA_EXECS: versioned list of commands to execute through the swupdate
-             exec handler, specifying both filename and command.
-	     The format is lines of "component version path -- command"
-	     path cannot contain the ' -- ' litteral.
-	     As for other EXTRA_* variables, this must use extra_os
-	     if writting to the rootfs is required.
-EMBED_CONTAINERS: versioned list of podman archives.
-                  Same "component version archive_path" format, and
-                  will only be installed if the component is upgraded
-USB_CONTAINERS: Same, except files are not included in swu.
-                USB containers are signed and must be copied along with .sig
-                to USB drive root
-PULL_CONTAINERS: Same, except archive is replaced by an URL to pull from.
 
 
 Glossary:
@@ -50,6 +37,9 @@ Glossary:
     if an update writes to rootfs then it must be named "base_os"
     (in which case OS is wiped first) or "extra_os"/"kernel" (in
     which case the OS is copied over first)
+  - In most case component/version can be skipped (or component set
+    to an empty string), in which case the file will always be
+    reinstalled so this is not recommended.
 
 
 Images are then built by calling the following helpers:
@@ -69,6 +59,29 @@ swdesc_files <name> <component> <version> <path> <file> [<more files>]
 
 swdesc_script <script> <component> <version>
   Run script at the end of the install (use exec for pre script)
+
+swdesc_exec <file> <command> <component> <version>
+  Run command with <file> passed as argument.
+  Note that this is run in the order swdesc is built, so adding
+  a swdesc_exec before e.g. base_os will run before the target
+  OS is setup.
+  In doubt use swdesc_script unless you need to send data this way.
+
+swdesc_embed_container <image archive> <component> <version>
+  Include image and load it into storage
+
+swdesc_usb_container <image archive> <component> <version>
+  Sign image archive and will look for it on USB drive to
+  install with USB update. The image and .sig must be copied
+  to the root of the USB drive together with the swu
+  Note that podman cannot handle compressed image without storing
+  an extra uncompressed copy, so it is best to keep that image
+  uncompressed (not a problem for embedding as swupdate does
+  the decompressing step)
+
+swdesc_pull_container <image url> <component> <version>
+  Pull container from network into storage
+
 
 ## podman_partial_image.sh
 
