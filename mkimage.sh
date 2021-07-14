@@ -8,8 +8,7 @@ EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 PRE_SCRIPT="swupdate_pre.sh"
 POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 FILES="sw-description
-sw-description.sig
-scripts.tar.zst"
+sw-description.sig"
 
 # default default values
 UBOOT_SIZE="4M"
@@ -332,6 +331,15 @@ swdesc_script() {
 		>> "$OUTDIR/sw-description-files"
 }
 
+swdesc_script_nochroot() {
+        local script="$1"
+        local component="$2"
+        local version="$3"
+
+        write_entry "$script" "type = \"postinstall\";" \
+                >> "$OUTDIR/sw-description-scripts"
+}
+
 swdesc_exec() {
 	local file="$1"
 	local cmd="$2"
@@ -386,7 +394,7 @@ swdesc_usb_container() {
 	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$image_usb #" "$component" "$version"
 }
 
-update_scripts_tar() {
+embedded_preinstall_script() {
 	local f update=
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
@@ -396,9 +404,18 @@ update_scripts_tar() {
 			break
 		fi
 	done
-	[ -z "$update" ] && return
+	[ -n "$update" ] \
+		&& tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
 
-	tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
+	swdesc_exec "$OUTDIR/scripts.tar" "sh -c 'rm -rf \${TMPDIR:-/var/tmp}/scripts; \\
+			mkdir \${TMPDIR:-/var/tmp}/scripts && \\
+			cd \${TMPDIR:-/var/tmp}/scripts && \\
+			tar x -vf \$1 && \\
+			./$PRE_SCRIPT' -- "
+}
+
+embedded_postinstall_script() {
+	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
 write_sw_desc() {
@@ -424,16 +441,6 @@ EOF
 
 	indent=2 write_line "" "images: ("
 
-	update_scripts_tar
-	write_entry "$OUTDIR/scripts.tar" "type = \"exec\";" \
-		"installed-directly = true;" "properties: {" \
-		"  cmd: \"sh -c 'rm -rf \${TMPDIR:-/var/tmp}/scripts; \\
-			mkdir \${TMPDIR:-/var/tmp}/scripts && \\
-			cd \${TMPDIR:-/var/tmp}/scripts && \\
-			tar x -vf \$1 && \\
-			./$PRE_SCRIPT' -- \"" \
-		"}"
-
 	[ -e "$OUTDIR/sw-description-images" ] \
 		&& reindent "$OUTDIR/sw-description-images"
 
@@ -446,8 +453,6 @@ EOF
 
 	[ -e "$OUTDIR/sw-description-scripts" ] \
 		&& reindent "$OUTDIR/sw-description-scripts"
-
-	write_entry "$POST_SCRIPT" "type = \"postinstall\";"
 
 	indent=2 write_line ");"
 
@@ -492,16 +497,18 @@ make_image() {
 	local compress=1
 
 	mkdir -p "$OUTDIR"
-	setup_encryption
-
-	# clean and build sw-desc fragments
 	rm -f "$OUTDIR/sw-description-"*
+	setup_encryption
+	embedded_preinstall_script
+
+	# build sw-desc fragments
 	for DESC; do
 		[ -e "$DESC" ] || error "$DESC does not exist"
 		[ "${DESC#/}" = "$DESC" ] && DESC="./$DESC"
 		. "$DESC"
 	done
 
+	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"
 	# XXX debian's libconfig is obsolete and does not allow
 	# trailing commas at the end of lists (allowed from 1.7.0)
