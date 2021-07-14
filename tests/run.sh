@@ -6,7 +6,7 @@ set -ex
 . ./tests/common.sh
 
 build_check tests/spaces "file container_docker_io_tag_with_spaces.pull"
-build_check tests/install_files
+build_check tests/install_files "file-tar somefiles.tar.zst test\ space test\ space.tar"
 
 # install test
 SWUPDATE="${SWUPDATE:-swupdate}"

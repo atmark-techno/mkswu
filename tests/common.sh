@@ -55,6 +55,6 @@ build_check() {
 	./mkimage.sh -o "$name.swu" "$conf.desc"
 
 	for check; do
-		check $check
+		eval check "$check"
 	done
 }
