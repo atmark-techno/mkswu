@@ -8,14 +8,32 @@ set -ex
 build_check tests/spaces "file container_docker_io_tag_with_spaces.pull"
 build_check tests/install_files "file-tar somefiles.tar.zst test\ space test\ space.tar"
 
+sed -e "s/# ENCRYPT_KEYFILE/ENCRYPT_KEYFILE/" mkimage.conf > tests/mkimage-aes.conf
+./genkey.sh --aes --config tests/mkimage-aes.conf
+conf=tests/mkimage-aes.conf build_check tests/aes
+
 # install test
 SWUPDATE="${SWUPDATE:-swupdate}"
 if command -v "$SWUPDATE" > /dev/null; then
+	# tests/install_files
 	rm -rf /tmp/swupdate-test
 	mkdir /tmp/swupdate-test
 	"$SWUPDATE" -i ./tests/out/install_files.swu -v -k swupdate.pem
 	ls /tmp/swupdate-test
-	[ -e "/tmp/swupdate-test/test space" ] || error "Not installed properly"
-	[ -e "/tmp/swupdate-test/test space.tar" ] || error "Not installed properly"
+	[ "$(cat "/tmp/swupdate-test/test space")" = "test content" ] \
+		|| error "test space content does not match"
+	[ "$(tar tf "/tmp/swupdate-test/test space.tar")" = "test space" ] \
+		|| error "test space.tar content does not match"
+	rm -rf /tmp/swupdate-test
+
+	# tests/aes
+	rm -rf /tmp/swupdate-test
+	mkdir /tmp/swupdate-test
+	"$SWUPDATE" -i ./tests/out/aes.swu -v -k swupdate.pem -K swupdate.aes-key
+	ls /tmp/swupdate-test
+	[ "$(cat "/tmp/swupdate-test/test space")" = "test content" ] \
+		|| error "test space content does not match"
+	[ "$(tar tf "/tmp/swupdate-test/test space.tar")" = "test space" ] \
+		|| error "test space.tar content does not match"
 	rm -rf /tmp/swupdate-test
 fi

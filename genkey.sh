@@ -35,8 +35,10 @@ genkey_aes() {
 
 	[ -n "$ENCRYPT_KEYFILE" ] \
 		|| error "Must set ENCRYPT_KEYFILE in config file (or pass --config if required)"
-	[ -s "$ENCRYPT_KEYFILE" ] \
-		&& error "$ENCRYPT_KEYFILE already exists, aborting"
+	if [ -s "$ENCRYPT_KEYFILE" ]; then
+		echo "$ENCRYPT_KEYFILE already exists, skipping"
+		return
+	fi
 
 	echo "Creating encryption keyfile $ENCRYPT_KEYFILE"
 	echo "That file must be copied as /etc/swupdate.aes-key as 0400 on boards"
@@ -53,7 +55,10 @@ genkey_rsa() {
 	local PUBKEY="${PRIVKEY%.key}.pem"
 
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
-	[ -s "$PRIVKEY" ] && error "$PRIVKEY already exists, skipping"
+	if [ -s "$PRIVKEY" ]; then
+		echo "$PRIVKEY already exists, skipping"
+		return
+	fi
 	[ -n "$CN" ] || error "Certificate common name must be provided with --cn <name>"
 
 	echo "Creating signing key $PRIVKEY and its public counterpart ${PUBKEY##*/}"

@@ -45,14 +45,14 @@ check() {
 }
 
 build_check() {
-	local conf="$1"
-	local name="${conf##*/}"
+	local desc="$1"
+	local name="${desc##*/}"
 	local name="tests/out/$name"
 	local check
 	shift
 
 	echo "Building $name"
-	./mkimage.sh -o "$name.swu" "$conf.desc"
+	./mkimage.sh ${conf+-c "$conf"} -o "$name.swu" "$desc.desc"
 
 	for check; do
 		eval check "$check"
