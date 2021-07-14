@@ -2,8 +2,8 @@
 # Careful that it will try to resolve any missing dependency through internet
 # if package cannot be installed directly.
 # Network will not be used if dependencies are satisfied.
-swdesc_exec "examples/linux-at-5.10.9-r3.apk" "apk add --root /target" kernel 5.10.9-r3
+swdesc_exec "examples/linux-at-5.10.9-r3.apk" "apk add --root /target" --version kernel 5.10.9-r3
 
 # it's also possible to have a whole update via internet
 #[ -e examples/apk-add ] || : > examples/apk-add
-#swdesc_exec "examples/apk-add" "apk add --root /target linux-at" kernel 5.10.9-r3
+#swdesc_exec "examples/apk-add" "apk add --root /target linux-at" --version kernel 5.10.9-r3

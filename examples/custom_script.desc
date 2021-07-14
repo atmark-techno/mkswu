@@ -6,5 +6,5 @@
 # Also note, you can name your item anything but rootfs will not be
 # mounted read-write unless the version name is extra_os
 
-#swdesc_script examples/custom_script_rootfs.sh extra_os 1
-swdesc_script examples/custom_script_app.sh custom 1
+#swdesc_script examples/custom_script_rootfs.sh --version extra_os 1
+swdesc_script examples/custom_script_app.sh --version custom 1

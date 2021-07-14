@@ -25,9 +25,9 @@ UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
 FORCE_VERSION: allow building image with no explicit version set
 
 
-Glossary:
+Common options for all helpers:
 
-<component> and <version>:
+--version <component> <version>
   We define arbitrary components for swupdate to only install update
   if required.
   - Updates are installed only if version is higher than what is on
@@ -43,35 +43,35 @@ Glossary:
     reinstalled so this is not recommended.
 
 
-Images are then built by calling the following helpers:
+Images are then built progressively by calling the following helpers:
 
-swdesc_uboot <uboot> [<version>]
+swdesc_uboot <uboot>
   Include uboot file, version is automatically set from file if not set
 
-swdesc_tar <tar file> <component> <version> [<path>]
+swdesc_tar <tar file> [--dest <dest>]
   Extract <tar file> at <path> within new system.
   Destination path must be within /var/app/volumes (or volumes_persistent)
   unless rootfs is targeted (see <component> in Glossary), and defaults
   to / for os variants and /var/app/volumes otherwise
 
-swdesc_files <name> <component> <version> <path> <file> [<more files>]
+swdesc_files <name> [--dest <dest>] <file> [<more files>]
   Copy files directly into <path> (no subdirectory are kept)
   <name> is an arbitrary name (cannot reuse the same name twice)
 
-swdesc_script <script> <component> <version>
+swdesc_script <script>
   Run script at the end of the install (use exec for pre script)
 
-swdesc_exec <file> <command> <component> <version>
+swdesc_exec <file> <command>
   Run command with <file> passed as argument.
   Note that this is run in the order swdesc is built, so adding
   a swdesc_exec before e.g. base_os will run before the target
   OS is setup.
   In doubt use swdesc_script unless you need to send data this way.
 
-swdesc_embed_container <image archive> <component> <version>
+swdesc_embed_container <image archive>
   Include image and load it into storage
 
-swdesc_usb_container <image archive> <component> <version>
+swdesc_usb_container <image archive>
   Sign image archive and will look for it on USB drive to
   install with USB update. The image and .sig must be copied
   to the root of the USB drive together with the swu
@@ -80,7 +80,7 @@ swdesc_usb_container <image archive> <component> <version>
   uncompressed (not a problem for embedding as swupdate does
   the decompressing step)
 
-swdesc_pull_container <image url> <component> <version>
+swdesc_pull_container <image url>
   Pull container from network into storage
 
 

@@ -202,6 +202,74 @@ write_entry_component() {
 	write_entry "$file" "$@"
 }
 
+parse_swdesc() {
+	local ARG SKIP=0
+
+	# first argument tells us what to parse for
+	local CMD="$1"
+	shift
+
+	for ARG; do
+		shift
+		# skip previously used argument
+		# using a for loop means we can't shit ahead
+		if [ "$SKIP" -gt 0 ]; then
+			SKIP=$((SKIP-1))
+			continue
+		fi
+		case "$ARG" in
+		"-v"|"--version")
+			[ $# -lt 2 ] && error "$ARG requires <component> <version> arguments"
+			component="$1"
+			version="$2"
+			SKIP=2
+			;;
+		"-d"|"--dest")
+			[ $# -lt 2 ] && error "$ARG requires <component> <version> arguments"
+			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
+				|| error "$ARG only allowed for swdesc_files and swdesc_tar"
+			dest="$1"
+			SKIP=1
+			;;
+		*)
+			set -- "$@" "$ARG"
+			;;
+		esac
+	done
+	case "$CMD" in
+	uboot)
+		[ $# -eq 1 ] || error "Usage: swdesc_uboot [options] uboot_file"
+		UBOOT="$1"
+		;;
+	tar)
+		[ $# -eq 1 ] || error "Usage: swdesc_tar [options] file.tar"
+		source="$1"
+		;;
+	files)
+		[ $# -gt 1 ] || error "Usage: swdesc_files [options] name file [files...]"
+		file="$1"
+		shift
+		tarfiles_src="$(printf "%s\n" "$@")"
+		;;
+	script)
+		[ $# -eq 1 ] || error "Usage: swdesc_script [options] script"
+		script="$1"
+		;;
+	exec)
+		[ $# -eq 2 ] || error "Usage: swdesc_exec [options] file command"
+		file="$1"
+		cmd="$2"
+		;;
+	*container)
+		[ $# -eq 1 ] || error "Usage: swdesc_$CMD [options] image"
+		image="$1"
+		;;
+	*)
+		error "Unhandled command $CMD"
+		;;
+	esac
+}
+
 pad_uboot() {
 	local file="${UBOOT##*/}"
 	local src="$UBOOT"
@@ -228,33 +296,32 @@ pad_uboot() {
 }
 
 swdesc_uboot() {
-	local UBOOT="$1"
-	local UBOOT_VERSION="$2"
+	local UBOOT component=uboot version
+
+	parse_swdesc uboot "$@"
 
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
 	
-	if [ -n "$UBOOT_VERSION" ]; then
-		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" \
-			|| error "uboot version $UBOOT_VERSION was set, but string not present in $UBOOT: aborting"
+	if [ -n "$version" ]; then
+		strings "$UBOOT" | grep -q -w "$version" \
+			|| error "uboot version $version was set, but string not present in $UBOOT: aborting"
 	else
-		UBOOT_VERSION=$(strings "$UBOOT" |
+		version=$(strings "$UBOOT" |
 				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
-		[ -n "$UBOOT_VERSION" ] \
+		[ -n "$version" ] \
 			|| error "Could not guess uboot version in $UBOOT"
 	fi
 
-	component=uboot version=$UBOOT_VERSION \
-		write_entry "$UBOOT" "type = \"raw\";" \
-			"device = \"/dev/swupdate_ubootdev\";" \
-			>> "$OUTDIR/sw-description-images"
+	write_entry "$UBOOT" "type = \"raw\";" \
+		"device = \"/dev/swupdate_ubootdev\";" \
+		>> "$OUTDIR/sw-description-images"
 }
 
 swdesc_tar() {
-	local source="$1"
-	local component="$2"
-	local version="$3"
-	local dest="$4"
+	local source component="$component" version="$version" dest="$dest"
 	local target="/target"
+
+	parse_swdesc tar "$@"
 
 	case "$DEBUG_SWDESC" in
 	*DEBUG_SKIP_SCRIPTS*) target="";;
@@ -276,35 +343,34 @@ swdesc_tar() {
 }
 
 swdesc_files() {
-	local file="$1"
-	local component="$2"
-	local version="$3"
-	local dest="$4"
-	local tarfile_src tarfile
+	local file component="$component" version="$version" dest="$dest"
+	local tarfile_src tarfile tarfiles_src
 	local update=
-	shift 4
-	# other args are source files
+	local IFS="
+"
+
+	parse_swdesc files "$@"
 
 	[ -e "$OUTDIR/$file.tar" ] || update=1
 
-	for tarfile_src; do
+	set --
+	for tarfile_src in $tarfiles_src; do
 		tarfile="${tarfile_src##*/}"
 		link "$tarfile_src" "$OUTDIR/$tarfile" && update=1
 		[ -z "$update" ] && [ "$tarfile_src" -nt "$OUTDIR/$file.tar" ] && update=1
-		shift
 		set -- "$@" "$tarfile"
 	done
 	[ -z "$update" ] || tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" "$@" \
 		|| error "Could not create tar for $file"
-	swdesc_tar "$OUTDIR/$file.tar" "$component" "$version" "$dest"
+	swdesc_tar "$OUTDIR/$file.tar"
 }
 
 swdesc_script() {
-	local script="$1"
-	local component="$2"
-	local version="$3"
+	local script component="$component" version="$version"
 	local cmd
 	local compress=""
+
+	parse_swdesc script "$@"
 
 	case "$component" in
 	base_os|extra_os*|kernel)
@@ -324,21 +390,16 @@ swdesc_script() {
 }
 
 swdesc_script_nochroot() {
-        local script="$1"
-        local component="$2"
-        local version="$3"
+        local script component="$component" version="$version"
+	parse_swdesc script "$@"
 
         write_entry "$script" "type = \"postinstall\";" \
                 >> "$OUTDIR/sw-description-scripts"
 }
 
 swdesc_exec() {
-	local file="$1"
-	local cmd="$2"
-	local component="$3"
-	local version="$4"
-
-	[ -n "$cmd" ] || error "exec $file has no cmd"
+	local file cmd component="$component" version="$version"
+	parse_swdesc exec "$@"
 
 	write_entry "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
@@ -347,30 +408,27 @@ swdesc_exec() {
 }
 
 swdesc_embed_container() {
-	local image="$1"
-	local component="$2"
-	local version="$3"
+	local image component="$component" version="$version"
 	local compress="force"
+	parse_swdesc embed_container "$@"
 
-	swdesc_exec "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l" "$component" "$version"
+	swdesc_exec "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 }
 
 swdesc_pull_container() {
-	local image="$1"
-	local component="$2"
-	local version="$3"
+	local image component="$component" version="$version"
+	parse_swdesc pull_container "$@"
 
 	local image_file=$(echo -n "$image" | tr -c '[:alnum:]' '_')
 	image_file="$OUTDIR/container_$image_file.pull"
 	[ -e "$image_file" ] || : > "$image_file"
 
-	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$image\\\" #" "$component" "$version"
+	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$image\\\" #"
 }
 
 swdesc_usb_container() {
-	local image="$1"
-	local component="$2"
-	local version="$3"
+	local image component="$component" version="$version"
+	parse_swdesc usb_container "$@"
 
 	local image_usb=${image##*/}
 	if [ "${image_usb%.tar.*}" != "$image_usb" ]; then
@@ -383,11 +441,12 @@ swdesc_usb_container() {
 
 	local image_file="$OUTDIR/container_${image_usb%.tar}.usb"
 	[ -e "$image_file" ] || : > "$image_file"
-	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$image_usb #" "$component" "$version"
+	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$image_usb #"
 }
 
 embedded_preinstall_script() {
 	local f update=
+	local component version
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
 	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
@@ -407,16 +466,16 @@ embedded_preinstall_script() {
 }
 
 embedded_postinstall_script() {
+	local component version
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
 write_sw_desc() {
+	local indent=4
+	local component version
+	local file line tmp tmp2
 	local IFS="
 "
-	local indent=4
-	local component
-	local version
-	local file line tmp tmp2
 
 	[ -n "$HW_COMPAT" ] || error "HW_COMPAT must be set"
 	[ -n "$DESCRIPTION" ] || error "DESCRIPTION must be set"
@@ -508,7 +567,7 @@ sw-description.sig"
 	local compress=1
 
 
-	local SKIP=0
+	local ARG SKIP=0
 	for ARG; do
 		shift
 		# skip previously used argument
