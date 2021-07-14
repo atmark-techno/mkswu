@@ -190,7 +190,7 @@ $file"
 }
 
 write_entry() {
-	local outfile="$OUTDIR/sw-description-$1"
+	local outfile="$OUTDIR/sw-description-$1${board:+-$board}"
 	shift
 
 	write_entry_stdout "$@" > "$outfile"
@@ -300,7 +300,7 @@ swdesc_uboot() {
 	parse_swdesc uboot "$@"
 
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
-	
+
 	if [ -n "$version" ]; then
 		strings "$UBOOT" | grep -q -w "$version" \
 			|| error "uboot version $version was set, but string not present in $UBOOT: aborting"
@@ -473,40 +473,66 @@ embedded_postinstall_script() {
 
 write_sw_desc() {
 	local indent=4
-	local component="$component" version="$version" board="$board"
-	local file line tmp tmp2
+	local file line section board=""
+	local board_hwcompat board_normalize
 	local IFS="
 "
 
-	[ -n "$HW_COMPAT" ] || error "HW_COMPAT must be set"
 	[ -n "$DESCRIPTION" ] || error "DESCRIPTION must be set"
 	cat <<EOF
 software = {
   version = "0.1.0";
   description = "$DESCRIPTION";
-  hardware-compatibility = [ "$HW_COMPAT" ];
 EOF
 
-	for line in $DEBUG_SWDESC; do
-		indent=2 write_line "$line"
+	# handle boards files first
+	for file in "$OUTDIR/sw-description-"*-*; do
+		[ -e "$file" ] || break
+		board="${file#*sw-description-*-}"
+		[ -e "$OUTDIR/sw-description-done-$board" ] && continue
+		touch "$OUTDIR/sw-description-done-$board"
+		board_normalize=$(echo -n "$board" | tr -c '[:alnum:]' '_')
+		board_hwcompat=$(eval "echo \"\$HW_COMPAT_$board_normalize"\")
+		[ -n "$board_hwcompat" ] || board_hwcompat="$HW_COMPAT"
+		[ -n "$board_hwcompat" ] || error "HW_COMPAT or HW_COMPAT_$board_normalize must be set"
+		indent=2 write_line "$board = {"
+		indent=4 write_line "hardware-compatibility = [ \"$board_hwcompat\" ];"
+		for file in "$OUTDIR/sw-description-"*"-$board"; do
+			[ -s "$file" ] || continue
+			section=${file##*sw-description-}
+			section=${section%%-*}
+			indent=4 write_line "$section: ("
+			indent=6 reindent "$file"
+			# also need to include common files if any
+			[ -e "$OUTDIR/sw-description-$section" ] \
+				&& indent=6 reindent "$OUTDIR/sw-description-$section"
+			indent=4 write_line ");"
+		done
+		indent=2 write_line "};"
 	done
 
-	indent=2 write_line "" "images: ("
-
-	[ -e "$OUTDIR/sw-description-images" ] \
-		&& reindent "$OUTDIR/sw-description-images"
-
-	if [ -e "$OUTDIR/sw-description-files" ]; then
-		indent=2 write_line ");" "files: ("
-		reindent "$OUTDIR/sw-description-files"
+	# only set global hardware-compatibility if no board specific ones found
+	if [ -z "$board" ]; then
+		[ -n "$HW_COMPAT" ] || error "HW_COMPAT must be set"
+		echo "  hardware-compatibility = [ \"$HW_COMPAT\" ];"
 	fi
 
-	indent=2 write_line ");" "scripts: ("
+	for file in "$OUTDIR/sw-description-"*; do
+		board="${file##*sw-description-}"
+		section="${board%-*}"
+		[ "$section" = "$board" ] && board="" || board="${board#*-}"
 
-	[ -e "$OUTDIR/sw-description-scripts" ] \
-		&& reindent "$OUTDIR/sw-description-scripts"
 
-	indent=2 write_line ");"
+	done
+
+	# main sections for all boards
+	for section in images files scripts; do
+		file="$OUTDIR/sw-description-$section"
+		[ -e "$file" ] || continue
+		indent=2 write_line "" "$section: ("
+		indent=4 reindent "$OUTDIR/sw-description-$section"
+		indent=2 write_line ");"
+	done
 
 	# Store highest versions in special comments
 	if [ -e "$OUTDIR/sw-description-versions" ]; then
@@ -517,6 +543,11 @@ EOF
 		      "Set FORCE_VERSION=1 to allow building"
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #VERSION_FORCE"
+
+	# and also add extra debug comments
+	for line in $DEBUG_SWDESC; do
+		indent=2 write_line "$line"
+	done
 
 
 	indent=0 write_line "};"
