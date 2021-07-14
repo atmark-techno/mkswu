@@ -88,7 +88,7 @@ compress() {
 	mv "$file_out.tmp" "$file_out"
 }
 
-write_entry() {
+write_entry_stdout() {
 	local file_src="$1"
 	local file="${file_src##*/}"
 	local file_out="$OUTDIR/$file"
@@ -189,17 +189,11 @@ $file"
 	write_line "},"
 }
 
-write_entry_component() {
-	local component
-	local version
-	local file="$1"
+write_entry() {
+	local outfile="$OUTDIR/sw-description-$1"
 	shift
 
-	component="${file%% *}"
-	file="${file#* }"
-	version="${file%% *}"
-	file="${file#* }"
-	write_entry "$file" "$@"
+	write_entry_stdout "$@" > "$outfile"
 }
 
 parse_swdesc() {
@@ -218,6 +212,11 @@ parse_swdesc() {
 			continue
 		fi
 		case "$ARG" in
+		"-b"|"--board")
+			[ $# -lt 1 ] && error "$ARG requires an argument"
+			board="$1"
+			SKIP=1
+			;;
 		"-v"|"--version")
 			[ $# -lt 2 ] && error "$ARG requires <component> <version> arguments"
 			component="$1"
@@ -296,7 +295,7 @@ pad_uboot() {
 }
 
 swdesc_uboot() {
-	local UBOOT component=uboot version
+	local UBOOT component=uboot version board="$board"
 
 	parse_swdesc uboot "$@"
 
@@ -312,13 +311,13 @@ swdesc_uboot() {
 			|| error "Could not guess uboot version in $UBOOT"
 	fi
 
-	write_entry "$UBOOT" "type = \"raw\";" \
-		"device = \"/dev/swupdate_ubootdev\";" \
-		>> "$OUTDIR/sw-description-images"
+	write_entry images "$UBOOT" "type = \"raw\";" \
+		"device = \"/dev/swupdate_ubootdev\";"
 }
 
 swdesc_tar() {
-	local source component="$component" version="$version" dest="$dest"
+	local source dest="$dest"
+	local component="$component" version="$version" board="$board"
 	local target="/target"
 
 	parse_swdesc tar "$@"
@@ -337,13 +336,13 @@ swdesc_tar() {
 			&& error "OS is only writable for base/extra_os updates and $dest is not within volumes";;
 	esac
 
-	write_entry "$source" "type = \"archive\";" \
-		"installed-directly = true;" "path = \"$target$dest\";" \
-		>> "$OUTDIR/sw-description-images"
+	write_entry images "$source" "type = \"archive\";" \
+		"installed-directly = true;" "path = \"$target$dest\";"
 }
 
 swdesc_files() {
-	local file component="$component" version="$version" dest="$dest"
+	local file dest="$dest"
+	local component="$component" version="$version" board="$board"
 	local tarfile_src tarfile tarfiles_src
 	local update=
 	local IFS="
@@ -366,8 +365,8 @@ swdesc_files() {
 }
 
 swdesc_script() {
-	local script component="$component" version="$version"
-	local cmd
+	local script cmd
+	local component="$component" version="$version" board="$board"
 	local compress=""
 
 	parse_swdesc script "$@"
@@ -384,31 +383,31 @@ swdesc_script() {
 		cmd="$cmd --rootfs /target sh"
 		;;
 	esac
-	write_entry "$script" "type = \"exec\";" \
-		"properties: {" "  cmd: \"$cmd\"" "}" \
-		>> "$OUTDIR/sw-description-files"
+	write_entry files "$script" "type = \"exec\";" \
+		"properties: {" "  cmd: \"$cmd\"" "}"
 }
 
 swdesc_script_nochroot() {
-        local script component="$component" version="$version"
+        local script
+	local component="$component" version="$version" board="$board"
 	parse_swdesc script "$@"
 
-        write_entry "$script" "type = \"postinstall\";" \
-                >> "$OUTDIR/sw-description-scripts"
+        write_entry scripts "$script" "type = \"postinstall\";"
 }
 
 swdesc_exec() {
-	local file cmd component="$component" version="$version"
+	local file cmd
+	local component="$component" version="$version" board="$board"
 	parse_swdesc exec "$@"
 
-	write_entry "$file" "type = \"exec\";" \
+	write_entry files "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
-		"  cmd: \"$cmd\"" "}" \
-		>> "$OUTDIR/sw-description-files"
+		"  cmd: \"$cmd\"" "}"
 }
 
 swdesc_embed_container() {
-	local image component="$component" version="$version"
+	local image
+	local component="$component" version="$version" board="$board"
 	local compress="force"
 	parse_swdesc embed_container "$@"
 
@@ -416,7 +415,8 @@ swdesc_embed_container() {
 }
 
 swdesc_pull_container() {
-	local image component="$component" version="$version"
+	local image
+	local component="$component" version="$version" board="$board"
 	parse_swdesc pull_container "$@"
 
 	local image_file=$(echo -n "$image" | tr -c '[:alnum:]' '_')
@@ -427,7 +427,8 @@ swdesc_pull_container() {
 }
 
 swdesc_usb_container() {
-	local image component="$component" version="$version"
+	local image
+	local component="$component" version="$version" board="$board"
 	parse_swdesc usb_container "$@"
 
 	local image_usb=${image##*/}
@@ -446,7 +447,7 @@ swdesc_usb_container() {
 
 embedded_preinstall_script() {
 	local f update=
-	local component version
+	local component version board
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
 	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
@@ -466,13 +467,13 @@ embedded_preinstall_script() {
 }
 
 embedded_postinstall_script() {
-	local component version
+	local component version board
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
 write_sw_desc() {
 	local indent=4
-	local component version
+	local component="$component" version="$version" board="$board"
 	local file line tmp tmp2
 	local IFS="
 "
@@ -565,6 +566,7 @@ sw-description.sig"
 	# default default values
 	local UBOOT_SIZE="4M"
 	local compress=1
+	local component version board dest
 
 
 	local ARG SKIP=0
