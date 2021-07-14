@@ -267,19 +267,24 @@ swdesc_tar() {
 	local component="$2"
 	local version="$3"
 	local dest="$4"
+	local target="/target"
 
+	case "$DEBUG_SWDESC" in
+	*DEBUG_SKIP_SCRIPTS*) target="";;
+	esac
 	case "$component" in
 	base_os|extra_os*|kernel)
-		dest=${dest:-/}
+		dest="${dest:-/}"
 		;;
 	*)
-		dest=${dest:-/var/app/volumes}
-		[ "${dest#/var/app/volumes}" != "$dest" ] \
-			|| error "OS is only writable for base/extra_os updates and $dest is not within volumes"
+		dest="${dest:-/var/app/volumes}"
+		[ "${dest#/var/app/volumes}" = "$dest" ] \
+			&& [ -n "$target" ] \
+			&& error "OS is only writable for base/extra_os updates and $dest is not within volumes";;
 	esac
 
 	write_entry "$source" "type = \"archive\";" \
-		"installed-directly = true;" "path = \"/target$dest\";" \
+		"installed-directly = true;" "path = \"$target$dest\";" \
 		>> "$OUTDIR/sw-description-images"
 }
 
