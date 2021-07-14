@@ -14,7 +14,12 @@ conf=tests/mkimage-aes.conf build_check tests/aes
 
 # install test
 SWUPDATE="${SWUPDATE:-swupdate}"
+HWREV="${HWREV:-/etc/hwrevision}"
 if command -v "$SWUPDATE" > /dev/null; then
+	# setup
+	if [ "$(id -u)" = "0" ] || [ -w "$HWREV" ]; then
+		echo "armadillo yakushima-1.0" > "$HWREV"
+	fi
 	# tests/install_files
 	rm -rf /tmp/swupdate-test
 	mkdir /tmp/swupdate-test
