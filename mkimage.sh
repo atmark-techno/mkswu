@@ -457,11 +457,15 @@ EOF
 	indent=2 write_line ");"
 
 	# Store highest versions in special comments
-	[ -e "$OUTDIR/sw-description-versions" ] \
-		|| error "No versions found: empty image?"
+	if [ -e "$OUTDIR/sw-description-versions" ]; then
+		sort -Vr < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 | \
+			sed -e 's/^/  #VERSION /'
+	elif [ -z "$FORCE_VERSION" ]; then
+		error "No versions found: empty image?" \
+		      "Set FORCE_VERSION=1 to allow building"
+	fi
+	[ -n "$FORCE_VERSION" ] && echo "  #VERSION_FORCE"
 
-	sort -Vr < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 | \
-		sed -e 's/^/  #VERSION /'
 
 	indent=0 write_line "};"
 }
