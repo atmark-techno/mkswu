@@ -81,9 +81,9 @@ encrypt_file() {
 
 setup_encryption() {
 	[ -z "$ENCRYPT_KEYFILE" ] && return
-	[ -e "$ENCRYPT_KEYFILE" ] || \
-		error "AES encryption key $ENCRYPT_KEYFILE was set but not found." \
-		      "Please create it with genkey.sh --aes \"$ENCRYPT_KEYFILE\""
+	[ -e "$ENCRYPT_KEYFILE" ] \
+		|| error "AES encryption key $ENCRYPT_KEYFILE was set but not found." \
+			 "Please create it with genkey.sh --aes \"$ENCRYPT_KEYFILE\""
 	ENCRYPT_KEY=$(cat "$ENCRYPT_KEYFILE")
 	# XXX if sw-description gets encrypted, its iv is here
 	ENCRYPT_KEY="${ENCRYPT_KEY% *}"
@@ -248,13 +248,13 @@ swdesc_uboot() {
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
 	
 	if [ -n "$UBOOT_VERSION" ]; then
-		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" || \
-			error "uboot version $UBOOT_VERSION was set, but string not present in $UBOOT: aborting"
+		strings "$UBOOT" | grep -q -w "$UBOOT_VERSION" \
+			|| error "uboot version $UBOOT_VERSION was set, but string not present in $UBOOT: aborting"
 	else
 		UBOOT_VERSION=$(strings "$UBOOT" |
 				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
-		[ -n "$UBOOT_VERSION" ] || \
-			error "Could not guess uboot version in $UBOOT"
+		[ -n "$UBOOT_VERSION" ] \
+			|| error "Could not guess uboot version in $UBOOT"
 	fi
 
 	component=uboot version=$UBOOT_VERSION \
@@ -434,8 +434,8 @@ EOF
 			./$PRE_SCRIPT' -- \"" \
 		"}"
 
-	[ -e "$OUTDIR/sw-description-images" ] && \
-		reindent "$OUTDIR/sw-description-images"
+	[ -e "$OUTDIR/sw-description-images" ] \
+		&& reindent "$OUTDIR/sw-description-images"
 
 	if [ -e "$OUTDIR/sw-description-files" ]; then
 		indent=2 write_line ");" "files: ("
@@ -444,8 +444,8 @@ EOF
 
 	indent=2 write_line ");" "scripts: ("
 
-	[ -e "$OUTDIR/sw-description-scripts" ] && \
-		reindent "$OUTDIR/sw-description-scripts"
+	[ -e "$OUTDIR/sw-description-scripts" ] \
+		&& reindent "$OUTDIR/sw-description-scripts"
 
 	write_entry "$POST_SCRIPT" "type = \"postinstall\";"
 
