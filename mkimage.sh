@@ -456,7 +456,10 @@ EOF
 
 	indent=2 write_line ");"
 
-	# Keep only highest
+	# Store highest versions in special comments
+	[ -e "$OUTDIR/sw-description-versions" ] \
+		|| error "No versions found: empty image?"
+
 	sort -Vr < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 | \
 		sed -e 's/^/  #VERSION /'
 
