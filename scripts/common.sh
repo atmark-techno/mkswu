@@ -30,7 +30,7 @@ init_common() {
 	fi
 
 	# debug tests
-	grep -q "ATMARK_SKIP_SCRIPTS" "$SWDESC" && exit 0
+	grep -q "DEBUG_SKIP_SCRIPTS" "$SWDESC" && exit 0
 }
 
 init_common

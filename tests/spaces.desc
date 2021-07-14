@@ -1,4 +1,4 @@
-DEBUG_SWDESC="# ATMARK_SKIP_SCRIPTS"
+DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
 touch tests/zoo/test\ space
 tar -C tests/zoo -cf tests/zoo/test\ space.tar test\ space
 swdesc_tar "tests/zoo/test space.tar" extra_os 1 /tmp

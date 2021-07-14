@@ -20,9 +20,9 @@ probe_current() {
 
 init_vars() {
 	# override from sw-description
-	rootdev=$(awk '/ATMARK_FLASH_DEV/ { print $NF }' "$SWDESC")
+	rootdev=$(awk '/DEBUG_FLASH_DEV/ { print $NF }' "$SWDESC")
 	[ -n "$rootdev" ] && mmcblk="$rootdev"
-	rootdev=$(awk '/ATMARK_FLASH_AB/ { print $NF }' "$SWDESC")
+	rootdev=$(awk '/DEBUG_FLASH_AB/ { print $NF }' "$SWDESC")
 	[ -n "$rootdev" ] && ab="$rootdev"
 
 	if [ -z "$mmcblk" ] || [ -z "$ab" ]; then
