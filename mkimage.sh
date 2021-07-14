@@ -1,18 +1,5 @@
 #!/bin/sh
 
-SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
-OUT=out.swu
-OUTDIR=out
-CONFIG="$SCRIPT_DIR/mkimage.conf"
-EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
-PRE_SCRIPT="swupdate_pre.sh"
-POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
-FILES="sw-description
-sw-description.sig"
-
-# default default values
-UBOOT_SIZE="4M"
-
 usage() {
 	echo "Usage: $0 [opts] desc [desc...]"
 	echo
@@ -505,9 +492,62 @@ make_cpio() {
 	) > $OUT
 }
 
-make_image() {
+mkimage() {
+	local SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+	local OUT=out.swu
+	local OUTDIR=out
+	local CONFIG="$SCRIPT_DIR/mkimage.conf"
+	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+	local PRE_SCRIPT="swupdate_pre.sh"
+	local POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
+	local FILES="sw-description
+sw-description.sig"
+
+	# default default values
+	local UBOOT_SIZE="4M"
 	local compress=1
 
+
+	local SKIP=0
+	for ARG; do
+		shift
+		# skip previously used argument
+		# using a for loop means we can't shit ahead
+		if [ "$SKIP" -gt 0 ]; then
+			SKIP=$((SKIP-1))
+			continue
+		fi
+		case "$ARG" in
+		"-c"|"--config")
+			[ $# -lt 1 ] && error "$ARG requires an argument"
+			CONFIG="$1"
+			SKIP=1
+			;;
+		"-o"|"--out")
+			[ $# -lt 1 ] && error "$ARG requires an argument"
+			OUT="$1"
+			OUTDIR="${OUT%.swu}"
+			[ "$OUT" != "$OUTDIR" ] || error "$OUT must end with .swu"
+			SKIP=1
+			;;
+		"-h"|"--help"|"-"*)
+			usage
+			exit 0
+			;;
+		*)
+			set -- "$@" "$ARG"
+			;;
+		esac
+	done
+
+	if [ -n "$CONFIG" ]; then
+		[ -e "$CONFIG" ] || error "$CONFIG does not exist"
+		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
+		. "$CONFIG"
+	fi
+
+
+	# actual image building
 	mkdir -p "$OUTDIR"
 	rm -f "$OUTDIR/sw-description-"*
 	setup_encryption
@@ -528,34 +568,8 @@ make_image() {
 	make_cpio
 }
 
-while [ $# -ge 1 ]; do
-	case "$1" in
-	"-c"|"--config")
-		[ $# -lt 2 ] && error "$1 requires an argument"
-		CONFIG="$2"
-		shift 2
-		;;
-	"-o"|"--out")
-		[ $# -lt 2 ] && error "$1 requires an argument"
-		OUT="$2"
-		OUTDIR="${OUT%.swu}"
-		[ "$OUT" != "$OUTDIR" ] || error "$OUT must end with .swu"
-		shift 2
-		;;
-	"-h"|"--help"|"-"*)
-		usage
-		exit 0
-		;;
-	*)
-		break
-		;;
-	esac
-done
 
-if [ -n "$CONFIG" ]; then
-	[ -e "$CONFIG" ] || error "$CONFIG does not exist"
-	[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
-	. "$CONFIG"
-fi
+# check if sourced: basename $0 should only be mkimage.sh if run directly
+[ "$(basename "$0")" = "mkimage.sh" ] || return
 
-make_image "$@"
+mkimage "$@"
