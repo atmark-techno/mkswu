@@ -19,6 +19,8 @@ probe_current() {
 }
 
 init_vars() {
+	local rootdev
+
 	# override from sw-description
 	rootdev=$(awk '/DEBUG_FLASH_DEV/ { print $NF }' "$SWDESC")
 	[ -n "$rootdev" ] && mmcblk="$rootdev"
