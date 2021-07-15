@@ -14,12 +14,14 @@ ROOTFS_VERSION=${ROOTFS_VERSION%.tar.*}
 # if multiple dashes only keep until first one
 ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
-cat > yakushima-eva.desc <<EOF
+OUTPUT=yakushima-eva-${ROOTFS_VERSION}
+
+cat > "$OUTPUT.desc" <<EOF
 swdesc_uboot imx-boot_yakushima-eva
 swdesc_tar "$ROOTFS" --version base_os "$ROOTFS_VERSION"
 EOF
 
 . ./tests/common.sh
 
-build_check "yakushima-eva" "version uboot 20.*" "version base_os .+"
-mv tests/out/yakushima-eva.swu .
+build_check "$OUTPUT" "version uboot 20.*" "version base_os .+"
+mv "tests/out/$OUTPUT.swu" .
