@@ -7,6 +7,10 @@ copy_uboot() {
 
 	[ "$other_vers" = "$cur_vers" ] && return
 
+	# skip for sd cards
+	[ -e "${mmcblk}boot1" ] || return
+
+
 	echo "Copying uboot over from existing"
 	flash_dev="${mmcblk#/dev/}boot${ab}"
 	cur_dev="${mmcblk}boot$((!ab))"
