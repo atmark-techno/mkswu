@@ -193,7 +193,7 @@ write_entry() {
 	local outfile="$OUTDIR/sw-description-$1${board:+-$board}"
 	shift
 
-	write_entry_stdout "$@" > "$outfile"
+	write_entry_stdout "$@" >> "$outfile"
 }
 
 parse_swdesc() {

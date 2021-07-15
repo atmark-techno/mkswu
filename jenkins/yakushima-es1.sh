@@ -23,5 +23,7 @@ EOF
 
 . ./tests/common.sh
 
-build_check "$OUTPUT" "version uboot 20.*" "version base_os .+"
+build_check "$OUTPUT" "version uboot 20.*" "version base_os .+" \
+	"file imx-boot_yakushima-es1.* '$ROOTFS'" \
+	"swdesc imx-boot_yakushima-es1 '$ROOTFS'"
 mv "tests/out/$OUTPUT.swu" .

@@ -11,7 +11,7 @@ error() {
 
 check() {
 	local type="$1"
-	local file tar
+	local file tar regex
 	local component version real_version
 	shift
 	case "$type" in
@@ -39,6 +39,13 @@ check() {
 
 		[[ "$real_version" =~ $version ]] ||
 			error "Version $component expected $version got $real_version"
+		;;
+	swdesc)
+		[ $# -gt 0 ] || error "swdesc check needs argument"
+		for regex; do
+			grep -q -E "$regex" "$name/sw-description" \
+				|| error "$regex not found in $name/sw-description"
+		done
 		;;
 	*) error "Unknown check type: $type" ;;
 	esac
