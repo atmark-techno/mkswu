@@ -13,6 +13,8 @@ cleanup_uboot() {
 	if [ "$mmcblk" = "/dev/mmcblk2" ]; then 
 		mmc bootpart enable "$((ab+1))" 0 "$mmcblk" \
 			|| error "Could not flip mmc boot flag"
+	else
+		fw_setenv mmcpart $((ab+1))
 	fi
 }
 
