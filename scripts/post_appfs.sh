@@ -32,7 +32,7 @@ swap_btrfs_snapshots() {
 }
 
 cleanup_appfs() {
-	local dev="${mmcblk}p5"
+	local dev="${partdev}5"
 	local basemount
 
 	"$SCRIPTSDIR/podman_cleanup" --storage /target/var/app/storage \

@@ -22,7 +22,7 @@ btrfs_subvol_create() {
 
 
 prepare_appfs() {
-	local dev="${mmcblk}p5"
+	local dev="${partdev}5"
 	local mountopt="compress=zstd:3,space_cache=v2,subvol"
 	local basemount
 

@@ -12,7 +12,7 @@ copy_to_target() {
 }
 
 prepare_rootfs() {
-	local dev="${mmcblk}p$((ab+1))"
+	local dev="${partdev}$((ab+1))"
 	local uptodate
 	local basemount
 	local tmp fail

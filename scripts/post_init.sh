@@ -4,8 +4,12 @@ init() {
 		exit 0
 	fi
 
-	mmcblk="$(cat "$SCRIPTSDIR/mmcblk")" \
-		|| error "Could not read mmcblk from prepare step?!"
+	rootdev="$(cat "$SCRIPTSDIR/rootdev")" \
+		|| error "Could not read rootdev from prepare step?!"
+	partdev="$rootdev"
+	[ "${partdev#/dev/mmcblk}" = "$partdev" ] \
+		|| partdev="${rootdev}p"
+
 	ab="$(cat "$SCRIPTSDIR/ab")" \
 		|| error "Could not read ab from prepare step?!"
 

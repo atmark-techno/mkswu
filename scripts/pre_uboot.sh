@@ -8,12 +8,12 @@ copy_uboot() {
 	[ "$other_vers" = "$cur_vers" ] && return
 
 	# skip for sd cards
-	[ -e "${mmcblk}boot1" ] || return
+	[ -e "${rootdev}boot1" ] || return
 
 
 	echo "Copying uboot over from existing"
-	flash_dev="${mmcblk#/dev/}boot${ab}"
-	cur_dev="${mmcblk}boot$((!ab))"
+	flash_dev="${rootdev#/dev/}boot${ab}"
+	cur_dev="${rootdev}boot$((!ab))"
 	if ! echo 0 > /sys/block/$flash_dev/force_ro \
 		|| ! dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=3 conv=fdatasync status=none \
 		|| ! dd if=/dev/zero of="/dev/$flash_dev" bs=1M seek=3 count=1 conv=fdatasync status=none; then
@@ -36,8 +36,8 @@ prepare_uboot() {
 		return
 	fi
 
-	if [ -e "${mmcblk}boot${ab}" ]; then
-		ln -s "${mmcblk}boot${ab}" /dev/swupdate_ubootdev \
+	if [ -e "${rootdev}boot${ab}" ]; then
+		ln -s "${rootdev}boot${ab}" /dev/swupdate_ubootdev \
 			|| error "failed to create link"
 	else
 		# probably sd card: prepare a loop device 32k into sd card
@@ -45,7 +45,7 @@ prepare_uboot() {
 		# XXX racy
 		ln -s "$(losetup -f)" /dev/swupdate_ubootdev \
 			|| error "failed to create link"
-		losetup -o $((32*1024)) -f "$mmcblk" \
+		losetup -o $((32*1024)) -f "$rootdev" \
 			|| error "failed to setup loop device"
 	fi
 }

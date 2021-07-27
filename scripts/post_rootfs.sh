@@ -39,10 +39,10 @@ post_rootfs() {
 	# as this script will always reset them.
 	if ! grep -q "other_rootfs_uptodate" "/etc/sw-versions" 2>/dev/null; then
 		# fwenv: either generate a new one for mmc, or copy for sd boot (only one env there)
-		if [ "$mmcblk" = "/dev/mmcblk2" ]; then
+		if [ "$rootdev" = "/dev/mmcblk2" ]; then
 			cat > /target/etc/fw_env.config <<EOF
-${mmcblk}boot${ab} 0x3fe000 0x2000
-${mmcblk}boot${ab} 0x3fa000 0x2000
+${rootdev}boot${ab} 0x3fe000 0x2000
+${rootdev}boot${ab} 0x3fa000 0x2000
 EOF
 		else
 			cp /etc/fw_env.config /target/etc/fw_env.config

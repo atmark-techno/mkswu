@@ -1,16 +1,17 @@
 probe_current() {
-	local rootdev
-
 	rootdev=$(sed -ne 's/.*root=\([^ ]*\).*/\1/p' < /proc/cmdline)
 
 	case "$rootdev" in
 	/dev/mmcblk*p*)
-		mmcblk="${rootdev%p*}"
-		if [ "${rootdev##*p}" = "1" ]; then
+		if [ "${rootdev##*[a-z]}" = "1" ]; then
 			ab=1
 		else
 			ab=0
 		fi
+		partdev="${rootdev%[0-9]}"
+		rootdev="$partdev"
+		[ "${partdev#/dev/mmcblk}" = "$partdev" ] \
+			|| rootdev="${partdev%p}"
 		;;
 	*) 
 		error "Could not find what partition linux booted from to guess what to flash"
@@ -19,15 +20,19 @@ probe_current() {
 }
 
 init_vars() {
-	local rootdev
-
+	local debug
 	# override from sw-description
-	rootdev=$(awk '/DEBUG_FLASH_DEV/ { print $NF }' "$SWDESC")
-	[ -n "$rootdev" ] && mmcblk="$rootdev"
-	rootdev=$(awk '/DEBUG_FLASH_AB/ { print $NF }' "$SWDESC")
-	[ -n "$rootdev" ] && ab="$rootdev"
+	debug=$(awk '/DEBUG_FLASH_DEV/ { print $NF }' "$SWDESC")
+	if [ -n "$debug" ]; then
+		rootdev="$debug"
+		partdev="$rootdev"
+		[ "${partdev#/dev/mmcblk}" = "$partdev" ] \
+			|| partdev="${rootdev}p"
+	fi
+	debug=$(awk '/DEBUG_FLASH_AB/ { print $NF }' "$SWDESC")
+	[ -n "$debug" ] && ab="$debug"
 
-	if [ -z "$mmcblk" ] || [ -z "$ab" ]; then
+	if [ -z "$rootdev" ] || [ -z "$ab" ]; then
 		probe_current
 	fi
 
@@ -35,12 +40,12 @@ init_vars() {
 	    || needs_update kernel || needs_update_regex "extra_os.*"; then
 		needs_reboot=1
 	fi
-	printf "Using %s on boot %s. Reboot%s required.\n" "$mmcblk" "$ab" \
+	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
 		"$(needs_reboot || echo " not")"
 }
 
 save_vars() {
-	echo "$mmcblk" > "$SCRIPTSDIR/mmcblk" \
+	echo "$rootdev" > "$SCRIPTSDIR/rootdev" \
 		&& echo "$ab" > "$SCRIPTSDIR/ab" \
 		|| error "Could not save local variables"
 	if needs_reboot; then
