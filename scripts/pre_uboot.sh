@@ -42,11 +42,11 @@ prepare_uboot() {
 	else
 		# probably sd card: prepare a loop device 32k into sd card
 		# so swupdate can write directly
-		# XXX racy
-		ln -s "$(losetup -f)" /dev/swupdate_ubootdev \
-			|| error "failed to create link"
 		losetup -o $((32*1024)) -f "$rootdev" \
 			|| error "failed to setup loop device"
+		dev=$(losetup -a | awk -F : "/${rootdev##*/}/ && /$((32*1024))/ { print \$1 }")
+		ln -s "$dev" /dev/swupdate_ubootdev \
+			|| error "failed to create link"
 	fi
 }
 

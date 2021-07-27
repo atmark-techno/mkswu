@@ -11,7 +11,16 @@ umount_if_mountpoint() {
 	fi
 }
 
+remove_loop() {
+	local dev
+	[ -n "$rootdev" ] || return
+	dev=$(losetup -a | awk -F : "/${rootdev##*/}/ && /$((32*1024))/ { print \$1 }")
+	[ -n "$dev" ] || return
+	losetup -d "$dev"
+}
+
 cleanup() {
+	remove_loop
 	umount_if_mountpoint /target/var/app/storage/overlay
 	umount_if_mountpoint /target/var/app/storage
 	umount_if_mountpoint /target/var/app/volumes
