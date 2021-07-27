@@ -63,7 +63,7 @@ prepare_rootfs() {
 
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
-	mkfs.ext4 -F "$dev" || error "Could not reformat $dev"
+	mkfs.ext4 -L rootfs_${ab} -F "$dev" || error "Could not reformat $dev"
 	mount "$dev" "/target" || error "Could not mount $dev"
 
 	mkdir -p /target/boot /target/mnt /target/target

@@ -51,6 +51,11 @@ EOF
 		# adjust ab_boot
 		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab
 
+		if [ -e /target/boot/extlinux.conf ]; then
+			sed -i -e "s/root=[^ ]*/root=LABEL=rootfs_${ab}/" /target/boot/extlinux.conf
+			extlinux -i /target/boot
+		fi
+
 		# keep same storage.conf as current if using link
 		if storage_conf_link=$(readlink /etc/containers/storage.conf) \
 		    && [ "$storage_conf_link" != "$(readlink /target/etc/containers/storage.conf)" ] \
