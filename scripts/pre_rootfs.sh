@@ -13,9 +13,8 @@ copy_to_target() {
 
 prepare_rootfs() {
 	local dev="${partdev}$((ab+1))"
-	local uptodate
-	local basemount
-	local tmp fail
+	local uptodate basemount
+	local tmp fail extlinux
 
 	# We need /target to exist for update, try hard to create it
 	# Note:
@@ -63,7 +62,8 @@ prepare_rootfs() {
 
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
-	mkfs.ext4 -L rootfs_${ab} -F "$dev" || error "Could not reformat $dev"
+	[ -e "/boot/extlinux.conf" ] && extlinux=1
+	mkfs.ext4 ${extlinux:+-O "^64bit"} -L rootfs_${ab} -F "$dev" || error "Could not reformat $dev"
 	mount "$dev" "/target" || error "Could not mount $dev"
 
 	mkdir -p /target/boot /target/mnt /target/target

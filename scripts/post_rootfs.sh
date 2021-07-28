@@ -53,7 +53,7 @@ EOF
 
 		if [ -e /target/boot/extlinux.conf ]; then
 			sed -i -e "s/root=[^ ]*/root=LABEL=rootfs_${ab}/" /target/boot/extlinux.conf
-			extlinux -i /target/boot
+			extlinux -i /target/boot || error "Could not reinstall bootloader"
 		fi
 
 		# keep same storage.conf as current if using link
