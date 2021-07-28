@@ -1,7 +1,7 @@
 probe_current() {
 	rootdev=$(sed -ne 's/.*root=\([^ ]*\).*/\1/p' < /proc/cmdline)
 
-	[ -e "$rootdev" ] || rootdev="$(findfs $rootdev)"
+	[ -e "$rootdev" ] || rootdev="$(findfs "$rootdev")"
 	[ -e "$rootdev" ] || rootdev="/dev/$(readlink /dev/root)"
 	[ -e "$rootdev" ] || error "Could not find what partition linux booted from to guess what to flash"
 
