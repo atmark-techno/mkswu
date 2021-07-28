@@ -1,22 +1,19 @@
 probe_current() {
 	rootdev=$(sed -ne 's/.*root=\([^ ]*\).*/\1/p' < /proc/cmdline)
 
-	case "$rootdev" in
-	/dev/mmcblk*p*)
-		if [ "${rootdev##*[a-z]}" = "1" ]; then
-			ab=1
-		else
-			ab=0
-		fi
-		partdev="${rootdev%[0-9]}"
-		rootdev="$partdev"
-		[ "${partdev#/dev/mmcblk}" = "$partdev" ] \
-			|| rootdev="${partdev%p}"
-		;;
-	*) 
-		error "Could not find what partition linux booted from to guess what to flash"
-		;;
-	esac
+	[ -e "$rootdev" ] || rootdev="$(findfs $rootdev)"
+	[ -e "$rootdev" ] || rootdev="/dev/$(readlink /dev/root)"
+	[ -e "$rootdev" ] || error "Could not find what partition linux booted from to guess what to flash"
+
+	if [ "${rootdev##*[a-z]}" = "1" ]; then
+		ab=1
+	else
+		ab=0
+	fi
+	partdev="${rootdev%[0-9]}"
+	rootdev="$partdev"
+	[ "${partdev#/dev/mmcblk}" = "$partdev" ] \
+		|| rootdev="${partdev%p}"
 }
 
 init_vars() {
