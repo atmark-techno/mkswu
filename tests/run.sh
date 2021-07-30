@@ -5,7 +5,7 @@ set -ex
 
 . ./tests/common.sh
 
-build_check tests/spaces "file container_docker_io_tag_with_spaces.pull"
+build_check tests/spaces "file test\ space.tar.zst"
 build_check tests/install_files "file-tar somefiles.tar.zst test\ space test\ space.tar"
 
 sed -e "s/# ENCRYPT_KEYFILE/ENCRYPT_KEYFILE/" mkimage.conf > tests/mkimage-aes.conf

@@ -1,4 +1,4 @@
 # add your public key in examples/enable_sshd/root/.ssh/authorized_keys and
 # $ tar -C examples/enable_sshd -cf examples/enable_sshd.tar .
 swdesc_tar examples/enable_sshd.tar --version extra_os.sshd 1
-swdesc_script examples/enable_sshd_genkeys.sh --version extra_os.sshd 1
+swdesc_command "ssh-keygen -A" --version extra_os.sshd 1

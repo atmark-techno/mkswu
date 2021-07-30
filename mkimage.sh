@@ -250,6 +250,10 @@ parse_swdesc() {
 		shift
 		tarfiles_src="$(printf "%s\n" "$@")"
 		;;
+	command)
+		[ $# -eq 1 ] || error "Usage: swdesc_command [options] cmd"
+		cmd="$1"
+		;;
 	script)
 		[ $# -eq 1 ] || error "Usage: swdesc_script [options] script"
 		script="$1"
@@ -347,7 +351,6 @@ swdesc_files() {
 	local update=
 	local IFS="
 "
-
 	parse_swdesc files "$@"
 
 	[ -e "$OUTDIR/$file.tar" ] || update=1
@@ -364,40 +367,10 @@ swdesc_files() {
 	swdesc_tar "$OUTDIR/$file.tar"
 }
 
-swdesc_script() {
-	local script cmd
-	local component="$component" version="$version" board="$board"
-	local compress=""
-
-	parse_swdesc script "$@"
-
-	case "$component" in
-	base_os|extra_os*|kernel)
-		cmd="podman run --rm --rootfs /target sh"
-		;;
-	*)
-		# If target is read-only we need special handling to run (silly podman tries
-		# to write to / otherwise) but keep volumes writable
-		cmd="podman run --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
-		cmd="$cmd -v /target/var/app/volumes_persistent:/var/app/volumes_persistent"
-		cmd="$cmd --rootfs /target sh"
-		;;
-	esac
-	write_entry files "$script" "type = \"exec\";" \
-		"properties: {" "  cmd: \"$cmd\"" "}"
-}
-
-swdesc_script_nochroot() {
-        local script
-	local component="$component" version="$version" board="$board"
-	parse_swdesc script "$@"
-
-        write_entry scripts "$script" "type = \"postinstall\";"
-}
-
 swdesc_exec() {
 	local file cmd
 	local component="$component" version="$version" board="$board"
+
 	parse_swdesc exec "$@"
 
 	write_entry files "$file" "type = \"exec\";" \
@@ -405,30 +378,105 @@ swdesc_exec() {
 		"  cmd: \"$cmd\"" "}"
 }
 
+swdesc_exec_chroot() {
+	local file cmd chroot_cmd
+	local component="$component" version="$version" board="$board"
+
+	parse_swdesc exec "$@"
+
+	case "$component" in
+	base_os|extra_os*|kernel)
+		chroot_cmd="podman run --rm --rootfs /target $cmd"
+		;;
+	*)
+		# If target is read-only we need special handling to run (silly podman tries
+		# to write to / otherwise) but keep volumes writable
+		chroot_cmd="podman run --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
+		chroot_cmd="$chroot_cmd -v /target/var/app/volumes_persistent:/var/app/volumes_persistent"
+		chroot_cmd="$chroot_cmd --rootfs /target $cmd"
+		;;
+	esac
+
+	write_entry files "$file" "type = \"exec\";" \
+		"installed-directly = true;" "properties: {" \
+		"  cmd: \"$chroot_cmd\"" "}"
+}
+
+swdesc_command() {
+	local cmd cmd_file
+	local component="$component" version="$version" board="$board"
+	local compress=""
+
+	parse_swdesc command "$@"
+
+	cmd_file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_' | head -c 30)"
+	cmd_file="$cmd_file_$(echo $cmd | sha1sum | cut -d' ' -f1)"
+	[ -e "$cmd_file" ] || : > "$cmd_file"
+
+	swdesc_exec_chroot "$cmd_file" "$cmd #"
+}
+
+swdesc_command_nochroot() {
+	local cmd cmd_file
+	local component="$component" version="$version" board="$board"
+	local compress=""
+
+	parse_swdesc command "$@"
+
+	cmd_file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
+	if [ "${#cmd_file}" -gt 40 ]; then
+		cmd_file="$(echo -n "$cmd_file" | head -c 20)..$(echo -n "$cmd_file" | tail -c 20)"
+	fi
+	cmd_file="${cmd_file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
+	cmd_file="$OUTDIR/${cmd_file}"
+	[ -e "$cmd_file" ] || : > "$cmd_file"
+
+	swdesc_exec "$cmd_file" "$cmd #"
+}
+
+swdesc_script() {
+	local script cmd
+	local component="$component" version="$version" board="$board"
+	local compress=""
+
+	parse_swdesc script "$@"
+
+	swdesc_exec_chroot "$script" "sh"
+}
+
+swdesc_script_nochroot() {
+	local script
+	local component="$component" version="$version" board="$board"
+
+	parse_swdesc script "$@"
+
+	swdesc_exec "$script" "sh"
+}
+
+
 swdesc_embed_container() {
 	local image
 	local component="$component" version="$version" board="$board"
 	local compress="force"
+
 	parse_swdesc embed_container "$@"
 
 	swdesc_exec "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 }
 
 swdesc_pull_container() {
-	local image
+	local image image_file
 	local component="$component" version="$version" board="$board"
+
 	parse_swdesc pull_container "$@"
 
-	local image_file=$(echo -n "$image" | tr -c '[:alnum:]' '_')
-	image_file="$OUTDIR/container_$image_file.pull"
-	[ -e "$image_file" ] || : > "$image_file"
-
-	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$image\\\" #"
+	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage \\\"$image\\\" #"
 }
 
 swdesc_usb_container() {
 	local image
 	local component="$component" version="$version" board="$board"
+
 	parse_swdesc usb_container "$@"
 
 	local image_usb=${image##*/}
@@ -440,9 +488,7 @@ swdesc_usb_container() {
 	sign "$image_usb"
 	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive" >&2
 
-	local image_file="$OUTDIR/container_${image_usb%.tar}.usb"
-	[ -e "$image_file" ] || : > "$image_file"
-	swdesc_exec "$image_file" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$image_usb #"
+	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage --pubkey /etc/swupdate.pem -l /mnt/$image_usb"
 }
 
 embedded_preinstall_script() {

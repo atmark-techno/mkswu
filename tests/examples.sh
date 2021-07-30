@@ -10,11 +10,11 @@ build_check examples/custom_script "file custom_script_app.sh scripts.tar.zst" "
 
 # sshd: build tar
 tar -C examples/enable_sshd -cf examples/enable_sshd.tar .
-build_check examples/enable_sshd "version extra_os.sshd .+" "file enable_sshd_genkeys.sh" "file-tar enable_sshd.tar.zst ./etc/runlevels/default/sshd ./root/.ssh/authorized_keys" "swdesc enable_sshd_genkeys.sh enable_sshd.tar.zst"
+build_check examples/enable_sshd "version extra_os.sshd .+" "file-tar enable_sshd.tar.zst ./etc/runlevels/default/sshd ./root/.ssh/authorized_keys" "swdesc ssh-keygen enable_sshd.tar.zst"
 
 # pull container: build tar
 tar -C examples/nginx_start -cf examples/nginx_start.tar .
-build_check examples/pull_container_nginx "file-tar nginx_start.tar.zst ./etc/atmark/containers/nginx.conf" "file container_docker_io_nginx_alpine.pull" "swdesc nginx_start.tar.zst docker.io/nginx"
+build_check examples/pull_container_nginx "file-tar nginx_start.tar.zst ./etc/atmark/containers/nginx.conf" "swdesc nginx_start.tar.zst docker.io/nginx"
 
 # uboot: prereq fullfilled by yakushima tar
 build_check examples/uboot "file imx-boot_yakushima-.*.zst" "version uboot 202.*" "swdesc imx-boot_yakushima-"

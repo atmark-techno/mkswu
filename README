@@ -58,8 +58,11 @@ swdesc_files <name> [--dest <dest>] <file> [<more files>]
   Copy files directly into <path> (no subdirectory are kept)
   <name> is an arbitrary name (cannot reuse the same name twice)
 
+swdesc_command "<cmd>"
+  Run command inside new root
+
 swdesc_script <script>
-  Run script at the end of the install (use exec for pre script)
+  Run script inside new root
 
 swdesc_exec <file> <command>
   Run command with <file> passed as argument.
