@@ -367,7 +367,7 @@ swdesc_files() {
 	swdesc_tar "$OUTDIR/$file.tar"
 }
 
-swdesc_exec() {
+swdesc_exec_nochroot() {
 	local file cmd
 	local component="$component" version="$version" board="$board"
 
@@ -378,7 +378,7 @@ swdesc_exec() {
 		"  cmd: \"$cmd\"" "}"
 }
 
-swdesc_exec_chroot() {
+swdesc_exec() {
 	local file cmd chroot_cmd
 	local component="$component" version="$version" board="$board"
 
@@ -413,7 +413,7 @@ swdesc_command() {
 	cmd_file="$cmd_file_$(echo $cmd | sha1sum | cut -d' ' -f1)"
 	[ -e "$cmd_file" ] || : > "$cmd_file"
 
-	swdesc_exec_chroot "$cmd_file" "$cmd #"
+	swdesc_exec "$cmd_file" "$cmd #"
 }
 
 swdesc_command_nochroot() {
@@ -431,7 +431,7 @@ swdesc_command_nochroot() {
 	cmd_file="$OUTDIR/${cmd_file}"
 	[ -e "$cmd_file" ] || : > "$cmd_file"
 
-	swdesc_exec "$cmd_file" "$cmd #"
+	swdesc_exec_nochroot "$cmd_file" "$cmd #"
 }
 
 swdesc_script() {
@@ -441,7 +441,7 @@ swdesc_script() {
 
 	parse_swdesc script "$@"
 
-	swdesc_exec_chroot "$script" "sh"
+	swdesc_exec "$script" "sh"
 }
 
 swdesc_script_nochroot() {
@@ -450,7 +450,7 @@ swdesc_script_nochroot() {
 
 	parse_swdesc script "$@"
 
-	swdesc_exec "$script" "sh"
+	swdesc_exec_nochroot "$script" "sh"
 }
 
 
@@ -461,7 +461,7 @@ swdesc_embed_container() {
 
 	parse_swdesc embed_container "$@"
 
-	swdesc_exec "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
+	swdesc_exec_nochroot "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/app/storage -l"
 }
 
 swdesc_pull_container() {
@@ -505,7 +505,7 @@ embedded_preinstall_script() {
 	[ -n "$update" ] \
 		&& tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
 
-	swdesc_exec "$OUTDIR/scripts.tar" "sh -c 'rm -rf \${TMPDIR:-/var/tmp}/scripts; \\
+	swdesc_exec_nochroot "$OUTDIR/scripts.tar" "sh -c 'rm -rf \${TMPDIR:-/var/tmp}/scripts; \\
 			mkdir \${TMPDIR:-/var/tmp}/scripts && \\
 			cd \${TMPDIR:-/var/tmp}/scripts && \\
 			tar x -vf \$1 && \\

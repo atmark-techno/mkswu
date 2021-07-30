@@ -65,11 +65,15 @@ swdesc_script <script>
   Run script inside new root
 
 swdesc_exec <file> <command>
-  Run command with <file> passed as argument.
+  Run command with <file> passed as argument inside the new root
   Note that this is run in the order swdesc is built, so adding
   a swdesc_exec before e.g. base_os will run before the target
-  OS is setup.
+  OS is setup and likely not work
   In doubt use swdesc_script unless you need to send data this way.
+
+swdesc_command_nochroot, swdesc_script_nochroot, swdesc_exec_nochroot
+  Same as the above but from the currently running os point of view.
+  You probably do not need this.
 
 swdesc_embed_container <image archive>
   Include image and load it into storage
