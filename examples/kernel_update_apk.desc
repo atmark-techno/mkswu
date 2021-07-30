@@ -6,4 +6,4 @@ swdesc_exec "examples/linux-at-5.10.9-r3.apk" "apk add --root /target" --version
 
 # it's also possible to have a whole update via internet
 #[ -e examples/apk-add ] || : > examples/apk-add
-#swdesc_exec "examples/apk-add" "apk add --root /target linux-at" --version kernel 5.10.9-r3
+#swdesc_exec "examples/apk-add" "apk add --root /target linux-at #" --version kernel 5.10.9-r3
