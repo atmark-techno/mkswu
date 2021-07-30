@@ -16,9 +16,14 @@ cleanup_uboot() {
 	elif [ -s /etc/fw_env.config ]; then
 		# if uboot env is supported, use it (e.g. sd card)
 		fw_setenv mmcpart $((ab+1))
-	else
+	elif [ -e /target/boot/extlinux.conf ]; then
 		# assume gpt boot e.g. extlinux
 		sgdisk --attributes=$((ab+1)):set:2 --attributes=$((!ab+1)):clear:2 "$rootdev"
+
+		sed -i -e "s/root=[^ ]*/root=LABEL=rootfs_${ab}/" /target/boot/extlinux.conf
+		extlinux -i /target/boot || error "Could not reinstall bootloader"
+	else
+		error "Do not know how to A/B switch this system"
 	fi
 }
 
