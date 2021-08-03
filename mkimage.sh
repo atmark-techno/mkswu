@@ -10,6 +10,7 @@ usage() {
 
 error() {
 	local line
+	echo -n "ERROR: " >&2
 	for line; do
 		echo "$line" >&2
 	done
@@ -38,12 +39,24 @@ link() {
 
 	src=$(readlink -e "$src") || error "Cannot find source file: $1"
 
-	if [ -e "$dest" ]; then
+	if [ -h "$dest" ]; then
 		existing=$(readlink "$dest")
 		[ "$src" = "$existing" ] && return 1
-		rm -f "$dest"
+		rm -f "$dest" || error "Could not remove previous link at $dest"
+	elif [ -e "$dest" ]; then
+		cmp "$src" "$dest" > /dev/null && return 1
+		rm -f "$dest" || error "Could not remove previous file at $dest"
 	fi
-	ln -s "$(readlink -e "$src")" "$dest" || error "Could not link to $src"
+
+	# files with hardlinks will mess up the order within the cpio,
+	# and thus change the order in which components are installed
+	# (e.g. rootfs after post script...)
+	# workaround by copying file (reflinks are ok) instead if required
+	if [ "$(stat -c %h "$src")" != 1 ]; then
+		cp --reflink=auto "$src" "$dest" || error "Could not copy $src to $dest"
+	else
+		ln -s "$(readlink -e "$src")" "$dest" || error "Could not link $dest to $src"
+	fi
 }
 
 gen_iv() {
@@ -626,7 +639,11 @@ make_cpio() {
 	(
 		cd "$OUTDIR" || error "Could not enter $OUTDIR"
 		echo "$FILES" | cpio -ov -H crc -L
-	) > $OUT
+	) > "$OUT"
+
+	CPIO_FILES=$(cpio -t --quiet < "$OUT")
+	[ "$CPIO_FILES" = "$FILES" ] \
+		|| error "cpio does not contain files we requested (in the order we requested): check $OUT"
 }
 
 mkimage() {
