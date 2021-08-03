@@ -1,6 +1,9 @@
 #!/bin/sh
 
-SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+# SC2039: local is ok for dash and busybox ash
+# SC1090: non-constant source directives
+# shellcheck disable=SC2039,SC1090
+
 CONFIG=./mkimage.conf
 AES=
 PLAIN=

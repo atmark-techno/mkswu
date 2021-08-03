@@ -14,13 +14,13 @@ copy_uboot() {
 	echo "Copying uboot over from existing"
 	flash_dev="${rootdev#/dev/}boot${ab}"
 	cur_dev="${rootdev}boot$((!ab))"
-	if ! echo 0 > /sys/block/$flash_dev/force_ro \
+	if ! echo 0 > "/sys/block/$flash_dev/force_ro" \
 		|| ! dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=3 conv=fdatasync status=none \
 		|| ! dd if=/dev/zero of="/dev/$flash_dev" bs=1M seek=3 count=1 conv=fdatasync status=none; then
-		echo 1 > /sys/block/$flash_dev/force_ro
+		echo 1 > "/sys/block/$flash_dev/force_ro"
 		error "Could not copy uboot over"
 	fi
-	echo 1 > /sys/block/$flash_dev/force_ro
+	echo 1 > "/sys/block/$flash_dev/force_ro"
 }
 
 prepare_uboot() {

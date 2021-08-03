@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# SC2039: local is ok for dash and busybox ash
+# shellcheck disable=SC2039
+
 error() {
 	echo "$@" >&2
 	exit 1

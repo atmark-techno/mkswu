@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# SC2039: local is ok for dash and busybox ash
+# SC1090: non-constant source directives
+# SC2165/SC2167: use same variable for nested loops
+# shellcheck disable=SC2039,SC1090,SC2165,SC2167
+
 usage() {
 	echo "Usage: $0 [opts] desc [desc...]"
 	echo
@@ -137,7 +142,7 @@ write_entry_stdout() {
 			;;
 		*)
 			# do not compress files < 128 bytes
-			if [ $(stat -c "%s" "$file_src") -lt 128 ]; then
+			if [ "$(stat -c "%s" "$file_src")" -lt 128 ]; then
 				compress=""
 			else
 				compress=zstd
@@ -422,8 +427,12 @@ swdesc_command() {
 
 	parse_swdesc command "$@"
 
-	cmd_file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_' | head -c 30)"
-	cmd_file="$cmd_file_$(echo $cmd | sha1sum | cut -d' ' -f1)"
+	cmd_file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
+	if [ "${#cmd_file}" -gt 40 ]; then
+		cmd_file="$(echo -n "$cmd_file" | head -c 20)..$(echo -n "$cmd_file" | tail -c 20)"
+	fi
+	cmd_file="${cmd_file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
+	cmd_file="$OUTDIR/${cmd_file}"
 	[ -e "$cmd_file" ] || : > "$cmd_file"
 
 	swdesc_exec "$cmd_file" "$cmd #"
@@ -478,7 +487,7 @@ swdesc_embed_container() {
 }
 
 swdesc_pull_container() {
-	local image image_file
+	local image
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc pull_container "$@"
@@ -647,7 +656,8 @@ make_cpio() {
 }
 
 mkimage() {
-	local SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+	local SCRIPT_DIR
+	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
 	local OUT=out.swu
 	local OUTDIR=out
 	local CONFIG="$SCRIPT_DIR/mkimage.conf"
