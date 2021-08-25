@@ -34,7 +34,8 @@ init_vars() {
 	fi
 
 	if needs_update uboot || needs_update base_os \
-	    || needs_update kernel || needs_update_regex "extra_os.*"; then
+	    || needs_update kernel || needs_update_regex "extra_os.*" \
+	    || ! grep -q "NO_REBOOT_ALLOW" "$SWDESC"; then
 		needs_reboot=1
 	fi
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \

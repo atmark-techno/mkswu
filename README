@@ -22,7 +22,10 @@ ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
-FORCE_VERSION: allow building image with no explicit version set
+FORCE_VERSION: allow building image with no explicit version set.
+NO_REBOOT_ALLOW: allow restarting containers without rebooting.
+                 Note this is not compatible with hawkbit updates
+                 that require reboot to report installation success.
 
 
 Common options for all helpers:

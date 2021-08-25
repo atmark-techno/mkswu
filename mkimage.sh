@@ -611,6 +611,7 @@ EOF
 		      "Set FORCE_VERSION=1 to allow building"
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #VERSION_FORCE"
+	[ -n "$NO_REBOOT_ALLOW" ] && echo "  #NO_REBOOT_ALLOW"
 
 	# and also add extra debug comments
 	for line in $DEBUG_SWDESC; do
