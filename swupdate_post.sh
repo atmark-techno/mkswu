@@ -10,6 +10,7 @@ SCRIPTSDIR="$TMPDIR/scripts"
 . "$SCRIPTSDIR/post_appfs.sh"
 . "$SCRIPTSDIR/post_rootfs.sh"
 . "$SCRIPTSDIR/post_uboot.sh"
+. "$SCRIPTSDIR/post_success.sh"
 
 cleanup
 rm -rf "$SCRIPTSDIR"
