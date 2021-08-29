@@ -48,7 +48,7 @@ cleanup_appfs() {
 	fi
 
 	if ! needs_reboot; then
-		basemount=$(mktemp -d -t btrfs-root.XXXXXX)
+		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
 		mount "$dev" "$basemount" || error "Could not mount app root"
 
 		# We're not rebooting, since we got here there was something
