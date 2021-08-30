@@ -18,4 +18,7 @@ rm -rf "$SCRIPTSDIR"
 if needs_reboot || [ -n "$force_reboot" ]; then
 	echo "swupdate triggering reboot!" >&2
 	reboot
+elif [ -n "$SWUPDATE_HAWKBIT" ]; then
+	echo "Restarting swupdate-hawkbit service" >&2
+	rc-service swupdate-hawkbit restart
 fi
