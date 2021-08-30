@@ -8,3 +8,7 @@
 
 #swdesc_script examples/custom_script_rootfs.sh --version extra_os 1
 swdesc_script examples/custom_script_app.sh --version custom 1
+
+# allow installing update without reboot for app-only update
+# (containers will be restarted)
+NO_REBOOT_ALLOW=1

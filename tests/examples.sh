@@ -6,7 +6,7 @@ set -e
 . ./tests/common.sh
 
 # custom script: no prereq
-build_check examples/custom_script "file custom_script_app.sh scripts.tar.zst" "swdesc scripts.tar.zst custom_script.app.sh"
+build_check examples/custom_script "file custom_script_app.sh scripts.tar.zst" "swdesc scripts.tar.zst custom_script.app.sh NO_REBOOT_ALLOW"
 
 # sshd: build tar
 tar -C examples/enable_sshd -cf examples/enable_sshd.tar .
