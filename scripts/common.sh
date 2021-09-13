@@ -21,10 +21,10 @@ remove_loop() {
 
 cleanup() {
 	remove_loop
-	umount_if_mountpoint /target/var/app/storage/overlay
-	umount_if_mountpoint /target/var/app/storage
+	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
+	umount_if_mountpoint /target/var/lib/containers/storage_readonly
+	umount_if_mountpoint /target/var/app/rollback/volumes
 	umount_if_mountpoint /target/var/app/volumes
-	umount_if_mountpoint /target/var/app/volumes_persistent
 	umount_if_mountpoint /target/var/tmp
 	umount_if_mountpoint /target
 }

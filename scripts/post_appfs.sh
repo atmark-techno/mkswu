@@ -24,10 +24,10 @@ swap_btrfs_snapshots() {
 	# so stop all countainers and restart them
 	podman kill -a
 	podman rm -a
-	umount /var/app/storage || return 1
-	mount /var/app/storage || return 1
-	umount /var/app/volumes || return 1
-	mount /var/app/volumes || return 1
+	umount /var/lib/containers/storage_readonly || return 1
+	mount /var/lib/containers/storage_readonly || return 1
+	umount /var/app/rollback/volumes || return 1
+	mount /var/app/rollback/volumes || return 1
 	podman_start -a || return 1
 }
 
@@ -35,17 +35,13 @@ cleanup_appfs() {
 	local dev="${partdev}5"
 	local basemount
 
-	"$SCRIPTSDIR/podman_cleanup" --storage /target/var/app/storage \
+	"$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
 		--confdir /target/etc/atmark/containers
 
 	# sometimes podman mounts this on pull?
-	umount_if_mountpoint /target/var/app/storage/overlay
+	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
 
-	# set storage ro unless main storage
-	if [ "$(readlink /etc/containers/storage.conf)" != "storage.conf-persistent" ] &&
-	   ! grep -q 'graphroot = "/var/app/storage' /target/etc/atmark/containers-storage.conf 2>/dev/null; then
-		btrfs property set -ts /target/var/app/storage ro true
-	fi
+	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 
 	if ! needs_reboot; then
 		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"

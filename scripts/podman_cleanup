@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PODMAN_ROOT=/var/app/storage
+PODMAN_ROOT=/var/lib/containers/storage_readonly
 CONFDIR=/etc/atmark/containers
 
 error() {

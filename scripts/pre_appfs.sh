@@ -27,8 +27,10 @@ prepare_appfs() {
 	local basemount
 
 	basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
-	mkdir -p /target/var/app/storage /target/var/app/volumes
-	mkdir -p /target/var/app/volumes_persistent /target/var/tmp
+	mkdir -p /target/var/lib/containers/storage_readonly
+	mkdir -p /target/var/lib/containers/storage
+	mkdir -p /target/var/app/rollback/volumes
+	mkdir -p /target/var/app/volumes /target/var/tmp
 
 	if ! mount "$dev" "$basemount" >/dev/null 2>&1; then
 		echo "Reformating $dev (app)"
@@ -36,8 +38,7 @@ prepare_appfs() {
 		mount "$dev" "$basemount" || error "Could not mount $dev"
 	fi
 
-	if [ "$(readlink /etc/containers/storage.conf)" = "storage.conf-persistent" ] ||
-	    grep -q 'graphroot = "/var/app/storage' /target/etc/atmark/containers-storage.conf 2>/dev/null; then
+	if grep -q 'graphroot = "/var/lib/containers/storage' /target/etc/containers/storage.conf 2>/dev/null; then
 		echo "Persistent storage is used for podman, stopping all containers before taking snapshot" >&2
 		echo "This is only for development, do not use this mode for production!" >&2
 		podman kill -a
@@ -46,20 +47,20 @@ prepare_appfs() {
 
 	[ -d "$basemount/boot_0" ] || mkdir "$basemount/boot_0"
 	[ -d "$basemount/boot_1" ] || mkdir "$basemount/boot_1"
-	btrfs_snapshot_or_create "boot_$((!ab))/storage" "boot_${ab}/storage" \
-		|| error "Could not create storage subvol"
+	btrfs_snapshot_or_create "boot_$((!ab))/containers_storage" "boot_${ab}/containers_storage" \
+		|| error "Could not create containers_storage subvol"
 	btrfs_snapshot_or_create "boot_$((!ab))/volumes" "boot_${ab}/volumes" \
+		|| error "Could not create rollback/volumes subvol"
+	btrfs_subvol_create "volumes" \
 		|| error "Could not create volumes subvol"
-	btrfs_subvol_create "volumes_persistent" \
-		|| error "Could not create volumes_persistent subvol"
 	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
 
-	mount -t btrfs -o "$mountopt=boot_${ab}/storage" "$dev" /target/var/app/storage \
-		|| error "Could not mount storage subvol"
-	mount -t btrfs -o "$mountopt=boot_${ab}/volumes" "$dev" /target/var/app/volumes \
+	mount -t btrfs -o "$mountopt=boot_${ab}/containers_storage" "$dev" /target/var/lib/containers/storage_readonly \
+		|| error "Could not mount containers_storage subvol"
+	mount -t btrfs -o "$mountopt=boot_${ab}/volumes" "$dev" /target/var/app/rollback/volumes \
+		|| error "Could not mount rollback/volume subvol"
+	mount -t btrfs -o "$mountopt=volumes" "$dev" /target/var/app/volumes \
 		|| error "Could not mount volume subvol"
-	mount -t btrfs -o "$mountopt=volumes_persistent" "$dev" /target/var/app/volumes_persistent \
-		|| error "Could not mount volume_persistent subvol"
 	mount -t btrfs -o "$mountopt=tmp" "$dev" /target/var/tmp \
 		|| error "Could not mount tmp subvol"
 

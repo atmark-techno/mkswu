@@ -53,9 +53,9 @@ swdesc_uboot <uboot>
 
 swdesc_tar <tar file> [--dest <dest>]
   Extract <tar file> at <path> within new system.
-  Destination path must be within /var/app/volumes (or volumes_persistent)
+  Destination path must be within /var/app/(rollback/)?volumes
   unless rootfs is targeted (see <component> in Glossary), and defaults
-  to / for os variants and /var/app/volumes otherwise
+  to / for os variants and /var/app/rollback/volumes otherwise
 
 swdesc_files <name> [--dest <dest>] <file> [<more files>]
   Copy files directly into <path> (no subdirectory are kept)
