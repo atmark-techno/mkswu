@@ -87,6 +87,7 @@ prepare_rootfs() {
 
 		# network conf
 		copy_to_target /etc/network /etc/resolv.conf
+		copy_to_target /etc/NetworkManager/system-connections
 		return
 	fi
 
