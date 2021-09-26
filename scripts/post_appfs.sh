@@ -43,6 +43,11 @@ cleanup_appfs() {
 
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 
+	if grep -q 'graphroot = "/var/lib/containers/storage' /target/etc/containers/storage.conf 2>/dev/null; then
+		# make sure mount point exists in destination image
+		mkdir -p /target/var/lib/containers/storage
+	fi
+
 	if ! needs_reboot; then
 		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
 		mount "$dev" "$basemount" || error "Could not mount app root"
