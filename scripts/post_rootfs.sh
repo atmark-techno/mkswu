@@ -62,6 +62,57 @@ update_shadow() {
 			update_shadow_user "$user"
 			update_user_groups "$user"
 		done
+
+	# check there are no user with empty login
+	# unless the update explicitely allows it
+	grep -q "ALLOW_EMPTY_LOGIN" "$SWDESC" && return
+	user=$(awk -F: '$2 == "" { print $1 } ' /target/etc/shadow)
+	[ -z "$user" ] || error "the following users have an empty password, failing update: $user"
+
+}
+
+update_swupdate_certificate()  {
+	local certsdir cert pubkey external="" update=""
+
+	# split swupdate.pem into something we can handle, then match
+	# with known keys and update as appropriate
+
+	certsdir=$(mktemp -d "$SCRIPTSDIR/certs.XXXXXX") \
+		|| error "Could not create temp dir"
+	awk '/BEGIN CERTIFICATE/ { idx++; outfile="'"$certsdir"'/cert." idx }
+	     outfile { print > outfile }
+	     /END CERTIFICATE/ { outfile="" }' /target/etc/swupdate.pem
+	for cert in "$certsdir"/*; do
+		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
+		case "$pubkey" in
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEYTN7NghmISesYQ1dnby5YkocLAe2/EJ8OTXkx/xGhBVlJ57eGOovtPORd/JMkA6lWI0N/pD5p6eUGcwrQvRtsw==")
+			# Armadillo public one-time key, remove it.
+			rm -f "$cert"
+			update=1
+			;;
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA==")
+			# Armadillo internal key, leave it if present.
+			;;
+		*)
+			# Any other key
+			external=1
+			;;
+		esac
+	done
+
+	if [ -n "$update" ]; then
+		# fail if no user key has been provided
+		if [ -z "$external" ]; then
+			# just skip this step if flag is set
+			grep -q "ALLOW_PUBLIC_CERT" "$SWDESC" \
+				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
+		else
+			cat "$certsdir"/* > /target/etc/swupdate.pem \
+				|| error "Could not recreate swupdate.pem certificate"
+		fi
+	fi
+
+	rm -rf "$certsdir"
 }
 
 post_rootfs() {
@@ -99,6 +150,9 @@ EOF
 
 		# keep passwords around, and make sure there are no open access user left
 		update_shadow
+
+		# remove open access swupdate certificate or complain
+		update_swupdate_certificate
 	fi
 
 	# set other_rootfs_uptodate flag on both sides if appropriate
