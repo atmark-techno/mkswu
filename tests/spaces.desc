@@ -6,4 +6,4 @@ swdesc_pull_container "docker.io/tag with spaces" --version spaces 1
 swdesc_embed_container "tests/zoo/test space.tar"
 swdesc_usb_container "tests/zoo/test space.tar"
 swdesc_script "tests/zoo/test space"
-swdesc_exec "tests/zoo/test space" echo
+swdesc_exec "tests/zoo/test space" 'echo $1'

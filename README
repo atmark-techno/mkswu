@@ -68,7 +68,7 @@ swdesc_script <script>
   Run script inside new root
 
 swdesc_exec <file> <command>
-  Run command with <file> passed as argument inside the new root
+  Run command with <file> available as $1 inside the new root
   Note that this is run in the order swdesc is built, so adding
   a swdesc_exec before e.g. base_os will run before the target
   OS is setup and likely not work

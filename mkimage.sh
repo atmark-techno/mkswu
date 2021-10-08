@@ -224,7 +224,7 @@ parse_swdesc() {
 	for ARG; do
 		shift
 		# skip previously used argument
-		# using a for loop means we can't shit ahead
+		# using a for loop means we can't shift ahead
 		if [ "$SKIP" -gt 0 ]; then
 			SKIP=$((SKIP-1))
 			continue
@@ -255,33 +255,47 @@ parse_swdesc() {
 	done
 	case "$CMD" in
 	uboot)
+		[ $# -eq 0 ] && [ -n "$UBOOT" ] && return
 		[ $# -eq 1 ] || error "Usage: swdesc_uboot [options] uboot_file"
 		UBOOT="$1"
 		;;
 	tar)
+		[ $# -eq 0 ] && [ -n "$source" ] && return
 		[ $# -eq 1 ] || error "Usage: swdesc_tar [options] file.tar"
 		source="$1"
 		;;
 	files)
+		[ $# -eq 0 ] && [ -n "$file" ] && [ -n "$tarfiles_src" ] && return
 		[ $# -gt 1 ] || error "Usage: swdesc_files [options] name file [files...]"
 		file="$1"
 		shift
 		tarfiles_src="$(printf "%s\n" "$@")"
 		;;
 	command)
-		[ $# -eq 1 ] || error "Usage: swdesc_command [options] cmd"
-		cmd="$1"
+		[ $# -eq 0 ] && [ -n "$cmd" ] && return
+		[ $# -ge 1 ] || error "Usage: swdesc_command [options] cmd [cmd..]"
+		cmd=""
+		for ARG; do
+			cmd="${cmd:+$cmd && }$ARG"
+		done
 		;;
 	script)
+		[ $# -eq 0 ] && [ -n "$script" ] && return
 		[ $# -eq 1 ] || error "Usage: swdesc_script [options] script"
 		script="$1"
 		;;
 	exec)
-		[ $# -eq 2 ] || error "Usage: swdesc_exec [options] file command"
+		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
+		[ $# -ge 2 ] || error "Usage: swdesc_exec [options] file command"
 		file="$1"
-		cmd="$2"
+		shift
+		cmd=""
+		for ARG; do
+			cmd="${cmd:+$cmd && }$ARG"
+		done
 		;;
 	*container)
+		[ $# -eq 0 ] && [ -n "$image" ] && return
 		[ $# -eq 1 ] || error "Usage: swdesc_$CMD [options] image"
 		image="$1"
 		;;
@@ -391,15 +405,28 @@ swdesc_files() {
 	swdesc_tar "$OUTDIR/$file.tar"
 }
 
+
+shell_quote() {
+	# sh-compliant quote function from http://www.etalabs.net/sh_tricks.html
+	printf %s "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+}
+conf_quote() {
+	# Double backslashes, escape double-quotes, replace newlines by \n
+	# (the last operation requires reading all input into patternspace first)
+	printf %s "$1" | sed  ':a;$!N;$!ba;s/\\/\\\\/g;s/"/\\"/g;s/\n/\\n/g'
+}
+
 swdesc_exec_nochroot() {
 	local file cmd
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc exec "$@"
 
+	cmd="sh -c $(shell_quote "$cmd") --"
+
 	write_entry files "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
-		"  cmd: \"$cmd\"" "}"
+		"  cmd: \"$(conf_quote "$cmd")\"" "}"
 }
 
 swdesc_exec() {
@@ -410,38 +437,38 @@ swdesc_exec() {
 
 	case "$component" in
 	base_os|extra_os*|kernel)
-		chroot_cmd="podman run --rm --rootfs /target $cmd"
+		chroot_cmd="podman run --rm --rootfs /target sh -c $(shell_quote "$cmd") -- "
 		;;
 	*)
 		# If target is read-only we need special handling to run (silly podman tries
 		# to write to / otherwise) but keep volumes writable
 		chroot_cmd="podman run --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/var/app/rollback/volumes"
-		chroot_cmd="$chroot_cmd --rootfs /target $cmd"
+		chroot_cmd="$chroot_cmd --rootfs /target sh -c $(shell_quote "$cmd") -- "
 		;;
 	esac
 
 	write_entry files "$file" "type = \"exec\";" \
 		"installed-directly = true;" "properties: {" \
-		"  cmd: \"$chroot_cmd\"" "}"
+		"  cmd: \"$(conf_quote "$chroot_cmd")\"" "}"
 }
 
 swdesc_command() {
-	local cmd cmd_file
+	local cmd file
 	local component="$component" version="$version" board="$board"
 	local compress=""
 
 	parse_swdesc command "$@"
 
-	cmd_file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
-	if [ "${#cmd_file}" -gt 40 ]; then
-		cmd_file="$(echo -n "$cmd_file" | head -c 20)..$(echo -n "$cmd_file" | tail -c 20)"
+	file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
+	if [ "${#file}" -gt 40 ]; then
+		file="$(echo -n "$file" | head -c 20)..$(echo -n "$file" | tail -c 20)"
 	fi
-	cmd_file="${cmd_file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
-	cmd_file="$OUTDIR/${cmd_file}"
-	[ -e "$cmd_file" ] || : > "$cmd_file"
+	file="${file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
+	file="$OUTDIR/${file}"
+	[ -e "$file" ] || : > "$file"
 
-	swdesc_exec "$cmd_file" "$cmd #"
+	swdesc_exec
 }
 
 swdesc_command_nochroot() {
@@ -459,7 +486,7 @@ swdesc_command_nochroot() {
 	cmd_file="$OUTDIR/${cmd_file}"
 	[ -e "$cmd_file" ] || : > "$cmd_file"
 
-	swdesc_exec_nochroot "$cmd_file" "$cmd #"
+	swdesc_exec_nochroot "$cmd_file" "$cmd"
 }
 
 swdesc_script() {
@@ -469,7 +496,7 @@ swdesc_script() {
 
 	parse_swdesc script "$@"
 
-	swdesc_exec "$script" "sh"
+	swdesc_exec "$script" 'sh $1'
 }
 
 swdesc_script_nochroot() {
@@ -478,7 +505,7 @@ swdesc_script_nochroot() {
 
 	parse_swdesc script "$@"
 
-	swdesc_exec_nochroot "$script" "sh"
+	swdesc_exec_nochroot "$script" 'sh $1'
 }
 
 
@@ -498,7 +525,7 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
-	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly \\\"$image\\\" #"
+	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly \\\"$image\\\""
 }
 
 swdesc_usb_container() {
@@ -514,7 +541,7 @@ swdesc_usb_container() {
 	fi
 	link "$image" "$OUTDIR/$image_usb"
 	sign "$image_usb"
-	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive" >&2
+	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive along with $OUT" >&2
 
 	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l /mnt/$image_usb"
 }
@@ -533,11 +560,10 @@ embedded_preinstall_script() {
 	[ -n "$update" ] \
 		&& tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
 
-	swdesc_exec_nochroot "$OUTDIR/scripts.tar" "sh -c 'rm -rf \${TMPDIR:-/var/tmp}/scripts; \\
-			mkdir \${TMPDIR:-/var/tmp}/scripts && \\
-			cd \${TMPDIR:-/var/tmp}/scripts && \\
-			tar x -vf \$1 && \\
-			./$PRE_SCRIPT' -- "
+	swdesc_exec_nochroot "$OUTDIR/scripts.tar" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
+			'mkdir ${TMPDIR:-/var/tmp}/scripts' \
+			'cd ${TMPDIR:-/var/tmp}/scripts' \
+			'tar x -vf $1' "./$PRE_SCRIPT"
 }
 
 embedded_postinstall_script() {
