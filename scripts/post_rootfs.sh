@@ -9,21 +9,59 @@ link_exists() {
 	fi
 }
 
-update_shadow() {
+update_shadow_user() {
 	local user="$1"
-	local oldpass newpass_lastday
+	local oldpass
 
 	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' /etc/shadow)
 	# password was never set: skip
 	[ -n "$oldpass" ] || return
 
-	newpass_lastday=$(awk -F':' '$1 == "'"$user"'" { print($3 == "" ? 1 : $3) }' /target/etc/shadow)
-	# user doesn't exist on dest: skip
-	[ -n "$newpass_lastday" ] || return
-	# password already set on dest: skip
-	[ "$newpass_lastday" != 0 ] && return
+	if grep -qE "^$user:" /target/etc/shadow; then
+		sed -i -e 's:^'"$user"'\:.*:'"${oldpass//:/\\:}"':' /target/etc/shadow
+	else
+		echo "$oldpass" >> /target/etc/shadow
+	fi || error "Could not update shadow for $user"
+}
 
-	sed -i -e 's:^'"$user"'\:.*:'"${oldpass//:/\\:}"':' /target/etc/shadow
+update_user_groups() {
+	local user="$1"
+	local group
+
+	awk -F: '$4 ~ /(,|^)'"$user"'(,|$)/ { print $1 }' < /etc/group |
+		while read -r group; do
+			# already set
+			grep -qE "^$group:.*[:,]$user(,|$)" /target/etc/group \
+				&& continue
+
+			if grep -qE "^$group:.*:$" /target/etc/group; then
+				sed -i -e 's/^'"$group"':.*:/&'"$user"'/' /target/etc/group
+			else
+				sed -i -e 's/^'"$group"':.*/&,'"$user"'/' /target/etc/group
+			fi || error "Could not update group $group / $user"
+		done
+}
+
+update_shadow() {
+	local user group
+
+	# /etc/passwd, group and shadow have to be part of rootfs as
+	# rootfs updates can change system users, but we want to keep
+	# "real" users as well so copy them over manually:
+	# - copy non-existing "real" groups (gid >= 1000)
+	# - for each real user (root or uid >= 1000), copy its password
+	# if the old one not set and add it to groups it had been added to
+	awk -F: '$3 >= 1000 && $3 < 65500 { print $1 }' < /etc/group |
+		while read -r group; do
+			grep -qE "^$group:" /target/etc/group \
+				|| grep -E "^$group:" /etc/group >> /target/etc/group
+		done
+
+	awk -F: '$3 == 0 || ( $3 >= 1000 && $3 < 65500 ) { print $1 }' < /etc/passwd |
+		while read -r user; do
+			update_shadow_user "$user"
+			update_user_groups "$user"
+		done
 }
 
 post_rootfs() {
@@ -59,8 +97,7 @@ EOF
 			ln -s "$storage_conf_link" /target/etc/containers/storage.conf
 		fi
 
-		update_shadow root
-		update_shadow atmark
+		update_shadow
 	fi
 
 	# Three patterns:
@@ -87,7 +124,6 @@ EOF
 
 
 	rm -f "$SCRIPTSDIR/sw-versions.merged" "$SCRIPTSDIR/sw-versions.present"
-
 }
 
 post_rootfs
