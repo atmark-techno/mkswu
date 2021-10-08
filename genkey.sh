@@ -85,7 +85,7 @@ while [ $# -ge 1 ]; do
 		;;
 	"--cn")
 		[ $# -lt 2 ] && error "$1 requires an argument"
-		CN=$1
+		CN="$2"
 		shift 2
 		;;
 	"--plain")
