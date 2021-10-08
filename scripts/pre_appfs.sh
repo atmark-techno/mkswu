@@ -38,7 +38,7 @@ prepare_appfs() {
 		mount "$dev" "$basemount" || error "Could not mount $dev"
 	fi
 
-	if grep -q 'graphroot = "/var/lib/containers/storage' /target/etc/containers/storage.conf 2>/dev/null; then
+	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 		echo "Persistent storage is used for podman, stopping all containers before taking snapshot" >&2
 		echo "This is only for development, do not use this mode for production!" >&2
 		podman kill -a

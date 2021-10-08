@@ -33,8 +33,11 @@ init_vars() {
 		probe_current
 	fi
 
-	if needs_update uboot || needs_update base_os \
-	    || needs_update kernel || needs_update_regex "extra_os.*" \
+	if needs_update base_os || needs_update kernel \
+	    || needs_update_regex "extra_os.*"; then
+		update_rootfs=1
+	fi
+	if [ -n "$rootfs_update" ] || needs_update uboot \
 	    || ! grep -q "NO_REBOOT_ALLOW" "$SWDESC"; then
 		needs_reboot=1
 	fi
@@ -48,7 +51,11 @@ save_vars() {
 		|| error "Could not save local variables"
 	if needs_reboot; then
 		touch "$SCRIPTSDIR/needs_reboot" \
-			|| error "Could not save need to reboot"
+			|| error "Could not save need to reboot variable"
+	fi
+	if update_rootfs; then
+		touch "$SCRIPTSDIR/update_rootfs" \
+			|| error "Could not save rootfs update variable"
 	fi
 }
 

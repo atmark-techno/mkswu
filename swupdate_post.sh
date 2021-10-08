@@ -15,7 +15,7 @@ SCRIPTSDIR="$TMPDIR/scripts"
 cleanup
 rm -rf "$SCRIPTSDIR"
 
-if needs_reboot || [ -n "$force_reboot" ]; then
+if needs_reboot; then
 	echo "swupdate triggering reboot!" >&2
 	reboot
 elif [ -n "$SWUPDATE_HAWKBIT" ]; then

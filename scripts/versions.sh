@@ -54,6 +54,10 @@ needs_reboot() {
 	[ -n "$needs_reboot" ]
 }
 
+update_rootfs() {
+	[ -n "$update_rootfs" ]
+}
+
 parse_swdesc() {
 	# extract version comments
 	sed -ne "s/.*#VERSION //p"

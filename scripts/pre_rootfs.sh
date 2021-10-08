@@ -45,15 +45,16 @@ prepare_rootfs() {
 	# If there is no need to reboot, we can use it -- otherwise we need
 	# to clear the flag.
 	if grep -q other_rootfs_uptodate /etc/sw-versions 2>/dev/null; then
-		if ! needs_reboot; then
-			echo "Other fs up to date, mounting read-only"
-			mount "$dev" "/target" -o ro || error "Could not mount $dev"
+		if ! rootfs_updated; then
+			echo "Other fs up to date, skipping copy"
+			mount "$dev" "/target" || error "Could not mount $dev"
 			return
 		fi
-		echo "Clearing other fs up to date flag"
+		echo "Clearing other fs up to date flag and reformatting it"
 		grep -v 'other_rootfs_uptodate' /etc/sw-versions \
-			> "$TMPDIR/sw-versions.nouptodate"
-		update_running_versions "$TMPDIR/sw-versions.nouptodate"
+			> "$SCRIPTSDIR/sw-versions.nouptodate"
+		update_running_versions "$SCRIPTSDIR/sw-versions.nouptodate"
+		rm "$SCRIPTSDIR/sw-versions.nouptodate"
 	fi
 
 	# check if partitions exist and create them if not:

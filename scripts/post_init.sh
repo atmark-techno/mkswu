@@ -16,6 +16,10 @@ init() {
 	if [ -e "$SCRIPTSDIR/needs_reboot" ]; then
 		needs_reboot=1
 	fi
+
+	if [ -e "$SCRIPTSDIR/update_rootfs" ]; then
+		update_rootfs=1
+	fi
 }
 
 init

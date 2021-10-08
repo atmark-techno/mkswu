@@ -1,6 +1,12 @@
 error() {
 	echo "$@" >&2
 	cleanup
+	if [ -n "$soft_fail" ]; then
+		echo "An error happened after changes have been applied" >&2
+		echo "This most likely means success status cannot be reported correctly." >&2
+		echo "Reboot to finish applying anything left" >&2
+		reboot
+	fi
 	exit 1
 }
 

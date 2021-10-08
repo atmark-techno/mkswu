@@ -65,17 +65,16 @@ update_shadow() {
 }
 
 post_rootfs() {
-	local storage_conf_link
 	# Sanity check: refuse to continue if someone tries to write a
 	# rootfs that was corrupted or "too wrong": check for /bin/sh
 	if ! [ -e /target/bin/sh ]; then
 		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
 	fi
 
-	# if other fs wasn't up to date: fix partition-specific things
+	# if other fs was updated: fix partition-specific things
 	# note that this means these files cannot be updated through swupdate
 	# as this script will always reset them.
-	if ! grep -q "other_rootfs_uptodate" "/etc/sw-versions" 2>/dev/null; then
+	if update_rootfs || ! grep -q "other_rootfs_uptodate" "/etc/sw-versions" 2>/dev/null; then
 		# fwenv: either generate a new one for mmc, or copy for sd boot (only one env there)
 		if [ "$rootdev" = "/dev/mmcblk2" ]; then
 			cat > /target/etc/fw_env.config <<EOF
@@ -88,38 +87,45 @@ EOF
 
 		# adjust ab_boot
 		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab
+	fi
 
-		# keep same storage.conf as current if using link
-		if storage_conf_link=$(readlink /etc/containers/storage.conf) \
-		    && [ "$storage_conf_link" != "$(readlink /target/etc/containers/storage.conf)" ] \
-		    && link_exists "/etc/containers" "$storage_conf_link"; then
-			rm -f /target/etc/containers/storage.conf
-			ln -s "$storage_conf_link" /target/etc/containers/storage.conf
+	# copy a few more files from previous rootfs on update...
+	if update_rootfs; then
+		# use appfs storage for podman if used previously
+		if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
+			sed -i -e 's@graphroot = .*@graphroot = "/var/lib/containers/storage"@' \
+				/target/etc/containers/storage.conf
 		fi
 
+		# keep passwords around, and make sure there are no open access user left
 		update_shadow
 	fi
 
-	# Three patterns:
-	# - we didn't update rootfs, but other rootfs wasn't up to date yet
-	#   * set flag in both version files
-	# - we didn't update rootfs, other rootfs already up to date
-	#   * other rootfs untouched, update version files to current partition
-	# - we wrote some data and need rebooting:
-	#   * rootfs uptodate flag was cleared by pre script
-	#   * update version files to target partition
-	if ! needs_reboot; then
-		# if we're not rebooting, only update current versions and mark
-		# the other rootfs up to date
-		if ! grep -q "other_rootfs_uptodate" "/etc/sw-versions"; then
-			echo "other_rootfs_uptodate 1" >> /target/etc/sw-versions
-			echo "other_rootfs_uptodate 1" >> "$SCRIPTSDIR/sw-versions.merged"
+	# set other_rootfs_uptodate flag on both sides if appropriate
+	if ! update_rootfs && ! grep -q "other_rootfs_uptodate" "/etc/sw-versions"; then
+		echo "other_rootfs_uptodate 1" >> "$SCRIPTSDIR/sw-versions.merged"
+		if needs_reboot; then
+			cp /etc/sw-versions "$SCRIPTSDIR/sw-versions.uptodate"
+			echo "other_rootfs_uptodate 1" >> "$SCRIPTSDIR/sw-versions.uptodate"
+			update_running_versions "$SCRIPTSDIR/sw-versions.uptodate"
+			rm "$SCRIPTSDIR/sw-versions.uptodate"
+		else
+			echo "other_rootfs_uptodate 1" >> /target/etc/sw-versions \
+				|| error "Could not write to /target/etc/sw-versions"
 		fi
-		
-		update_running_versions "$SCRIPTSDIR/sw-versions.merged"
 	else
-		grep -v "other_rootfs_uptodate" "$SCRIPTSDIR/sw-versions.merged" > \
-			"/target/etc/sw-versions"
+		sed -i -e "/other_rootfs_uptodate/d" "$SCRIPTSDIR/sw-versions.merged"
+		# has already been cleared on running system in pre_rootfs
+	fi
+
+	# and finally set version where appropriate.
+	if ! needs_reboot; then
+		# updating current version with what is being installed:
+		# we should avoid failing from here on.
+		update_running_versions "$SCRIPTSDIR/sw-versions.merged"
+		soft_fail=1
+	else
+		cp "$SCRIPTSDIR/sw-versions.merged" "/target/etc/sw-versions"
 	fi
 
 

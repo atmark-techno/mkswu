@@ -43,7 +43,7 @@ cleanup_appfs() {
 
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 
-	if grep -q 'graphroot = "/var/lib/containers/storage' /target/etc/containers/storage.conf 2>/dev/null; then
+	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 		# make sure mount point exists in destination image
 		mkdir -p /target/var/lib/containers/storage
 	fi
@@ -59,7 +59,7 @@ cleanup_appfs() {
 			echo "Could not swap btrfs subvolumes, forcing reboot"
 			umount "$basemount"
 			rmdir "$basemount"
-			force_reboot=1
+			needs_reboot=1
 			return
 		fi
 		umount "$basemount"
