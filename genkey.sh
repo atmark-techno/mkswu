@@ -9,6 +9,7 @@ AES=
 PLAIN=
 CN=
 CURVE=secp256k1
+DAYS=$((5*365))
 
 
 error() {
@@ -68,7 +69,8 @@ genkey_rsa() {
 
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:"$CURVE" \
 		-keyout "$PRIVKEY" -out "$PUBKEY" -subj "/O=SWUpdate/CN=$CN" \
-		${PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS}
+		${PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
+		-days "$DAYS"
 
 	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards"
 	echo "Please append it to the existing key if you plan on using vendor updates,"
@@ -86,6 +88,11 @@ while [ $# -ge 1 ]; do
 	"--cn")
 		[ $# -lt 2 ] && error "$1 requires an argument"
 		CN="$2"
+		shift 2
+		;;
+	"--days")
+		[ $# -lt 2 ] && error "$1 requires an argument"
+		DAYS="$2"
 		shift 2
 		;;
 	"--plain")
