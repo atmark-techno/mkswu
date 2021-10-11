@@ -331,7 +331,7 @@ pad_uboot() {
 }
 
 swdesc_uboot() {
-	local UBOOT component=uboot version board="$board"
+	local UBOOT="$UBOOT" component=uboot version board="$board"
 
 	parse_swdesc uboot "$@"
 
@@ -352,7 +352,7 @@ swdesc_uboot() {
 }
 
 swdesc_tar() {
-	local source dest="$dest"
+	local source="$source" dest="$dest"
 	local component="$component" version="$version" board="$board"
 	local target="/target"
 
@@ -383,9 +383,9 @@ swdesc_tar() {
 }
 
 swdesc_files() {
-	local file dest="$dest"
+	local file="$file" dest="$dest"
 	local component="$component" version="$version" board="$board"
-	local tarfile_src tarfile tarfiles_src
+	local tarfile_src tarfile tarfiles_src="$tarfiles_src"
 	local update=
 	local IFS="
 "
@@ -417,7 +417,7 @@ conf_quote() {
 }
 
 swdesc_exec_nochroot() {
-	local file cmd
+	local file="$file" cmd="$cmd"
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc exec "$@"
@@ -430,7 +430,7 @@ swdesc_exec_nochroot() {
 }
 
 swdesc_exec() {
-	local file cmd chroot_cmd
+	local file="$file" cmd="$cmd" chroot_cmd
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc exec "$@"
@@ -454,7 +454,7 @@ swdesc_exec() {
 }
 
 swdesc_command() {
-	local cmd file
+	local cmd="$cmd" file
 	local component="$component" version="$version" board="$board"
 	local compress=""
 
@@ -472,25 +472,25 @@ swdesc_command() {
 }
 
 swdesc_command_nochroot() {
-	local cmd cmd_file
+	local cmd="$cmd" file
 	local component="$component" version="$version" board="$board"
 	local compress=""
 
 	parse_swdesc command "$@"
 
-	cmd_file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
-	if [ "${#cmd_file}" -gt 40 ]; then
-		cmd_file="$(echo -n "$cmd_file" | head -c 20)..$(echo -n "$cmd_file" | tail -c 20)"
+	file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
+	if [ "${#file}" -gt 40 ]; then
+		file="$(echo -n "$file" | head -c 20)..$(echo -n "$file" | tail -c 20)"
 	fi
-	cmd_file="${cmd_file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
-	cmd_file="$OUTDIR/${cmd_file}"
-	[ -e "$cmd_file" ] || : > "$cmd_file"
+	file="${file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
+	file="$OUTDIR/${file}"
+	[ -e "$file" ] || : > "$file"
 
-	swdesc_exec_nochroot "$cmd_file" "$cmd"
+	swdesc_exec_nochroot
 }
 
 swdesc_script() {
-	local script cmd
+	local script="$script"
 	local component="$component" version="$version" board="$board"
 	local compress=""
 
@@ -500,7 +500,7 @@ swdesc_script() {
 }
 
 swdesc_script_nochroot() {
-	local script
+	local script="$script"
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc script "$@"
@@ -510,7 +510,7 @@ swdesc_script_nochroot() {
 
 
 swdesc_embed_container() {
-	local image
+	local image="$image"
 	local component="$component" version="$version" board="$board"
 	local compress="force"
 
@@ -520,7 +520,7 @@ swdesc_embed_container() {
 }
 
 swdesc_pull_container() {
-	local image
+	local image="$image"
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc pull_container "$@"
@@ -529,7 +529,7 @@ swdesc_pull_container() {
 }
 
 swdesc_usb_container() {
-	local image
+	local image="$image"
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc usb_container "$@"
