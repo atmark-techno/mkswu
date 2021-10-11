@@ -17,6 +17,7 @@ ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 OUTPUT=yakushima-${ROOTFS_VERSION}
 
 cat > "$OUTPUT.desc" <<EOF
+DEBUG_SWDESC="# ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN"
 swdesc_uboot --board yakushima-eva imx-boot_yakushima-eva
 swdesc_uboot --board yakushima-es1 imx-boot_yakushima-es1
 swdesc_tar "$ROOTFS" --version base_os "$ROOTFS_VERSION"
