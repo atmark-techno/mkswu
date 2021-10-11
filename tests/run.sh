@@ -13,7 +13,7 @@ sed -e "s/# ENCRYPT_KEYFILE/ENCRYPT_KEYFILE/" mkimage.conf > tests/mkimage-aes.c
 ./genkey.sh --aes --config tests/mkimage-aes.conf
 conf=tests/mkimage-aes.conf build_check tests/aes
 
-build_check tests/board "swdesc 'yakushima-es1 = {'"
+build_check tests/board "swdesc 'yakushima-es1 = '"
 build_check tests/board_fail
 
 build_check tests/exec_quoting "swdesc 'touch /tmp/swupdate-test'"
