@@ -82,6 +82,9 @@ update_shadow() {
 
 }
 
+
+SWUPDATE_PEM=/target/etc/swupdate.pem
+
 update_swupdate_certificate()  {
 	local certsdir cert pubkey external="" update=""
 
@@ -92,7 +95,7 @@ update_swupdate_certificate()  {
 		|| error "Could not create temp dir"
 	awk '/BEGIN CERTIFICATE/ { idx++; outfile="'"$certsdir"'/cert." idx }
 	     outfile { print > outfile }
-	     /END CERTIFICATE/ { outfile="" }' /target/etc/swupdate.pem
+	     /END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
 	for cert in "$certsdir"/*; do
 		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
 		case "$pubkey" in
@@ -118,7 +121,7 @@ update_swupdate_certificate()  {
 			grep -q "ALLOW_PUBLIC_CERT" "$SWDESC" \
 				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
 		else
-			cat "$certsdir"/* > /target/etc/swupdate.pem \
+			cat "$certsdir"/* > "$SWUPDATE_PEM" \
 				|| error "Could not recreate swupdate.pem certificate"
 		fi
 	fi

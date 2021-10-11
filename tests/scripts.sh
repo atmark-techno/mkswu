@@ -69,6 +69,43 @@ for f in passwd shadow group; do
 done
 SHADOW=./tests/scripts/shadow
 echo "ALLOW_EMPTY_LOGIN" > ./tests/scripts/swdesc
-( SWDESC=./tests/scripts/swdesc update_shadow; ) || error "copy should have failed"
+( SWDESC=./tests/scripts/swdesc update_shadow; ) \
+	|| error "should be no failure with allow empty login"
+
+
+
+# test certificates update
+SCRIPTSDIR=./tests/scripts
+SWUPDATE_PEM=./tests/scripts/swupdate.pem
+
+echo "swupdate certificate: default setup fails"
+cat swupdate-onetime-public.pem > "$SWUPDATE_PEM"
+( update_swupdate_certificate; ) && error "certificate update should have failed"
+
+echo "swupdate certificate: default setup with allow OK"
+cat swupdate-onetime-public.pem > "$SWUPDATE_PEM"
+echo "ALLOW_PUBLIC_CERT" > ./tests/scripts/swdesc
+( SWDESC=./tests/scripts/swdesc update_swupdate_certificate; ) \
+	|| error "should be ok with allow public cert"
+[[ $(grep -c "BEGIN CERT" "$SWUPDATE_PEM") = "1" ]] \
+	|| error "should not have removed public key"
+
+echo "swupdate certificate: test with other key"
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp256k1 \
+	-keyout "$SCRIPTSDIR/key" -out "$SCRIPTSDIR/pub" -subj "/O=SWUpdate/CN=test" \
+	-nodes || error "Could not generate new key"
+cat swupdate-onetime-public.pem > "$SWUPDATE_PEM"
+cat "$SCRIPTSDIR/pub" >> "$SWUPDATE_PEM"
+( update_swupdate_certificate; ) \
+	|| error "certificate update should be ok with new key"
+[[ $(grep -c "BEGIN CERT" "$SWUPDATE_PEM") = "1" ]] \
+	|| error "should have removed public key"
+
+echo "swupdate certificate: test with other key, again"
+( update_swupdate_certificate; ) \
+	|| error "certificate update should be ok with new key"
+[[ $(grep -c "BEGIN CERT" "$SWUPDATE_PEM") = "1" ]] \
+	|| error "should have removed public key"
+
 
 true
