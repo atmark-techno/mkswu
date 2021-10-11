@@ -2,6 +2,7 @@
 
 set -ex
 ./tests/examples.sh
+./tests/scripts.sh
 
 . ./tests/common.sh
 

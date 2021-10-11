@@ -9,18 +9,27 @@ link_exists() {
 	fi
 }
 
+PASSWD="${PASSWD:-/etc/passwd}"
+NPASSWD="${NPASSWD:-/target/etc/passwd}"
+SHADOW="${SHADOW:-/etc/shadow}"
+NSHADOW="${NSHADOW:-/target/etc/shadow}"
+GROUP="${GROUP:-/etc/group}"
+NGROUP="${NGROUP:-/target/etc/group}"
+
 update_shadow_user() {
 	local user="$1"
 	local oldpass
 
-	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' /etc/shadow)
+	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' "$SHADOW")
 	# password was never set: skip
 	[ -n "$oldpass" ] || return
+	# password already set on target: also skip
+	grep -qE "^$user:[^:]" "$NSHADOW" && return
 
-	if grep -qE "^$user:" /target/etc/shadow; then
-		sed -i -e 's:^'"$user"'\:.*:'"${oldpass//:/\\:}"':' /target/etc/shadow
+	if grep -qE "^$user:" "$NSHADOW"; then
+		sed -i -e 's:^'"$user"'\:.*:'"${oldpass//:/\\:}"':' "$NSHADOW"
 	else
-		echo "$oldpass" >> /target/etc/shadow
+		echo "$oldpass" >> "$NSHADOW"
 	fi || error "Could not update shadow for $user"
 }
 
@@ -28,16 +37,16 @@ update_user_groups() {
 	local user="$1"
 	local group
 
-	awk -F: '$4 ~ /(,|^)'"$user"'(,|$)/ { print $1 }' < /etc/group |
+	awk -F: '$4 ~ /(,|^)'"$user"'(,|$)/ { print $1 }' < "$GROUP" |
 		while read -r group; do
 			# already set
-			grep -qE "^$group:.*[:,]$user(,|$)" /target/etc/group \
+			grep -qE "^$group:.*[:,]$user(,|$)" "$NGROUP" \
 				&& continue
 
-			if grep -qE "^$group:.*:$" /target/etc/group; then
-				sed -i -e 's/^'"$group"':.*:/&'"$user"'/' /target/etc/group
+			if grep -qE "^$group:.*:$" "$NGROUP"; then
+				sed -i -e 's/^'"$group"':.*:/&'"$user"'/' "$NGROUP"
 			else
-				sed -i -e 's/^'"$group"':.*/&,'"$user"'/' /target/etc/group
+				sed -i -e 's/^'"$group"':.*/&,'"$user"'/' "$NGROUP"
 			fi || error "Could not update group $group / $user"
 		done
 }
@@ -45,20 +54,22 @@ update_user_groups() {
 update_shadow() {
 	local user group
 
-	# /etc/passwd, group and shadow have to be part of rootfs as
+	# "$PASSWD", group and shadow have to be part of rootfs as
 	# rootfs updates can change system users, but we want to keep
 	# "real" users as well so copy them over manually:
 	# - copy non-existing "real" groups (gid >= 1000)
 	# - for each real user (root or uid >= 1000), copy its password
 	# if the old one not set and add it to groups it had been added to
-	awk -F: '$3 >= 1000 && $3 < 65500 { print $1 }' < /etc/group |
+	awk -F: '$3 >= 1000 && $3 < 65500 { print $1 }' < "$GROUP" |
 		while read -r group; do
-			grep -qE "^$group:" /target/etc/group \
-				|| grep -E "^$group:" /etc/group >> /target/etc/group
+			grep -qE "^$group:" "$NGROUP" \
+				|| grep -E "^$group:" "$GROUP" >> "$NGROUP"
 		done
 
-	awk -F: '$3 == 0 || ( $3 >= 1000 && $3 < 65500 ) { print $1 }' < /etc/passwd |
+	awk -F: '$3 == 0 || ( $3 >= 1000 && $3 < 65500 ) { print $1 }' < "$PASSWD" |
 		while read -r user; do
+			grep -qE "^$user:" "$NPASSWD" \
+				|| grep -E "^$user:" "$PASSWD" >> "$NPASSWD"
 			update_shadow_user "$user"
 			update_user_groups "$user"
 		done
@@ -66,7 +77,7 @@ update_shadow() {
 	# check there are no user with empty login
 	# unless the update explicitely allows it
 	grep -q "ALLOW_EMPTY_LOGIN" "$SWDESC" && return
-	user=$(awk -F: '$2 == "" { print $1 } ' /target/etc/shadow)
+	user=$(awk -F: '$2 == "" { print $1 } ' "$NSHADOW")
 	[ -z "$user" ] || error "the following users have an empty password, failing update: $user"
 
 }
@@ -185,5 +196,7 @@ EOF
 
 	rm -f "$SCRIPTSDIR/sw-versions.merged" "$SCRIPTSDIR/sw-versions.present"
 }
+
+[ -n "$TEST_SCRIPTS" ] && return
 
 post_rootfs
