@@ -26,8 +26,8 @@ fi
 #   python3 -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.METHOD_SHA512))'
 # and update the part within the inner quotes e.g.
 #       "usermod -p '"'$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.'"' root"
-# You can also lock the account by setting the password to '!', e.g.
-#       "usermod -p '!' atmark"
+# You can also lock the account, e.g.
+#       "usermod -L atmark"
 error "Set users passwords and remove this error line"
 swdesc_command --version extra_os.initial_setup 1 \
 	"usermod -p '"'$6$salt$hash'"' atmark" \
