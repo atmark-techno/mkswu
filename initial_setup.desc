@@ -32,3 +32,7 @@ error "Set users passwords and remove this error line"
 swdesc_command --version extra_os.initial_setup 1 \
 	"usermod -p '"'$6$salt$hash'"' atmark" \
 	"usermod -p '"'$6$salt$hash'"' root"
+
+
+# uncomment if you would like to poweroff the system after the update is complete
+#POST_POWEROFF=1

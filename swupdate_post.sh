@@ -15,7 +15,10 @@ SCRIPTSDIR="$TMPDIR/scripts"
 cleanup
 rm -rf "$SCRIPTSDIR"
 
-if needs_reboot; then
+if grep -q POST_POWEROFF "$SWDESC" 2>/dev/null; then
+	echo "swupdate triggering poweroff!" >&2
+	poweroff
+elif needs_reboot; then
 	echo "swupdate triggering reboot!" >&2
 	reboot
 elif [ -n "$SWUPDATE_HAWKBIT" ]; then

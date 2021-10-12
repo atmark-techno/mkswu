@@ -652,6 +652,7 @@ EOF
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #VERSION_FORCE"
 	[ -n "$NO_REBOOT_ALLOW" ] && echo "  #NO_REBOOT_ALLOW"
+	[ -n "$POST_POWEROFF" ] && echo " #POST_POWEROFF"
 
 	# and also add extra debug comments
 	for line in $DEBUG_SWDESC; do

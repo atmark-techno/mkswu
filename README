@@ -26,6 +26,7 @@ FORCE_VERSION: allow building image with no explicit version set.
 NO_REBOOT_ALLOW: allow restarting containers without rebooting.
                  Note this is not compatible with hawkbit updates
                  that require reboot to report installation success.
+POST_POWEROFF: poweroff the system after update completed
 
 
 Common options for all helpers:
