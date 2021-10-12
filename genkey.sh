@@ -45,10 +45,10 @@ genkey_aes() {
 	fi
 
 	echo "Creating encryption keyfile $ENCRYPT_KEYFILE"
-	echo "That file must be copied as /etc/swupdate.aes-key as 0400 on boards"
+	echo "You must also enable aes encryption with initial_setup.desc or equivalent"
 
 	oldumask=$(umask)
-	umask 0077
+	umask 0377
 	ENCRYPT_KEY="$(openssl rand -hex 32)" || error "No openssl?"
 	echo "$ENCRYPT_KEY $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
 	umask "$oldumask"
@@ -72,9 +72,12 @@ genkey_rsa() {
 		${PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
 		-days "$DAYS"
 
-	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards"
-	echo "Please append it to the existing key if you plan on using vendor updates,"
-	echo "or replace the file to allow only your own."
+	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards."
+	echo "The suggested way is using swupdate:"
+	echo "    ./mkimage.sh initial_setup.desc -o initial_setup.swu"
+	echo "Please set user passwords in initial_setup.desc and generate the image."
+	echo "If you would like to encrypt your updates, generate your aes key now with:"
+	echo "    $0 --aes"
 }
 
 while [ $# -ge 1 ]; do
