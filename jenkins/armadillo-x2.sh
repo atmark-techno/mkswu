@@ -11,15 +11,14 @@ ROOTFS=$(ls --sort=time alpine-aarch64-*.tar* | head -n 1)
 [[ -e  "$ROOTFS" ]] || error "rootfs not found"
 ROOTFS_VERSION=${ROOTFS#alpine-aarch64-}
 ROOTFS_VERSION=${ROOTFS_VERSION%.tar.*}
-# if multiple dashes only keep until first one
-ROOTFS_VERSION=${ROOTFS_VERSION%%-*}
 
-OUTPUT=yakushima-${ROOTFS_VERSION}
+OUTPUT=armadillo-x2-${ROOTFS_VERSION}
 
 cat > "$OUTPUT.desc" <<EOF
 DEBUG_SWDESC="# ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN"
-swdesc_uboot --board yakushima-eva imx-boot_yakushima-eva
-swdesc_uboot --board yakushima-es1 imx-boot_yakushima-es1
+swdesc_uboot --board iot-g4-g4-eva imx-boot_yakushima-eva
+swdesc_uboot --board iot-g4-es1 imx-boot_yakushima-es1
+swdesc_uboot --board iot-g4-es2 imx-boot_yakushima-es1
 swdesc_tar "$ROOTFS" --version base_os "$ROOTFS_VERSION"
 EOF
 
