@@ -211,6 +211,14 @@ write_entry() {
 	local outfile="$OUTDIR/sw-description-$1${board:+-$board}"
 	shift
 
+	# Running init here allows .desc files to override key elements
+	# before the first swdesc_* statement
+	if [ -n "$FIRST_SWDESC_INIT" ]; then
+		FIRST_SWDESC_INIT=""
+		setup_encryption
+		embedded_preinstall_script
+	fi
+
 	write_entry_stdout "$@" >> "$outfile"
 }
 
@@ -547,8 +555,8 @@ swdesc_usb_container() {
 }
 
 embedded_preinstall_script() {
-	local f update=
-	local component version board
+	local f update=""
+	local component="" version="" board=""
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
 	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
@@ -699,6 +707,7 @@ mkimage() {
 	local POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 	local FILES="sw-description
 sw-description.sig"
+	local FIRST_SWDESC_INIT=1
 
 	# default default values
 	local UBOOT_SIZE="4M"
@@ -748,8 +757,6 @@ sw-description.sig"
 	# actual image building
 	mkdir -p "$OUTDIR"
 	rm -f "$OUTDIR/sw-description-"*
-	setup_encryption
-	embedded_preinstall_script
 
 	# build sw-desc fragments
 	for DESC; do
@@ -757,6 +764,8 @@ sw-description.sig"
 		[ "${DESC#/}" = "$DESC" ] && DESC="./$DESC"
 		. "$DESC"
 	done
+
+	[ -z "$FIRST_SWDESC_INIT" ] || error "No or empty desc given?"
 
 	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"
