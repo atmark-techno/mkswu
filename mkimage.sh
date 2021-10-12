@@ -394,7 +394,7 @@ swdesc_files() {
 	local file="$file" dest="$dest"
 	local component="$component" version="$version" board="$board"
 	local tarfile_src tarfile tarfiles_src="$tarfiles_src"
-	local update=
+	local update= mtime
 	local IFS="
 "
 	parse_swdesc files "$@"
@@ -405,7 +405,11 @@ swdesc_files() {
 	for tarfile_src in $tarfiles_src; do
 		tarfile="${tarfile_src##*/}"
 		link "$tarfile_src" "$OUTDIR/$tarfile" && update=1
-		[ -z "$update" ] && [ "$tarfile_src" -nt "$OUTDIR/$file.tar" ] && update=1
+		if [ -z "$update" ]; then
+			mtime=$(find "$tarfile_src" -exec stat -c "%Y" {} + \
+				| awk '$1 > max { max=$1 } END { print max }')
+			[ "$mtime" -gt "$(stat -c "%Y" "$OUTDIR/$file.tar")" ] && update=1
+		fi
 		set -- "$@" "$tarfile"
 	done
 	[ -z "$update" ] || tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" "$@" \
