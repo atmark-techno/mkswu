@@ -9,13 +9,6 @@ link_exists() {
 	fi
 }
 
-PASSWD="${PASSWD:-/etc/passwd}"
-NPASSWD="${NPASSWD:-/target/etc/passwd}"
-SHADOW="${SHADOW:-/etc/shadow}"
-NSHADOW="${NSHADOW:-/target/etc/shadow}"
-GROUP="${GROUP:-/etc/group}"
-NGROUP="${NGROUP:-/target/etc/group}"
-
 update_shadow_user() {
 	local user="$1"
 	local oldpass
@@ -53,6 +46,12 @@ update_user_groups() {
 
 update_shadow() {
 	local user group
+	local PASSWD="${PASSWD:-/etc/passwd}"
+	local NPASSWD="${NPASSWD:-/target/etc/passwd}"
+	local SHADOW="${SHADOW:-/etc/shadow}"
+	local NSHADOW="${NSHADOW:-/target/etc/shadow}"
+	local GROUP="${GROUP:-/etc/group}"
+	local NGROUP="${NGROUP:-/target/etc/group}"
 
 	# "$PASSWD", group and shadow have to be part of rootfs as
 	# rootfs updates can change system users, but we want to keep
