@@ -42,19 +42,16 @@ prepare_rootfs() {
 	fi
 
 	# Check if the current copy is up to date.
-	# If there is no need to reboot, we can use it -- otherwise we need
-	# to clear the flag.
-	if grep -q other_rootfs_uptodate /etc/sw-versions 2>/dev/null; then
-		if ! rootfs_updated; then
+	# If there is no base_os update we can use it.
+	if ! needs_update "base_os" \
+	    && mount "$dev" /target 2>/dev/null; then
+		if [ -s /etc/.rootfs_update_timestamp ] \
+		    && [ "$(cat /etc/.rootfs_update_timestamp 2>/dev/null)" \
+		    = "$(cat /target/etc/.rootfs_update_timestamp 2>/dev/null)" ]; then
 			echo "Other fs up to date, skipping copy"
-			mount "$dev" "/target" || error "Could not mount $dev"
 			return
 		fi
-		echo "Clearing other fs up to date flag and reformatting it"
-		grep -v 'other_rootfs_uptodate' /etc/sw-versions \
-			> "$SCRIPTSDIR/sw-versions.nouptodate"
-		update_running_versions "$SCRIPTSDIR/sw-versions.nouptodate"
-		rm "$SCRIPTSDIR/sw-versions.nouptodate"
+		umount "/target"
 	fi
 
 	# check if partitions exist and create them if not:
@@ -68,6 +65,7 @@ prepare_rootfs() {
 	mount "$dev" "/target" || error "Could not mount $dev"
 
 	mkdir -p /target/boot /target/mnt /target/target
+	touch /target/.created
 
 	if needs_update "base_os"; then
 		if get_version "kernel" && ! needs_update "kernel"; then

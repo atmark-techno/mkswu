@@ -129,17 +129,22 @@ update_swupdate_certificate()  {
 }
 
 post_rootfs() {
+	local rootfs_created=""
+	
 	# Sanity check: refuse to continue if someone tries to write a
 	# rootfs that was corrupted or "too wrong": check for /bin/sh
 	if ! [ -e /target/bin/sh ]; then
 		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
 	fi
 
-	# if other fs was updated: fix partition-specific things
-	# note that this means these files cannot be updated through swupdate
-	# as this script will always reset them.
-	if update_rootfs || ! grep -q "other_rootfs_uptodate" "/etc/sw-versions" 2>/dev/null; then
-		# fwenv: either generate a new one for mmc, or copy for sd boot (only one env there)
+	if [ -e /target/.created ]; then
+		rootfs_created=1
+		rm -f /target/.created
+	fi
+
+	# if other fs was recreated: fix partition-specific things
+	if [ -n "$rootfs_created" ]; then
+		# fwenv: either generate a new one for mmc, or copy for sd boot (supersedes version in update)
 		if [ "$rootdev" = "/dev/mmcblk2" ]; then
 			cat > /target/etc/fw_env.config <<EOF
 ${rootdev}boot${ab} 0x3fe000 0x2000
@@ -151,38 +156,25 @@ EOF
 
 		# adjust ab_boot
 		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab
-	fi
 
-	# copy a few more files from previous rootfs on update...
-	if update_rootfs; then
 		# use appfs storage for podman if used previously
 		if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 			sed -i -e 's@graphroot = .*@graphroot = "/var/lib/containers/storage"@' \
 				/target/etc/containers/storage.conf
 		fi
+	fi
 
+	# extra fiuxps on update
+	# in theory we should also check shadow/cert if no update, but the system
+	# needs extra os update to start containers so this is enough for safety check
+	if update_rootfs; then
 		# keep passwords around, and make sure there are no open access user left
 		update_shadow
 
 		# remove open access swupdate certificate or complain
 		update_swupdate_certificate
-	fi
 
-	# set other_rootfs_uptodate flag on both sides if appropriate
-	if ! update_rootfs && ! grep -q "other_rootfs_uptodate" "/etc/sw-versions"; then
-		echo "other_rootfs_uptodate 1" >> "$SCRIPTSDIR/sw-versions.merged"
-		if needs_reboot; then
-			cp /etc/sw-versions "$SCRIPTSDIR/sw-versions.uptodate"
-			echo "other_rootfs_uptodate 1" >> "$SCRIPTSDIR/sw-versions.uptodate"
-			update_running_versions "$SCRIPTSDIR/sw-versions.uptodate"
-			rm "$SCRIPTSDIR/sw-versions.uptodate"
-		else
-			echo "other_rootfs_uptodate 1" >> /target/etc/sw-versions \
-				|| error "Could not write to /target/etc/sw-versions"
-		fi
-	else
-		sed -i -e "/other_rootfs_uptodate/d" "$SCRIPTSDIR/sw-versions.merged"
-		# has already been cleared on running system in pre_rootfs
+		date +%s.%N > /target/etc/.rootfs_update_timestamp
 	fi
 
 	# and finally set version where appropriate.
