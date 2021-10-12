@@ -110,7 +110,7 @@ gen_newversion() {
 }
 
 update_running_versions() {
-	mv "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
+	cp "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
 
 	[ "$(stat -f -c %T /etc/sw-versions)" = "overlayfs" ] || return
 
