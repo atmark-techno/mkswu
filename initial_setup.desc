@@ -1,0 +1,18 @@
+# Initial update is done with the onetime public key, override used keys
+PRIVKEY=swupdate-onetime-public.key
+PUBKEY=swupdate-onetime-public.pem
+
+# Set our own swupdate certificate.
+# change the '>>' to '>' if you do not want to keep the Armadillo
+# Base OS update certificate. You will no longer be able to update
+# directly from atmark-techno.com servers.
+swdesc_exec --version extra_os.initial_setup 1 \
+	swupdate.pem 'cat $1 >> /etc/swupdate.pem'
+
+# Set your own passwords for root and atmark users.
+# /!\ The install will fail if this is either is left unset
+# You can generate your own hash with the following command:
+# python3 -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.METHOD_SHA512))'
+#swdesc_command --version extra_os.initial_setup 1 \
+#	"usermod -p '$6$iozDcN4IO6BqNPQ/$Pg1F9Raa9zR6/gbGzDz9jcmVaJUCbUYdNU0Z75zp67CRQNN569MZSOXGktyiAxLawocXIM0xp0CkDR91/NZfs/' atmark" \
+#	"usermod -p '$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.' root"
