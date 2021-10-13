@@ -468,7 +468,6 @@ swdesc_exec() {
 swdesc_command() {
 	local cmd="$cmd" file
 	local component="$component" version="$version" board="$board"
-	local compress=""
 
 	parse_swdesc command "$@"
 
@@ -486,7 +485,6 @@ swdesc_command() {
 swdesc_command_nochroot() {
 	local cmd="$cmd" file
 	local component="$component" version="$version" board="$board"
-	local compress=""
 
 	parse_swdesc command "$@"
 
@@ -504,7 +502,6 @@ swdesc_command_nochroot() {
 swdesc_script() {
 	local script="$script"
 	local component="$component" version="$version" board="$board"
-	local compress=""
 
 	parse_swdesc script "$@"
 
@@ -524,7 +521,6 @@ swdesc_script_nochroot() {
 swdesc_embed_container() {
 	local image="$image"
 	local component="$component" version="$version" board="$board"
-	local compress="force"
 
 	parse_swdesc embed_container "$@"
 
