@@ -76,8 +76,8 @@ if command -v "$SWUPDATE" > /dev/null; then
 		&& error "Should not have succeeded"
 	rm -rf /tmp/swupdate-test
 
-	# These tests require /target existing and semi-populated
-	if [ -e /target/bin/sh ] \
+	# These tests require podman, /target existing and semi-populated
+	if command -v podman > /dev/null && [ -e /target/bin/sh ] \
 		&& mkdir -p /target/var/app/volumes /target/var/app/rollback/volumes; then
 		# tests/exec_quoting
 		mkdir /tmp/swupdate-test /target/tmp/swupdate-test
