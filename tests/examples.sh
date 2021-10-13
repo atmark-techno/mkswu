@@ -12,7 +12,7 @@ build_check examples/custom_script "file custom_script_app.sh scripts.tar.zst" \
 # sshd: build tar
 build_check examples/enable_sshd "version extra_os.sshd .+" \
 	"file-tar examples_enable_sshd_root__root___433ab7755d241729f0e12b13e67effc22b8e667b.tar.zst ./.ssh/authorized_keys" \
-	"swdesc ssh-keygen enable_sshd.*tar.zst"
+	"swdesc ssh-keygen enable_sshd.*tar.zst rc-update"
 
 # pull container: build tar
 tar -C examples/nginx_start -cf examples/nginx_start.tar .

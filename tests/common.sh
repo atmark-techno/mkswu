@@ -9,6 +9,8 @@ error() {
 	exit 1
 }
 
+export SWDESC_TEST=1
+
 check() {
 	local type="$1"
 	local file tar regex
