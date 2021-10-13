@@ -13,9 +13,8 @@ swdesc_exec --version extra_os.initial_setup 1 \
 
 # If encryption is setup, also send encryption key
 if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then
-	ln -s "$(readlink -e $ORIG_ENCRYPT_KEYFILE)" "$OUTDIR/swupdate.aes-key"
 	swdesc_files --version extra_os.initial_setup 1 \
-		--dest /etc "$OUTDIR/swupdate.aes-key"
+		--dest /etc "$ORIG_ENCRYPT_KEYFILE"
 	swdesc_command --version extra_os.initial_setup 1 \
 		"sed -i -e 's/# aes-key-file/aes-key-file/' /etc/swupdate.cfg"
 fi
