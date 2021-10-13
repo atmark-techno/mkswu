@@ -22,7 +22,7 @@ sed -e "s/# ENCRYPT_KEYFILE/ENCRYPT_KEYFILE/" mkimage.conf > tests/mkimage-aes.c
 ./genkey.sh --aes --config tests/mkimage-aes.conf
 conf=tests/mkimage-aes.conf build_check tests/aes
 
-build_check tests/board "swdesc 'yakushima-es1 = '"
+build_check tests/board "swdesc 'iot-g4-es1 = '"
 build_check tests/board_fail
 
 build_check tests/exec_quoting "swdesc 'touch /tmp/swupdate-test'"
@@ -30,11 +30,11 @@ build_check tests/exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 
 # install test
 SWUPDATE="${SWUPDATE:-swupdate}"
-HWREV="${HWREV:-/etc/hwrevision}"
 if command -v "$SWUPDATE" > /dev/null; then
 	# setup
-	if [ "$(id -u)" = "0" ] || [ -w "$HWREV" ]; then
-		echo "yakushima-es1 at1" > "$HWREV"
+	HWREV="${HWREV:-/etc/hwrevision}"
+	if [ -w "$HWREV" ]; then
+		echo "iot-g4-es1 at1" > "$HWREV"
 	fi
 	# tests/install_files
 	rm -rf /tmp/swupdate-test /target/tmp/swupdate-test
