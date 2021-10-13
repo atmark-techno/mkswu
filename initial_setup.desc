@@ -27,7 +27,6 @@ fi
 #       "usermod -p '"'$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.'"' root"
 # You can also lock the account, e.g.
 #       "usermod -L atmark"
-error "Set users passwords and remove this error line"
 swdesc_command --version extra_os.initial_setup 1 \
 	"usermod -p '"'$6$salt$hash'"' atmark" \
 	"usermod -p '"'$6$salt$hash'"' root"

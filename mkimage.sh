@@ -680,6 +680,14 @@ EOF
 	indent=0 write_line "};"
 }
 
+check_common_mistakes() {
+	local swdesc="$OUTDIR/$1"
+
+	# grep for common patterns of easy mistakes that would fail installing
+	grep -qF '$6$salt$hash' "$swdesc" \
+		&& error "Please set user passwords (usermod command in .desc)"
+}
+
 sign() {
 	local file="$OUTDIR/$1"
 
@@ -703,6 +711,7 @@ sign() {
 }
 
 make_cpio() {
+	check_common_mistakes sw-description
 	sign sw-description
 	(
 		cd "$OUTDIR" || error "Could not enter $OUTDIR"
@@ -790,6 +799,8 @@ sw-description.sig"
 	# XXX debian's libconfig is obsolete and does not allow
 	# trailing commas at the end of lists (allowed from 1.7.0)
 	# probably want to sed these out at some point for compatibility
+	# (Note this is only required to run swupdate on debian,
+	#  not for image generation)
 	make_cpio
 }
 
