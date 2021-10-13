@@ -2,4 +2,4 @@
 # any different version from current system's (based on sw-versions)
 # will be installed
 swdesc_files --version kernel 5.10.0-1 --dest /boot \
-	boot "examples/Image" "examples/imx8mp-yakushima-eva.dtb"
+	"examples/Image" "examples/imx8mp-yakushima-eva.dtb"

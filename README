@@ -56,11 +56,14 @@ swdesc_tar <tar file> [--dest <dest>]
   Extract <tar file> at <path> within new system.
   Destination path must be within /var/app/(rollback/)?volumes
   unless rootfs is targeted (see <component> in Glossary), and defaults
-  to / for os variants and /var/app/rollback/volumes otherwise
+  to / for os versions and /var/app/rollback/volumes otherwise
 
-swdesc_files <name> [--dest <dest>] <file> [<more files>]
-  Copy files directly into <path> (no subdirectory are kept)
-  <name> is an arbitrary name (cannot reuse the same name twice)
+swdesc_files [--basedir <basedir>] [--dest <dest>] <file> [<more files>]
+  Copy files into <dest> (same defaults as swdesc_tar), as they
+  are relative to <basedir>
+  basedir defaults to the first argument if it is a directory (assumes
+  single argument: all the directory content will be extracted to <dest>),
+  or the first argument's parent otherwise.
 
 swdesc_command "<cmd>"
   Run command inside new root

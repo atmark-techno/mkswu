@@ -1,13 +1,22 @@
 #!/bin/bash
 
 set -ex
+
+# sometimes remove tests/out directory to force regeneration
+[ -z "$CLEAN_TESTS_OUT" ] && ((RANDOM % 2)) && CLEAN_TESTS_OUT=yes
+if [ "$CLEAN_TESTS_OUT" = "yes" ]; then
+	echo "Removing ./tests/out"
+	rm -rf ./tests/out
+fi
+
 ./tests/examples.sh
 ./tests/scripts.sh
 
 . ./tests/common.sh
 
 build_check tests/spaces "file test\ space.tar.zst"
-build_check tests/install_files "file-tar somefiles.tar.zst test\ space test\ space.tar"
+build_check tests/install_files \
+	"file-tar tests__tmp_swupdate_..e_zoo_test_space_tar_e1a4910d4523d9256c895c530987e9c2ca267063.tar.zst zoo/test\ space zoo/test\ space.tar"
 
 sed -e "s/# ENCRYPT_KEYFILE/ENCRYPT_KEYFILE/" mkimage.conf > tests/mkimage-aes.conf
 ./genkey.sh --aes --config tests/mkimage-aes.conf
@@ -33,9 +42,9 @@ if command -v "$SWUPDATE" > /dev/null; then
 	"$SWUPDATE" -i ./tests/out/install_files.swu -v -k swupdate.pem \
 		|| error "swupdate failed"
 	ls /tmp/swupdate-test
-	[ "$(cat "/tmp/swupdate-test/test space")" = "test content" ] \
+	[ "$(cat "/tmp/swupdate-test/zoo/test space")" = "test content" ] \
 		|| error "test space content does not match"
-	[ "$(tar tf "/tmp/swupdate-test/test space.tar")" = "test space" ] \
+	[ "$(tar tf "/tmp/swupdate-test/zoo/test space.tar")" = "test space" ] \
 		|| error "test space.tar content does not match"
 	rm -rf /tmp/swupdate-test
 

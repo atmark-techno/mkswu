@@ -250,10 +250,17 @@ parse_swdesc() {
 			SKIP=2
 			;;
 		"-d"|"--dest")
-			[ $# -lt 2 ] && error "$ARG requires <component> <version> arguments"
+			[ $# -lt 1 ] && error "$ARG requires an argument"
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
 				|| error "$ARG only allowed for swdesc_files and swdesc_tar"
 			dest="$1"
+			SKIP=1
+			;;
+		"--basedir")
+			[ $# -lt 1 ] && error "$ARG requires an argument"
+			[ "$CMD" = "files" ] \
+				|| error "$ARG only allowed for swdesc_files"
+			basedir="$1"
 			SKIP=1
 			;;
 		*)
@@ -274,9 +281,7 @@ parse_swdesc() {
 		;;
 	files)
 		[ $# -eq 0 ] && [ -n "$file" ] && [ -n "$tarfiles_src" ] && return
-		[ $# -gt 1 ] || error "Usage: swdesc_files [options] name file [files...]"
-		file="$1"
-		shift
+		[ $# -ge 1 ] || error "Usage: swdesc_files [options] file [files...]"
 		tarfiles_src="$(printf "%s\n" "$@")"
 		;;
 	command)
@@ -390,31 +395,53 @@ swdesc_tar() {
 		"installed-directly = true;" "path = \"$target$dest\";"
 }
 
+set_file_from_content() {
+	local content="$*"
+
+	file="$(echo -n "$content" | tr -c '[:alnum:]' '_')"
+	if [ "${#file}" -gt 40 ]; then
+		file="$(echo -n "$file" | head -c 20)..$(echo -n "$file" | tail -c 20)"
+	fi
+	file="${file}_$(echo -n "$content" | sha1sum | cut -d' ' -f1)"
+	file="$OUTDIR/${file}"
+}
+
 swdesc_files() {
-	local file="$file" dest="$dest"
+	local file="$file" dest="$dest" basedir="$basedir"
 	local component="$component" version="$version" board="$board"
-	local tarfile_src tarfile tarfiles_src="$tarfiles_src"
-	local update= mtime
+	local tarfile tarfile_raw tarfiles_src="$tarfiles_src"
+	local mtime=0
 	local IFS="
 "
 	parse_swdesc files "$@"
 
-	[ -e "$OUTDIR/$file.tar" ] || update=1
+	set -- $tarfiles_src
+	# XXX temporary warning -- until when?
+	[ -e "$1" ] || error "$1 does not exist" \
+		"please note swdesc_files syntax changed and no longer requires setting a name"
+	if [ -z "$basedir" ]; then
+		[ -d "$1" ] && basedir="$1" || basedir=$(dirname "$1")
+	fi
 
 	set --
-	for tarfile_src in $tarfiles_src; do
-		tarfile="${tarfile_src##*/}"
-		link "$tarfile_src" "$OUTDIR/$tarfile" && update=1
-		if [ -z "$update" ]; then
-			mtime=$(find "$tarfile_src" -exec stat -c "%Y" {} + \
+	for tarfile_raw in $tarfiles_src; do
+		tarfile=$(realpath -e -s --relative-to="$basedir" "$tarfile_raw") \
+			|| error "$tarfile_raw does not exist?"
+		[ "${tarfile#../}" = "$tarfile" ] \
+			|| error "$tarfile_raw is not inside $basedir"
+
+		mtime=$({ echo "$mtime"; find "$tarfile_raw" -exec stat -c "%Y" {} +; } \
 				| awk '$1 > max { max=$1 } END { print max }')
-			[ "$mtime" -gt "$(stat -c "%Y" "$OUTDIR/$file.tar")" ] && update=1
-		fi
 		set -- "$@" "$tarfile"
 	done
-	[ -z "$update" ] || tar -chf "$OUTDIR/$file.tar" -C "$OUTDIR" "$@" \
-		|| error "Could not create tar for $file"
-	swdesc_tar "$OUTDIR/$file.tar"
+	set_file_from_content "$basedir" "$dest" "$@"
+	file="$file.tar"
+	if ! [ -e "$file" ] \
+	    || [ "$mtime" -gt "$(stat -c "%Y" "$file")" ]; then
+		tar -cf "$file" -C "$basedir" "$@" \
+			|| error "Could not create tar for $file"
+	fi
+	swdesc_tar "$file"
 }
 
 
@@ -471,12 +498,7 @@ swdesc_command() {
 
 	parse_swdesc command "$@"
 
-	file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
-	if [ "${#file}" -gt 40 ]; then
-		file="$(echo -n "$file" | head -c 20)..$(echo -n "$file" | tail -c 20)"
-	fi
-	file="${file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
-	file="$OUTDIR/${file}"
+	set_file_from_content "$cmd"
 	[ -e "$file" ] || : > "$file"
 
 	swdesc_exec
@@ -488,12 +510,7 @@ swdesc_command_nochroot() {
 
 	parse_swdesc command "$@"
 
-	file="$(echo -n "$cmd" | tr -c '[:alnum:]' '_')"
-	if [ "${#file}" -gt 40 ]; then
-		file="$(echo -n "$file" | head -c 20)..$(echo -n "$file" | tail -c 20)"
-	fi
-	file="${file}_$(echo -n "$cmd" | sha1sum | cut -d' ' -f1)"
-	file="$OUTDIR/${file}"
+	set_file_from_content "$cmd"
 	[ -e "$file" ] || : > "$file"
 
 	swdesc_exec_nochroot
@@ -566,7 +583,7 @@ embedded_preinstall_script() {
 		fi
 	done
 	[ -n "$update" ] \
-		&& tar -chf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
+		&& tar -cf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
 
 	swdesc_exec_nochroot "$OUTDIR/scripts.tar" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
 			'mkdir ${TMPDIR:-/var/tmp}/scripts' \
