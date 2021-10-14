@@ -11,6 +11,24 @@ get_version() {
 version_higher() {
 	local oldvers="$1"
 	local newvers="$2"
+	local oldpredash newpredash
+	local oldhasdash="" newhasdash=""
+
+	oldpredash=${oldvers%%-*}
+	newpredash=${newvers%%-*}
+	if [ "$oldpredash" = "$newpredash" ]; then
+		# swupdate compares version as semver which says x.y.z > x.y.z-t
+		# if only either of the two component have a dash *and*
+		# the prefix part before the only dash is the same, override
+		# sort -V result here.
+		[ "$oldpredash" != "$oldvers" ] && oldhasdash="1"
+		[ "$newpredash" != "$newvers" ] && newhasdash="1"
+
+		case "$oldhasdash,$newhasdash" in
+		0,1) return 0;;
+		1,0) return 1;;
+		esac
+	fi
 
 	! echo -e "$2\n$1" | sort -VC
 }
