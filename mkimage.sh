@@ -183,14 +183,21 @@ $file"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
 	if [ -n "$component" ]; then
+		[ -n "$version" ] || error "component $component was set with empty version"
 		case "$component" in
 		uboot|kernel)
 			install_if="different";;
+		base_os)
+			# base_os must be x.y.z-t format to ensure proper ordering
+			# due to clumsy swupdate version sort
+			echo "$version" | grep -qE '^[0-9]*(\.[0-9]*(\.[0-9]*)?)?-.' \
+				|| error "base_os version $version must be in x[.y[.z]]-t format"
+			install_if="higher";;
 		*)
 			install_if="higher";;
 		esac
 		write_line "name = \"$component\";"
-		[ -n "$version" ] && write_line "version = \"$version\";" \
+		write_line "version = \"$version\";" \
 						"install-if-${install_if} = true;"
 
 		# remember version for scripts
@@ -344,7 +351,7 @@ pad_uboot() {
 }
 
 swdesc_uboot() {
-	local UBOOT="$UBOOT" component=uboot version board="$board"
+	local UBOOT="$UBOOT" component=uboot version="$version" board="$board"
 
 	parse_swdesc uboot "$@"
 
