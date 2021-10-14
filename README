@@ -15,11 +15,13 @@ Helper to generate swupdate image.
 
 Configurable options (shell format):
 
+PUBKEY: path to certificate for signing
 PRIVKEY: path to key for signing
 PRIVKEY_PASS: passphrase for private key, see openssl(1) "Pass Phrase
               Options" for examples (e.g. file:pathname)
 ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
+DESCRIPTION: arbitrary description string. Displayed in verbose swupdate run.
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
 FORCE_VERSION: allow building image with no explicit version set.

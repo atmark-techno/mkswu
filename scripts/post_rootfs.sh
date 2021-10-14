@@ -173,8 +173,6 @@ EOF
 
 		# remove open access swupdate certificate or complain
 		update_swupdate_certificate
-
-		date +%s.%N > /target/etc/.rootfs_update_timestamp
 	fi
 
 	# and finally set version where appropriate.

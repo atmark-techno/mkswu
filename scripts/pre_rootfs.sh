@@ -11,7 +11,7 @@ copy_to_target() {
 	done
 }
 
-prepare_rootfs() {
+mount_target_rootfs() {
 	local dev="${partdev}$((ab+1))"
 	local uptodate basemount
 	local tmp fail extlinux
@@ -61,7 +61,8 @@ prepare_rootfs() {
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
 	[ -e "/boot/extlinux.conf" ] && extlinux=1
-	mkfs.ext4 ${extlinux:+-O "^64bit"} -L "rootfs_${ab}" -F "$dev" || error "Could not reformat $dev"
+	mkfs.ext4 ${extlinux:+-O "^64bit"} -L "rootfs_${ab}" -F "$dev" \
+		|| error "Could not reformat $dev"
 	mount "$dev" "/target" || error "Could not mount $dev"
 
 	mkdir -p /target/boot /target/mnt /target/target
@@ -98,6 +99,16 @@ prepare_rootfs() {
 	cp -ax "$basemount"/. /target/ || error "Could not copy existing fs over"
 	umount "$basemount"
 	rmdir "$basemount"
+}
+
+prepare_rootfs() {
+	mount_target_rootfs
+	if update_rootfs; then
+		# we won't be able to reuse the fs again, do this
+		# now in case of error
+		date +%s.%N > /target/etc/.rootfs_update_timestamp \
+			|| error "Could not update rootfs timestamp"
+	fi
 }
 
 prepare_rootfs
