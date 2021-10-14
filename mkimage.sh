@@ -190,10 +190,13 @@ $file"
 		base_os)
 			# base_os must be x.y.z-t format to ensure proper ordering
 			# due to clumsy swupdate version sort
-			echo "$version" | grep -qE '^[0-9]*(\.[0-9]*(\.[0-9]*)?)?-.' \
+			echo "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?-[a-z0-9.]+$' \
 				|| error "base_os version $version must be in x[.y[.z]]-t format"
 			install_if="higher";;
 		*)
+			# handle only x.y.z.t or x.y.z-t
+			echo "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[a-z0-9.]+)?$' \
+				|| error "Version $version must be x.y.z.t (numbers only) or x.y.z-t (x-z numbers only)"
 			install_if="higher";;
 		esac
 		write_line "name = \"$component\";"
