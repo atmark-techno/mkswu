@@ -1,11 +1,11 @@
-# uboot image can be genrated with atmark imx-boot script
-# and will be written in /dev/mmcblkXbootY or in the bootloader
-# position of sd card
+# uboot image can be generated with atmark imx-boot script
 swdesc_uboot imx-boot_yakushima-eva
 
 # base OS is a tar that will be extracted on a blank filesystem,
-# after copying just a few key config files. see scripts/pre_rootfs.sh
+# after copying just a few key config files.
 #
 # OS updates are only installed if version is greater than previous update
-# so if you install your own updates atmark updates might not get installed
-swdesc_tar "alpine-aarch64-20210622.tar.zst" --version base_os 20210622
+# so if you install your own updates atmark-techno provided Armadillo Base OS
+# updates might not get installed
+swdesc_tar "alpine-aarch64-3.14.2-at.1.20211012.tar.zst" \
+           --version base_os 3.14.2-at.1.20211012
