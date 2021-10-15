@@ -187,16 +187,31 @@ $file"
 		case "$component" in
 		uboot|kernel)
 			install_if="different";;
-		base_os)
-			# base_os must be x.y.z-t format to ensure proper ordering
-			# due to clumsy swupdate version sort
-			echo "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?-[a-z0-9.]+$' \
-				|| error "base_os version $version must be in x[.y[.z]]-t format"
-			install_if="higher";;
 		*)
+			local max
 			# handle only x.y.z.t or x.y.z-t
-			echo "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[a-z0-9.]+)?$' \
-				|| error "Version $version must be x.y.z.t (numbers only) or x.y.z-t (x-z numbers only)"
+			echo "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
+				|| error "Version $version must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
+			# ... and check for max values
+			if [ "${version%-*}" = "${version}" ]; then
+				# only dots, "old style version"
+				max=65535
+				# base_os must be x.y.z-t format to avoid surprises
+				# with semver prerelease field filtering
+				[ "$component" = "base_os" ] \
+					&& error "base_os version $version must be in x[.y[.z]]-t format"
+			else
+				# semver, signed int
+				max=2147483647
+			fi
+			echo "$version" | tr '.-' '\n' | awk '
+				/^[0-9]+$/ && $1 > '$max' {
+					print $1 " must be <= '$max'";
+					exit(1);
+				}
+				/[0-9][a-zA-Z]|[a-zA-Z][0-9]/ {
+					print "WARNING: " $1 " will be sorted alphabetically";
+				}' >&2 || error "version check failed: $version"
 			install_if="higher";;
 		esac
 		write_line "name = \"$component\";"
