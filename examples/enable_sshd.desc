@@ -7,4 +7,4 @@ swdesc_files --version extra_os.sshd 1 \
 	--dest /root examples/enable_sshd/root
 swdesc_command --version extra_os.sshd 1 \
 	"ssh-keygen -A" \
-	"rc-update add sshd"
+	"rc-update add sshd default"
