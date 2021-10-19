@@ -194,8 +194,13 @@ $file"
 				|| error "Version $version must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
 			# ... and check for max values
 			if [ "${version%-*}" = "${version}" ]; then
-				# only dots, "old style version"
-				max=65535
+				# only dots, "old style version" valid for 16 bits, but now overflow
+				# falls back to semver which is signed int but only for 3 elements
+				if echo "${version}" | grep -qE '\..*\..*\.'; then
+					max=65535
+				else
+					max=2147483647
+				fi
 				# base_os must be x.y.z-t format to avoid surprises
 				# with semver prerelease field filtering
 				[ "$component" = "base_os" ] \
