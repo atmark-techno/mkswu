@@ -146,25 +146,29 @@ post_rootfs() {
 	if [ -n "$rootfs_created" ]; then
 		# fwenv: either generate a new one for mmc, or copy for sd boot (supersedes version in update)
 		if [ "$rootdev" = "/dev/mmcblk2" ]; then
-			cat > /target/etc/fw_env.config <<EOF
+			cat > /target/etc/fw_env.config <<EOF \
+				|| error "Could not write fw_env.config"
 ${rootdev}boot${ab} 0x3fe000 0x2000
 ${rootdev}boot${ab} 0x3fa000 0x2000
 EOF
 		else
-			cp /etc/fw_env.config /target/etc/fw_env.config
+			cp /etc/fw_env.config /target/etc/fw_env.config \
+				|| error "Could not copy fw_env.config"
 		fi
 
 		# adjust ab_boot
-		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab
+		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab \
+			|| error "Could not update fstab"
 
 		# use appfs storage for podman if used previously
 		if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 			sed -i -e 's@graphroot = .*@graphroot = "/var/lib/containers/storage"@' \
-				/target/etc/containers/storage.conf
+				/target/etc/containers/storage.conf \
+				|| error "could not rewrite storage.conf"
 		fi
 	fi
 
-	# extra fiuxps on update
+	# extra fixups on update
 	# in theory we should also check shadow/cert if no update, but the system
 	# needs extra os update to start containers so this is enough for safety check
 	if update_rootfs; then
@@ -182,7 +186,8 @@ EOF
 		update_running_versions "$SCRIPTSDIR/sw-versions.merged"
 		soft_fail=1
 	else
-		cp "$SCRIPTSDIR/sw-versions.merged" "/target/etc/sw-versions"
+		cp "$SCRIPTSDIR/sw-versions.merged" "/target/etc/sw-versions" \
+			|| error "Could not set sw-versions"
 	fi
 
 
