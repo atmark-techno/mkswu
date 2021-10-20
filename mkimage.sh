@@ -571,7 +571,7 @@ swdesc_embed_container() {
 
 	parse_swdesc embed_container "$@"
 
-	swdesc_exec_nochroot "$image" "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly -l"
+	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly -l $1'
 }
 
 swdesc_pull_container() {
@@ -580,7 +580,7 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
-	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly \\\"$image\\\""
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly \"'"$image"'\"'
 }
 
 swdesc_usb_container() {
@@ -598,7 +598,7 @@ swdesc_usb_container() {
 	sign "$image_usb"
 	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive along with $OUT" >&2
 
-	swdesc_command_nochroot "${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l /mnt/$image_usb"
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
 }
 
 embedded_preinstall_script() {
