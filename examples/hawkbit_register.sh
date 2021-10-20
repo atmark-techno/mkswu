@@ -92,43 +92,6 @@ register_device() {
 	register_device
 }
 
-# checks the device we just created is accessible.
-# XXX do we need this at all?
-configure_device() {
-	local CONTROLLER_URL="${HAWKBIT_URL}/${HAWKBIT_TENANT}/controller/v1/${CONTROLLER_ID}"
-	local AUTHORIZATION="Authorization: TargetToken $SECURITY_TOKEN"
-
-	echo "Trying $AUTHORIZATION $CONTROLLER_URL"
-
-	curl $CURLOPT -X GET -H "$AUTHORIZATION" "$CONTROLLER_URL" -o curlout \
-		|| error "Could not send request to $HAWKBIT_URL"
-#{"config":{"polling":{"sleep":"00:05:00"}},"_links":{"configData":{"href":"https://tmp.xmpp.codewreck.org/DEFAULT/controller/v1/device01/configData"}}}
-
-	grep -q "config" curlout \
-		|| error "Could not get our own config ($CONTROLLER_ID)"
-	#grep -q "configData" curlout \
-	#	|| error "Device $CONTROLLER_ID was just registered, but already configured?"
-
-	# XXX could send custom attributes here.
-	# note this is not valid if data is empty
-	#curl $CURLOPT -X PUT -H "$AUTHORIZATION" "$CONTROLLER_URL/configData" \
-	#	-H 'Content-Type: application/json' \
-	#	-d '{
-	#		"mode": "merge",
-	#		"data": {
-	#			"attribute": "value",
-	#			"attribute2": "value"
-	#		},
-	#		"status": {
-	#			"result": { "finished": "success" },
-	#			"execution": "closed",
-	#			"details": []
-	#		}
-	#	}' --fail -o /dev/null \
-	#	|| error "Could not configure device"
-# empty reply, use --fail to check http error code instead
-}
-
 update_swupdate_cfg() {
 	# nuke the suricatta section if present, then append our own
 	sed '/suricatta:/,/}/d' < /etc/swupdate.cfg > swupdate.cfg
@@ -170,7 +133,6 @@ main() {
 	init
 	wait_network
 	register_device
-	#configure_device
 	update_swupdate_cfg
 }
 
