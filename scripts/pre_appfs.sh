@@ -64,10 +64,6 @@ prepare_appfs() {
 	mount -t btrfs -o "$mountopt=tmp" "$dev" /target/var/tmp \
 		|| error "Could not mount tmp subvol"
 
-	rm -rf "/target/var/tmp/podman_update"
-	mkdir "/target/var/tmp/podman_update" \
-		|| error "Could not create /target/var/tmp/podman_update"
-
 	# wait for subvolume deletion to complete to make sure we can use
 	# any reclaimed space
 	# In some rare case this can get stuck (files open or subvolume
