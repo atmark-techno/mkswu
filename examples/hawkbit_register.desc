@@ -1,8 +1,8 @@
 
 
 if [ -z "$(sed -ne 's/^HAWKBIT_URL=\(.*\)/\1/p' examples/hawkbit_register.sh)" ] \
-    || [ -z "$(sed -ne 's/^MANAGEMENT_LOGIN=\(.*\)/\1/p' examples/hawkbit_register.sh)" ]; then
-    error "You must configure HAWKBIT_URL and MANAGEMENT_LOGIN in examples/hawkbit_register.sh"
+    || [ -z "$(sed -ne 's/^HAWKBIT_PASSWORD=\(.*\)/\1/p' examples/hawkbit_register.sh)" ]; then
+    error "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 fi
 
 swdesc_script examples/hawkbit_register.sh --version extra_os.hawkbit 1

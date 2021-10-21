@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Script configuration: edit this!
-MANAGEMENT_LOGIN=
+HAWKBIT_USER=device
+HAWKBIT_PASSWORD=
 HAWKBIT_URL=
 HAWKBIT_TENANT=default
 # set custom options for suricatta block or in general in the config
@@ -36,7 +37,8 @@ wait_network() {
 }
 
 init() {
-	[ -n "$MANAGEMENT_LOGIN" ] && [ -n "$HAWKBIT_URL" ] || error "Variables top of script must be set"
+	[ -n "$HAWKBIT_PASSWORD" ] && [ -n "$HAWKBIT_URL" ] || error "Variables top of script must be set"
+	HAWKBIT_LOGIN="$HAWKBIT_USER:$HAWKBIT_PASSWORD"
 
 	# DEVICE_ID="1234-1234-1234" with model-id, lot, serial in this order
 	DEVICE_ID=$(dd if=/sys/bus/nvmem/devices/imx-ocotp0/nvmem bs=4 skip=56 count=2 status=none \
@@ -63,7 +65,7 @@ init() {
 # register a device name for us
 register_device() {
 	CONTROLLER_ID="armadillo-$DEVICE_ID${REGISTER_RETRY:+-$REGISTER_RETRY}"
-	curl $CURLOPT -u "$MANAGEMENT_LOGIN" -X POST "${HAWKBIT_URL}/rest/v1/targets" \
+	curl $CURLOPT -u "$HAWKBIT_LOGIN" -X POST "${HAWKBIT_URL}/rest/v1/targets" \
 		-H 'Content-Type: application/json' -d '[{
 			"controllerId": "'"$CONTROLLER_ID"'",
 			"name": "Armadillo '"$DEVICE_ID${REGISTER_RETRY:+ ($REGISTER_RETRY)}"'"
@@ -81,9 +83,9 @@ register_device() {
 	[ -n "$SECURITY_TOKEN" ] && return
 
 	grep -q "Unauthorized" curlout \
-		&& error "defined user $MANAGEMENT_LOGIN is not valid or does not have CREATE_TARGET permission"
+		&& error "defined user $HAWKBIT_USER is not valid (bad password?) or does not have CREATE_TARGET permission"
 	grep -q "createdBy" curlout \
-		&& error "defined user $MANAGEMENT_LOGIN does not have READ_TARGET_SECURITY_TOKEN permission"
+		&& error "defined user $HAWKBIT_USER does not have READ_TARGET_SECURITY_TOKEN permission"
 	grep -q "AlreadyExists" curlout \
 		|| error "Unknown error while attempting to register: $(cat curlout)"
 
@@ -122,6 +124,7 @@ EOF
 
 main() {
 	local DEVICE_ID SECURITY_TOKEN REGISTER_RETRY
+	local HAWKBIT_LOGIN CONTROLLER_ID
 	local temp
 
 	temp=$(mktemp -d /tmp/register_hawkbit.XXXXXX) \
