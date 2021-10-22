@@ -606,9 +606,8 @@ swdesc_usb_container() {
 	fi
 	link "$image" "$OUTDIR/$image_usb"
 	sign "$image_usb"
-	echo "Copy these files to USB drive along with $OUT:" >&2
-	printf "%s\n" "$OUTDIR/$image_usb" >&2
-	printf "%s\n" "$OUTDIR/$image_usb.sig" >&2
+	COPY_USB="${COPY_USB:+$COPY_USB }$(shell_quote "$(realpath "$image")")"
+	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
 }
@@ -805,6 +804,7 @@ mkimage() {
 	local FILES="sw-description
 sw-description.sig"
 	local FIRST_SWDESC_INIT=1
+	local COPY_USB=""
 
 	# default default values
 	local UBOOT_SIZE="4M"
@@ -873,6 +873,12 @@ sw-description.sig"
 	# (Note this is only required to run swupdate on debian,
 	#  not for image generation)
 	make_cpio
+
+	if [ -n "$COPY_USB" ]; then
+		echo "----------------"
+		echo "You have sideloaded containers, copy all these files to USB drive:"
+		echo "$(shell_quote "$(realpath "$OUT")") $COPY_USB"
+	fi
 
 	cleanup_outdir
 }
