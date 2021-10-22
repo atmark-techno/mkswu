@@ -42,6 +42,8 @@ link() {
 	local dest="$2"
 	local existing
 
+	track_used "$dest"
+
 	src=$(readlink -e "$src") || error "Cannot find source file: $1"
 
 	if [ -h "$dest" ]; then
@@ -97,13 +99,11 @@ compress() {
 	local file_src="$1"
 	local file_out="$2"
 
+	track_used "$file_src"
+
 	# zstd copies timestamp and test -nt/-ot are strict,
 	# "! newer than" is equivalent to "older or equal than"
-	if [ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ]; then
-		# just update access timestamp for cleanup
-		touch -ah "$file_out"
-		return
-	fi
+	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
 
 	zstd -10 "$file_src" -o "$file_out.tmp" \
 		|| error "failed to compress $file_src"
@@ -171,7 +171,10 @@ write_entry_stdout() {
 	echo "$FILES" | grep -q -x "$file" || FILES="$FILES
 $file"
 
-	[ "$file_src" = "$file_out" ] || link "$file_src" "$file_out"
+	[ "$file_src" = "$file_out" ] && track_used "$file_out" \
+		|| link "$file_src" "$file_out"
+
+	track_used "$file_out.sha256sum"
 
 	if [ -e "$file_out.sha256sum" ] && [ "$file_out.sha256sum" -nt "$file_out" ]; then
 		sha256=$(cat "$file_out.sha256sum")
@@ -476,9 +479,6 @@ swdesc_files() {
 	    || [ "$mtime" -gt "$(stat -c "%Y" "$file")" ]; then
 		tar -cf "$file" -C "$basedir" "$@" \
 			|| error "Could not create tar for $file"
-	else
-		# update access timestamp for cleanup
-		touch -ah "$file"
 	fi
 
 	swdesc_tar "$file"
@@ -539,7 +539,7 @@ swdesc_command() {
 	parse_swdesc command "$@"
 
 	set_file_from_content "$cmd"
-	[ -e "$file" ] && touch -a "$file" || : > "$file"
+	[ -e "$file" ] || : > "$file"
 
 	swdesc_exec
 }
@@ -551,7 +551,7 @@ swdesc_command_nochroot() {
 	parse_swdesc command "$@"
 
 	set_file_from_content "$cmd"
-	[ -e "$file" ] && touch -a "$file" || : > "$file"
+	[ -e "$file" ] || : > "$file"
 
 	swdesc_exec_nochroot
 }
@@ -625,9 +625,6 @@ embedded_preinstall_script() {
 	if [ -n "$update" ]; then
 		tar -cf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" . \
 			|| error "Could not create script.tar"
-	else
-		# update access timestamp for cleanup
-		touch -a "$OUTDIR/scripts.tar"
 	fi
 
 
@@ -649,6 +646,8 @@ write_sw_desc() {
 	local IFS="
 "
 
+	track_used "$OUTDIR/sw-description"
+
 	[ -n "$DESCRIPTION" ] || error "DESCRIPTION must be set"
 	cat <<EOF
 software = {
@@ -659,6 +658,7 @@ EOF
 	# handle boards files first
 	for file in "$OUTDIR/sw-description-"*-*; do
 		[ -e "$file" ] || break
+		track_used "$file"
 		board="${file#*sw-description-*-}"
 		[ -e "$OUTDIR/sw-description-done-$board" ] && continue
 		touch "$OUTDIR/sw-description-done-$board"
@@ -692,14 +692,13 @@ EOF
 		board="${file##*sw-description-}"
 		section="${board%-*}"
 		[ "$section" = "$board" ] && board="" || board="${board#*-}"
-
-
 	done
 
 	# main sections for all boards
 	for section in images files scripts; do
 		file="$OUTDIR/sw-description-$section"
 		[ -e "$file" ] || continue
+		track_used "$file"
 		indent=2 write_line "" "$section: ("
 		indent=4 reindent "$OUTDIR/sw-description-$section"
 		indent=2 write_line ");"
@@ -707,6 +706,7 @@ EOF
 
 	# Store highest versions in special comments
 	if [ -e "$OUTDIR/sw-description-versions" ]; then
+		track_used "$OUTDIR/sw-description-versions"
 		sort -Vr < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 | \
 			sed -e 's/^/  #VERSION /'
 	elif [ -z "$FORCE_VERSION" ]; then
@@ -737,11 +737,9 @@ check_common_mistakes() {
 sign() {
 	local file="$OUTDIR/$1"
 
-	if [ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ]; then
-		# just update access timestamp for cleanup
-		touch -a "$file.sig"
-		return
-	fi
+	track_used "$file.sig"
+
+	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
 	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
 	[ -n "$PUBKEY" ] || error "PUBKEY must be set"
 	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: $PRIVKEY"
@@ -773,25 +771,24 @@ make_cpio() {
 		|| error "cpio does not contain files we requested (in the order we requested): check $OUT"
 }
 
-cleanup_outdir_prepare() {
-	# only cleanup if we can rely on atime
-	touch -a -d "now - 2 day" "$OUTDIR/autocleanup"
-	cat "$OUTDIR/autocleanup" >/dev/null
-	if [ -n "$(find "$OUTDIR/autocleanup" -atime +1)" ]; then
-		# atime not reliable on this system, give up
-		touch "$OUTDIR/nocleanup"
-		return
-	fi
+track_used() {
+	local file
 
-	find "$OUTDIR" -exec touch -ha -d "now - 2 day" {} +
+	for file; do
+		# only track files inside outdir
+		[ "${file#$OUTDIR}" = "$file" ] && continue
+
+		printf "%s\n" "$file" >> "$OUTDIR/used_files"
+	done
 }
 
 cleanup_outdir() {
-	[ -e "$OUTDIR/nocleanup" ] && return
+	local file
 
-	# relatime only updates atime at most once a day so only cleanup after two days
-	# (-atime +1 means > 48h ago)
-	find "$OUTDIR" -atime +1 -delete
+	sort < "$OUTDIR/used_files" > "$OUTDIR/used_files.sorted"
+	find "$OUTDIR" | sort \
+		| join -v 1 - "$OUTDIR/used_files.sorted" \
+		| xargs rm -f
 }
 
 mkimage() {
@@ -854,8 +851,8 @@ sw-description.sig"
 
 	# actual image building
 	mkdir -p "$OUTDIR"
-	rm -f "$OUTDIR/sw-description-"*
-	cleanup_outdir_prepare
+	rm -f "$OUTDIR/sw-description-"* "$OUTDIR/used_files"
+	track_used "$OUTDIR"
 
 	# build sw-desc fragments
 	for DESC; do
