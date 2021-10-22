@@ -99,7 +99,11 @@ compress() {
 
 	# zstd copies timestamp and test -nt/-ot are strict,
 	# "! newer than" is equivalent to "older or equal than"
-	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
+	if [ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ]; then
+		# just update access timestamp for cleanup
+		touch -ah "$file_out"
+		return
+	fi
 
 	zstd -10 "$file_src" -o "$file_out.tmp" \
 		|| error "failed to compress $file_src"
@@ -464,13 +468,19 @@ swdesc_files() {
 				| awk '$1 > max { max=$1 } END { print max }')
 		set -- "$@" "$tarfile"
 	done
+
 	set_file_from_content "$basedir" "$dest" "$@"
 	file="$file.tar"
+
 	if ! [ -e "$file" ] \
 	    || [ "$mtime" -gt "$(stat -c "%Y" "$file")" ]; then
 		tar -cf "$file" -C "$basedir" "$@" \
 			|| error "Could not create tar for $file"
+	else
+		# update access timestamp for cleanup
+		touch -ah "$file"
 	fi
+
 	swdesc_tar "$file"
 }
 
@@ -529,7 +539,7 @@ swdesc_command() {
 	parse_swdesc command "$@"
 
 	set_file_from_content "$cmd"
-	[ -e "$file" ] || : > "$file"
+	[ -e "$file" ] && touch -a "$file" || : > "$file"
 
 	swdesc_exec
 }
@@ -541,7 +551,7 @@ swdesc_command_nochroot() {
 	parse_swdesc command "$@"
 
 	set_file_from_content "$cmd"
-	[ -e "$file" ] || : > "$file"
+	[ -e "$file" ] && touch -a "$file" || : > "$file"
 
 	swdesc_exec_nochroot
 }
@@ -612,8 +622,14 @@ embedded_preinstall_script() {
 			break
 		fi
 	done
-	[ -n "$update" ] \
-		&& tar -cf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" .
+	if [ -n "$update" ]; then
+		tar -cf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" . \
+			|| error "Could not create script.tar"
+	else
+		# update access timestamp for cleanup
+		touch -a "$OUTDIR/scripts.tar"
+	fi
+
 
 	swdesc_exec_nochroot "$OUTDIR/scripts.tar" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
 			'mkdir ${TMPDIR:-/var/tmp}/scripts' \
@@ -721,7 +737,11 @@ check_common_mistakes() {
 sign() {
 	local file="$OUTDIR/$1"
 
-	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
+	if [ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ]; then
+		# just update access timestamp for cleanup
+		touch -a "$file.sig"
+		return
+	fi
 	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
 	[ -n "$PUBKEY" ] || error "PUBKEY must be set"
 	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: $PRIVKEY"
@@ -751,6 +771,27 @@ make_cpio() {
 	CPIO_FILES=$(cpio -t --quiet < "$OUT")
 	[ "$CPIO_FILES" = "$FILES" ] \
 		|| error "cpio does not contain files we requested (in the order we requested): check $OUT"
+}
+
+cleanup_outdir_prepare() {
+	# only cleanup if we can rely on atime
+	touch -a -d "now - 2 day" "$OUTDIR/autocleanup"
+	cat "$OUTDIR/autocleanup" >/dev/null
+	if [ -n "$(find "$OUTDIR/autocleanup" -atime +1)" ]; then
+		# atime not reliable on this system, give up
+		touch "$OUTDIR/nocleanup"
+		return
+	fi
+
+	find "$OUTDIR" -exec touch -ha -d "now - 2 day" {} +
+}
+
+cleanup_outdir() {
+	[ -e "$OUTDIR/nocleanup" ] && return
+
+	# relatime only updates atime at most once a day so only cleanup after two days
+	# (-atime +1 means > 48h ago)
+	find "$OUTDIR" -atime +1 -delete
 }
 
 mkimage() {
@@ -814,6 +855,7 @@ sw-description.sig"
 	# actual image building
 	mkdir -p "$OUTDIR"
 	rm -f "$OUTDIR/sw-description-"*
+	cleanup_outdir_prepare
 
 	# build sw-desc fragments
 	for DESC; do
@@ -832,6 +874,8 @@ sw-description.sig"
 	# (Note this is only required to run swupdate on debian,
 	#  not for image generation)
 	make_cpio
+
+	cleanup_outdir
 }
 
 
