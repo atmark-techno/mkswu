@@ -30,7 +30,7 @@ version_higher() {
 		esac
 	fi
 
-	! echo -e "$2\n$1" | sort -VC
+	! printf "%s\n" "$2" "$1" | sort -VC
 }
 
 version_update() {
@@ -100,12 +100,12 @@ gen_newversion() {
 	while read -r component oldvers; do
 		case "$component" in
 		other_uboot) continue;;
-		uboot) echo "other_uboot $oldvers";;
+		uboot) printf "%s\n" "other_uboot $oldvers";;
 		extra_os*) [ -n "$base_os" ] && continue;;
 		esac
 		newvers=$(get_version "$component")
 		version_update "$component" "$oldvers" "$newvers" || newvers="$oldvers"
-		echo "$component $newvers"
+		printf "%s\n" "$component $newvers"
 	done < /etc/sw-versions > "$SCRIPTSDIR/sw-versions.merged"
 	while read -r component newvers; do
 		oldvers=$(get_version "$component" /etc/sw-versions)
@@ -114,7 +114,7 @@ gen_newversion() {
 			# in genral extra_os and base_os shouldn't be mixed anyway
 			needs_update "$component" || continue
 		fi
-		[ -z "$oldvers" ] && echo "$component $newvers"
+		[ -z "$oldvers" ] && printf "%s\n" "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
 
 	# if no version changed, clean up and fail script to avoid

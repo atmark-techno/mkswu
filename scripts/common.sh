@@ -1,5 +1,5 @@
 error() {
-	echo "$@" >&2
+	printf "%s\n" "$@" >&2
 	cleanup
 	if [ -n "$soft_fail" ]; then
 		echo "An error happened after changes have been applied" >&2

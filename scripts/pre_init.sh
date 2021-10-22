@@ -46,8 +46,8 @@ init_vars() {
 }
 
 save_vars() {
-	echo "$rootdev" > "$SCRIPTSDIR/rootdev" \
-		&& echo "$ab" > "$SCRIPTSDIR/ab" \
+	printf "%s\n" "$rootdev" > "$SCRIPTSDIR/rootdev" \
+		&& printf "%s\n" "$ab" > "$SCRIPTSDIR/ab" \
 		|| error "Could not save local variables"
 	if needs_reboot; then
 		touch "$SCRIPTSDIR/needs_reboot" \

@@ -15,9 +15,9 @@ usage() {
 
 error() {
 	local line
-	echo -n "ERROR: " >&2
+	printf %s "ERROR: " >&2
 	for line; do
-		echo "$line" >&2
+		printf "%s" "$line" >&2
 	done
 	exit 1
 }
@@ -82,7 +82,7 @@ encrypt_file() {
 	# Note if anyone needs debugging, can be decrypted with:
 	# openssl enc -aes-256-cbc -d -in encrypted_file -out decrypted_file -K key -iv iv
 
-	echo "$iv"
+	printf %s "$iv"
 }
 
 setup_encryption() {
@@ -168,7 +168,7 @@ write_entry_stdout() {
 
 	fi
 
-	echo "$FILES" | grep -q -x "$file" || FILES="$FILES
+	printf %s "$FILES" | grep -q -x "$file" || FILES="$FILES
 $file"
 
 	[ "$file_src" = "$file_out" ] && track_used "$file_out" \
@@ -182,7 +182,7 @@ $file"
 		sha256=$(sha256sum < "$file_out") \
 			|| error "Checksumming $file_out failed"
 		sha256=${sha256%% *}
-		echo "$sha256" > "$file_out.sha256sum"
+		printf "%s\n" "$sha256" > "$file_out.sha256sum"
 	fi
 
 
@@ -197,13 +197,13 @@ $file"
 		*)
 			local max
 			# handle only x.y.z.t or x.y.z-t
-			echo "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
+			printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
 				|| error "Version $version must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
 			# ... and check for max values
 			if [ "${version%-*}" = "${version}" ]; then
 				# only dots, "old style version" valid for 16 bits, but now overflow
 				# falls back to semver which is signed int but only for 3 elements
-				if echo "${version}" | grep -qE '\..*\..*\.'; then
+				if printf %s "${version}" | grep -qE '\..*\..*\.'; then
 					max=65535
 				else
 					max=2147483647
@@ -216,7 +216,7 @@ $file"
 				# semver, signed int
 				max=2147483647
 			fi
-			echo "$version" | tr '.-' '\n' | awk '
+			printf %s "$version" | tr '.-' '\n' | awk '
 				/^[0-9]+$/ && $1 > '$max' {
 					print $1 " must be <= '$max'";
 					exit(1);
@@ -231,7 +231,7 @@ $file"
 						"install-if-${install_if} = true;"
 
 		# remember version for scripts
-		echo "$component $version" >> "$OUTDIR/sw-description-versions"
+		printf "%s\n" "$component $version" >> "$OUTDIR/sw-description-versions"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
@@ -435,11 +435,11 @@ swdesc_tar() {
 set_file_from_content() {
 	local content="$*"
 
-	file="$(echo -n "$content" | tr -c '[:alnum:]' '_')"
+	file="$(printf %s "$content" | tr -c '[:alnum:]' '_')"
 	if [ "${#file}" -gt 40 ]; then
-		file="$(echo -n "$file" | head -c 20)..$(echo -n "$file" | tail -c 20)"
+		file="$(printf %s "$file" | head -c 20)..$(printf %s "$file" | tail -c 20)"
 	fi
-	file="${file}_$(echo -n "$content" | sha1sum | cut -d' ' -f1)"
+	file="${file}_$(printf %s "$content" | sha1sum | cut -d' ' -f1)"
 	file="$OUTDIR/${file}"
 }
 
@@ -467,7 +467,7 @@ swdesc_files() {
 		[ "${tarfile#../}" = "$tarfile" ] \
 			|| error "$tarfile_raw is not inside $basedir"
 
-		mtime=$({ echo "$mtime"; find "$tarfile_raw" -exec stat -c "%Y" {} +; } \
+		mtime=$({ printf "%s\n" "$mtime"; find "$tarfile_raw" -exec stat -c "%Y" {} +; } \
 				| awk '$1 > max { max=$1 } END { print max }')
 		set -- "$@" "$tarfile"
 	done
@@ -606,7 +606,9 @@ swdesc_usb_container() {
 	fi
 	link "$image" "$OUTDIR/$image_usb"
 	sign "$image_usb"
-	echo "Copy $OUTDIR/$image_usb and $image_usb.sig to USB drive along with $OUT" >&2
+	echo "Copy these files to USB drive along with $OUT:" >&2
+	printf "%s\n" "$OUTDIR/$image_usb" >&2
+	printf "%s\n" "$OUTDIR/$image_usb.sig" >&2
 
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
 }
@@ -662,8 +664,8 @@ EOF
 		board="${file#*sw-description-*-}"
 		[ -e "$OUTDIR/sw-description-done-$board" ] && continue
 		touch "$OUTDIR/sw-description-done-$board"
-		board_normalize=$(echo -n "$board" | tr -c '[:alnum:]' '_')
-		board_hwcompat=$(eval "echo \"\$HW_COMPAT_$board_normalize"\")
+		board_normalize=$(printf %s "$board" | tr -c '[:alnum:]' '_')
+		board_hwcompat=$(eval "printf %s \"\$HW_COMPAT_$board_normalize"\")
 		[ -n "$board_hwcompat" ] || board_hwcompat="$HW_COMPAT"
 		[ -n "$board_hwcompat" ] || error "HW_COMPAT or HW_COMPAT_$board_normalize must be set"
 		indent=2 write_line "$board = {"
@@ -763,7 +765,7 @@ make_cpio() {
 	sign sw-description
 	(
 		cd "$OUTDIR" || error "Could not enter $OUTDIR"
-		echo "$FILES" | cpio -ov -H crc -L
+		printf %s "$FILES" | cpio -ov -H crc -L
 	) > "$OUT"
 
 	CPIO_FILES=$(cpio -t --quiet < "$OUT")

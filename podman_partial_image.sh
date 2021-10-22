@@ -4,7 +4,7 @@
 # shellcheck disable=SC2039
 
 error() {
-	echo "$@" >&2
+	printf "%s\n" "$@" >&2
 	exit 1
 }
 

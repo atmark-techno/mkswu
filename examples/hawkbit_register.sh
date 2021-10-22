@@ -24,7 +24,7 @@ CURLOPT=-s
 
 
 error() {
-	echo "$@" >&2
+	printf "%s\n" "$@" >&2
 	exit 1
 }
 
@@ -109,12 +109,12 @@ EOF
 		echo "  nocheckcert = true;" >> swupdate.cfg
 	fi
 	if [ -n "$CUSTOM_SWUPDATE_SURICATTA_CFG" ]; then
-		echo "$CUSTOM_SWUPDATE_SURICATTA_CFG" >> swupdate.cfg
+		printf "%s\n" "$CUSTOM_SWUPDATE_SURICATTA_CFG" >> swupdate.cfg
 	fi
 	echo "}" >> swupdate.cfg
 	if [ -n "$CUSTOM_SWUPDATE_CFG" ]; then
 		echo >> swupdate.cfg
-		echo "$CUSTOM_SWUPDATE_CFG" >> swupdate.cfg
+		printf "%s\n" "$CUSTOM_SWUPDATE_CFG" >> swupdate.cfg
 	fi
 	mv swupdate.cfg /etc/swupdate.cfg
 
@@ -129,7 +129,7 @@ main() {
 
 	temp=$(mktemp -d /tmp/register_hawkbit.XXXXXX) \
 		|| error "Could not create temporary directory"
-	trap "rm -rf $temp" EXIT
+	trap "rm -rf '$temp'" EXIT
 
 	cd "$temp" || error "Could not enter temp dir"
 

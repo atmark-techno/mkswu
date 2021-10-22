@@ -1,7 +1,7 @@
 #!/bin/bash
 
 error() {
-	echo "$@"
+	printf "%s\n" "$@"
 	exit 1
 }
 

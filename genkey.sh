@@ -14,9 +14,7 @@ DAYS=$((5*365))
 
 error() {
 	local line
-	for line; do
-		echo "$line" >&2
-	done
+	printf "%s\n" "$@" >&2
 	exit 1
 }
 
@@ -40,7 +38,7 @@ genkey_aes() {
 	[ -n "$ENCRYPT_KEYFILE" ] \
 		|| error "Must set ENCRYPT_KEYFILE in config file (or pass --config if required)"
 	if [ -s "$ENCRYPT_KEYFILE" ]; then
-		echo "$ENCRYPT_KEYFILE already exists, skipping"
+		printf "%s\n" "$ENCRYPT_KEYFILE already exists, skipping"
 		return
 	fi
 
@@ -50,7 +48,7 @@ genkey_aes() {
 	oldumask=$(umask)
 	umask 0377
 	ENCRYPT_KEY="$(openssl rand -hex 32)" || error "No openssl?"
-	echo "$ENCRYPT_KEY $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
+	printf "%s\n" "$ENCRYPT_KEY $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
 	umask "$oldumask"
 }
 
@@ -60,7 +58,7 @@ genkey_rsa() {
 
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
 	if [ -s "$PRIVKEY" ]; then
-		echo "$PRIVKEY already exists, skipping"
+		printf "%s\n" "$PRIVKEY already exists, skipping"
 		return
 	fi
 	[ -n "$CN" ] || error "Certificate common name must be provided with --cn <name>"
