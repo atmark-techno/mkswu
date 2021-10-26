@@ -49,9 +49,7 @@ services:
         "hawkbit.controller.pollingTime": "${HAWKBIT_POLLING_TIME:-00:05:00}",
         "spring.servlet.multipart.max-file-size": "${HAWKBIT_MAX_FILE_SIZE:-1024MB}",
         "spring.servlet.multipart.max-request-size": "-1",
-        "server.use-forward-headers": true,
-        "hawkbit.artifact.url.protocols.download-http.port": "${HAWKBIT_HTTP_PORT:-8080}",
-        "hawkbit.artifact.url.protocols.download-http.protocol": "${HAWKBIT_HTTP_PROTOCOL:-http}"
+        "server.forward-headers-strategy": "NATIVE"
       }'
     restart: always
     volumes:
