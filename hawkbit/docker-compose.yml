@@ -51,12 +51,12 @@ services:
         "spring.servlet.multipart.max-request-size": "-1",
         "server.use-forward-headers": true,
         "hawkbit.artifact.url.protocols.download-http.port": "${HAWKBIT_HTTP_PORT:-8080}",
-        "hawkbit.artifact.url.protocols.download-http.protocol": "{$HAWKBIT_HTTP_PROTOCOL:-http}"
+        "hawkbit.artifact.url.protocols.download-http.protocol": "${HAWKBIT_HTTP_PROTOCOL:-http}"
       }'
     restart: always
     volumes:
       - ./hawkbit_artifactrepo:/opt/hawkbit/artifactrepo
     ports:
-      - "8080:${HAWKBIT_HTTP_PORT:-8080}"
+        - "${HAWKBIT_LISTEN_HOST:-0.0.0.0}:8080:${HAWKBIT_LISTEN_PORT:-8080}"
     labels:
       NAME: "hawkbit"
