@@ -16,9 +16,7 @@ usage() {
 error() {
 	local line
 	printf %s "ERROR: " >&2
-	for line; do
-		printf "%s" "$line" >&2
-	done
+	printf "%s\n" "$@" >&2
 	exit 1
 }
 
