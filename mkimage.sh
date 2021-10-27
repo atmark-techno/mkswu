@@ -387,10 +387,7 @@ swdesc_uboot() {
 
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
 
-	if [ -n "$version" ]; then
-		strings "$UBOOT" | grep -q -w "$version" \
-			|| error "uboot version $version was set, but string not present in $UBOOT: aborting"
-	else
+	if [ -z "$version" ]; then
 		version=$(strings "$UBOOT" |
 				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
 		[ -n "$version" ] \
