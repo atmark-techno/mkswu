@@ -385,6 +385,8 @@ swdesc_uboot() {
 
 	[ -n "$UBOOT_SIZE" ] && pad_uboot
 
+	[ "$component" = "uboot" ] \
+		|| error "Version component for swdesc_uboot must be set to uboot"
 	if [ -z "$version" ]; then
 		version=$(strings "$UBOOT" |
 				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
