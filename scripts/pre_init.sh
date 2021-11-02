@@ -60,8 +60,10 @@ save_vars() {
 }
 
 init() {
+	lock_update
 	cleanup
 	gen_newversion
+
 
 	init_vars
 	save_vars

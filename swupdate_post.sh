@@ -12,6 +12,8 @@ SCRIPTSDIR="$TMPDIR/scripts"
 . "$SCRIPTSDIR/post_uboot.sh"
 . "$SCRIPTSDIR/post_success.sh"
 
+# note we do not unlock after cleanup unless another update
+# is expected to run after this one, a fresh boot is needed.
 cleanup
 rm -rf "$SCRIPTSDIR"
 
@@ -25,6 +27,9 @@ elif needs_reboot; then
 	echo "swupdate triggering reboot!" >&2
 	reboot
 elif [ -n "$SWUPDATE_HAWKBIT" ]; then
+	unlock_update
 	echo "Restarting swupdate-hawkbit service" >&2
 	rc-service swupdate-hawkbit restart
+else
+	unlock_update
 fi
