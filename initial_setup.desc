@@ -33,4 +33,4 @@ swdesc_command --version extra_os.initial_setup 1 \
 
 
 # uncomment if you would like to poweroff the system after the update is complete
-#POST_POWEROFF=1
+#POST_ACTION=poweroff

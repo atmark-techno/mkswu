@@ -25,10 +25,15 @@ DESCRIPTION: arbitrary description string. Displayed in verbose swupdate run.
 UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
             set to blank to keep original file size.
 FORCE_VERSION: allow building image with no explicit version set.
-NO_REBOOT_ALLOW: allow restarting containers without rebooting.
-                 Note this is not compatible with hawkbit updates
-                 that require reboot to report installation success.
-POST_POWEROFF: poweroff the system after update completed
+POST_ACTION: control behaviour post install
+  - not set, empty or "reboot": reboot into new system after updating
+  - poweroff: shut system down after install (useful for provisioning)
+  - container: if the update has no system component, restart only
+               containers without rebooting the system.
+	       If system files were updated reboot normally.
+  - wait: wait forever after update for an external reboot signal.
+          Note further updates will not be installed in this mode:
+          the system MUST reboot before installing the next update.
 
 
 Common options for all helpers:

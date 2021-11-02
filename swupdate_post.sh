@@ -15,9 +15,12 @@ SCRIPTSDIR="$TMPDIR/scripts"
 cleanup
 rm -rf "$SCRIPTSDIR"
 
-if grep -q POST_POWEROFF "$SWDESC" 2>/dev/null; then
+if grep -q POSTACT_POWEROFF "$SWDESC" 2>/dev/null; then
 	echo "swupdate triggering poweroff!" >&2
 	poweroff
+elif grep -q POSTACT_WAIT "$SWDESC" 2>/dev/null; then
+	echo "swupdate waiting until external reboot" >&2
+	sleep infinity
 elif needs_reboot; then
 	echo "swupdate triggering reboot!" >&2
 	reboot

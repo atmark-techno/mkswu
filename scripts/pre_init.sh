@@ -38,7 +38,7 @@ init_vars() {
 		update_rootfs=1
 	fi
 	if update_rootfs || needs_update uboot \
-	    || ! grep -q "NO_REBOOT_ALLOW" "$SWDESC"; then
+	    || ! grep -q "POSTACT_CONTAINER" "$SWDESC"; then
 		needs_reboot=1
 	fi
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \

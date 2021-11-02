@@ -712,8 +712,13 @@ EOF
 		      "Set FORCE_VERSION=1 to allow building"
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #VERSION_FORCE"
-	[ -n "$NO_REBOOT_ALLOW" ] && echo "  #NO_REBOOT_ALLOW"
-	[ -n "$POST_POWEROFF" ] && echo " #POST_POWEROFF"
+	case "$POST_ACTION" in
+	poweroff) echo " #POSTACT_POWEROFF";;
+	wait) echo " #POSTACT_WAIT";;
+	container) echo " #POSTACT_CONTAINER";;
+	""|reboot) ;;
+	*) error "invalid POST_ACTION \"$POST_ACTION\", must be empty, poweroff or wait";;
+	esac
 
 	# and also add extra debug comments
 	for line in $DEBUG_SWDESC; do

@@ -7,7 +7,7 @@ set -e
 
 # custom script: no prereq
 build_check examples/custom_script "file custom_script_app.sh scripts.tar.zst" \
-	"swdesc scripts.tar.zst custom_script.app.sh NO_REBOOT_ALLOW"
+	"swdesc scripts.tar.zst custom_script.app.sh POSTACT_CONTAINER"
 
 # sshd: build tar
 build_check examples/enable_sshd "version extra_os.sshd .+" \
