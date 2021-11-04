@@ -20,8 +20,8 @@ build_check examples/pull_container_nginx \
 	"file-tar examples_nginx_start____25c7d7c1622cc37a871fd62c82d6dda8414a86c3.tar.zst ./etc/atmark/containers/nginx.conf" \
 	"swdesc nginx_start.**tar.zst docker.io/nginx"
 
-# uboot: prereq fullfilled by yakushima tar
-build_check examples/uboot "file imx-boot_yakushima-.*.zst" "version uboot 202.*" "swdesc imx-boot_yakushima-"
+# boot: prereq fullfilled by yakushima tar
+build_check examples/boot "file imx-boot_yakushima-.*.zst" "version boot 202.*" "swdesc imx-boot_yakushima-"
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
 touch examples/Image examples/imx8mp-yakushima-eva.dtb

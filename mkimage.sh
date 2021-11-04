@@ -190,7 +190,7 @@ $file"
 	if [ -n "$component" ]; then
 		[ -n "$version" ] || error "component $component was set with empty version"
 		case "$component" in
-		uboot|kernel)
+		boot|kernel)
 			install_if="different";;
 		*)
 			local max
@@ -304,10 +304,10 @@ parse_swdesc() {
 		esac
 	done
 	case "$CMD" in
-	uboot)
-		[ $# -eq 0 ] && [ -n "$UBOOT" ] && return
-		[ $# -eq 1 ] || error "Usage: swdesc_uboot [options] uboot_file"
-		UBOOT="$1"
+	boot)
+		[ $# -eq 0 ] && [ -n "$BOOT" ] && return
+		[ $# -eq 1 ] || error "Usage: swdesc_boot [options] boot_file"
+		BOOT="$1"
 		;;
 	tar)
 		[ $# -eq 0 ] && [ -n "$source" ] && return
@@ -353,49 +353,49 @@ parse_swdesc() {
 	esac
 }
 
-pad_uboot() {
-	local file="${UBOOT##*/}"
-	local src="$UBOOT"
+pad_boot() {
+	local file="${BOOT##*/}"
+	local src="$BOOT"
 	local size
 
-	UBOOT_SIZE=$(numfmt --from=iec "$UBOOT_SIZE")
-	UBOOT="$OUTDIR/$file"
+	BOOT_SIZE=$(numfmt --from=iec "$BOOT_SIZE")
+	BOOT="$OUTDIR/$file"
 
-	if [ "$src" -ot "$UBOOT" ]; then
-		size=$(stat -c "%s" "$UBOOT")
-		if [ "$size" -eq "$UBOOT_SIZE" ]; then
+	if [ "$src" -ot "$BOOT" ]; then
+		size=$(stat -c "%s" "$BOOT")
+		if [ "$size" -eq "$BOOT_SIZE" ]; then
 			# already up to date
 			return
 		fi
 	fi
 
-	size=$(stat -c "%s" "$src") || error "Cannot stat uboot: $src"
-	if [ "$size" -gt "$UBOOT_SIZE" ]; then
-		error "UBOOT_SIZE set smaller than uboot actual size"
+	size=$(stat -c "%s" "$src") || error "Cannot stat boot file: $src"
+	if [ "$size" -gt "$BOOT_SIZE" ]; then
+		error "BOOT_SIZE set smaller than boot file actual size"
 	fi
-	rm -f "$UBOOT"
-	cp "$src" "$UBOOT"
-	truncate -s "$UBOOT_SIZE" "$UBOOT"
+	rm -f "$BOOT"
+	cp "$src" "$BOOT"
+	truncate -s "$BOOT_SIZE" "$BOOT"
 }
 
-swdesc_uboot() {
-	local UBOOT="$UBOOT" component=uboot version="$version" board="$board"
+swdesc_boot() {
+	local BOOT="$BOOT" component=boot version="$version" board="$board"
 
-	parse_swdesc uboot "$@"
+	parse_swdesc boot "$@"
 
-	[ -n "$UBOOT_SIZE" ] && pad_uboot
+	[ -n "$BOOT_SIZE" ] && pad_boot
 
-	[ "$component" = "uboot" ] \
-		|| error "Version component for swdesc_uboot must be set to uboot"
+	[ "$component" = "boot" ] \
+		|| error "Version component for swdesc_boot must be set to boot"
 	if [ -z "$version" ]; then
-		version=$(strings "$UBOOT" |
+		version=$(strings "$BOOT" |
 				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
 		[ -n "$version" ] \
-			|| error "Could not guess uboot version in $UBOOT"
+			|| error "Could not guess boot version in $BOOT"
 	fi
 
-	write_entry images "$UBOOT" "type = \"raw\";" \
-		"device = \"/dev/swupdate_ubootdev\";"
+	write_entry images "$BOOT" "type = \"raw\";" \
+		"device = \"/dev/swupdate_bootdev\";"
 }
 
 swdesc_tar() {
@@ -809,7 +809,7 @@ sw-description.sig"
 	local COPY_USB=""
 
 	# default default values
-	local UBOOT_SIZE="4M"
+	local BOOT_SIZE="4M"
 	local compress=1
 	local component version board dest
 

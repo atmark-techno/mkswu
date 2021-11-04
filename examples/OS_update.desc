@@ -1,5 +1,5 @@
-# uboot image can be generated with atmark imx-boot script
-swdesc_uboot imx-boot_yakushima-eva
+# boot image can be generated with atmark imx-boot script
+swdesc_boot imx-boot_yakushima-eva
 
 # base OS is a tar that will be extracted on a blank filesystem,
 # after copying just a few key config files.

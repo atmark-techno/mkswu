@@ -9,7 +9,7 @@ SCRIPTSDIR="$TMPDIR/scripts"
 . "$SCRIPTSDIR/post_init.sh"
 . "$SCRIPTSDIR/post_appfs.sh"
 . "$SCRIPTSDIR/post_rootfs.sh"
-. "$SCRIPTSDIR/post_uboot.sh"
+. "$SCRIPTSDIR/post_boot.sh"
 . "$SCRIPTSDIR/post_success.sh"
 
 # note we do not unlock after cleanup unless another update

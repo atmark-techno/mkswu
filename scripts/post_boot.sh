@@ -1,10 +1,10 @@
-cleanup_uboot() {
+cleanup_boot() {
 	local dev
 
-	if dev=$(readlink -e /dev/swupdate_ubootdev) && [ "${dev#/dev/loop}" != "$dev" ]; then
+	if dev=$(readlink -e /dev/swupdate_bootdev) && [ "${dev#/dev/loop}" != "$dev" ]; then
 		losetup -d "$dev" >/dev/null 2>&1
 	fi
-	rm -f /dev/swupdate_ubootdev
+	rm -f /dev/swupdate_bootdev
 
 	if ! needs_reboot; then
 		return
@@ -33,4 +33,4 @@ cleanup_uboot() {
 	soft_fail=1
 }
 
-cleanup_uboot
+cleanup_boot

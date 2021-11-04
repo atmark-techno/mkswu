@@ -22,8 +22,8 @@ PRIVKEY_PASS: passphrase for private key, see openssl(1) "Pass Phrase
 ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
                  on first use
 DESCRIPTION: arbitrary description string. Displayed in verbose swupdate run.
-UBOOT_SIZE: pad uboot image with zeros up to this size (clear env)
-            set to blank to keep original file size.
+BOOT_SIZE: pad boot image with zeros up to this size (clear env)
+           set to blank to keep original file size.
 FORCE_VERSION: allow building image with no explicit version set.
 POST_ACTION: control behaviour post install
   - not set, empty or "reboot": reboot into new system after updating
@@ -42,7 +42,7 @@ Common options for all helpers:
   We define arbitrary components for swupdate to only install update
   if required.
   - Updates are installed only if version is higher than what is on
-    the system, or if not present on the system, except for "uboot"
+    the system, or if not present on the system, except for "boot"
     and "kernel" which are installed if different
   - Components can be defined freely for updates referring to
     containers (container image or files within volumes);
@@ -56,8 +56,8 @@ Common options for all helpers:
 
 Images are then built progressively by calling the following helpers:
 
-swdesc_uboot <uboot>
-  Include uboot file, version is automatically set from file if not set
+swdesc_boot <bootfile>
+  Include boot file, version is automatically set from file if not set
 
 swdesc_tar <tar file> [--dest <dest>]
   Extract <tar file> at <path> within new system.

@@ -37,7 +37,7 @@ init_vars() {
 	    || needs_update_regex "extra_os.*"; then
 		update_rootfs=1
 	fi
-	if update_rootfs || needs_update uboot \
+	if update_rootfs || needs_update boot \
 	    || ! grep -q "POSTACT_CONTAINER" "$SWDESC"; then
 		needs_reboot=1
 	fi

@@ -41,7 +41,7 @@ version_update() {
 	[ -n "$newvers" ] || return 1
 
 	case "$component" in
-	uboot|kernel) [ "$newvers" != "$oldvers" ];;
+	boot|kernel) [ "$newvers" != "$oldvers" ];;
 	*) version_higher "$oldvers" "$newvers";;
 	esac
 }
@@ -99,8 +99,8 @@ gen_newversion() {
 	# Could probably do better but it works and files are small..
 	while read -r component oldvers; do
 		case "$component" in
-		other_uboot) continue;;
-		uboot) printf "%s\n" "other_uboot $oldvers";;
+		other_boot) continue;;
+		boot) printf "%s\n" "other_boot $oldvers";;
 		extra_os*) [ -n "$base_os" ] && continue;;
 		esac
 		newvers=$(get_version "$component")
