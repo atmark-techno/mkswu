@@ -46,10 +46,10 @@ link() {
 
 	if [ -h "$dest" ]; then
 		existing=$(readlink "$dest")
-		[ "$src" = "$existing" ] && return 1
+		[ "$src" = "$existing" ] && return
 		rm -f "$dest" || error "Could not remove previous link at $dest"
 	elif [ -e "$dest" ]; then
-		cmp "$src" "$dest" > /dev/null && return 1
+		cmp "$src" "$dest" > /dev/null && return
 		rm -f "$dest" || error "Could not remove previous file at $dest"
 	fi
 
@@ -733,8 +733,8 @@ check_common_mistakes() {
 	local swdesc="$OUTDIR/$1"
 
 	# grep for common patterns of easy mistakes that would fail installing
-	grep -qF '$6$salt$hash' "$swdesc" \
-		&& error "Please set user passwords (usermod command in .desc)"
+	! grep -qF '$6$salt$hash' "$swdesc" \
+		|| error "Please set user passwords (usermod command in .desc)"
 }
 
 sign() {
@@ -813,6 +813,7 @@ sw-description.sig"
 	local compress=1
 	local component version board dest
 
+	set -e
 
 	local ARG SKIP=0
 	for ARG; do
