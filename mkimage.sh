@@ -498,6 +498,9 @@ swdesc_exec_nochroot() {
 
 	parse_swdesc exec "$@"
 
+	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
+		|| error 'Using swdesc_exec_nochroot with a non-empty file, but not referring to it with $1'
+
 	cmd="sh -c $(shell_quote "$cmd") --"
 
 	write_entry files "$file" "type = \"exec\";" \
@@ -510,6 +513,9 @@ swdesc_exec() {
 	local component="$component" version="$version" board="$board"
 
 	parse_swdesc exec "$@"
+
+	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
+		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
 
 	case "$component" in
 	base_os|extra_os*|kernel)
