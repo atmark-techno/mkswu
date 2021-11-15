@@ -1,0 +1,17 @@
+#########################################################################
+# /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\
+#
+# Do not use on remote devices! Your device will become unavailable!
+#
+# /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\
+#########################################################################
+
+
+# don't run scripts, always run
+DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+FORCE_VERSION=1
+
+# reboot command likely won't work anymore after copy: reboot with sysrq trigger
+swdesc_exec_nochroot "alpine-aarch64-3.14.2-at.1.20211104.img" \
+	'mmc bootpart enable 1 0 /dev/mmcblk2; dd if=$1 of=/dev/mmcblk2 bs=1M conv=fdatasync; echo b > /proc/sysrq-trigger'
+
