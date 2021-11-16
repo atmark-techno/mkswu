@@ -593,7 +593,7 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
-	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly \"'"$image"'\"'
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly "'"$image"'"'
 }
 
 swdesc_usb_container() {
