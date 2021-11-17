@@ -717,7 +717,7 @@ EOF
 		error "No versions found: empty image?" \
 		      "Set FORCE_VERSION=1 to allow building"
 	fi
-	[ -n "$FORCE_VERSION" ] && echo "  #VERSION_FORCE"
+	[ -n "$FORCE_VERSION" ] && echo "  #FORCE_VERSION"
 	case "$POST_ACTION" in
 	poweroff) echo " #POSTACT_POWEROFF";;
 	wait) echo " #POSTACT_WAIT";;

@@ -120,7 +120,7 @@ gen_newversion() {
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
 	if cmp -s /etc/sw-versions "$SCRIPTSDIR/sw-versions.merged" \
-	    && ! grep -q "#VERSION_FORCE" "$SWDESC"; then
+	    && ! grep -q "#FORCE_VERSION" "$SWDESC"; then
 		rm -rf "$SCRIPTSDIR"
 		error "Nothing to do -- failing on purpose to save bandwidth"
 	fi

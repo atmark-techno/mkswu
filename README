@@ -25,6 +25,10 @@ DESCRIPTION: arbitrary description string. Displayed in verbose swupdate run.
 BOOT_SIZE: pad boot image with zeros up to this size (clear env)
            set to blank to keep original file size.
 FORCE_VERSION: allow building image with no explicit version set.
+               (components with no versions will always be installed)
+	       Note that to avoid install loops with USB drive install,
+	       updates with FORCE_VERSION set will be renamed to
+	       <original_name>.swu.installed after successful install.
 POST_ACTION: control behaviour post install
   - not set, empty or "reboot": reboot into new system after updating
   - poweroff: shut system down after install (useful for provisioning)

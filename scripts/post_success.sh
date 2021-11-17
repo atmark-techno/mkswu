@@ -1,9 +1,9 @@
-post_success() {
+post_success_hawkbit() {
 	local dev="${partdev}5"
 	local basemount newstate
 
-	# only create the file for hawkbit service, which sets this env var
-	[ -n "$SWUPDATE_HAWKBIT" ] || return
+	# hawkbit service requires transmitting install status on next
+	# restart, so keep track of it in appfs
 
 	basemount=$(mktemp -d -t btrfs-swupdate.XXXXXX) || error "Could not create temp dir"
 	if ! mount -t btrfs -o subvol=/swupdate "$dev" "$basemount" 2>/dev/null; then
@@ -22,6 +22,18 @@ post_success() {
 	echo "$newstate" > "$basemount/updated-rootfs" || error "Could not write success file"
 	umount "$basemount" || error "Could not umount swupdate subvolume"
 	rmdir "$basemount"
+}
+
+post_success_usb() {
+	# if the image is a force install image, move it to avoid install loop
+	if grep -q "FORCE_VERSION" "$SWDESC"; then
+		mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed"
+	fi
+}
+
+post_success() {
+	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
+	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
 }
 
 post_success
