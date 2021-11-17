@@ -109,6 +109,9 @@ prepare_rootfs() {
 		date +%s.%N > /target/etc/.rootfs_update_timestamp \
 			|| error "Could not update rootfs timestamp"
 	fi
+	if grep -q "CONTAINER_CLEAR" "$SWDESC"; then
+		rm -f /etc/atmark/containers/*.conf
+	fi
 }
 
 prepare_rootfs

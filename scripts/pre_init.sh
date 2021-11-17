@@ -34,7 +34,8 @@ init_vars() {
 	fi
 
 	if needs_update base_os || needs_update kernel \
-	    || needs_update_regex "extra_os.*"; then
+	    || needs_update_regex "extra_os.*" \
+	    || grep -q "CONTAINER_CLEAR" "$SWDESC"; then
 		update_rootfs=1
 	fi
 	if update_rootfs || needs_update boot \

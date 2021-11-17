@@ -718,6 +718,7 @@ EOF
 		      "Set FORCE_VERSION=1 to allow building"
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #FORCE_VERSION"
+	[ -n "$CONTAINER_CLEAR" ] && echo "  #CONTAINER_CLEAR"
 	case "$POST_ACTION" in
 	poweroff) echo " #POSTACT_POWEROFF";;
 	wait) echo " #POSTACT_WAIT";;

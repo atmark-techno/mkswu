@@ -20,6 +20,25 @@ btrfs_subvol_create() {
 	btrfs subvolume create "$basemount/$new"
 }
 
+btrfs_subvol_delete() {
+	local vol="$1"
+
+	[ -e "$basemount/$vol" ] || return 1
+	btrfs subvolume delete "$basemount/$vol"
+}
+
+umount_or_reboot() {
+	local dir="$1"
+
+	is_mountpoint "$dir" || return
+
+	if ! umount "$dir"; then
+		echo "Could not unmount $dir but we really want the space back: reboot and hope swupdate will run again. Note containers will not be able to run after reboot." >&2
+		reboot
+		# reboot returns immediately but takes time: wait for it.
+		sleep infinity
+	fi
+}
 
 prepare_appfs() {
 	local dev="${partdev}5"
@@ -43,6 +62,28 @@ prepare_appfs() {
 		echo "This is only for development, do not use this mode for production!" >&2
 		podman kill -a
 		podman rm -a
+	fi
+
+	if grep -q "CONTAINER_CLEAR" "$SWDESC"; then
+		echo "CONTAINER_CLEAR requested: stopping and destroying all container data first" >&2
+		podman kill -a
+		podman rm -a
+		btrfs_subvol_delete "boot_0/containers_storage"
+		btrfs_subvol_delete "boot_0/volumes"
+		btrfs_subvol_delete "boot_1/containers_storage"
+		btrfs_subvol_delete "boot_1/volumes"
+		btrfs_subvol_delete "volumes"
+		if btrfs_subvol_delete "containers_storage"; then
+			btrfs_subvol_create "containers_storage"
+		fi
+		# we need to unmount volumes or btrfs subvolume sync below will hang
+		# (and not be able to free space)
+		umount_or_reboot /var/lib/containers/storage_readonly/overlay
+		umount_or_reboot /var/lib/containers/storage_readonly
+		umount_or_reboot /var/lib/containers/storage/overlay
+		umount_or_reboot /var/lib/containers/storage
+		umount_or_reboot /var/app/rollback/volumes
+		umount_or_reboot /var/app/volumes
 	fi
 
 	[ -d "$basemount/boot_0" ] || mkdir "$basemount/boot_0"

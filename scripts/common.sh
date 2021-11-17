@@ -84,11 +84,25 @@ unlock_update() {
 	rm -rf /tmp/.swupdate_lock
 }
 
+is_mountpoint() {
+	local dir="$1"
+
+	# busybox 'mountpoint' stats target and checks for device change, so
+	# bind mounts like /var/lib/containers/overlay are not properly detected
+	# as mountpoint by it.
+	# util-linux mountpoint parses /proc/self/mountinfo correctly though so we
+	# could use it if installed, but it is simpler to always reuse our
+	# implementation instead
+	! awk '$5 == "'"$dir"'" { exit 1 }' < /proc/self/mountinfo
+}
+
 umount_if_mountpoint() {
 	local dir="$1"
-	if ! awk '$5 == "'"$dir"'" { exit 1 }' < /proc/self/mountinfo; then
-		umount "$dir" || error "Could not umount $dir"
-	fi
+
+	# nothing to do if not a mountpoint
+	is_mountpoint "$dir" || return
+
+	umount "$dir" || error "Could not umount $dir"
 }
 
 remove_loop() {

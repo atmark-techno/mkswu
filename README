@@ -38,6 +38,11 @@ POST_ACTION: control behaviour post install
   - wait: wait forever after update for an external reboot signal.
           Note further updates will not be installed in this mode:
           the system MUST reboot before installing the next update.
+CONTAINER_CLEAR: if set, swupdate will kill running containers and
+                 remove any running containers from appfs and
+		 /etc/atmark/containers/*.conf before continuing install.
+		 /!\ if install fails this will leave your system
+		 with no application, usage is discouraged /!\
 
 
 Common options for all helpers:
