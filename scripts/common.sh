@@ -1,5 +1,9 @@
 error() {
 	printf "%s\n" "$@" >&2
+
+	# redefine error as no-op: this avoids looping if one of the cleanup operations fail
+	error() { printf "%s\n" "$@" >&2; }
+
 	cleanup
 	if [ -n "$soft_fail" ]; then
 		echo "An error happened after changes have been applied" >&2
