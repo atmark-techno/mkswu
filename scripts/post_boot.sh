@@ -1,11 +1,6 @@
 cleanup_boot() {
 	local dev
 
-	if dev=$(readlink -e /dev/swupdate_bootdev) && [ "${dev#/dev/loop}" != "$dev" ]; then
-		losetup -d "$dev" >/dev/null 2>&1
-	fi
-	rm -f /dev/swupdate_bootdev
-
 	if ! needs_reboot; then
 		return
 	fi

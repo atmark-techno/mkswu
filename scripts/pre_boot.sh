@@ -25,11 +25,6 @@ copy_boot() {
 
 prepare_boot() {
 	local dev
-	# cleanup any leftovers first
-	if dev=$(readlink -e /dev/swupdate_bootdev) && [ "${dev#/dev/loop}" != "$dev" ]; then
-		losetup -d "$dev" >/dev/null 2>&1
-	fi
-	rm -f /dev/swupdate_bootdev
 
 	if ! needs_update "boot"; then
 		copy_boot

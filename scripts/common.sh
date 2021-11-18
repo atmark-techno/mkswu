@@ -109,16 +109,17 @@ umount_if_mountpoint() {
 	umount "$dir" || error "Could not umount $dir"
 }
 
-remove_loop() {
+remove_bootdev_link() {
 	local dev
-	[ -n "$rootdev" ] || return
-	dev=$(losetup -a | awk -F : "/${rootdev##*/}/ && /$((32*1024))/ { print \$1 }")
-	[ -n "$dev" ] || return
-	losetup -d "$dev"
+
+	if dev=$(readlink -e /dev/swupdate_bootdev) && [ "${dev#/dev/loop}" != "$dev" ]; then
+		losetup -d "$dev" >/dev/null 2>&1
+	fi
+	rm -f /dev/swupdate_bootdev
 }
 
 cleanup() {
-	remove_loop
+	remove_bootdev_link
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly
 	umount_if_mountpoint /target/var/app/rollback/volumes
