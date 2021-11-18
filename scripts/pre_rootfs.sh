@@ -167,9 +167,15 @@ mount_target_rootfs() {
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
 	[ -e "/boot/extlinux.conf" ] && extlinux=1
-	mkfs.ext4 -q ${extlinux:+-O "^64bit"} -L "rootfs_${ab}" -F "$dev" \
-		|| error "Could not reformat $dev"
-	mount "$dev" "/target" || error "Could not mount $dev"
+	if grep -q "ROOTFS_BTRFS" "$SWDESC"; then
+		mkfs.btrfs -q -L "rootfs_${ab}" -m dup -f "$dev" \
+			|| error "Could not reformat $dev"
+		mount "$dev" "/target" -o compress=zstd,discard=async
+	else
+		mkfs.ext4 -q ${extlinux:+-O "^64bit"} -L "rootfs_${ab}" -F "$dev" \
+			|| error "Could not reformat $dev"
+		mount "$dev" "/target" || error "Could not mount $dev"
+	fi
 
 	mkdir -p /target/boot /target/mnt /target/target
 	touch /target/.created
