@@ -235,6 +235,7 @@ $file"
 	fi
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
+	write_line "installed-directly = true;"
 	write_line "sha256 = \"$sha256\";"
 	write_line "$@"
 
@@ -426,7 +427,7 @@ swdesc_tar() {
 	esac
 
 	write_entry images "$source" "type = \"archive\";" \
-		"installed-directly = true;" "path = \"$target$dest\";"
+		"path = \"$target$dest\";"
 }
 
 set_file_from_content() {
@@ -504,7 +505,7 @@ swdesc_exec_nochroot() {
 	cmd="sh -c $(shell_quote "$cmd") --"
 
 	write_entry files "$file" "type = \"exec\";" \
-		"installed-directly = true;" "properties: {" \
+		"properties: {" \
 		"  cmd: \"$(conf_quote "$cmd")\"" "}"
 }
 
@@ -531,7 +532,7 @@ swdesc_exec() {
 	esac
 
 	write_entry files "$file" "type = \"exec\";" \
-		"installed-directly = true;" "properties: {" \
+		"properties: {" \
 		"  cmd: \"$(conf_quote "$chroot_cmd")\"" "}"
 }
 
