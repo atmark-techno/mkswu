@@ -34,19 +34,23 @@ swap_btrfs_snapshots() {
 cleanup_appfs() {
 	local dev="${partdev}5"
 	local basemount
+	local cleanup_fail="--fail-missing"
+
+	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
+		# make sure mount point exists in destination image
+		mkdir -p /target/var/lib/containers/storage
+		# .. and do not complain if an image is not in readonly store
+		cleanup_fail=""
+	fi
 
 	"$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
-		--confdir /target/etc/atmark/containers
+		--confdir /target/etc/atmark/containers $cleanup_fail \
+		|| error "cleanup of old images failed: mismatching configuration/container update?"
 
 	# sometimes podman mounts this on pull?
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
 
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
-
-	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
-		# make sure mount point exists in destination image
-		mkdir -p /target/var/lib/containers/storage
-	fi
 
 	if ! needs_reboot; then
 		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"

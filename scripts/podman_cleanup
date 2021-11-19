@@ -2,6 +2,7 @@
 
 PODMAN_ROOT=/var/lib/containers/storage_readonly
 CONFDIR=/etc/atmark/containers
+FAIL_MISSING=
 
 error() {
 	echo "$@" >&2
@@ -15,46 +16,40 @@ usage() {
 	echo " --storage <path> Path to podman storage to cleanup"
 	echo " --confdir <path> Path to atmark config directory to check in-use image"
 	echo "                  If path is empty, all images with a tag are kept"
-}
-
-tag_in_use() {
-	local tag="$1"
-
-	grep -qxF "image=$tag" "$CONFDIR/"*.conf && return
-	case "$tag" in
-	*:latest)
-		# :latest is implicit if no tag given
-		tag_in_use "${tag%:latest}" && return
-		;;
-	esac
-	case "$tag" in
-	*/*/*)
-		# docker.io/library/alpine -> docker.io/alpine
-		tag_in_use "${tag%%/*}/${tag##*/}" && return
-		;;
-	*/*)	# docker.io/alpine -> alpine
-		tag_in_use "${tag#*/}" && return
-		;;
-	esac
-
-	return 1
+	echo " --fail-missing   Fail if a configured image is not found"
 }
 
 trim_tags() {
+	local tag conf
 	[ -n "$CONFDIR" ] || return
 	# if no configuration is present, skip this step
 	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
 
+
+	# build list of images in use
+	: > "$tmpdir/ids"
+	for conf in "$CONFDIR/"*.conf; do
+		tag=$(sed -ne 's:^image=::p' "$conf")
+		[ -n "$tag" ] || error "conf $conf has no image defined?"
+		if ! podman --root "$PODMAN_ROOT" \
+				--storage-opt additionalimagestore="" \
+				image inspect --format '{{.Id}}' \
+				"$tag" >> "$tmpdir/ids"; then
+			[ -n "$FAIL_MISSING" ] || continue
+			error "image $tag in $conf not found in image store !"
+		fi
+	done
+
+	# untag any unused image
 	podman --root "$PODMAN_ROOT" \
 		--storage-opt additionalimagestore="" \
 		image list \
-		--format '{{range .Names}}{{.}}{{println}}{{end}}' |
-		while read -r tag; do
-			[ -n "$tag" ] || continue
-			tag_in_use "$tag" && continue
+		--format '{{.Id}}' |
+		while read -r id; do
+			grep -q -F "$id" "$tmpdir/ids" && continue
 			podman --root "$PODMAN_ROOT" \
 				--storage-opt additionalimagestore="" \
-				untag "$tag"
+				untag "$id"
 		done
 }
 
@@ -65,6 +60,12 @@ podman_prune() {
 }
 
 cleanup_images() {
+	local tmpdir
+
+	tmpdir=$(mktemp -d -t podman_cleanup.XXXXXX) \
+		|| error "Could not create temporary directory"
+	trap "rm -rf '$tmpdir'" EXIT
+
 	trim_tags
 	podman_prune
 
@@ -85,16 +86,21 @@ while [ $# -ge 1 ]; do
 		CONFDIR="$2"
 		shift 2
 		;;
+	"--fail-missing")
+		FAIL_MISSING=1
+		shift
+		;;
 	"--")
 		shift
 		break
 		;;
-	"-h"|"--help"|"-"*)
+	"-h"|"--help")
 		usage
 		exit 0
 		;;
 	*)
-		break
+		usage
+		error "invalid argument: $1"
 		;;
 	esac
 done
