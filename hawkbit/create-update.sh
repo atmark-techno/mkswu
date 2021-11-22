@@ -53,48 +53,83 @@ dist_types() {
 }
 
 create_update() {
-	curl_check -X POST -H "Content-Type: application/json" \
-		"$HAWKBIT_URL/rest/v1/softwaremodules" \
-		-o softwaremodule -d '[{
-			"vendor": "'"$VENDOR"'",
-			"name": "'"$name"'",
-			"version": "'"$version"'",
-			"description": "'"$description"'",
-			"type": "'"$swutype"'"
-		}]' || error_f softwaremodule "could not create software module:"
-
+	module=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
+			-H "Accept: application/hal+json" \
+			"$HAWKBIT_URL/rest/v1/softwaremodules" \
+			| jq '.content | map(select(.name == "'"$name"'"
+					and .version == "'"$version"'")) | .[0].id')
+	if [ "$module" = null ]; then
+		curl_check -X POST -H "Content-Type: application/json" \
+			"$HAWKBIT_URL/rest/v1/softwaremodules" \
+			-o softwaremodule -d '[{
+				"vendor": "'"$VENDOR"'",
+				"name": "'"$name"'",
+				"version": "'"$version"'",
+				"description": "'"$description"'",
+				"type": "'"$swutype"'"
+			}]' || error_f softwaremodule "could not create software module:"
 # [{"createdBy":"mkimage","createdAt":1637561017365,"lastModifiedBy":"mkimage","lastModifiedAt":1637561017365,"name":"nginx test","description":"nginx image","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11"}},"id":11}]
 
-	module=$(jq -r '.[].id' < softwaremodule)
-	[ "$module" = "null" ] && error_f softwaremodule "software module has no 'id'?"
+		module=$(jq -r '.[0].id' < softwaremodule)
+		[ "$module" = "null" ] && error_f softwaremodule "software module has no 'id'?"
+	fi
 
-	curl_check -X POST -H "Content-Type: multipart/form-data" \
-		"$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
-		-F "file=@$file" -o upload_artifact \
-		|| error_f upload_artifact "Could not upload artifact for software module:"
-
+	local artifacts
+	artifacts=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
+			-H "Accept: application/hal+json" \
+			"$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
+			| jq -r '.[].providedFilename')
+	[ "$artifacts" = null ] && artifacts=""
+	if [ -n "$artifacts" ]; then
+		[ "$artifacts" = "$(basename "$file")" ] \
+			|| error "module $name $version already exists with artifacts $artifacts != $file"
+	fi
+	if [ -z "$artifacts" ]; then
+		curl_check -X POST -H "Content-Type: multipart/form-data" \
+			"$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
+			-F "file=@$file" -o upload_artifact \
+			|| error_f upload_artifact "Could not upload artifact for software module:"
 # {"createdBy":"mkimage","createdAt":1637562874217,"lastModifiedBy":"mkimage","lastModifiedAt":1637562874217,"hashes":{"sha1":"a5c7bbff56b80194985c95bceba28b6f60ec71c9","md5":"0a942829648ccf6aa42387b592f330dd","sha256":"a2db3163c981b4bdbf6f340841266e3c17e88c4a0e8273b503342d2354aee6be"},"providedFilename":"embed_container_nginx.swu","size":8002048,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11/artifacts/18"},"download":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11/artifacts/18/download"}},"id":18}
+	fi
 
-
-	curl_check -X POST -H "Content-Type: application/json" \
-		"$HAWKBIT_URL/rest/v1/distributionsets" \
-		-o distributionset -d '[{
-			"requiredMigrationStep": false,
-			"name": "'"$name"'",
-			"version": "'"$version"'",
-			"description": "'"$description"'",
-			"type": "'"$(dist_types "$swutype")"'"
-		}]' || error_f distributionset "Could not create distribution set:"
+	dist=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
+			-H "Accept: application/hal+json" \
+			"$HAWKBIT_URL/rest/v1/distributionsets" \
+			| jq '.content | map(select(.name == "'"$name"'"
+					and .version == "'"$version"'")) | .[0].id')
+	if [ "$dist" = null ]; then
+		curl_check -X POST -H "Content-Type: application/json" \
+			"$HAWKBIT_URL/rest/v1/distributionsets" \
+			-o distributionset -d '[{
+				"requiredMigrationStep": false,
+				"name": "'"$name"'",
+				"version": "'"$version"'",
+				"description": "'"$description"'",
+				"type": "'"$(dist_types "$swutype")"'"
+			}]' || error_f distributionset "Could not create distribution set:"
 # [{"createdBy":"mkimage","createdAt":1637563046037,"lastModifiedBy":"mkimage","lastModifiedAt":1637563046037,"name":"nginx test","description":"nginx image","version":"1","modules":[],"requiredMigrationStep":false,"type":"app","complete":false,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/10"}},"id":10}]
 
-	dist=$(jq -r '.[].id' < distributionset)
-	[ "$dist" = "null" ] && error_f distributionset "distribution set has no 'id'?"
+		dist=$(jq -r '.[0].id' < distributionset)
+		[ "$dist" = "null" ] && error_f distributionset "distribution set has no 'id'?"
+	fi
 
-	curl_check -X POST -H "Content-Type: application/json" \
-		"$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
-		-o assign_sm -d '[{"id": "'"$module"'"}]' \
-		|| error_f assign_sm "Could not assign software module to distribution:"
+	local assignedSM
+	assignedSM=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
+			-H "Accept: application/hal+json" \
+			"$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
+			| jq '.content | .[].id')
+	[ "$assignedSM" = null ] && assignedSM=""
+	if [ -n "$assignedSM" ]; then
+		[ "$assignedSM" = "$(basename "$module")" ] \
+			|| error "dist $name $version already exists with assignedSM $assignedSM != $module"
+	fi
+	if [ -z "$assignedSM" ]; then
+		curl_check -X POST -H "Content-Type: application/json" \
+			"$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
+			-o assign_sm -d '[{"id": "'"$module"'"}]' \
+			|| error_f assign_sm "Could not assign software module to distribution:"
 # empty on success
+	fi
 }
 
 create_rollout() {
