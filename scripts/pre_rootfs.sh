@@ -80,6 +80,10 @@ mount_target_rootfs() {
 
 		copy_to_target /etc/swupdate.cfg
 		copy_to_target /etc/swupdate.pem /etc/swupdate.aes-key
+		# swupdate services if enabled
+		copy_to_target /etc/runlevels/default/swupdate-hawkbit
+		copy_to_target /etc/runlevels/default/swupdate-url
+		copy_to_target /etc/swupdate.watch
 
 		# sshd
 		copy_to_target /etc/runlevels/default/sshd
