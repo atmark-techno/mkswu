@@ -282,7 +282,7 @@ write_entry() {
 }
 
 parse_swdesc() {
-	local ARG SKIP=0
+	local ARG SKIP=0 NOPARSE=""
 
 	# first argument tells us what to parse for
 	local CMD="$1"
@@ -296,7 +296,7 @@ parse_swdesc() {
 			SKIP=$((SKIP-1))
 			continue
 		fi
-		case "$ARG" in
+		case "$NOPARSE$ARG" in
 		"-b"|"--board")
 			[ $# -lt 1 ] && error "$ARG requires an argument"
 			board="$1"
@@ -325,6 +325,15 @@ parse_swdesc() {
 				|| error "$ARG only allowed for swdesc_files"
 			basedir="$1"
 			SKIP=1
+			;;
+		--)
+			# we can't break loop or we would reorder previously seen
+			# arguments with the rest: just tell parsing to not parse anymore
+			# setting NOPARSE here will make the case always fall to last element
+			NOPARSE=1
+			;;
+		"-"*)
+			error "$ARG is not a known swdesc_$CMD argument"
 			;;
 		*)
 			set -- "$@" "$ARG"
