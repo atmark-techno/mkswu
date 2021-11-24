@@ -805,8 +805,8 @@ cleanup_outdir() {
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
-	local OUT=out.swu
-	local OUTDIR=out
+	local OUT=""
+	local OUTDIR=""
 	local CONFIG="$SCRIPT_DIR/mkimage.conf"
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="swupdate_pre.sh"
@@ -855,6 +855,12 @@ sw-description.sig"
 		esac
 	done
 
+	if [ -z "$OUT" ]; then
+		# OUT defaults to first swu name if not set
+		OUTDIR="${1%.desc}"
+		OUT="$OUTDIR.swu"
+	fi
+
 	if [ -n "$CONFIG" ]; then
 		[ -e "$CONFIG" ] || error "$CONFIG does not exist"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
@@ -892,6 +898,8 @@ sw-description.sig"
 	fi
 
 	cleanup_outdir
+
+	echo "Successfully generated $OUT"
 }
 
 
