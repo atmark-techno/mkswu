@@ -9,7 +9,7 @@ error() {
 }
 
 usage() {
-	echo "Usage: $0 -b base [-b base...] archive [archive..]"
+	echo "Usage: $0 [-b base [-b base...]] [-o out.tar] archive [archive..]"
 	echo "base = image name recognizable by podman image inspect, to be removed from archive"
 	echo "archive = image name recognizable by podman save"
 }

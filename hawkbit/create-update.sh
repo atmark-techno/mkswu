@@ -208,11 +208,10 @@ main() {
 		|| error "Could not create tmpdir"
 	trap "rm -rf '$tmpdir'" EXIT
 
-	# XXX parse opts
+	# XXX parse opts?
+	# e.g. add rollout creation or not
 	local file="$(realpath "$1")"
-	local name="nginx test"
-	local version="3"
-	local description
+	local name="" version="" description=""
 	local swutype="application"
 
 	cd "$tmpdir" || error "Could not enter $tmpdir"
@@ -224,12 +223,17 @@ main() {
 	# - version = version of first component found
 	# - swutype = application unless base_os is set
 	cpio -i sw-description < "$file" || error "$file is not a swu image?"
-	name=$(awk '$1 == "name" { print; exit; }' < sw-description | cut -d\" -f2)
-	version=$(awk '$1 == "name" { OK=1; }
-			OK && $1 == "version" { print; exit; }' < sw-description | cut -d\" -f2)
-	description=$(awk '$1 == "description" { print; exit; }' < sw-description | cut -d\" -f2)
+	if grep -q MAIN_VERSION sw-description; then
+		name=$(sed -ne 's/.*MAIN_COMPONENT //p' sw-description)
+		version=$(sed -ne 's/.*MAIN_VERSION //p' sw-description)
+	else
+		name=$(sed -ne '/^ *name =/ { s/.*"\(.*\)".*/\1/p; q }' < sw-description)
+		version=$(sed -ne '/^ *name =/ { N; s/.*version = "\(.*\)".*/\1/p; q }' < sw-description)
+	fi
+	description=$(sed -ne '/^ *description =/ { s/.*"\(.*\)".*/\1/p; q }' < sw-description)
 	swutype="application"
 	grep -qE 'name.*"base_os"' sw-description && swutype="os"
+	[ -n "$name" ] && [ -n "$version" ] || error "could not guess image name/version"
 
 	create_update
 	create_rollout

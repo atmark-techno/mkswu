@@ -251,6 +251,11 @@ $file"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
+	if [ -n "$main_version" ]; then
+		[ -n "$component" ] && [ -n "$version" ] \
+			|| error "use as main version requested but component/version not set?"
+		write_line "# MAIN_COMPONENT $component" "# MAIN_VERSION $version"
+	fi
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
 	write_line "installed-directly = true;"
@@ -302,6 +307,10 @@ parse_swdesc() {
 			component="$1"
 			version="$2"
 			SKIP=2
+			;;
+		"--main-version")
+			main_version=1
+			SKIP=0
 			;;
 		"-d"|"--dest")
 			[ $# -lt 1 ] && error "$ARG requires an argument"
@@ -398,7 +407,8 @@ pad_boot() {
 }
 
 swdesc_boot() {
-	local BOOT="$BOOT" component=boot version="$version" board="$board"
+	local BOOT="$BOOT" component=boot version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc boot "$@"
 
@@ -419,7 +429,8 @@ swdesc_boot() {
 
 swdesc_tar() {
 	local source="$source" dest="$dest"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 	local target="/target"
 
 	parse_swdesc tar "$@"
@@ -461,7 +472,8 @@ set_file_from_content() {
 
 swdesc_files() {
 	local file="$file" dest="$dest" basedir="$basedir"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 	local tarfile tarfile_raw tarfiles_src="$tarfiles_src"
 	local mtime=0
 	local IFS="
@@ -513,7 +525,8 @@ conf_quote() {
 
 swdesc_exec_nochroot() {
 	local file="$file" cmd="$cmd"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc exec "$@"
 
@@ -529,7 +542,8 @@ swdesc_exec_nochroot() {
 
 swdesc_exec() {
 	local file="$file" cmd="$cmd" chroot_cmd
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc exec "$@"
 
@@ -556,7 +570,8 @@ swdesc_exec() {
 
 swdesc_command() {
 	local cmd="$cmd" file
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc command "$@"
 
@@ -568,7 +583,8 @@ swdesc_command() {
 
 swdesc_command_nochroot() {
 	local cmd="$cmd" file
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc command "$@"
 
@@ -580,7 +596,8 @@ swdesc_command_nochroot() {
 
 swdesc_script() {
 	local script="$script"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc script "$@"
 
@@ -589,7 +606,8 @@ swdesc_script() {
 
 swdesc_script_nochroot() {
 	local script="$script"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc script "$@"
 
@@ -599,7 +617,8 @@ swdesc_script_nochroot() {
 
 swdesc_embed_container() {
 	local image="$image"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc embed_container "$@"
 
@@ -608,7 +627,8 @@ swdesc_embed_container() {
 
 swdesc_pull_container() {
 	local image="$image"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc pull_container "$@"
 
@@ -617,7 +637,8 @@ swdesc_pull_container() {
 
 swdesc_usb_container() {
 	local image="$image"
-	local component="$component" version="$version" board="$board"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
 
 	parse_swdesc usb_container "$@"
 
@@ -636,7 +657,7 @@ swdesc_usb_container() {
 
 embedded_preinstall_script() {
 	local f update=""
-	local component="" version="" board=""
+	local component="" version="" board="" main_version=""
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
 	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
@@ -658,7 +679,7 @@ embedded_preinstall_script() {
 }
 
 embedded_postinstall_script() {
-	local component version board
+	local component="" version="" board="" main_version=""
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
