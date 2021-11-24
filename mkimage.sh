@@ -9,8 +9,26 @@ usage() {
 	echo "Usage: $0 [opts] desc [desc...]"
 	echo
 	echo "Options:"
-	echo "  -c, --config  path to config e.g. mkimage.conf"
-	echo "  -o, --out     out.swu"
+	echo "  -c, --config <conf>     path to config (default mkimage.conf)"
+	echo "  -o, --out <out.swu>     path to output file (default from first desc's name)"
+	echo "  desc                    image description file(s), if multiple are given"
+	echo "                          then the generated image will merge all the contents"
+	echo
+	echo "desc file syntax:"
+	echo "  descriptions are imperative declarations building an image, the following"
+	echo "  commands available (see README for details):"
+	echo "  - swdesc_boot <bootfile>"
+	echo "  - swdesc_tar <tar_file> [--dest <dest>]"
+	echo "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
+	echo "  - swdesc_command '<cmd>'"
+	echo "  - swdesc_script <script>"
+	echo "  - swdesc_exec <file> '<cmd>' (file is \$1 in command)"
+	echo "  - swdesc_embed_container <image_archive>"
+	echo "  - swdesc_usb_container <image_archive>"
+	echo "  - swdesc_pull_container <image_url>"
+	echo
+	echo "In most cases --version <component> <version> should be set,"
+	echo "<component> must be extra_os.* in order to update rootfs"
 }
 
 error() {
