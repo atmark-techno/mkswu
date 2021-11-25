@@ -53,11 +53,12 @@ dist_types() {
 }
 
 create_update() {
-	module=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
-			-H "Accept: application/hal+json" \
-			"$HAWKBIT_URL/rest/v1/softwaremodules" \
-			| jq '.content | map(select(.name == "'"$name"'"
-					and .version == "'"$version"'")) | .[0].id')
+	curl_check -X GET -H "Accept: application/hal+json" \
+			-o modules "$HAWKBIT_URL/rest/v1/softwaremodules" \
+		|| error_f modules "Could not list modules"
+# {"content":[{"createdBy":"mkimage","createdAt":1637727156396,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158363,"name":"container_nginx","description":"コンテナの更新","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/1"}},"id":1},{"createdBy":"mkimage","createdAt":1637727396644,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396730,"name":"container_nginx","description":"コンテナの更新","version":"2","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/2"}},"id":2},{"createdBy":"mkimage","createdAt":1637798358687,"lastModifiedBy":"admin","lastModifiedAt":1637798523798,"name":"testme","description":"テスト","version":"2.2.0.010","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/3"}},"id":3}],"total":3,"size":3}
+	module=$(jq '.content | map(select(.name == "'"$name"'"
+			and .version == "'"$version"'")) | .[0].id' < modules)
 	if [ "$module" = null ]; then
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/softwaremodules" \
@@ -74,17 +75,20 @@ create_update() {
 		[ "$module" = "null" ] && error_f softwaremodule "software module has no 'id'?"
 	fi
 
-	local artifacts
-	artifacts=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
-			-H "Accept: application/hal+json" \
-			"$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
-			| jq -r '.[].providedFilename')
-	[ "$artifacts" = null ] && artifacts=""
-	if [ -n "$artifacts" ]; then
-		[ "$artifacts" = "$(basename "$file")" ] \
-			|| error "module $name $version already exists with artifacts $artifacts != $file"
-	fi
-	if [ -z "$artifacts" ]; then
+	curl_check -X GET -H "Accept: application/hal+json" \
+			-o artifacts "$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
+		|| error_f artifacts "could not get artifacts from module we just created?"
+# [{"createdBy":"mkimage","createdAt":1637727396730,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396730,"hashes":{"sha1":"50d44854a3a7c8f87f5b0d274a69dda5ca0ab728","md5":"5a33b84a26a8f30b5dbabc9045f66014","sha256":"d4fbf1061193e63abca0c9daf2aa8dbefdd856542c6cc9ec18412be3b22ca585"},"providedFilename":"container.swu","size":20992,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/2/artifacts/2"}},"id":2}]
+	if [ "$(cat artifacts)" != "[]" ]; then
+		local local_csum hawkbit_csum
+
+		hawkbit_csum=$(jq -r '.[].hashes.sha256' < artifacts)
+		local_csum=$(sha256sum "$file") \
+			|| error "Could not read $file"
+		local_csum=${local_csum%% *}
+		[ "$local_csum" = "$hawkbit_csum" ] \
+			|| error_f artifacts "Software $name $version already exists with artifacts different from $file"
+	else
 		curl_check -X POST -H "Content-Type: multipart/form-data" \
 			"$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
 			-F "file=@$file" -o upload_artifact \
@@ -92,11 +96,12 @@ create_update() {
 # {"createdBy":"mkimage","createdAt":1637562874217,"lastModifiedBy":"mkimage","lastModifiedAt":1637562874217,"hashes":{"sha1":"a5c7bbff56b80194985c95bceba28b6f60ec71c9","md5":"0a942829648ccf6aa42387b592f330dd","sha256":"a2db3163c981b4bdbf6f340841266e3c17e88c4a0e8273b503342d2354aee6be"},"providedFilename":"embed_container_nginx.swu","size":8002048,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11/artifacts/18"},"download":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11/artifacts/18/download"}},"id":18}
 	fi
 
-	dist=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
-			-H "Accept: application/hal+json" \
-			"$HAWKBIT_URL/rest/v1/distributionsets" \
-			| jq '.content | map(select(.name == "'"$name"'"
-					and .version == "'"$version"'")) | .[0].id')
+	curl_check -X GET -H "Accept: application/hal+json" \
+			-o distributionsets "$HAWKBIT_URL/rest/v1/distributionsets" \
+		|| error "Could not list distribution sets"
+# {"content":[{"createdBy":"mkimage","createdAt":1637727158497,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158637,"name":"container_nginx","description":"コンテナの更新","version":"1","modules":[{"createdBy":"mkimage","createdAt":1637727156396,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158363,"name":"container_nginx","description":"コンテナの更新","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/1"}},"id":1}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/1"}},"id":1},{"createdBy":"mkimage","createdAt":1637727396780,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396863,"name":"container_nginx","description":"コンテナの更新","version":"2","modules":[{"createdBy":"mkimage","createdAt":1637727396644,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396730,"name":"container_nginx","description":"コンテナの更新","version":"2","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/2"}},"id":2}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/2"}},"id":2},{"createdBy":"mkimage","createdAt":1637798427289,"lastModifiedBy":"mkimage","lastModifiedAt":1637798427362,"name":"testme","description":"テスト","version":"2.2.0.010","modules":[{"createdBy":"mkimage","createdAt":1637798358687,"lastModifiedBy":"admin","lastModifiedAt":1637798523798,"name":"testme","description":"テスト","version":"2.2.0.010","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/3"}},"id":3}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/3"}},"id":3}],"total":3,"size":3}
+	dist=$(jq '.content | map(select(.name == "'"$name"'"
+			and .version == "'"$version"'")) | .[0].id' < distributionsets)
 	if [ "$dist" = null ]; then
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/distributionsets" \
@@ -113,22 +118,19 @@ create_update() {
 		[ "$dist" = "null" ] && error_f distributionset "distribution set has no 'id'?"
 	fi
 
-	local assignedSM
-	assignedSM=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" -X GET \
-			-H "Accept: application/hal+json" \
-			"$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
-			| jq '.content | .[].id')
-	[ "$assignedSM" = null ] && assignedSM=""
-	if [ -n "$assignedSM" ]; then
-		[ "$assignedSM" = "$(basename "$module")" ] \
-			|| error "dist $name $version already exists with assignedSM $assignedSM != $module"
-	fi
+	curl_check -X GET -H "Accept: application/hal+json" \
+			-o assigned_sm_check "$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
+		|| error_f assigned_sm_check "Could not query assigned SM of distribution set we just created?"
+# {"content":[{"createdBy":"mkimage","createdAt":1637727156396,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158363,"name":"container_nginx","description":"コンテナの更新","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/1"}},"id":1}],"total":1,"size":1}
+	local assignedSM=$(jq '.content | .[].id' < assigned_sm_check)
 	if [ -z "$assignedSM" ]; then
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
 			-o assign_sm -d '[{"id": "'"$module"'"}]' \
 			|| error_f assign_sm "Could not assign software module to distribution:"
 # empty on success
+	elif [ "$assignedSM" != "$module" ]; then
+		error "dist $name $version already exists with assignedSM $assignedSM != $module"
 	fi
 }
 
@@ -203,6 +205,9 @@ create_rollout() {
 main() {
 	local tmpdir
 	local module dist
+
+	command -v curl > /dev/null || error "Need curl installed"
+	command -v jq > /dev/null || error "Need jq installed"
 
 	tmpdir=$(mktemp -d -t hawkbit_update.XXXXXX) \
 		|| error "Could not create tmpdir"
