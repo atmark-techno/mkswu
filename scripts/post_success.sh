@@ -26,7 +26,9 @@ post_success_hawkbit() {
 
 post_success_usb() {
 	# if the image is a force install image, move it to avoid install loop
-	if grep -q "FORCE_VERSION" "$SWDESC"; then
+	# we don't need to do this if the post action is poweroff
+	if grep -q FORCE_VERSION "$SWDESC" \
+	    && ! grep -q POSTACT_POWEROFF "$SWDESC"; then
 		mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed"
 	fi
 }
