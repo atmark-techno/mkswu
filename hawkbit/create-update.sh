@@ -134,6 +134,7 @@ create_update() {
 	elif [ "$assignedSM" != "$module" ]; then
 		error "dist $name $version already exists with assignedSM $assignedSM != $module"
 	fi
+	echo "Uploaded (or checked) image $name $version successfully"
 }
 
 add_suffix() {
@@ -158,6 +159,8 @@ add_suffix() {
 create_rollout() {
 	local groups rollouts
 	rname="$name $version${variant:+ $variant}"
+
+	[ -n "$create_rollout" ] || return
 
 	# build list of groups
 	if [ -n "$ROLLOUT_TEST_DEVICES" ]; then
@@ -237,12 +240,15 @@ create_rollout() {
 		}' || error_f rollout "Could not create rollout:"
 # {"createdBy":"admin","createdAt":1637558593530,"lastModifiedBy":"admin","lastModifiedAt":1637558593530,"name":"nginx 2","description":"rollout nginx 2","targetFilterQuery":"id == *","distributionSetId":9,"status":"creating","totalTargets":11,"totalTargetsPerStatus":{"running":0,"notstarted":11,"scheduled":0,"cancelled":0,"finished":0,"error":0},"deleted":false,"type":"forced","_links":{"start":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/start"},"pause":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/pause"},"resume":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/resume"},"approve":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/approve{?remark}","templated":true},"deny":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/deny{?remark}","templated":true},"groups":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/deploygroups?offset=0&limit=50{&sort,q}","templated":true},"self":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14"}},"id":14}
 # {"exceptionClass": "org.eclipse.hawkbit.repository.exception.EntityAlreadyExistsException","errorCode": "hawkbit.server.error.repo.entitiyAlreayExists","message": "The given entity already exists in database"}
+
+	echo "Created rollout $rname successfully"
 }
 
 start_rollout() {
 	local rollout rollout_state="creating"
 
 	[ -n "$start_rollout" ] || return
+	[ -n "$create_rollout" ] || error "Can only start rollout we just created"
 
 	rollout=$(jq -r '.id' < rollout)
 	[ -n "$rollout" ] && [ "$rollout" != null ] \
@@ -262,6 +268,7 @@ start_rollout() {
 			"$HAWKBIT_URL/rest/v1/rollouts/$rollout/start" \
 			-o rollout_start \
 		|| error_f rollout_start "Could not start rollout:"
+	echo "Started $rname successfully"
 }
 
 usage() {
@@ -279,7 +286,7 @@ main() {
 	local tmpdir
 	local module dist
 	local force_new_rollout="" filter="id == *" variant=""
-	local start_rollout="" keep_tmpdir="" rname
+	local create_rollout=1 start_rollout="" keep_tmpdir="" rname
 	local name="" version="" description=""
 	local swu="" swutype="application"
 
@@ -300,6 +307,9 @@ main() {
 			;;
 		"--keep-tmpdir")
 			keep_tmpdir=1
+			;;
+		"--no-rollout")
+			create_rollout=""
 			;;
 		"-h"|"--help")
 			usage
@@ -347,12 +357,6 @@ main() {
 	create_update
 	create_rollout
 	start_rollout
-	if [ -n "$start_rollout" ]; then
-		echo -n Started
-	else
-		echo -n Created
-	fi
-	echo " rollout $rname successfully"
 }
 
 main "$@"

@@ -20,12 +20,14 @@ rm -rf "$SCRIPTSDIR"
 if grep -q POSTACT_POWEROFF "$SWDESC" 2>/dev/null; then
 	echo "swupdate triggering poweroff!" >&2
 	poweroff
+	sleep infinity
 elif grep -q POSTACT_WAIT "$SWDESC" 2>/dev/null; then
 	echo "swupdate waiting until external reboot" >&2
 	sleep infinity
 elif needs_reboot; then
 	echo "swupdate triggering reboot!" >&2
 	reboot
+	sleep infinity
 elif [ -n "$SWUPDATE_HAWKBIT" ]; then
 	unlock_update
 	echo "Restarting swupdate-hawkbit service" >&2
