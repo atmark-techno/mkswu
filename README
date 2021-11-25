@@ -129,12 +129,21 @@ were used in base image.
 ## examples
 
 Sample config files, try from git root:
+
  ./mkimage.sh -o foo.swu examples/foo.conf
 
 read each .conf file for their requirements (files to pre-create)
 all examples expect keys to have been generated before (./genkey.sh),
 in default path, and public key must be installed on device to use.
 
+
+## bash completion
+
+Bash completion is available for some commands, if you use bash
+just source it or copy to /etc/bash_completion.d:
+
+ . bash_completion.sh
+ sudo cp bash_completion.sh /etc/bash_completion.d/swupdate-mkimage
 
 ## tests
 
