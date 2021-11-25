@@ -53,12 +53,13 @@ dist_types() {
 }
 
 create_update() {
-	curl_check -X GET -H "Accept: application/hal+json" \
+	curl_check -G -H "Accept: application/hal+json" \
+			--data-urlencode "q=name==\"$name\" and version==\"$version\"" \
 			-o modules "$HAWKBIT_URL/rest/v1/softwaremodules" \
 		|| error_f modules "Could not list modules"
-# {"content":[{"createdBy":"mkimage","createdAt":1637727156396,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158363,"name":"container_nginx","description":"コンテナの更新","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/1"}},"id":1},{"createdBy":"mkimage","createdAt":1637727396644,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396730,"name":"container_nginx","description":"コンテナの更新","version":"2","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/2"}},"id":2},{"createdBy":"mkimage","createdAt":1637798358687,"lastModifiedBy":"admin","lastModifiedAt":1637798523798,"name":"testme","description":"テスト","version":"2.2.0.010","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/3"}},"id":3}],"total":3,"size":3}
-	module=$(jq '.content | map(select(.name == "'"$name"'"
-			and .version == "'"$version"'")) | .[0].id' < modules)
+# {"content":[{"createdBy":"mkimage","createdAt":1637801515199,"lastModifiedBy":"mkimage","lastModifiedAt":1637801515292,"name":"testfail","description":"テスト","version":"2.2.0.010","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/7"}},"id":7}],"total":1,"size":1}
+# {"content":[],"total":0,"size":0}
+	module=$(jq -r '.content | .[0].id' < modules)
 	if [ "$module" = null ]; then
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/softwaremodules" \
@@ -83,25 +84,26 @@ create_update() {
 		local local_csum hawkbit_csum
 
 		hawkbit_csum=$(jq -r '.[].hashes.sha256' < artifacts)
-		local_csum=$(sha256sum "$file") \
-			|| error "Could not read $file"
+		local_csum=$(sha256sum "$swu") \
+			|| error "Could not read $swu"
 		local_csum=${local_csum%% *}
 		[ "$local_csum" = "$hawkbit_csum" ] \
-			|| error_f artifacts "Software $name $version already exists with artifacts different from $file"
+			|| error_f artifacts "Software $name $version already exists with artifacts different from $swu"
 	else
 		curl_check -X POST -H "Content-Type: multipart/form-data" \
 			"$HAWKBIT_URL/rest/v1/softwaremodules/$module/artifacts" \
-			-F "file=@$file" -o upload_artifact \
+			-F "file=@$swu" -o upload_artifact \
 			|| error_f upload_artifact "Could not upload artifact for software module:"
 # {"createdBy":"mkimage","createdAt":1637562874217,"lastModifiedBy":"mkimage","lastModifiedAt":1637562874217,"hashes":{"sha1":"a5c7bbff56b80194985c95bceba28b6f60ec71c9","md5":"0a942829648ccf6aa42387b592f330dd","sha256":"a2db3163c981b4bdbf6f340841266e3c17e88c4a0e8273b503342d2354aee6be"},"providedFilename":"embed_container_nginx.swu","size":8002048,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11/artifacts/18"},"download":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/11/artifacts/18/download"}},"id":18}
 	fi
 
-	curl_check -X GET -H "Accept: application/hal+json" \
+	curl_check -G -H "Accept: application/hal+json" \
+			--data-urlencode "q=name==\"$name\" and version==\"$version\"" \
 			-o distributionsets "$HAWKBIT_URL/rest/v1/distributionsets" \
 		|| error "Could not list distribution sets"
-# {"content":[{"createdBy":"mkimage","createdAt":1637727158497,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158637,"name":"container_nginx","description":"コンテナの更新","version":"1","modules":[{"createdBy":"mkimage","createdAt":1637727156396,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158363,"name":"container_nginx","description":"コンテナの更新","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/1"}},"id":1}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/1"}},"id":1},{"createdBy":"mkimage","createdAt":1637727396780,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396863,"name":"container_nginx","description":"コンテナの更新","version":"2","modules":[{"createdBy":"mkimage","createdAt":1637727396644,"lastModifiedBy":"mkimage","lastModifiedAt":1637727396730,"name":"container_nginx","description":"コンテナの更新","version":"2","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/2"}},"id":2}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/2"}},"id":2},{"createdBy":"mkimage","createdAt":1637798427289,"lastModifiedBy":"mkimage","lastModifiedAt":1637798427362,"name":"testme","description":"テスト","version":"2.2.0.010","modules":[{"createdBy":"mkimage","createdAt":1637798358687,"lastModifiedBy":"admin","lastModifiedAt":1637798523798,"name":"testme","description":"テスト","version":"2.2.0.010","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/3"}},"id":3}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/3"}},"id":3}],"total":3,"size":3}
-	dist=$(jq '.content | map(select(.name == "'"$name"'"
-			and .version == "'"$version"'")) | .[0].id' < distributionsets)
+# {"content":[{"createdBy":"mkimage","createdAt":1637801515350,"lastModifiedBy":"mkimage","lastModifiedAt":1637801515428,"name":"testfail","description":"テスト","version":"2.2.0.010","modules":[{"createdBy":"mkimage","createdAt":1637801515199,"lastModifiedBy":"mkimage","lastModifiedAt":1637801515292,"name":"testfail","description":"テスト","version":"2.2.0.010","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/7"}},"id":7}],"requiredMigrationStep":false,"type":"app","complete":true,"deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/distributionsets/7"}},"id":7}],"total":1,"size":1}
+# {"content":[],"total":0,"size":0}
+	dist=$(jq -r '.content | .[0].id' < distributionsets)
 	if [ "$dist" = null ]; then
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/distributionsets" \
@@ -122,7 +124,7 @@ create_update() {
 			-o assigned_sm_check "$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
 		|| error_f assigned_sm_check "Could not query assigned SM of distribution set we just created?"
 # {"content":[{"createdBy":"mkimage","createdAt":1637727156396,"lastModifiedBy":"mkimage","lastModifiedAt":1637727158363,"name":"container_nginx","description":"コンテナの更新","version":"1","type":"application","vendor":"atmark","deleted":false,"_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/softwaremodules/1"}},"id":1}],"total":1,"size":1}
-	local assignedSM=$(jq '.content | .[].id' < assigned_sm_check)
+	local assignedSM=$(jq -r '.content | .[].id' < assigned_sm_check)
 	if [ -z "$assignedSM" ]; then
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/distributionsets/$dist/assignedSM" \
@@ -134,8 +136,30 @@ create_update() {
 	fi
 }
 
+add_suffix() {
+	local candidate="$1"
+	local existing="$2"
+
+	# first check if candidate can be used as is
+	if [ -z "$existing" ] || ! echo "$existing" | grep -qFx "$candidate"; then
+		echo "$candidate"
+		return
+	fi
+
+	# try incrementing suffixes
+	local suffix=1
+	while echo "$existing" | grep -qFx "$candidate ($suffix)"; do
+		suffix=$((suffix+1))
+	done
+	
+	echo "$candidate ($suffix)"
+}
+
 create_rollout() {
-	local groups
+	local groups rollouts
+	rname="$name $version${variant:+ $variant}"
+
+	# build list of groups
 	if [ -n "$ROLLOUT_TEST_DEVICES" ]; then
 		groups='{
 				"name": "test devices",
@@ -187,47 +211,127 @@ create_rollout() {
 			}'
 		i=$((i+1))
 	done
+	# Note: could replace groups by "\"amountGroups\": $ROLLOUT_N_GROUPS"
+
+	# find a free name if required
+	if [ -n "$force_new_rollout" ]; then
+		curl_check -G -H "Accept: application/hal+json" \
+				--data-urlencode "q=name==\"$rname*\"" \
+				-o rollouts "$HAWKBIT_URL/rest/v1/rollouts" \
+			|| error_f rollouts "Could not list rollouts"
+# {"content":[{"createdBy":"mkimage","createdAt":1637803350012,"lastModifiedBy":"system","lastModifiedAt":1637803351185,"name":"boot 2020.04-01531-g89ac2eb76352","description":"Atmark firmware image","targetFilterQuery":"id == *","distributionSetId":8,"status":"ready","totalTargets":11,"deleted":false,"type":"forced","_links":{"self":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/15"}},"id":15}],"total":1,"size":1}
+		rollouts=$(jq -r '.content | .[].name' < rollouts)
+		rname=$(add_suffix "$rname" "$rollouts")
+	fi
+
 	curl_check -X POST -H 'Content-Type: application/json' \
 		"$HAWKBIT_URL/rest/v1/rollouts" \
 		-o rollout -d '{
-			"name": "'"$name $version"'",
+			"name": "'"$rname"'",
 			"description": "'"$description"'",
 			"distributionSetId": '"$dist"',
-			"targetFilterQuery": "id == *",
+			"targetFilterQuery": "'"$filter"'",
 			"groups": [
 				'"$groups"'
 			]
 		}' || error_f rollout "Could not create rollout:"
 # {"createdBy":"admin","createdAt":1637558593530,"lastModifiedBy":"admin","lastModifiedAt":1637558593530,"name":"nginx 2","description":"rollout nginx 2","targetFilterQuery":"id == *","distributionSetId":9,"status":"creating","totalTargets":11,"totalTargetsPerStatus":{"running":0,"notstarted":11,"scheduled":0,"cancelled":0,"finished":0,"error":0},"deleted":false,"type":"forced","_links":{"start":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/start"},"pause":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/pause"},"resume":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/resume"},"approve":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/approve{?remark}","templated":true},"deny":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/deny{?remark}","templated":true},"groups":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14/deploygroups?offset=0&limit=50{&sort,q}","templated":true},"self":{"href":"http://10.1.1.1:8080/rest/v1/rollouts/14"}},"id":14}
+# {"exceptionClass": "org.eclipse.hawkbit.repository.exception.EntityAlreadyExistsException","errorCode": "hawkbit.server.error.repo.entitiyAlreayExists","message": "The given entity already exists in database"}
+}
 
+start_rollout() {
+	local rollout rollout_state="creating"
+
+	[ -n "$start_rollout" ] || return
+
+	rollout=$(jq -r '.id' < rollout)
+	[ -n "$rollout" ] && [ "$rollout" != null ] \
+		|| error "Could not figure r llout id we just created"
+
+	while [ "$rollout_state" = "creating" ]; do
+		curl_check -X GET -H "Accept: application/hal+json" \
+				-o rollout_state "$HAWKBIT_URL/rest/v1/rollouts/$rollout" \
+			|| error_f rollout_state "Could not query rollout we just created"
+		rollout_state=$(jq -r '.status' < rollout_state)
+		sleep 1
+	done
+	[ "$rollout_state" = "ready" ] \
+		|| error "Rollout in state $rollout_state but was expecting it to be ready"
+
+	curl_check -X POST -H 'Content-Type: application/json' \
+			"$HAWKBIT_URL/rest/v1/rollouts/$rollout/start" \
+			-o rollout_start \
+		|| error_f rollout_start "Could not start rollout:"
+}
+
+usage() {
+	echo "Usage: $0 [options] file.swu"
+	echo
+	echo "rollout creation:"
+	echo "  --new: create new rollout even if there already is an existing one"
+	echo "  --failed: Apply rollout only to nodes that previously failed update"
+	echo
+	echo "post action:"
+	echo "  --start: start rollout immediately after creation"
 }
 
 main() {
 	local tmpdir
 	local module dist
+	local force_new_rollout="" filter="id == *" variant=""
+	local start_rollout="" keep_tmpdir="" rname
+	local name="" version="" description=""
+	local swu="" swutype="application"
 
 	command -v curl > /dev/null || error "Need curl installed"
 	command -v jq > /dev/null || error "Need jq installed"
 
+	while [ "$#" -ge 1 ]; do
+		case "$1" in
+		"--new")
+			force_new_rollout=1
+			;;
+		"--failed")
+			filter="updatestatus == error"
+			variant="failed"
+			;;
+		"--start")
+			start_rollout=1
+			;;
+		"--keep-tmpdir")
+			keep_tmpdir=1
+			;;
+		"-h"|"--help")
+			usage
+			exit 0
+			;;
+		"-"*)
+			echo "Unknown option $1" >&2
+			usage
+			exit 1
+			;;
+		*)
+			[ -z "$swu" ] || error "Trailing arguments (only expecting one positional argument, $swu): $*"
+			swu="$(realpath -e "$1")" \
+				|| error "swu file $1 must exist"
+			;;
+		esac
+		shift
+	done
+	[ -n "$swu" ] || error "Need to pass an swu update file as argument"
+
 	tmpdir=$(mktemp -d -t hawkbit_update.XXXXXX) \
 		|| error "Could not create tmpdir"
 	trap "rm -rf '$tmpdir'" EXIT
-
-	# XXX parse opts?
-	# e.g. add rollout creation or not
-	local file="$(realpath "$1")"
-	local name="" version="" description=""
-	local swutype="application"
-
+	[ -n "$keep_tmpdir" ] && trap "echo temporary data left in $tmpdir" EXIT
 	cd "$tmpdir" || error "Could not enter $tmpdir"
-	[ -e "$file" ] || error "file $file does not exist?"
 
 	# get default values from sw-description:
 	# - description = description if set
 	# - name = name of first component found
 	# - version = version of first component found
 	# - swutype = application unless base_os is set
-	cpio -i sw-description < "$file" || error "$file is not a swu image?"
+	cpio -i sw-description < "$swu" || error "$swu is not a swu image?"
 	if grep -q MAIN_VERSION sw-description; then
 		name=$(sed -ne 's/.*MAIN_COMPONENT //p' sw-description)
 		version=$(sed -ne 's/.*MAIN_VERSION //p' sw-description)
@@ -242,7 +346,13 @@ main() {
 
 	create_update
 	create_rollout
-	echo "Created rollout for $name $version successfully"
+	start_rollout
+	if [ -n "$start_rollout" ]; then
+		echo -n Started
+	else
+		echo -n Created
+	fi
+	echo " rollout $rname successfully"
 }
 
 main "$@"
