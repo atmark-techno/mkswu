@@ -20,7 +20,7 @@ check() {
 	file)
 		[ $# -gt 0 ] || error "file check has no argument"
 		for file; do
-			cpio -t < "$name".swu | grep -qx "$file" ||
+			cpio -t < "$swu"| grep -qx "$file" ||
 				error "$file not in swu"
 		done
 		;;
@@ -28,7 +28,7 @@ check() {
 		[ $# -gt 1 ] || error "file-tar needs tar and content args"
 		tar="$1"
 		shift
-		tar tf "$name/$tar" "$@" > /dev/null || error "Missing files in $tar"
+		tar tf "$dir/$tar" "$@" > /dev/null || error "Missing files in $tar"
 		;;
 	version)
 		[ $# -eq 2 ] || error "version usage: <component> <version regex>"
@@ -36,8 +36,8 @@ check() {
 		version="$2"
 
 		## from scripts/version.sh gen_newversion:
-		parse_swdesc < "$name/sw-description" > "$name/sw-versions.present"
-		real_version=$(get_version "$component" "$name/sw-versions.present")
+		parse_swdesc < "$dir/sw-description" > "$dir/sw-versions.present"
+		real_version=$(get_version "$component" "$dir/sw-versions.present")
 
 		[[ "$real_version" =~ $version ]] ||
 			error "Version $component expected $version got $real_version"
@@ -45,8 +45,8 @@ check() {
 	swdesc)
 		[ $# -gt 0 ] || error "swdesc check needs argument"
 		for regex; do
-			grep -q -E "$regex" "$name/sw-description" \
-				|| error "$regex not found in $name/sw-description"
+			grep -q -E "$regex" "$dir/sw-description" \
+				|| error "$regex not found in $dir/sw-description"
 		done
 		;;
 	*) error "Unknown check type: $type" ;;
@@ -56,12 +56,13 @@ check() {
 build_check() {
 	local desc="$1"
 	local name="${desc##*/}"
-	local name="tests/out/$name"
+	local dir="tests/out/.$name"
+	local swu="tests/out/$name.swu"
 	local check
 	shift
 
 	echo "Building $name"
-	./mkimage.sh ${conf+-c "$conf"} -o "$name.swu" "$desc.desc"
+	./mkimage.sh ${conf+-c "$conf"} -o "$swu" "$desc.desc"
 
 	for check; do
 		eval check "$check"

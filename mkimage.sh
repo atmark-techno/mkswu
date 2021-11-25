@@ -889,8 +889,7 @@ sw-description.sig"
 		"-o"|"--out")
 			[ $# -lt 1 ] && error "$ARG requires an argument"
 			OUT="$1"
-			OUTDIR="${OUT%.swu}"
-			[ "$OUT" != "$OUTDIR" ] || error "$OUT must end with .swu"
+			[ "${OUT%.swu}" != "$OUT" ] || error "$OUT must end with .swu"
 			SKIP=1
 			;;
 		"-h"|"--help"|"-"*)
@@ -905,8 +904,7 @@ sw-description.sig"
 
 	if [ -z "$OUT" ]; then
 		# OUT defaults to first swu name if not set
-		OUTDIR="${1%.desc}"
-		OUT="$OUTDIR.swu"
+		OUT="${1%.desc}.swu"
 	fi
 
 	if [ -n "$CONFIG" ]; then
@@ -917,6 +915,7 @@ sw-description.sig"
 
 
 	# actual image building
+	OUTDIR=$(dirname "$OUT")/.$(basename "$OUT" .swu)
 	mkdir -p "$OUTDIR"
 	rm -f "$OUTDIR/sw-description-"* "$OUTDIR/used_files"
 	track_used "$OUTDIR"
