@@ -41,7 +41,7 @@ version_update() {
 	[ -n "$newvers" ] || return 1
 
 	case "$component" in
-	boot|kernel) [ "$newvers" != "$oldvers" ];;
+	boot) [ "$newvers" != "$oldvers" ];;
 	*) version_higher "$oldvers" "$newvers";;
 	esac
 }

@@ -1,5 +1,5 @@
 # write over files in /boot
 # any different version from current system's (based on sw-versions)
 # will be installed
-swdesc_files --version kernel 5.10.0-1 --dest /boot \
+swdesc_files --version extra_os.kernel 5.10.0-1 --dest /boot \
 	"examples/Image" "examples/imx8mp-yakushima-eva.dtb"

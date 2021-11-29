@@ -69,10 +69,6 @@ mount_target_rootfs() {
 	touch /target/.created
 
 	if needs_update "base_os"; then
-		if get_version "kernel" && ! needs_update "kernel"; then
-			cp -ax /boot/. /target/boot
-		fi
-
 		# copy some files regardless - this echoes the fixups in post_rootfs,
 		# but these files can be overriden by update
 		copy_to_target /etc/hostname /etc/atmark /etc/motd

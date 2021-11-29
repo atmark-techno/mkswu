@@ -53,12 +53,12 @@ Common options for all helpers:
   if required.
   - Updates are installed only if version is higher than what is on
     the system, or if not present on the system, except for "boot"
-    and "kernel" which are installed if different
+    which is installed if different
   - Components can be defined freely for updates referring to
     containers (container image or files within volumes);
     if an update writes to rootfs then it must be named "base_os"
-    (in which case OS is wiped first) or extra_os*/kernel (in
-    which case the OS is copied over first)
+    (in which case OS is wiped first) or extra_os* (in which case
+    the OS is copied over first)
   - In most case component/version can be skipped (or component set
     to an empty string), in which case the file will always be
     reinstalled so this is not recommended.

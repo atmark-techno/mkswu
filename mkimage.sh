@@ -208,7 +208,7 @@ $file"
 	if [ -n "$component" ]; then
 		[ -n "$version" ] || error "component $component was set with empty version"
 		case "$component" in
-		boot|kernel)
+		boot)
 			install_if="different";;
 		*)
 			local max
@@ -448,7 +448,7 @@ swdesc_tar() {
 	*DEBUG_SKIP_SCRIPTS*) target="";;
 	esac
 	case "$component" in
-	base_os|extra_os*|kernel)
+	base_os|extra_os*)
 		dest="${dest:-/}"
 		;;
 	*)
@@ -560,7 +560,7 @@ swdesc_exec() {
 		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
 
 	case "$component" in
-	base_os|extra_os*|kernel)
+	base_os|extra_os*)
 		chroot_cmd="podman run --rm --rootfs /target sh -c $(shell_quote "$cmd") -- "
 		;;
 	*)
