@@ -4,7 +4,7 @@ _mkimage_sh()
 	_init_completion || return
 	case "$prev" in
 	-o|--out)
-		_filedir 
+		_filedir
 		return
 		;;
 	-c|--config)
@@ -34,7 +34,7 @@ _podman_partial_image_sh()
 	_init_completion -n ':' || return
 	case "$prev" in
 	-o|--output)
-		_filedir 
+		_filedir
 		return
 		;;
 	-b|--base)

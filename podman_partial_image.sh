@@ -91,7 +91,7 @@ main() {
 			;;
 		esac
 	done
-	
+
 	[ $# -lt 1 ] && usage && exit 1
 
 	trim_archives "$@"

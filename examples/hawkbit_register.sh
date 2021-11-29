@@ -76,7 +76,6 @@ register_device() {
 # {"exceptionClass":"org.eclipse.hawkbit.repository.exception.EntityAlreadyExistsException","errorCode":"hawkbit.server.error.repo.entitiyAlreayExists","message":"The given entity already exists in database"}
 # {"timestamp":"2021-10-19T02:45:20.688+0000","status":401,"error":"Unauthorized","message":"Unauthorized","path":"/rest/v1/targets"}
 
-	
 	# note: we should really use something like jq for this,
 	# but it's a whole 1MB of dependencies just to get this token...
 	SECURITY_TOKEN=$(sed -ne 's/.*securityToken[^0-9a-f]*\([0-9a-f]*\).*/\1/p' < curlout)

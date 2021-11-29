@@ -37,7 +37,7 @@ curl_check() {
 		curl -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" "$@"
 		exit 1
 	fi
-			
+
 	[ "$(( httpcode >= 200 && httpcode < 300 ))" = 1 ]
 }
 
@@ -152,7 +152,7 @@ add_suffix() {
 	while echo "$existing" | grep -qFx "$candidate ($suffix)"; do
 		suffix=$((suffix+1))
 	done
-	
+
 	echo "$candidate ($suffix)"
 }
 

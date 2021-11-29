@@ -156,7 +156,7 @@ post_copy_preserve_files() {
 
 post_rootfs() {
 	local rootfs_created=""
-	
+
 	# Sanity check: refuse to continue if someone tries to write a
 	# rootfs that was corrupted or "too wrong": check for /bin/sh
 	if ! [ -e /target/bin/sh ]; then
