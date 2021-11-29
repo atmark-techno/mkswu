@@ -88,6 +88,21 @@ unlock_update() {
 	rm -rf /tmp/.swupdate_lock
 }
 
+mkdir_p_target() {
+	local dir="$1" parent mode
+
+	# nothing to do if target exists or source doesn't
+	[ -e "/target/$dir" ] && return
+	[ -e "$dir" ] || return
+
+	parent="${dir%/*}"
+	[ -n "$parent" ] && mkdir_p_target "$parent"
+
+	mode=$(stat -c %a "$dir")
+	mkdir --mode "$mode" "/target/$dir" \
+		|| error "Could not create /target/$dir"
+}
+
 is_mountpoint() {
 	local dir="$1"
 

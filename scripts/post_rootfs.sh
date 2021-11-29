@@ -128,6 +128,32 @@ update_swupdate_certificate()  {
 	rm -rf "$certsdir"
 }
 
+overwrite_to_target() {
+	local file
+	local dir
+
+	for file; do
+		# source file must exist
+		[ -e "$f" ] || return
+		dir="${file%/*}"
+		mkdir_p_target "$dir"
+		rm -rf "/target/$f"
+		cp -a "$file" "/target/$file"
+	done
+}
+
+post_copy_preserve_files() {
+	local f
+
+	sed -ne 's:^POST /:/:p' "/target/etc/swupdate_preserve_files" \
+		| sort -u > "$TMPDIR/preserve_files_post"
+	while read -r f; do
+		overwrite_to_target "$f"
+	done < "$TMPDIR/preserve_files_post"
+
+	rm -f "$TMPDIR/preserve_files_post"
+}
+
 post_rootfs() {
 	local rootfs_created=""
 	
@@ -166,6 +192,10 @@ EOF
 				/target/etc/containers/storage.conf \
 				|| error "could not rewrite storage.conf"
 		fi
+		if needs_update "base_os"; then
+			post_copy_preserve_files
+		fi
+
 	fi
 
 	# extra fixups on update

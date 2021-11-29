@@ -3,12 +3,96 @@ copy_to_target() {
 	local dir
 
 	for file; do
-		[ -e "$file" ] || continue
+		# source file must exist...
+		[ -e "$f" ] || return
+		# and destination file not (probably already copied)
+		[ -e "/target/$f" ] && return
 
-		dir=$(dirname "$file")
-		[ -d "/target/$dir" ] || mkdir -p "/target/$dir"
+		dir="${file%/*}"
+		mkdir_p_target "$dir"
 		cp -a "$file" "/target/$file"
 	done
+}
+
+update_preserve_list() {
+	local preserve_version=0 max_version=1
+	local list="/target/etc/swupdate_preserve_files"
+
+	mkdir_p_target /etc
+
+	if [ -e "/etc/swupdate_preserve_files" ]; then
+		cp /etc/swupdate_preserve_files "$list" \
+			|| error "Could not copy swupdate_preserve_files over"
+		preserve_version=$(awk '/^PRESERVE_FILES_VERSION/ { print $2; exit }' \
+					"$list" 2>/dev/null)
+
+		# assume anything invalid (non-digit) is 0
+		case "$preserve_version" in
+		*[!0-9]*|"") preserve_version=0;;
+		esac
+	fi
+
+	[ "$preserve_version" = "$max_version" ] && return
+
+	if [ -e "$list" ] && grep -qE '^PRESERVE_FILES_VERSION' "$list"; then
+		sed -i -e "s/^\(PRESERVE_FILES_VERSION\).*/\1 $max_version/" "$list" \
+			|| error "Could not update $list"
+	else
+		cat >> "$list" <<EOF || error "Could not update $list"
+### Files listed here will be copied over when rootfs is updated
+### You can freely add or remove files from the list, removed
+### entries will not be added back as long as the below line is
+### kept intact. Do not remove or change!
+PRESERVE_FILES_VERSION $max_version
+
+# file can be prefixed with POST to be copied after rootfs is
+# extracted, e.g.
+#POST /boot
+# would preserve the installed kernel without rebuilding a custom
+# image if uncommented (destination is removed before copy)
+EOF
+	fi
+
+	if [ "$preserve_version" -le 0 ]; then
+		cat >> "$list" <<EOF || error "Could not update $list"
+
+# v1 list: base files, swupdate, ssh and network config
+/etc/atmark
+/etc/fstab
+/etc/motd
+/etc/swupdate_preserve_files
+
+/etc/hwrevision
+/etc/swupdate.cfg
+/etc/swupdate.pem
+/etc/swupdate.aes-key
+/etc/runlevels/default/swupdate-hawkbit
+/etc/runlevels/default/swupdate-url
+/etc/swupdate.watch
+
+/etc/runlevels/default/sshd
+/etc/ssh
+/root/.ssh
+/home/atmark/.ssh
+
+/etc/hostname
+/etc/network
+/etc/resolv.conf
+/etc/NetworkManager/system-connections
+EOF
+	fi
+}
+
+copy_preserve_files() {
+	local f
+
+	grep -E '^/' "/target/etc/swupdate_preserve_files" \
+		| sort -u > "$TMPDIR/preserve_files_pre"
+	while read -r f; do
+		copy_to_target "$f"
+	done < "$TMPDIR/preserve_files_pre"
+
+	rm -f "$TMPDIR/preserve_files_pre"
 }
 
 mount_target_rootfs() {
@@ -69,25 +153,8 @@ mount_target_rootfs() {
 	touch /target/.created
 
 	if needs_update "base_os"; then
-		# copy some files regardless - this echoes the fixups in post_rootfs,
-		# but these files can be overriden by update
-		copy_to_target /etc/hostname /etc/atmark /etc/motd
-		copy_to_target /etc/hwrevision /etc/fstab
-
-		copy_to_target /etc/swupdate.cfg
-		copy_to_target /etc/swupdate.pem /etc/swupdate.aes-key
-		# swupdate services if enabled
-		copy_to_target /etc/runlevels/default/swupdate-hawkbit
-		copy_to_target /etc/runlevels/default/swupdate-url
-		copy_to_target /etc/swupdate.watch
-
-		# sshd
-		copy_to_target /etc/runlevels/default/sshd
-		copy_to_target /etc/ssh /root/.ssh /home/atmark/.ssh
-
-		# network conf
-		copy_to_target /etc/network /etc/resolv.conf
-		copy_to_target /etc/NetworkManager/system-connections
+		update_preserve_list
+		copy_preserve_files
 		return
 	fi
 
