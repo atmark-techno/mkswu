@@ -41,8 +41,6 @@ init_vars() {
 	    || ! grep -q "POSTACT_CONTAINER" "$SWDESC"; then
 		needs_reboot=1
 	fi
-	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
-		"$(needs_reboot || echo " not")"
 }
 
 save_vars() {
@@ -59,13 +57,38 @@ save_vars() {
 	fi
 }
 
+fail_redundant_update() {
+	# if no version changed, clean up and fail script to avoid
+	# downloading the rest of the image
+	if ! grep -q "#FORCE_VERSION" "$SWDESC"; then
+		if cmp -s /etc/sw-versions "$SCRIPTSDIR/sw-versions.merged"; then
+			rm -rf "$SCRIPTSDIR"
+			error "Nothing to do -- failing on purpose to save bandwidth"
+		fi
+		# also check B-side
+		if mount "${partdev}$((ab+1))" /target 2>/dev/null; then
+			if cmp -s /target/etc/sw-versions \
+					"$SCRIPTSDIR/sw-versions.merged"; then
+				rm -rf "$SCRIPTSDIR"
+				error "Update looks like it already had been installed but rolled back, failing on purpose -- rollback again to use it"
+			fi
+			umount /target
+		fi
+	fi
+}
+
 init() {
 	lock_update
 	cleanup
+
 	gen_newversion
 
-
 	init_vars
+
+	fail_redundant_update
+	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
+		"$(needs_reboot || echo " not")"
+
 	save_vars
 }
 
