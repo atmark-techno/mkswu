@@ -60,6 +60,7 @@ EOF
 /etc/atmark
 /etc/fstab
 /etc/motd
+/etc/conf.d/overlayfs
 /etc/swupdate_preserve_files
 
 /etc/hwrevision
@@ -67,7 +68,9 @@ EOF
 /etc/swupdate.pem
 /etc/swupdate.aes-key
 /etc/runlevels/default/swupdate-hawkbit
+/etc/conf.d/swupdate-hawkbit
 /etc/runlevels/default/swupdate-url
+/etc/conf.d/swupdate-url
 /etc/swupdate.watch
 
 /etc/runlevels/default/sshd
