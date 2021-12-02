@@ -18,6 +18,6 @@ swdesc_exec_nochroot "imx-boot_armadillo_x2" \
 	'echo 1 > /sys/block/mmcblk2boot0/force_ro'
 
 # reboot command likely won't work anymore after copy: reboot with sysrq trigger
-swdesc_exec_nochroot "alpine-aarch64-3.14.2-at.1.20211119.img" \
+swdesc_exec_nochroot "baseos-x2-3.14.3-at.1.20211119.img" \
 	'mmc bootpart enable 1 0 /dev/mmcblk2; dd if=$1 of=/dev/mmcblk2 bs=1M conv=fdatasync; echo b > /proc/sysrq-trigger'
 

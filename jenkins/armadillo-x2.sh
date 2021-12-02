@@ -7,12 +7,12 @@ error() {
 
 [[ -r "swupdate.key" ]] || error "Cannot read swupdate.key"
 
-ROOTFS=$(ls --sort=time alpine-aarch64-*.tar* | head -n 1)
+ROOTFS=$(ls --sort=time baseos-x2-*.tar* | head -n 1)
 [[ -e  "$ROOTFS" ]] || error "rootfs not found"
-ROOTFS_VERSION=${ROOTFS#alpine-aarch64-}
+ROOTFS_VERSION=${ROOTFS#baseos-x2-}
 ROOTFS_VERSION=${ROOTFS_VERSION%.tar.*}
 
-OUTPUT=armadillo-x2-${ROOTFS_VERSION}
+OUTPUT=baseos-x2-${ROOTFS_VERSION}
 
 cat > "$OUTPUT.desc" <<EOF
 DEBUG_SWDESC="# ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN"
