@@ -427,8 +427,7 @@ swdesc_boot() {
 		|| error "Version component for swdesc_boot must be set to boot"
 	if [ -z "$version" ]; then
 		version=$(strings "$BOOT" |
-				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-([0-9]*-)?g[0-9a-f]*')
-		[ -n "$version" ] \
+				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*') \
 			|| error "Could not guess boot version in $BOOT"
 	fi
 
