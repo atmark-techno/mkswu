@@ -979,8 +979,8 @@ sw-description.sig"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
 		absolutize_file_paths
+		cd "$main_cwd" || error "Cannot return to $main_cwd we were in before"
 	done
-	cd "$main_cwd" || error "Cannot return to $main_cwd we were in before"
 
 	[ -z "$FIRST_SWDESC_INIT" ] || error "No or empty desc given?"
 
