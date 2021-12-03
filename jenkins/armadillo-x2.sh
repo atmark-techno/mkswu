@@ -19,6 +19,7 @@ DEBUG_SWDESC="# ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN"
 swdesc_boot --board iot-g4-eva imx-boot_yakushima-eva
 swdesc_boot --board iot-g4-es1 imx-boot_armadillo_x2
 swdesc_boot --board iot-g4-es2 imx-boot_armadillo_x2
+swdesc_boot --board AGX4500 imx-boot_armadillo_x2
 swdesc_tar "$ROOTFS" --version base_os "$ROOTFS_VERSION"
 EOF
 
