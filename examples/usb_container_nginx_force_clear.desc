@@ -13,5 +13,5 @@ FORCE_VERSION=1
 # generated with the following:
 # $ podman pull docker.io/arm64v8/nginx:alpine
 # $ ./podman_partial_image.sh -R s@docker.io/arm64v8/nginx@docker.io/nginx@g -o examples/nginx_alpine.tar docker.io/arm64v8/nginx:alpine
-swdesc_usb_container "examples/nginx_alpine.tar"
-swdesc_files examples/nginx_start
+swdesc_usb_container "nginx_alpine.tar"
+swdesc_files nginx_start

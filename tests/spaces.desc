@@ -1,9 +1,9 @@
 DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
-echo "test content" > tests/zoo/test\ space
-tar -C tests/zoo -cf tests/zoo/test\ space.tar test\ space
-swdesc_tar "tests/zoo/test space.tar" --version extra_os 1 --dest /tmp
+echo "test content" > zoo/test\ space
+tar -C zoo -cf zoo/test\ space.tar test\ space
+swdesc_tar "zoo/test space.tar" --version extra_os 1 --dest /tmp
 swdesc_pull_container "docker.io/tag with spaces" --version spaces 1
-swdesc_embed_container "tests/zoo/test space.tar"
-swdesc_usb_container "tests/zoo/test space.tar"
-swdesc_script "tests/zoo/test space"
-swdesc_exec "tests/zoo/test space" 'echo $1'
+swdesc_embed_container "zoo/test space.tar"
+swdesc_usb_container "zoo/test space.tar"
+swdesc_script "zoo/test space"
+swdesc_exec "zoo/test space" 'echo $1'

@@ -16,9 +16,10 @@ fi
 
 build_check tests/spaces "file test\ space.tar.zst"
 build_check tests/install_files \
-	"file-tar tests__tmp_swupdate_..e_zoo_test_space_tar_e1a4910d4523d9256c895c530987e9c2ca267063.tar.zst zoo/test\ space zoo/test\ space.tar"
+	"file-tar *tmp_swupdate*.tar.zst zoo/test\ space zoo/test\ space.tar"
 
-sed -e "s/# ENCRYPT_KEYFILE/ENCRYPT_KEYFILE/" mkimage.conf > tests/mkimage-aes.conf
+cp -f mkimage.conf tests/mkimage-aes.conf
+echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> tests/mkimage-aes.conf
 ./genkey.sh --aes --config tests/mkimage-aes.conf
 conf=tests/mkimage-aes.conf build_check tests/aes
 

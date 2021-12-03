@@ -2,7 +2,7 @@
 # any different version from current system's (based on sw-versions)
 # will be installed
 swdesc_files --version extra_os.kernel 5.10.0-1 --dest /boot \
-	"examples/Image" "examples/imx8mp-yakushima-eva.dtb"
+	"Image" "imx8mp-yakushima-eva.dtb"
 
 # add the kernel to files to be preserved on OS update
 swdesc_command --version extra_os.kernel 5.10.0-1 \

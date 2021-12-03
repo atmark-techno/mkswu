@@ -888,6 +888,14 @@ EOF
 	) || error "Could not update default config"
 }
 
+absolutize_file_paths() {
+	[ "${PRIVKEY#/}" != "$PRIVKEY" ] || PRIVKEY=$(realpath "$PRIVKEY")
+	[ "${PUBKEY#/}" != "$PUBKEY" ] || PUBKEY=$(realpath "$PUBKEY")
+	[ -z "$ENCRYPT_KEYFILE" ] \
+		|| [ "${ENCRYPT_KEYFILE#/}" != "$ENCRYPT_KEYFILE" ] \
+		|| ENCRYPT_KEYFILE=$(realpath "$ENCRYPT_KEYFILE")
+}
+
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
@@ -905,6 +913,7 @@ sw-description.sig"
 	# default default values
 	local BOOT_SIZE="4M"
 	local compress=1
+	local main_cwd desc
 	local component version board dest
 
 	set -e
@@ -956,15 +965,22 @@ sw-description.sig"
 	# actual image building
 	OUTDIR=$(dirname "$OUT")/.$(basename "$OUT" .swu)
 	mkdir -p "$OUTDIR"
+	OUTDIR=$(realpath "$OUTDIR")
 	rm -f "$OUTDIR/sw-description-"* "$OUTDIR/used_files"
 	track_used "$OUTDIR"
 
+	main_cwd=$PWD
+	absolutize_file_paths
 	# build sw-desc fragments
-	for DESC; do
-		[ -e "$DESC" ] || error "$DESC does not exist"
-		[ "${DESC#/}" = "$DESC" ] && DESC="./$DESC"
-		. "$DESC"
+	for desc; do
+		[ -e "$desc" ] || error "$desc does not exist"
+		cd "$(dirname "$desc")" || error "cannot enter $desc directory"
+		. "./${desc##*/}"
+		# make key files path absolute after each iteration:
+		# this is required if a desc file sets a key path
+		absolutize_file_paths
 	done
+	cd "$main_cwd" || error "Cannot return to $main_cwd we were in before"
 
 	[ -z "$FIRST_SWDESC_INIT" ] || error "No or empty desc given?"
 

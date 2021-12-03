@@ -1,6 +1,7 @@
 # Initial update is done with the onetime public key and no encryption, override used keys
-PRIVKEY=swupdate-onetime-public.key
-PUBKEY=swupdate-onetime-public.pem
+PRIVKEY="$SCRIPT_DIR/swupdate-onetime-public.key"
+ORIG_PUBKEY="$PUBKEY"
+PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
 ORIG_ENCRYPT_KEYFILE="$ENCRYPT_KEYFILE"
 ENCRYPT_KEYFILE=""
 
@@ -9,7 +10,7 @@ ENCRYPT_KEYFILE=""
 # Base OS update certificate. You will no longer be able to update
 # directly from atmark-techno.com servers.
 swdesc_exec --version extra_os.initial_setup 1 \
-	swupdate.pem 'cat $1 >> /etc/swupdate.pem'
+	"$PUBKEY" 'cat $1 >> /etc/swupdate.pem'
 
 # If encryption is setup, also send encryption key
 if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then

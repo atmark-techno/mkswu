@@ -28,7 +28,7 @@ check() {
 		[ $# -gt 1 ] || error "file-tar needs tar and content args"
 		tar="$1"
 		shift
-		tar tf "$dir/$tar" "$@" > /dev/null || error "Missing files in $tar"
+		tar tf "$dir/"$tar "$@" > /dev/null || error "Missing files in $tar"
 		;;
 	version)
 		[ $# -eq 2 ] || error "version usage: <component> <version regex>"

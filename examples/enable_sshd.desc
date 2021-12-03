@@ -1,10 +1,11 @@
 # add your public key in examples/enable_sshd/root/.ssh/authorized_keys
 if [ -z "$SWDESC_TEST" ]; then
-	grep -qE '^ssh-' examples/enable_sshd/root/.ssh/authorized_keys \
+	grep -qE '^ssh-' enable_sshd/root/.ssh/authorized_keys \
 		|| error "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
 fi
 swdesc_files --version extra_os.sshd 1 \
-	--dest /root examples/enable_sshd/root
+	--dest /root enable_sshd/root
+
 swdesc_command --version extra_os.sshd 1 \
 	"ssh-keygen -A" \
 	"rc-update add sshd default"

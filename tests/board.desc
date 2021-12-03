@@ -1,4 +1,4 @@
 DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
 FORCE_VERSION=1
-swdesc_files --board iot-g4-es1 --dest /tmp/swupdate-test tests/zoo/test\ space
-swdesc_files --dest /tmp/swupdate-test tests/zoo/test\ space.tar
+swdesc_files --board iot-g4-es1 --dest /tmp/swupdate-test zoo/test\ space
+swdesc_files --dest /tmp/swupdate-test zoo/test\ space.tar
