@@ -849,6 +849,45 @@ cleanup_outdir() {
 		| xargs rm -f
 }
 
+update_mkimage_conf() {
+	local confdir=$(dirname "$CONFIG") confbase=${CONFIG##*/}
+	[ "$confbase" != mkimage.conf ] && return
+
+	# subshell to not source multiple versions of same file
+	(
+		set -e
+		sha=$(sha256sum "$confdir/mkimage.conf.defaults")
+		sha=${sha%% *}
+		if [ -e "$CONFIG" ]; then
+			. "$CONFIG"
+			# config exist + no sha: don't update
+			[ -z "$DEFAULTS_MKIMAGE_CONF_SHA256" ] && exit
+			# sha didn't change: don't update
+			[ "$DEFAULTS_MKIMAGE_CONF_SHA256" = "$sha" ] && exit
+
+			# update hash, trim comments/empty lines past AUTO_START comment
+			sed -e "s/^\(DEFAULTS_MKIMAGE_CONF_SHA256=\).*/\1\"$sha\"/" \
+			    -e '/^#AUTO_START/p' -e '/^#AUTO_START/,$ {/^#\|^$/ d}' \
+			    "$CONFIG" > "$CONFIG.new"
+		else
+			cat > "$CONFIG.new" <<EOF
+# defaults section: if you remove this include you must keep this file up
+# to date with mkimage.conf changes!
+. "$confdir/mkimage.conf.defaults"
+DEFAULTS_MKIMAGE_CONF_SHA256="$sha"
+
+## user section: this won't be touched
+
+## auto section: you can make changes here but comments will be lost
+#AUTO_START
+EOF
+		fi
+		sed -e 's/^[^#$]/#&/' "$confdir/mkimage.conf.defaults" >> "$CONFIG.new"
+		mv "$CONFIG.new" "$CONFIG"
+
+	) || error "Could not update default config"
+}
+
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
@@ -907,6 +946,7 @@ sw-description.sig"
 	fi
 
 	if [ -n "$CONFIG" ]; then
+		update_mkimage_conf
 		[ -e "$CONFIG" ] || error "$CONFIG does not exist"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
 		. "$CONFIG"

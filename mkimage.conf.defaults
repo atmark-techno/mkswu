@@ -1,6 +1,6 @@
 # This file is read even if another config file is passed in argument,
 # and is meant to define default values for image generation (e.g. key files)
-# Use --no-default if you want to skip loading it.
+# Use --config "" if you want to skip loading it.
 
 # public and private key locations for signing purpose, mandatory.
 PRIVKEY=swupdate.key
@@ -9,10 +9,11 @@ PUBKEY=swupdate.pem
 # private key password, if set. defaults to prompting for password.
 # Note that this is not safe if you store the key and its password
 # in the same place!
-# PRIVKEY_PASS=""
+PRIVKEY_PASS=""
 
 # AES encryption key if set
-# ENCRYPT_KEYFILE="swupdate.aes-key"
+## example ENCRYPT_KEYFILE="swupdate.aes-key"
+ENCRYPT_KEYFILE=""
 
 # swupdate hwrevision compatibility tag. Note that if you change it on the device,
 # you might no longer be able to install atmark updates.
