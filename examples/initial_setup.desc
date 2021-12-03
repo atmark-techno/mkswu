@@ -10,7 +10,7 @@ ENCRYPT_KEYFILE=""
 # Base OS update certificate. You will no longer be able to update
 # directly from atmark-techno.com servers.
 swdesc_exec --version extra_os.initial_setup 1 \
-	"$PUBKEY" 'cat $1 >> /etc/swupdate.pem'
+	"$ORIG_PUBKEY" 'cat $1 >> /etc/swupdate.pem'
 
 # If encryption is setup, also send encryption key
 if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then
