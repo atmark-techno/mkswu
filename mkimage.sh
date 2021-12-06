@@ -865,9 +865,9 @@ update_mkimage_conf() {
 			# sha didn't change: don't update
 			[ "$DEFAULTS_MKIMAGE_CONF_SHA256" = "$sha" ] && exit
 
-			# update hash, trim comments/empty lines past AUTO_START comment
+			# update hash, trim comments/empty lines past auto section comment
 			sed -e "s/^\(DEFAULTS_MKIMAGE_CONF_SHA256=\).*/\1\"$sha\"/" \
-			    -e '/^#AUTO_START/p' -e '/^#AUTO_START/,$ {/^#\|^$/ d}' \
+			    -e '/^## auto section/p' -e '/^## auto section/,$ {/^#\|^$/ d}' \
 			    "$CONFIG" > "$CONFIG.new"
 		else
 			cat > "$CONFIG.new" <<EOF
@@ -879,7 +879,6 @@ DEFAULTS_MKIMAGE_CONF_SHA256="$sha"
 ## user section: this won't be touched
 
 ## auto section: you can make changes here but comments will be lost
-#AUTO_START
 EOF
 		fi
 		sed -e 's/^[^#$]/#&/' "$confdir/mkimage.conf.defaults" >> "$CONFIG.new"
