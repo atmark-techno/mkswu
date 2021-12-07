@@ -114,9 +114,14 @@ update_running_versions() {
 
 	[ "$(stat -f -c %T /etc/sw-versions)" = "overlayfs" ] || return
 
+	# support older version of overlayfs
+	local fsroot=/live/rootfs
+	[ -e "$fsroot" ] || fsroot=/
+
 	# bind-mount / somewhere else to write below it as well
-	mount --bind / /target || error "Could not bind mount rootfs"
+	mount --bind "$fsroot" /target || error "Could not bind mount rootfs"
 	mount -o remount,rw /target || error "Could not make rootfs rw"
-	cp /etc/sw-versions /target/etc/sw-versions || error "Could not write $1 to /etc/sw-versions"
+	cp /etc/sw-versions /target/etc/sw-versions \
+		|| error "Could not write $1 to /etc/sw-versions"
 	umount /target || error "Could not umount rootfs rw copy"
 }
