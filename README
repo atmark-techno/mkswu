@@ -74,11 +74,13 @@ Images are then built progressively by calling the following helpers:
 swdesc_boot <bootfile>
   Include boot file, version is automatically set from file if not set
 
-swdesc_tar <tar file> [--dest <dest>]
+swdesc_tar <tar file> [--dest <dest>] [--preserve-attributes]
   Extract <tar file> at <path> within new system.
   Destination path must be within /var/app/(rollback/)?volumes
   unless rootfs is targeted (see <component> in Glossary), and defaults
   to / for os versions and /var/app/rollback/volumes otherwise
+  Owner and mode are lost (except execute) unless --preserve-attributes
+  is set
 
 swdesc_files [--basedir <basedir>] [--dest <dest>] <file> [<more files>]
   Copy files into <dest> (same defaults as swdesc_tar), as they

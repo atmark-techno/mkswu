@@ -41,6 +41,7 @@ error() {
 write_line() {
 	local line
 	for line; do
+		[ -z "$line" ] && continue
 		printf "%*s%s\n" "$((0${line:+1}?indent:0))" "" "$line"
 	done
 }
@@ -312,6 +313,12 @@ parse_swdesc() {
 			main_version=1
 			SKIP=0
 			;;
+		"--preserve-attributes")
+			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
+				|| error "$ARG only allowed for swdesc_files and swdesc_tar"
+			preserve_attributes=1
+			SKIP=0
+			;;
 		"-d"|"--dest")
 			[ $# -lt 1 ] && error "$ARG requires an argument"
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
@@ -439,6 +446,7 @@ swdesc_tar() {
 	local source="$source" dest="$dest"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local preserve_attributes="$preserve_attributes"
 	local target="/target"
 
 	parse_swdesc tar "$@"
@@ -463,8 +471,16 @@ swdesc_tar() {
 		esac
 	esac
 
+	# it doesn't make sense to not set preserve_attributes
+	# for base_os updates: fix it
+	if [ "$component" = "base_os" ] \
+	    && [ -z "$preserve_attributes" ]; then
+		echo "Warning: automatically setting --preserve-attributes for base_os update" >&2
+		preserve_attributes=1
+	fi
 	write_entry images "$source" "type = \"archive\";" \
-		"path = \"$target$dest\";"
+		"path = \"$target$dest\";" \
+		"${preserve_attributes:+preserve-attributes = true;}"
 }
 
 set_file_from_content() {
@@ -482,6 +498,7 @@ swdesc_files() {
 	local file="$file" dest="$dest" basedir="$basedir"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local preserve_attributes="$preserve_attributes"
 	local tarfile tarfile_raw tarfiles_src="$tarfiles_src"
 	local mtime=0
 	local IFS="
