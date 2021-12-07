@@ -882,6 +882,9 @@ update_mkimage_conf() {
 			# sha didn't change: don't update
 			[ "$DEFAULTS_MKIMAGE_CONF_SHA256" = "$sha" ] && exit
 
+			# keep old version
+			cp "$CONFIG" "$CONFIG.autosave-$(date +%Y%m%d)"
+
 			# update hash, trim comments/empty lines past auto section comment
 			sed -e "s/^\(DEFAULTS_MKIMAGE_CONF_SHA256=\).*/\1\"$sha\"/" \
 			    -e '/^## auto section/p' -e '/^## auto section/,$ {/^#\|^$/ d}' \
