@@ -98,9 +98,11 @@ mkdir_p_target() {
 	parent="${dir%/*}"
 	[ -n "$parent" ] && mkdir_p_target "$parent"
 
-	mode=$(stat -c %a "$dir")
-	mkdir --mode "$mode" "/target/$dir" \
+	mkdir "/target/$dir" \
 		|| error "Could not create /target/$dir"
+	chown --reference "$dir" "/target/$dir"
+	chmod --reference "$dir" "/target/$dir"
+	touch --reference "$dir" "/target/$dir"
 }
 
 is_mountpoint() {
