@@ -1,4 +1,4 @@
-swap_btrfs_snapshots() {
+exchange_btrfs_snapshots() {
 	if command -v renameat2 >/dev/null; then
 		renameat2 --exchange "$basemount/boot_0" "$basemount/boot_1"
 	else
@@ -19,16 +19,24 @@ swap_btrfs_snapshots() {
 		fi
 
 	fi
+}
+
+swap_btrfs_snapshots() {
+	exchange_btrfs_snapshots || return 1
 
 	# we need to now remount the volumes with the new data,
 	# so stop all countainers and restart them
 	podman kill -a
 	podman rm -a
-	umount /var/lib/containers/storage_readonly || return 1
-	mount /var/lib/containers/storage_readonly || return 1
-	umount /var/app/rollback/volumes || return 1
-	mount /var/app/rollback/volumes || return 1
-	podman_start -a || return 1
+	if ! umount /var/lib/containers/storage_readonly \
+	    || ! mount /var/lib/containers/storage_readonly \
+	    || ! umount /var/app/rollback/volumes \
+	    || ! mount /var/app/rollback/volumes \
+	    || ! podman_start -a; then
+		# hope rollback works...
+		exchange_btrfs_snapshots
+		return 1
+	fi
 }
 
 cleanup_appfs() {
@@ -60,7 +68,7 @@ cleanup_appfs() {
 		# to do and want to use updated apps on currenet os (old apps
 		# now being backup for fallback)
 		if ! swap_btrfs_snapshots; then
-			echo "Could not swap btrfs subvolumes, forcing reboot"
+			echo "Could not swap btrfs subvolumes, forcing reboot" >&2
 			umount "$basemount"
 			rmdir "$basemount"
 			needs_reboot=1
