@@ -11,6 +11,7 @@ usage() {
 	echo "Options:"
 	echo "  -c, --config <conf>     path to config (default mkimage.conf)"
 	echo "  -o, --out <out.swu>     path to output file (default from first desc's name)"
+	echo "  --mkconf                generate default config file"
 	echo "  desc                    image description file(s), if multiple are given"
 	echo "                          then the generated image will merge all the contents"
 	echo
@@ -957,6 +958,10 @@ sw-description.sig"
 			OUT="$1"
 			[ "${OUT%.swu}" != "$OUT" ] || error "$OUT must end with .swu"
 			SKIP=1
+			;;
+		"--mkconf")
+			update_mkimage_conf
+			exit 0
 			;;
 		"-h"|"--help"|"-"*)
 			usage

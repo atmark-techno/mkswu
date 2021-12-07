@@ -4,7 +4,8 @@
 # SC1090: non-constant source directives
 # shellcheck disable=SC2039,SC1090
 
-CONFIG=./mkimage.conf
+SCRIPT_DIR=$(dirname "$0")
+CONFIG="$SCRIPT_DIR"/mkimage.conf
 AES=
 PLAIN=
 CN=
@@ -83,7 +84,7 @@ while [ $# -ge 1 ]; do
 	"-c"|"--config")
 		[ $# -lt 2 ] && error "$1 requires an argument"
 		CONFIG="$2"
-		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
+		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG=$(realpath "$CONFIG")
 		shift 2
 		;;
 	"--cn")
@@ -114,7 +115,13 @@ while [ $# -ge 1 ]; do
 	esac
 done
 
-[ -r "$CONFIG" ] || error "Config $CONFIG not found - configure paths there or specify config with --config"
+if ! [ -r "$CONFIG" ]; then
+	# generate defaults if absent
+	[ "${CONFIG##*/}" = "mkimage.conf" ] \
+		&& "$SCRIPT_DIR/mkimage.sh" --mkconf
+	[ -r "$CONFIG" ] \
+		|| error "Config $CONFIG not found - configure paths there or specify config with --config"
+fi
 . "$CONFIG"
 
 if [ -n "$AES" ]; then
