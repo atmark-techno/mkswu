@@ -36,8 +36,13 @@ usage() {
 genkey_aes() {
 	local oldumask
 
-	[ -n "$ENCRYPT_KEYFILE" ] \
-		|| error "Must set ENCRYPT_KEYFILE in config file (or pass --config if required)"
+	if [ -z "$ENCRYPT_KEYFILE" ]; then
+		echo "Info: using default aes key path"
+		ENCRYPT_KEYFILE="swupdate.aes-key"
+		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
+			'ENCRYPT_KEYFILE="swupdate.aes-key"' >> "$CONFIG" \
+			|| error "Could not update default ENCRYPT_KEYFILE in $CONFIG"
+	fi
 	if [ -s "$ENCRYPT_KEYFILE" ]; then
 		printf "%s\n" "$ENCRYPT_KEYFILE already exists, skipping"
 		return
