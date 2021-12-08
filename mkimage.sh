@@ -893,8 +893,8 @@ update_mkimage_conf() {
 		else
 			cat > "$CONFIG.new" <<EOF
 # defaults section: if you remove this include you must keep this file up
-# to date with mkimage.conf changes!
-. "$confdir/mkimage.conf.defaults"
+# to date with mkimage.conf.defaults changes!
+. "\$SCRIPT_DIR/mkimage.conf.defaults"
 DEFAULTS_MKIMAGE_CONF_SHA256="$sha"
 
 ## user section: this won't be touched
