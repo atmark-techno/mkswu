@@ -65,8 +65,9 @@ fail_redundant_update() {
 			rm -rf "$SCRIPTSDIR"
 			error "Nothing to do -- failing on purpose to save bandwidth"
 		fi
-		# also check B-side
-		if mount "${partdev}$((ab+1))" /target 2>/dev/null; then
+		# also check B-side unless SW_ALLOW_ROLLBACK is set
+		if [ -z "$SW_ALLOW_ROLLBACK" ] \
+		    && mount "${partdev}$((ab+1))" /target 2>/dev/null; then
 			if cmp -s /target/etc/sw-versions \
 					"$SCRIPTSDIR/sw-versions.merged"; then
 				rm -rf "$SCRIPTSDIR"
