@@ -5,7 +5,7 @@ CONFDIR=/etc/atmark/containers
 FAIL_MISSING=
 
 error() {
-	echo "$@" >&2
+	printf "%s\n" "$@" >&2
 	exit 1
 }
 
@@ -19,12 +19,36 @@ usage() {
 	echo " --fail-missing   Fail if a configured image is not found"
 }
 
+get_pod_infra_container_tag() {
+	local infra_container
+
+	# get the id of the pod infra container... in the target rootfs!
+	# XXX find better than parsing help. We can't start a pod to inspect it...
+	infra_container=$(podman run --net=none --rootfs /target podman pod create --help | \
+				sed -ne 's/.*infra-image.*default "\([^"]*\)".*/\1/p')
+
+	if [ -z "$infra_container" ]; then
+		printf "%s\n" "Warning: Could not guess podman pod infra container name, continuing without one"
+			      "podman_start will require internet to start pods" >&2
+		return
+	fi
+
+	if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
+			image inspect --format '{{.Id}}' "$infra_container" 2>/dev/null; then
+		printf "%s\n" "Warning: pod configured but pod infra container $infra_container was not found!" \
+			      "Trying to get it now" >&2
+		# pull command prints the id of the image it just fetched
+		podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
+				pull "$infra_container" || \
+			printf "%s\n" "Could not pull infra container: podman_start will require internet" >&2
+	fi
+}
+
 trim_tags() {
 	local tag conf
 	[ -n "$CONFDIR" ] || return
 	# if no configuration is present, skip this step
 	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
-
 
 	# build list of images in use
 	: > "$tmpdir/ids"
@@ -39,6 +63,11 @@ trim_tags() {
 			error "image $tag in $conf not found in image store !"
 		fi
 	done
+
+	# add pod infra container if any pod configured
+	if grep -q -E "^pod=" "$CONFDIR/"*.conf; then
+		get_pod_infra_container_tag >> "$tmpdir/ids"
+	fi
 
 	# untag any unused image
 	podman --root "$PODMAN_ROOT" \
