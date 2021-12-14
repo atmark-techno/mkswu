@@ -3,8 +3,8 @@
 # Use --config "" if you want to skip loading it.
 
 # public and private key locations for signing purpose, mandatory.
-PRIVKEY=swupdate.key
-PUBKEY=swupdate.pem
+PRIVKEY="$SCRIPT_DIR/swupdate.key"
+PUBKEY="$SCRIPT_DIR/swupdate.pem"
 
 # private key password, if set. defaults to prompting for password.
 # Note that this is not safe if you store the key and its password
@@ -12,7 +12,7 @@ PUBKEY=swupdate.pem
 PRIVKEY_PASS=""
 
 # AES encryption key if set
-## example ENCRYPT_KEYFILE="swupdate.aes-key"
+## example ENCRYPT_KEYFILE="$SCRIPTS_DIR/swupdate.aes-key"
 ENCRYPT_KEYFILE=""
 
 # swupdate hwrevision compatibility tag. Note that if you change it on the device,

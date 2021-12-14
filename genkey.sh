@@ -38,9 +38,9 @@ genkey_aes() {
 
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		echo "Info: using default aes key path"
-		ENCRYPT_KEYFILE="swupdate.aes-key"
+		ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
-			'ENCRYPT_KEYFILE="swupdate.aes-key"' >> "$CONFIG" \
+			'ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"' >> "$CONFIG" \
 			|| error "Could not update default ENCRYPT_KEYFILE in $CONFIG"
 	fi
 	if [ -s "$ENCRYPT_KEYFILE" ]; then

@@ -1,1 +1,1 @@
-swdesc_boot "$main_cwd/imx-boot_armadillo_x2"
+swdesc_boot "$SCRIPT_DIR/imx-boot_armadillo_x2"

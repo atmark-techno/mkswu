@@ -2,7 +2,8 @@
 
 set -e
 
-. scripts/versions.sh
+TESTS_DIR=$(dirname "${BASH_SOURCE[0]}")
+. $TESTS_DIR/../scripts/versions.sh
 
 error() {
 	printf "%s\n" "$@" >&2
@@ -56,13 +57,13 @@ check() {
 build_check() {
 	local desc="$1"
 	local name="${desc##*/}"
-	local dir="tests/out/.$name"
-	local swu="tests/out/$name.swu"
+	local dir="$TESTS_DIR/out/.$name"
+	local swu="$TESTS_DIR/out/$name.swu"
 	local check
 	shift
 
 	echo "Building $name"
-	./mkimage.sh ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	"$TESTS_DIR/../mkimage.sh" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
 
 	for check; do
 		eval check "$check"

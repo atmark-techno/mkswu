@@ -2,42 +2,44 @@
 
 set -ex
 
+cd "$(dirname "$0")"
+
 # sometimes remove tests/out directory to force regeneration
 [ -z "$CLEAN_TESTS_OUT" ] && ((RANDOM % 2)) && CLEAN_TESTS_OUT=yes
 if [ "$CLEAN_TESTS_OUT" = "yes" ]; then
-	echo "Removing ./tests/out"
-	rm -rf ./tests/out
+	echo "Removing ./out"
+	rm -rf ./out
 fi
 
-./tests/examples.sh
-./tests/scripts.sh
+./examples.sh
+./scripts.sh
 
-. ./tests/common.sh
+. ./common.sh
 
-build_check tests/spaces "file test\ space.tar.zst"
-build_check tests/install_files \
+build_check spaces "file test\ space.tar.zst"
+build_check install_files \
 	"file-tar *tmp_swupdate*.tar.zst zoo/test\ space zoo/test\ space.tar"
 
-cp -f mkimage.conf tests/mkimage-aes.conf
-echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> tests/mkimage-aes.conf
-./genkey.sh --aes --config tests/mkimage-aes.conf
-conf=tests/mkimage-aes.conf build_check tests/aes
+cp -f ../mkimage.conf mkimage-aes.conf
+echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkimage-aes.conf
+../genkey.sh --aes --config mkimage-aes.conf
+conf=mkimage-aes.conf build_check aes
 
-build_check tests/board "swdesc 'iot-g4-es1 = '"
-build_check tests/board_fail
+build_check board "swdesc 'iot-g4-es1 = '"
+build_check board_fail
 
-build_check tests/exec_quoting "swdesc 'touch /tmp/swupdate-test'"
-build_check tests/exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
+build_check exec_quoting "swdesc 'touch /tmp/swupdate-test'"
+build_check exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 
-rm -f tests/zoo/hardlink tests/zoo/hardlink2
-echo foo > tests/zoo/hardlink
-ln tests/zoo/hardlink tests/zoo/hardlink2
-build_check tests/hardlink_order
-[ "$(cpio -t < tests/out/hardlink_order.swu)" = "sw-description
+rm -f zoo/hardlink zoo/hardlink2
+echo foo > zoo/hardlink
+ln zoo/hardlink zoo/hardlink2
+build_check hardlink_order
+[ "$(cpio -t < out/hardlink_order.swu)" = "sw-description
 sw-description.sig
 scripts.tar.zst
 hardlink
-swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio -t < tests/out/hardlink_order.swu)"
+swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio -t < out/hardlink_order.swu)"
 
 # install test
 SWUPDATE="${SWUPDATE:-swupdate}"
@@ -50,7 +52,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 	# tests/install_files
 	rm -rf /tmp/swupdate-test /target/tmp/swupdate-test
 	mkdir /tmp/swupdate-test
-	"$SWUPDATE" -i ./tests/out/install_files.swu -v -k swupdate.pem \
+	"$SWUPDATE" -i ./out/install_files.swu -v -k ../swupdate.pem \
 		|| error "swupdate failed"
 	ls /tmp/swupdate-test
 	[ "$(cat "/tmp/swupdate-test/zoo/test space")" = "test content" ] \
@@ -61,7 +63,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 
 	# tests/aes
 	mkdir /tmp/swupdate-test
-	"$SWUPDATE" -i ./tests/out/aes.swu -v -k swupdate.pem -K swupdate.aes-key \
+	"$SWUPDATE" -i ./out/aes.swu -v -k ../swupdate.pem -K swupdate.aes-key \
 		|| error "swupdate failed"
 	ls /tmp/swupdate-test
 	[ "$(cat "/tmp/swupdate-test/test space")" = "test content" ] \
@@ -72,7 +74,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 
 	# tests/board
 	mkdir /tmp/swupdate-test
-	"$SWUPDATE" -i ./tests/out/board.swu -v -k swupdate.pem \
+	"$SWUPDATE" -i ./out/board.swu -v -k ../swupdate.pem \
 		|| error "swupdate failed"
 	ls /tmp/swupdate-test
 	[ "$(cat "/tmp/swupdate-test/test space")" = "test content" ] \
@@ -83,7 +85,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 
 	# tests/board_fail -- incorrect board here
 	mkdir /tmp/swupdate-test
-	"$SWUPDATE" -i ./tests/out/board_fail.swu -v -k swupdate.pem \
+	"$SWUPDATE" -i ./out/board_fail.swu -v -k ../swupdate.pem \
 		&& error "Should not have succeeded"
 	rm -rf /tmp/swupdate-test
 
@@ -92,7 +94,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 		&& mkdir -p /target/var/app/volumes /target/var/app/rollback/volumes; then
 		# tests/exec_quoting
 		mkdir /tmp/swupdate-test /target/tmp/swupdate-test
-		"$SWUPDATE" -i ./tests/out/exec_quoting.swu -v -k swupdate.pem \
+		"$SWUPDATE" -i ./out/exec_quoting.swu -v -k ../swupdate.pem \
 			|| error "swupdate failed"
 		ls "/tmp/swupdate-test/1 \\, \", ',"$'\n'"bar" /tmp/swupdate-test/2 /tmp/swupdate-test/3 \
 			|| error "exec_nochroot did not create expected files"
@@ -101,7 +103,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 		rm -rf /tmp/swupdate-test /target/tmp/swupdate-test
 
 		# tests/exec_readonly (failure test)
-		"$SWUPDATE" -i ./tests/out/exec_readonly.swu -v -k swupdate.pem \
+		"$SWUPDATE" -i ./out/exec_readonly.swu -v -k ../swupdate.pem \
 			&& error "Should not have succeeded"
 	fi
 fi
