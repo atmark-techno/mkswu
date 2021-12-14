@@ -163,13 +163,10 @@ post_rootfs() {
 		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
 	fi
 
-	if [ -e /target/.created ]; then
-		rootfs_created=1
-		rm -f /target/.created
-	fi
-
 	# if other fs was recreated: fix partition-specific things
-	if [ -n "$rootfs_created" ]; then
+	if [ -e /target/.created ]; then
+		rm -f /target/.created
+
 		# fwenv: either generate a new one for mmc, or copy for sd boot (supersedes version in update)
 		if [ "$rootdev" = "/dev/mmcblk2" ]; then
 			cat > /target/etc/fw_env.config <<EOF \
