@@ -154,9 +154,22 @@ post_copy_preserve_files() {
 	rm -f "$TMPDIR/preserve_files_post"
 }
 
-post_rootfs() {
-	local rootfs_created=""
 
+### workaround section, these can be removed once we consider we no longer
+### support a given version.
+baseos_upgrade_fixes() {
+	# v3.14.3-at.2
+	if grep -q /dev/mmcblk2 /proc/cmdline \
+	    && [ -e /dev/mmcblk2gp1 ] \
+	    && ! grep -q /dev/mmcblk2gp1 /target/etc/fstab; then
+		cat >> /target/etc/fstab <<'EOF'
+/dev/mmcblk2gp1	/var/at-log			vfat	defaults			0 0
+EOF
+	fi
+}
+
+
+post_rootfs() {
 	# Sanity check: refuse to continue if someone tries to write a
 	# rootfs that was corrupted or "too wrong": check for /bin/sh
 	if ! [ -e /target/bin/sh ]; then
@@ -190,6 +203,7 @@ EOF
 				|| error "could not rewrite storage.conf"
 		fi
 		if needs_update "base_os"; then
+			baseos_upgrade_fixes
 			post_copy_preserve_files
 		fi
 

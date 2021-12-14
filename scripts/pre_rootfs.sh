@@ -164,11 +164,16 @@ mount_target_rootfs() {
 	# if no update is required copy current fs over
 	echo "No base os update: copying current os over"
 
-	basemount=$(mktemp -d -t root-mount.XXXXXX) || error "Could not create temp dir"
-	mount --bind / "$basemount" || error "Could not bind mount /"
-	cp -ax "$basemount"/. /target/ || error "Could not copy existing fs over"
-	umount "$basemount"
-	rmdir "$basemount"
+	if [ -e "/live/rootfs" ]; then
+		cp -ax /live/rootfs/. /target/ || error "Could not copy existing fs over"
+	else
+		# support older version of overlayfs
+		basemount=$(mktemp -d -t root-mount.XXXXXX) || error "Could not create temp dir"
+		mount --bind / "$basemount" || error "Could not bind mount /"
+		cp -ax "$basemount"/. /target/ || error "Could not copy existing fs over"
+		umount "$basemount"
+		rmdir "$basemount"
+	fi
 }
 
 prepare_rootfs() {
