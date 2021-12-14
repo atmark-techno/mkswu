@@ -1,5 +1,16 @@
-/out
-/out.swu
 /swupdate.key
 /swupdate.pem
 /swupdate.aes-key
+/mkimage.conf
+/mkimage.conf.autosave*
+# dot files are usually swu build dirs: ignore all except a few patterns
+.*
+!.gitignore
+!.ssh
+!.env
+# we don't want output objects
+*.swu
+# common input binaries
+*.tar.zst
+*.img
+imx-boot*
