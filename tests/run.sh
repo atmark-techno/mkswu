@@ -29,6 +29,16 @@ build_check tests/board_fail
 build_check tests/exec_quoting "swdesc 'touch /tmp/swupdate-test'"
 build_check tests/exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 
+rm -f tests/zoo/hardlink tests/zoo/hardlink2
+echo foo > tests/zoo/hardlink
+ln tests/zoo/hardlink tests/zoo/hardlink2
+build_check tests/hardlink_order
+[ "$(cpio -t < tests/out/hardlink_order.swu)" = "sw-description
+sw-description.sig
+scripts.tar.zst
+hardlink
+swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio -t < tests/out/hardlink_order.swu)"
+
 # install test
 SWUPDATE="${SWUPDATE:-swupdate}"
 if command -v "$SWUPDATE" > /dev/null; then
