@@ -135,7 +135,7 @@ overwrite_to_target() {
 
 	for file; do
 		# source file must exist
-		[ -e "$file" ] || return
+		[ -e "$file" ] || continue
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
 		rm -rf "$TARGET/$f"
