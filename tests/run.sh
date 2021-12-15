@@ -12,7 +12,20 @@ if [ "$CLEAN_TESTS_OUT" = "yes" ]; then
 fi
 
 ./examples.sh
-./scripts.sh
+if command -v dash >/dev/null; then
+	dash ./scripts.sh
+fi
+if command -v bash >/dev/null; then
+	bash ./scripts.sh
+fi
+if command -v busybox && busybox sh --help 2>/dev/null; then
+	# note depending on busybox options (?) it's possible that
+	# busybox sh will try to use its builtins over commands available
+	# in path, but scripts require coreutils, so some commands will
+	# fail (chown, chmod, realpath), but still work just enough to pass
+	# tests...
+	busybox sh ./scripts.sh
+fi
 
 . ./common.sh
 

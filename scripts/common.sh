@@ -90,19 +90,20 @@ unlock_update() {
 
 mkdir_p_target() {
 	local dir="$1" parent mode
+	local TARGET=${TARGET:-/target}
 
 	# nothing to do if target exists or source doesn't
-	[ -e "/target/$dir" ] && return
+	[ -e "$TARGET/$dir" ] && return
 	[ -e "$dir" ] || return
 
 	parent="${dir%/*}"
 	[ -n "$parent" ] && mkdir_p_target "$parent"
 
-	mkdir "/target/$dir" \
-		|| error "Could not create /target/$dir"
-	chown --reference "$dir" "/target/$dir"
-	chmod --reference "$dir" "/target/$dir"
-	touch --reference "$dir" "/target/$dir"
+	mkdir "$TARGET/$dir" \
+		|| error "Could not create $TARGET/$dir"
+	chown --reference "$dir" "$TARGET/$dir"
+	chmod --reference "$dir" "$TARGET/$dir"
+	touch --reference "$dir" "$TARGET/$dir"
 }
 
 is_mountpoint() {
@@ -148,6 +149,8 @@ cleanup() {
 init_common() {
 	if [ -e "$TMPDIR/sw-description" ]; then
 		SWDESC="$TMPDIR/sw-description"
+	elif [ -e "/var/tmp/sw-description" ]; then
+		SWDESC="/var/tmp/sw-description"
 	elif [ -e "/tmp/sw-description" ]; then
 		SWDESC="/tmp/sw-description"
 	else
@@ -156,6 +159,8 @@ init_common() {
 
 	# debug tests
 	grep -q "DEBUG_SKIP_SCRIPTS" "$SWDESC" && exit 0
+
+	true
 }
 
 init_common

@@ -138,17 +138,18 @@ overwrite_to_target() {
 		[ -e "$file" ] || return
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
-		rm -rf "/target/$f"
-		cp -a "$file" "/target/$file"
+		rm -rf "$TARGET/$f"
+		cp -a "$file" "$TARGET/$file"
 	done
 }
 
 post_copy_preserve_files() {
 	local f
+	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
 
-	sed -ne 's:^POST /:/:p' "/target/etc/swupdate_preserve_files" \
+	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_post"
 	while read -r f; do
 		# No quote to expand globs

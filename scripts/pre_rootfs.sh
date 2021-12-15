@@ -6,17 +6,18 @@ copy_to_target() {
 		# source file must exist...
 		[ -e "$file" ] || return
 		# and destination file not (probably already copied)
-		[ -e "/target/$file" ] && return
+		[ -e "$TARGET/$file" ] && return
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
-		cp -a "$file" "/target/$file"
+		cp -a "$file" "$TARGET/$file"
 	done
 }
 
 update_preserve_list() {
 	local preserve_version=0 max_version=1
-	local list="/target/etc/swupdate_preserve_files"
+	local TARGET="${TARGET:-/target}"
+	local list="$TARGET/etc/swupdate_preserve_files"
 
 	mkdir_p_target /etc
 
@@ -88,10 +89,11 @@ EOF
 
 copy_preserve_files() {
 	local f
+	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
 
-	grep -E '^/' "/target/etc/swupdate_preserve_files" \
+	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_pre"
 	while read -r f; do
 		# No quote to expand globs
@@ -191,5 +193,7 @@ prepare_rootfs() {
 		rm -f /target/etc/atmark/containers/*.conf
 	fi
 }
+
+[ -n "$TEST_SCRIPTS" ] && return
 
 prepare_rootfs
