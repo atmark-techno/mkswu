@@ -135,7 +135,7 @@ overwrite_to_target() {
 
 	for file; do
 		# source file must exist
-		[ -e "$f" ] || return
+		[ -e "$file" ] || return
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
 		rm -rf "/target/$f"
@@ -145,11 +145,14 @@ overwrite_to_target() {
 
 post_copy_preserve_files() {
 	local f
+	local IFS='
+'
 
 	sed -ne 's:^POST /:/:p' "/target/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_post"
 	while read -r f; do
-		overwrite_to_target "$f"
+		# No quote to expand globs
+		overwrite_to_target $f
 	done < "$TMPDIR/preserve_files_post"
 
 	rm -f "$TMPDIR/preserve_files_post"

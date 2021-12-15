@@ -4,9 +4,9 @@ copy_to_target() {
 
 	for file; do
 		# source file must exist...
-		[ -e "$f" ] || return
+		[ -e "$file" ] || return
 		# and destination file not (probably already copied)
-		[ -e "/target/$f" ] && return
+		[ -e "/target/$file" ] && return
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
@@ -88,11 +88,14 @@ EOF
 
 copy_preserve_files() {
 	local f
+	local IFS='
+'
 
 	grep -E '^/' "/target/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_pre"
 	while read -r f; do
-		copy_to_target "$f"
+		# No quote to expand globs
+		copy_to_target $f
 	done < "$TMPDIR/preserve_files_pre"
 
 	rm -f "$TMPDIR/preserve_files_pre"
