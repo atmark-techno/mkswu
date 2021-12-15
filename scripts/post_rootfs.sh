@@ -13,14 +13,15 @@ update_shadow_user() {
 	local user="$1"
 	local oldpass
 
-	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' "$SHADOW")
+	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' "$SHADOW" \
+			| sed -e 's/:/\\:/g')
 	# password was never set: skip
 	[ -n "$oldpass" ] || return
 	# password already set on target: also skip
 	grep -qE "^$user:[^:]" "$NSHADOW" && return
 
 	if grep -qE "^$user:" "$NSHADOW"; then
-		sed -i -e 's:^'"$user"'\:.*:'"${oldpass//:/\\:}"':' "$NSHADOW"
+		sed -i -e 's:^'"$user"'\:.*:'"$oldpass"':' "$NSHADOW"
 	else
 		printf "%s\n" "$oldpass" >> "$NSHADOW"
 	fi || error "Could not update shadow for $user"
