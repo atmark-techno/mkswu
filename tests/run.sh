@@ -18,12 +18,13 @@ fi
 if command -v bash >/dev/null; then
 	bash ./scripts.sh
 fi
-if command -v busybox && busybox sh --help 2>/dev/null; then
-	# note depending on busybox options (?) it's possible that
-	# busybox sh will try to use its builtins over commands available
-	# in path, but scripts require coreutils, so some commands will
-	# fail (chown, chmod, realpath), but still work just enough to pass
-	# tests...
+if command -v busybox \
+    && busybox sh --help 2>/dev/null\
+    && ! busybox sh -c 'chmod --help' 2>&1 | grep -qi busybox; then
+	# note if busybox has been compiled with
+	# CONFIG_FEATURE_PREFER_APPLETS=y (e.g. debian)
+	# there is no easy way to make scripts use binaries
+	# in path instead of applets, so skip...
 	busybox sh ./scripts.sh
 fi
 

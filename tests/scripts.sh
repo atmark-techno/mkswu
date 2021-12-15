@@ -149,6 +149,21 @@ test_preserve_files_post() {
 	grep -qE '^grepme$' "$TARGET/$SRC/copy_wildcard" \
 		|| error "$SRC/copy_wildcard was not copied (wildcard)"
 	rm -f "$TARGET/$SRC/copy"*
+
+	echo "preserve_files: copy with directory (post)"
+	echo "POST $SRC" > "$FLIST"
+	echo "already" > "$TARGET/$SRC/copy"
+	echo "already" > "$TARGET/$SRC/also"
+	post_copy_preserve_files
+	[ -e "$TARGET/$SRC/also" ] \
+		&& error "$SRC/also was not deleted"
+	grep -qE '^grepme$' "$TARGET/$SRC/copy" \
+		|| error "$SRC/copy was not copied (dir)"
+	grep -qE '^grepme$' "$TARGET/$SRC/copy space" \
+		|| error "$SRC/copy\ space was not copied (dir)"
+	grep -qE '^grepme$' "$TARGET/$SRC/copy_wildcard" \
+		|| error "$SRC/copy_wildcard was not copied (dir)"
+	rm -f "$TARGET/$SRC/copy"*
 }
 
 test_preserve_files_pre() {
@@ -208,6 +223,18 @@ test_preserve_files_pre() {
 		|| error "$SRC/copy\ space was not copied (wildcard)"
 	grep -qE '^grepme$' "$TARGET/$SRC/copy_wildcard" \
 		|| error "$SRC/copy_wildcard was not copied (wildcard)"
+	rm -f "$TARGET/$SRC/copy"*
+
+	echo "preserve_files: copy with directory (pre)"
+	echo "$SRC" > "$FLIST"
+	echo "already" > "$TARGET/$SRC/copy"
+	copy_preserve_files
+	grep -qE '^already$' "$TARGET/$SRC/copy" \
+		|| error "$SRC/copy was overwritten"
+	grep -qE '^grepme$' "$TARGET/$SRC/copy space" \
+		|| error "$SRC/copy\ space was not copied (dir)"
+	grep -qE '^grepme$' "$TARGET/$SRC/copy_wildcard" \
+		|| error "$SRC/copy_wildcard was not copied (dir)"
 	rm -f "$TARGET/$SRC/copy"*
 }
 

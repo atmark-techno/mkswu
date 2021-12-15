@@ -6,11 +6,12 @@ copy_to_target() {
 		# source file must exist...
 		[ -e "$file" ] || continue
 		# and destination file not (probably already copied)
-		[ -e "$TARGET/$file" ] && continue
+		# except directories which we'll copy into with no-cobbler
+		[ -e "$TARGET/$file" ] && [ ! -d "$TARGET/$file" ] && continue
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
-		cp -a "$file" "$TARGET/$file"
+		cp -aTn "$file" "$TARGET/$file"
 	done
 }
 
