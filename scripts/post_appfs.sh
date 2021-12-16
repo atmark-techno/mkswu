@@ -27,7 +27,8 @@ swap_btrfs_snapshots() {
 	# we need to now remount the volumes with the new data,
 	# so stop all countainers and restart them
 	podman kill -a
-	podman rm -a
+	podman pod rm -a -f
+	podman rm -a -f
 	if ! umount /var/lib/containers/storage_readonly \
 	    || ! mount /var/lib/containers/storage_readonly \
 	    || ! umount /var/app/rollback/volumes \

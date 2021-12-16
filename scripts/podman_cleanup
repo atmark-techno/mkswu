@@ -54,7 +54,7 @@ trim_tags() {
 	: > "$tmpdir/ids"
 	for conf in "$CONFDIR/"*.conf; do
 		tag=$(sed -ne 's:^image=::p' "$conf")
-		[ -n "$tag" ] || error "conf $conf has no image defined?"
+		[ -n "$tag" ] || continue # pod or net have no image
 		if ! podman --root "$PODMAN_ROOT" \
 				--storage-opt additionalimagestore="" \
 				image inspect --format '{{.Id}}' \
@@ -65,7 +65,7 @@ trim_tags() {
 	done
 
 	# add pod infra container if any pod configured
-	if grep -q -E "^pod=" "$CONFDIR/"*.conf; then
+	if grep -q -E "^pod=|^type=pod" "$CONFDIR/"*.conf; then
 		get_pod_infra_container_tag >> "$tmpdir/ids"
 	fi
 
