@@ -1006,7 +1006,8 @@ sw-description.sig"
 		cd "$main_cwd" || error "Cannot return to $main_cwd we were in before"
 	done
 
-	[ -z "$FIRST_SWDESC_INIT" ] || error "No or empty desc given?"
+	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$FORCE_VERSION" ] \
+		|| error "No or empty desc given?"
 
 	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"

@@ -35,3 +35,6 @@ build_check ../examples/kernel_update_plain \
 # kernel apk: likewise we don't actually test install here,
 touch ../examples/linux-at-5.10.9-r3.apk
 build_check ../examples/kernel_update_apk "file linux-at-5.10.9-r3.apk" "swdesc linux-at-5.10.9-r3.apk"
+
+# no content but force version
+build_check ../examples/container_clear "swdesc CONTAINER_CLEAR"
