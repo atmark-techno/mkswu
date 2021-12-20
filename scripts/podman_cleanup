@@ -21,10 +21,15 @@ usage() {
 	echo " --dry-run        Print what would be removed instead of removing"
 }
 
+# redefine podman_start helper as noop to allow
+# sourcing conf files
+append_args() { :; }
+set_command() { :; }
+
 get_pod_infra_container_tag() {
 	local infra_container
 
-	infra_container=$(sed -ne 's:^infra_image=::p' "$conf")
+	infra_container=$(. "$conf"; echo "$infra_container")
 
 	if [ -z "$infra_container" ]; then
 		# get default name of the pod infra container... in the target rootfs!
@@ -56,7 +61,7 @@ get_pod_infra_container_tag() {
 
 get_conf_image() {
 	local pod
-	tag=$(sed -ne 's:^image=::p' "$conf")
+	tag=$(. "$conf"; echo "$image")
 	if [ -z "$tag" ]; then
 		# maybe a pod?
 		grep -qE "^type=pod$" "$conf" &&
