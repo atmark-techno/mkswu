@@ -3,6 +3,7 @@
 PODMAN_ROOT=/var/lib/containers/storage_readonly
 CONFDIR=/etc/atmark/containers
 FAIL_MISSING=
+DRY_RUN=
 
 error() {
 	printf "%s\n" "$@" >&2
@@ -17,6 +18,7 @@ usage() {
 	echo " --confdir <path> Path to atmark config directory to check in-use image"
 	echo "                  If path is empty, all images with a tag are kept"
 	echo " --fail-missing   Fail if a configured image is not found"
+	echo " --dry-run        Print what would be removed instead of removing"
 }
 
 get_pod_infra_container_tag() {
@@ -37,6 +39,7 @@ get_pod_infra_container_tag() {
 			image inspect --format '{{.Id}}' "$infra_container" 2>/dev/null; then
 		printf "%s\n" "Warning: pod configured but pod infra container $infra_container was not found!" \
 			      "Trying to get it now" >&2
+		[ -n "$DRY_RUN" ] && return
 		# pull command prints the id of the image it just fetched
 		podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
 				pull "$infra_container" || \
@@ -76,6 +79,10 @@ trim_tags() {
 		--format '{{.Id}}' |
 		while read -r id; do
 			grep -q -F "$id" "$tmpdir/ids" && continue
+			if [ -n "$DRY_RUN" ]; then
+				echo "Would remove tag from $id"
+				continue
+			fi
 			podman --root "$PODMAN_ROOT" \
 				--storage-opt additionalimagestore="" \
 				untag "$id"
@@ -83,6 +90,9 @@ trim_tags() {
 }
 
 podman_prune() {
+	# skip dry run
+	[ -n "$DRY_RUN" ] && return
+
 	podman --root "$PODMAN_ROOT" \
 		--storage-opt additionalimagestore="" \
 		image prune -f
@@ -117,6 +127,10 @@ while [ $# -ge 1 ]; do
 		;;
 	"--fail-missing")
 		FAIL_MISSING=1
+		shift
+		;;
+	"--dry-run")
+		DRY_RUN=1
 		shift
 		;;
 	"--")
