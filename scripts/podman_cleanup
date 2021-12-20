@@ -43,7 +43,7 @@ get_pod_infra_container_tag() {
 
 	if [ -z "$infra_container" ]; then
 		printf "%s\n" "Warning: Could not guess podman pod infra container name, continuing without one"
-			      "podman_start will require internet to start pods" >&2
+			      "podman_start will probably require an internet to start pods" >&2
 		return
 	fi
 
@@ -53,9 +53,11 @@ get_pod_infra_container_tag() {
 			      "Trying to get it now" >&2
 		[ -n "$DRY_RUN" ] && return
 		# pull command prints the id of the image it just fetched
-		podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
-				pull "$infra_container" || \
-			printf "%s\n" "Could not pull infra container: podman_start will require internet" >&2
+		if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
+				pull "$infra_container"; then
+			[ -n "$FAIL_MISSING" ] || return
+			error "Could not pull infra container $infra_container, failing update."
+		fi
 	fi
 }
 
@@ -72,7 +74,7 @@ get_conf_image() {
 	if ! podman --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore="" \
 			image inspect --format '{{.Id}}' \
-			"$tag"; then
+			"$tag" 2>/dev/null; then
 		[ -n "$FAIL_MISSING" ] || return
 		error "image $tag in $conf not found in image store !"
 	fi
