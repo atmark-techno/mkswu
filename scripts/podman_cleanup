@@ -24,10 +24,17 @@ usage() {
 get_pod_infra_container_tag() {
 	local infra_container
 
-	# get the id of the pod infra container... in the target rootfs!
-	# XXX find better than parsing help. We can't start a pod to inspect it...
-	infra_container=$(podman run --net=none --rootfs /target podman pod create --help | \
-				sed -ne 's/.*infra-image.*default "\([^"]*\)".*/\1/p')
+	infra_container=$(sed -ne 's:^infra_image=::p' "$conf")
+
+	if [ -z "$infra_container" ]; then
+		# get default name of the pod infra container... in the target rootfs!
+		# XXX find better than parsing help. We can't start a pod to inspect it...
+		# note: dry run uses running system instead for easy us
+		WRAP="podman run --net=none --rootfs /target"
+		[ -n "$DRY_RUN" ] && WRAP=""
+		infra_container=$($WRAP podman pod create --help | \
+					sed -ne 's/.*infra-image.*default "\([^"]*\)".*/\1/p')
+	fi
 
 	if [ -z "$infra_container" ]; then
 		printf "%s\n" "Warning: Could not guess podman pod infra container name, continuing without one"
@@ -47,8 +54,27 @@ get_pod_infra_container_tag() {
 	fi
 }
 
+get_conf_image() {
+	local pod
+	tag=$(sed -ne 's:^image=::p' "$conf")
+	if [ -z "$tag" ]; then
+		# maybe a pod?
+		grep -qE "^type=pod$" "$conf" &&
+			get_pod_infra_container_tag
+		return
+	fi
+
+	if ! podman --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			image inspect --format '{{.Id}}' \
+			"$tag"; then
+		[ -n "$FAIL_MISSING" ] || return
+		error "image $tag in $conf not found in image store !"
+	fi
+}
+
 trim_tags() {
-	local tag conf
+	local conf
 	[ -n "$CONFDIR" ] || return
 	# if no configuration is present, skip this step
 	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
@@ -56,21 +82,9 @@ trim_tags() {
 	# build list of images in use
 	: > "$tmpdir/ids"
 	for conf in "$CONFDIR/"*.conf; do
-		tag=$(sed -ne 's:^image=::p' "$conf")
-		[ -n "$tag" ] || continue # pod or net have no image
-		if ! podman --root "$PODMAN_ROOT" \
-				--storage-opt additionalimagestore="" \
-				image inspect --format '{{.Id}}' \
-				"$tag" >> "$tmpdir/ids"; then
-			[ -n "$FAIL_MISSING" ] || continue
-			error "image $tag in $conf not found in image store !"
-		fi
+		[ -e "$conf" ] || continue
+		get_conf_image >> "$tmpdir/ids"
 	done
-
-	# add pod infra container if any pod configured
-	if grep -q -E "^pod=|^type=pod" "$CONFDIR/"*.conf; then
-		get_pod_infra_container_tag >> "$tmpdir/ids"
-	fi
 
 	# untag any unused image
 	podman --root "$PODMAN_ROOT" \
