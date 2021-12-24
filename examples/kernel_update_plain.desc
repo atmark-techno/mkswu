@@ -1,9 +1,14 @@
 # write over files in /boot
-# any different version from current system's (based on sw-versions)
-# will be installed
-swdesc_files --version extra_os.kernel 5.10.0-1 --dest /boot \
+swdesc_files --version extra_os.kernel 5.10.82-1 --dest /boot \
 	"Image" "imx8mp-yakushima-eva.dtb"
 
+# if you have modules, also remove old ones and ship new ones
+swdesc_command --version extra_os.kernel 5.10.82-1 \
+	'rm -rf /lib/modules'
+# (install with INSTALL_MOD_PATH=..../inst make modules_install)
+swdesc_files --version extra_os.kernel 5.10.82-1 --dest /lib/modules \
+	"inst/lib/modules"
+
 # add the kernel to files to be preserved on OS update
-swdesc_command --version extra_os.kernel 5.10.0-1 \
+swdesc_command --version extra_os.kernel 5.10.82-1 \
         'grep -qE "^POST /boot" /etc/swupdate_preserve_files || echo -e "POST /boot\nPOST /lib/modules" >> /etc/swupdate_preserve_files'

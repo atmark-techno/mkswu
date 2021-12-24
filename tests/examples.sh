@@ -28,6 +28,7 @@ build_check ../examples/boot "file imx-boot_armadillo_x2.*.zst" "version boot 20
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
 touch ../examples/Image ../examples/imx8mp-yakushima-eva.dtb
+mkdir -p ../examples/inst/lib/modules/5.10.82
 build_check ../examples/kernel_update_plain \
 	"file-tar *boot_Image*dtb*.tar.zst Image imx8mp-yakushima-eva.dtb" \
 	"swdesc boot.*tar.zst"

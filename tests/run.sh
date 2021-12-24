@@ -32,7 +32,7 @@ fi
 
 build_check spaces "file test\ space.tar.zst"
 build_check install_files \
-	"file-tar *tmp_swupdate*.tar.zst zoo/test\ space zoo/test\ space.tar"
+	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar"
 
 cp -f ../mkimage.conf mkimage-aes.conf
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkimage-aes.conf
@@ -76,6 +76,10 @@ if command -v "$SWUPDATE" > /dev/null; then
 		|| error "test space content does not match"
 	[ "$(tar tf "/tmp/swupdate-test/zoo/test space.tar")" = "test space" ] \
 		|| error "test space.tar content does not match"
+	[ -e "/tmp/swupdate-test/autobase/test space" ] \
+		|| error "auto basedir extraction failed"
+	[ -e "/tmp/swupdate-test/subdir/test space" ] \
+		|| error "subdir extraction failed"
 	rm -rf /tmp/swupdate-test
 
 	# tests/aes
