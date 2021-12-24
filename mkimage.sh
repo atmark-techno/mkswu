@@ -133,8 +133,9 @@ write_entry_stdout() {
 	local file="${file_src##*/}"
 	local file_out="$OUTDIR/$file"
 	local compress="$compress"
+	local install_if="$install_if"
 	shift
-	local sha256 install_if iv
+	local sha256 iv
 
 	[ -e "$file_src" ] || error "Missing source file: $file_src"
 
@@ -209,10 +210,14 @@ $file"
 	write_line "filename = \"$file\";"
 	if [ -n "$component" ]; then
 		[ -n "$version" ] || error "component $component was set with empty version"
-		case "$component" in
-		boot)
-			install_if="different";;
-		*)
+		if [ -z "$install_if" ]; then
+			case "$component" in
+			boot) install_if="different";;
+			*) install_if="higher";;
+			esac
+		fi
+		case "$install_if" in
+		higher)
 			local max
 			# handle only x.y.z.t or x.y.z-t
 			printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
@@ -242,21 +247,26 @@ $file"
 				/[0-9][a-zA-Z]|[a-zA-Z][0-9]/ {
 					print "WARNING: " $1 " will be sorted alphabetically";
 				}' >&2 || error "version check failed: $version"
-			install_if="higher";;
+			;;
+		different) ;;
+		*) error "install_if must be higher or different";;
 		esac
-		write_line "name = \"$component\";"
-		write_line "version = \"$version\";" \
-						"install-if-${install_if} = true;"
+		[ "${component#* }" = "$component" ] || error "component must not contain spaces ($component)"
+		[ "${version#* }" = "$version" ] || error "version must not contain spaces ($component = $version)"
+		write_line "name = \"$component\";" \
+			   "version = \"$version\";" \
+			   "install-if-${install_if} = true;"
 
 		# remember version for scripts
-		printf "%s\n" "$component $version" >> "$OUTDIR/sw-description-versions"
+		printf "%s\n" "$component $version $install_if" >> "$OUTDIR/sw-description-versions"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
 	if [ -n "$main_version" ]; then
 		[ -n "$component" ] && [ -n "$version" ] \
 			|| error "use as main version requested but component/version not set?"
-		write_line "# MAIN_COMPONENT $component" "# MAIN_VERSION $version"
+		write_line "# MAIN_COMPONENT $component" \
+			   "# MAIN_VERSION $version"
 	fi
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
@@ -313,6 +323,14 @@ parse_swdesc() {
 		"--main-version")
 			main_version=1
 			SKIP=0
+			;;
+		"--install-if")
+			install_if="$1"
+			case "$install_if" in
+			higher|different) ;;
+			*) error "--install-if must be higher or different";;
+			esac
+			SKIP=1
 			;;
 		"--preserve-attributes")
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
@@ -426,6 +444,7 @@ pad_boot() {
 swdesc_boot() {
 	local BOOT="$BOOT" component=boot version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc boot "$@"
 
@@ -447,6 +466,7 @@ swdesc_tar() {
 	local source="$source" dest="$dest"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 	local preserve_attributes="$preserve_attributes"
 	local target="/target"
 
@@ -509,6 +529,7 @@ swdesc_files() {
 	local file="$file" dest="$dest" basedir="$basedir"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 	local preserve_attributes="$preserve_attributes"
 	local tarfile tarfile_raw tarfiles_src="$tarfiles_src"
 	local mtime=0
@@ -563,6 +584,7 @@ swdesc_exec_nochroot() {
 	local file="$file" cmd="$cmd"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc exec "$@"
 
@@ -580,6 +602,7 @@ swdesc_exec() {
 	local file="$file" cmd="$cmd" chroot_cmd
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc exec "$@"
 
@@ -608,6 +631,7 @@ swdesc_command() {
 	local cmd="$cmd" file
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc command "$@"
 
@@ -621,6 +645,7 @@ swdesc_command_nochroot() {
 	local cmd="$cmd" file
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc command "$@"
 
@@ -634,6 +659,7 @@ swdesc_script() {
 	local script="$script"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc script "$@"
 
@@ -644,6 +670,7 @@ swdesc_script_nochroot() {
 	local script="$script"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc script "$@"
 
@@ -655,6 +682,7 @@ swdesc_embed_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc embed_container "$@"
 
@@ -665,6 +693,7 @@ swdesc_pull_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc pull_container "$@"
 
@@ -675,6 +704,7 @@ swdesc_usb_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
 
 	parse_swdesc usb_container "$@"
 
@@ -693,7 +723,7 @@ swdesc_usb_container() {
 
 embedded_preinstall_script() {
 	local f update=""
-	local component="" version="" board="" main_version=""
+	local component="" version="" board="" main_version="" install_if=""
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
 	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
@@ -715,7 +745,7 @@ embedded_preinstall_script() {
 }
 
 embedded_postinstall_script() {
-	local component="" version="" board="" main_version=""
+	local component="" version="" board="" main_version="" install_if=""
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 

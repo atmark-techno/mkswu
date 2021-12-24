@@ -63,6 +63,13 @@ Common options for all helpers:
     to an empty string), in which case the file will always be
     reinstalled so this is not recommended.
 
+--install-if <mode>
+  mode can be one of higher or different.
+  Can also set the "install_if" environment variable.
+  This can be used to override the behaviour described above and
+  force either mode, in particular hawkbit only supports different
+  mode so one might want to enable this globally.
+
 --main-version
   Tag this component's name/version as image's main version.
   Only used for image managements (e.g. around hawkbit) which will

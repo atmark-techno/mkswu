@@ -13,8 +13,86 @@ export TEST_SCRIPTS=1
 SWDESC=/dev/null
 SCRIPTSDIR=./out/scripts
 TMPDIR="$SCRIPTSDIR"
+rm -rf "$SCRIPTSDIR"
 mkdir -p "$SCRIPTSDIR"
 touch "$TMPDIR/sw-description"
+
+test_version_update() {
+	SWDESC="$SCRIPTSDIR/swdesc"
+	system_versions="$SCRIPTSDIR/sw-versions"
+	present="$SCRIPTSDIR/sw-versions.present"
+	merged="$SCRIPTSDIR/sw-versions.merged"
+
+	echo "Testing version extraction from generated files works"
+	extract_swdesc_versions < ./out/.kernel_update_plain/sw-description \
+		> "$present"
+	grep -qE 'extra_os.kernel [^ ]* different'  "$present" \
+		|| error "kernel_update_plain version extraction failed"
+
+	extract_swdesc_versions < ./out/.boot/sw-description \
+		> "$present"
+	grep -qE 'boot [^ ]* different'  "$present" \
+		|| error "boot version extraction failed"
+
+	extract_swdesc_versions < ./out/.pull_container_nginx/sw-description \
+		> "$present"
+	grep -qE 'container_nginx [^ ]* higher'  "$present" \
+		|| error "pull_container_nginx version extraction failed"
+	grep -qE 'extra_os.nginx [^ ]* higher'  "$present" \
+		|| error "pull_container_nginx version extraction failed"
+
+
+	echo "Testing version merging works"
+	cp "scripts/sw-versions" "$SCRIPTSDIR/" \
+		|| error "Source versions not found?"
+
+	echo "  #VERSION extra_os.kernel 5.10.82-1 different" > "$SWDESC"
+	gen_newversion
+	version=$(get_version extra_os.kernel)
+	[ "$version" = "5.10.82-1" ] || error "Could not get version"
+	version=$(get_version --install-if extra_os.kernel)
+	[ "$version" = "5.10.82-1 different" ] || error "Could not get install-if"
+	version=$(get_version extra_os.kernel "$merged")
+	[ "$version" = "5.10.82-1" ] || error "Did not merge in new kernel version (different)"
+
+	echo "  #VERSION extra_os.kernel 5.10.82-1 higher" > "$SWDESC"
+	gen_newversion
+	version=$(get_version extra_os.kernel "$merged")
+	[ "$version" = "5.10.90-1" ] || error "Merged new kernel version when it shouldn't have"
+
+	echo "  #VERSION extra_os.kernel 5.10.99-1 higher" > "$SWDESC"
+	gen_newversion
+	version=$(get_version extra_os.kernel "$merged")
+	[ "$version" = "5.10.99-1" ] || error "Did not merge in new kernel version (higher)"
+
+	echo "  #VERSION boot 2020.04-at2 different" > "$SWDESC"
+	gen_newversion
+	version=$(get_version boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "Did not merge new boot version"
+	version=$(get_version other_boot "$merged")
+	[ "$version" = "2020.04-at0" ] || error "other_boot should stay at old boot"
+
+	cp "$merged" "$system_versions"
+	gen_newversion
+	version=$(get_version boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
+	version=$(get_version other_boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
+
+	sed -i -e '/boot/d' "$system_versions"
+	gen_newversion
+	version=$(get_version boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "boot was not added"
+	version=$(get_version other_boot "$merged")
+	[ "$version" = "" ] || error "other_boot somehow got made up?"
+
+	cp "$merged" "$system_versions"
+	gen_newversion
+	version=$(get_version boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
+	version=$(get_version other_boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
+}
 
 # test user copy on rootfs
 test_passwd_update() {
@@ -239,6 +317,13 @@ test_preserve_files_pre() {
 }
 
 # run in subshell as we cannot source all at once
+(
+	set -e
+	. ../scripts/common.sh
+	. ../scripts/versions.sh
+	test_version_update
+) || error "versions test failed"
+
 (
 	set -e
 	. ../scripts/common.sh

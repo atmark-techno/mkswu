@@ -1,10 +1,15 @@
 get_version() {
+	local install_if=""
+	if [ "$1" = "--install-if" ]; then
+		install_if=1
+		shift
+	fi
 	local component="$1"
 	local source="${2:-$SCRIPTSDIR/sw-versions.present}"
 
 	[ -e "$source" ] || return
 
-	awk '$1 == "'"$component"'" { print $2 }' < "$source"
+	awk '$1 == "'"$component"'" { print $2'"${install_if:+, \$3}"' }' < "$source"
 }
 
 # strict greater than
@@ -34,27 +39,31 @@ version_higher() {
 }
 
 version_update() {
-	local component="$1"
+	local install_if="$1"
 	local oldvers="$2"
 	local newvers="$3"
 
 	[ -n "$newvers" ] || return 1
 
-	case "$component" in
-	boot) [ "$newvers" != "$oldvers" ];;
-	*) version_higher "$oldvers" "$newvers";;
+	case "$install_if" in
+	different) [ "$newvers" != "$oldvers" ];;
+	higher) version_higher "$oldvers" "$newvers";;
+	*) error "unexpected update install_if $install_if";;
 	esac
 }
 
 needs_update() {
 	local component="$1"
-	local newvers oldvers
+	local newvers oldvers install_if
+	local system_versions="${system_versions:-/etc/sw-versions}"
 
-	newvers=$(get_version "$component")
+	newvers=$(get_version --install-if "$component")
 	[ -n "$newvers" ] || return 1
+	install_if=${newvers##* }
+	newvers=${newvers% *}
 
-	oldvers=$(get_version "$component" /etc/sw-versions)
-	version_update "$component" "$oldvers" "$newvers"
+	oldvers=$(get_version "$component" "$system_versions")
+	version_update "$install_if" "$oldvers" "$newvers"
 }
 
 needs_update_regex() {
@@ -76,18 +85,20 @@ update_rootfs() {
 	[ -n "$update_rootfs" ]
 }
 
-parse_swdesc() {
+extract_swdesc_versions() {
 	# extract version comments
 	sed -ne "s/.*#VERSION //p"
 }
 
 gen_newversion() {
-	local component oldvers newvers
+	local component oldvers newvers install_if
+	local system_versions="${system_versions:-/etc/sw-versions}"
 
-	parse_swdesc < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present"
+	extract_swdesc_versions < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present"
 
-	if ! [ -e "/etc/sw-versions" ]; then
-		cp "$SCRIPTSDIR/sw-versions.present" "$SCRIPTSDIR/sw-versions.merged"
+	if ! [ -e "$system_versions" ]; then
+		sed -e 's/^[^ ]* //' "$SCRIPTSDIR/sw-versions.present" \
+			> "$SCRIPTSDIR/sw-versions.merged"
 		return
 	fi
 
@@ -99,12 +110,14 @@ gen_newversion() {
 		other_boot) continue;;
 		boot) printf "%s\n" "other_boot $oldvers";;
 		esac
-		newvers=$(get_version "$component")
-		version_update "$component" "$oldvers" "$newvers" || newvers="$oldvers"
+		newvers=$(get_version --install-if "$component")
+		install_if=${newvers##* }
+		newvers=${newvers% *}
+		version_update "$install_if" "$oldvers" "$newvers" || newvers="$oldvers"
 		printf "%s\n" "$component $newvers"
-	done < /etc/sw-versions > "$SCRIPTSDIR/sw-versions.merged"
-	while read -r component newvers; do
-		oldvers=$(get_version "$component" /etc/sw-versions)
+	done < "$system_versions" > "$SCRIPTSDIR/sw-versions.merged"
+	while read -r component newvers install_if; do
+		oldvers=$(get_version "$component" "$system_versions")
 		[ -z "$oldvers" ] && printf "%s\n" "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
 }

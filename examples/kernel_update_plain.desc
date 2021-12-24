@@ -1,7 +1,17 @@
+# We expose `--install-if different` here in two different ways for
+# demonstration purpose (either using the switch or setting the variable)
+# Anything below the variable being set will have the switch automatically
+# set unless they specify --install-if higher manually
+# Note that if a component is installed in both modes, the swu generation
+# will fail.
+
+
 # write over files in /boot
-swdesc_files --version extra_os.kernel 5.10.82-1 --dest /boot \
+swdesc_files --version extra_os.kernel 5.10.82-1 \
+	--install-if different --dest /boot \
 	"Image" "imx8mp-yakushima-eva.dtb"
 
+install_if=different
 # if you have modules, also remove old ones and ship new ones
 swdesc_command --version extra_os.kernel 5.10.82-1 \
 	'rm -rf /lib/modules'

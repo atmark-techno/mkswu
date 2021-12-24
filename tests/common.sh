@@ -37,7 +37,8 @@ check() {
 		version="$2"
 
 		## from scripts/version.sh gen_newversion:
-		parse_swdesc < "$dir/sw-description" > "$dir/sw-versions.present"
+		extract_swdesc_versions < "$dir/sw-description" \
+			> "$dir/sw-versions.present"
 		real_version=$(get_version "$component" "$dir/sw-versions.present")
 
 		[[ "$real_version" =~ $version ]] ||
