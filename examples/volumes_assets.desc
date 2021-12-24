@@ -1,0 +1,5 @@
+# relative paths are placed in /var/app/rollback/volumes by default
+swdesc_files --version assets 1 --dest assets volumes_assets.desc
+
+# can use absolute path for /var/app/volumes as well
+swdesc_files --version data 1 --dest /var/app/volumes/data enable_sshd

@@ -79,6 +79,8 @@ swdesc_tar <tar file> [--dest <dest>] [--preserve-attributes]
   Destination path must be within /var/app/(rollback/)?volumes
   unless rootfs is targeted (see <component> in Glossary), and defaults
   to / for os versions and /var/app/rollback/volumes otherwise
+  (relative paths for non-os versions are assumed relative to
+   /var/app/rollback/volumes)
   Owner and mode are lost (except execute) unless --preserve-attributes
   is set
 

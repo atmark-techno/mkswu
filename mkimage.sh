@@ -458,6 +458,9 @@ swdesc_tar() {
 	case "$component" in
 	base_os|extra_os*)
 		dest="${dest:-/}"
+		if [ "${dest#/}" = "$dest" ]; then
+			error "OS update must have an absolute dest (was: $dest)"
+		fi
 		;;
 	*)
 		dest="${dest:-/var/app/rollback/volumes}"
@@ -465,9 +468,15 @@ swdesc_tar() {
 		/var/app/rollback/volumes*|/var/app/volumes*)
 			# ok
 			;;
-		*)
+		/*)
 			[ -n "$target" ] \
-				&& error "OS is only writable for base/extra_os updates and $dest is not within volumes"
+				&& error "OS is only writable for base/extra_os updates and dest ($dest) is not within volumes"
+			;;
+		..*|*/../*|*/..)
+			error ".. is not allowed in destination path for os"
+			;;
+		*)
+			dest="/var/app/rollback/volumes/$dest"
 			;;
 		esac
 	esac

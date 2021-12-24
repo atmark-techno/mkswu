@@ -36,5 +36,11 @@ build_check ../examples/kernel_update_plain \
 touch ../examples/linux-at-5.10.9-r3.apk
 build_check ../examples/kernel_update_apk "file linux-at-5.10.9-r3.apk" "swdesc linux-at-5.10.9-r3.apk"
 
+# volume files: relative, absolute path
+build_check ../examples/volumes_assets \
+	"file-tar enable_sshd*tar.zst ./root/.ssh/authorized_keys" \
+	"file-tar __assets_*tar.zst volumes_assets.desc" \
+	"swdesc /var/app/rollback/volumes/assets /var/app/volumes/data"
+
 # no content but force version
 build_check ../examples/container_clear "swdesc CONTAINER_CLEAR"

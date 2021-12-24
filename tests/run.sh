@@ -45,6 +45,10 @@ build_check board_fail
 build_check exec_quoting "swdesc 'touch /tmp/swupdate-test'"
 build_check exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 
+build_fail ../examples/initial_setup
+build_fail files_os_nonabs_fail
+build_fail files_dotdot_fail
+
 rm -f zoo/hardlink zoo/hardlink2
 echo foo > zoo/hardlink
 ln zoo/hardlink zoo/hardlink2
