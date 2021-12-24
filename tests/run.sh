@@ -69,7 +69,6 @@ if command -v "$SWUPDATE" > /dev/null; then
 	fi
 	# tests/install_files
 	rm -rf /tmp/swupdate-test /target/tmp/swupdate-test
-	mkdir /tmp/swupdate-test
 	"$SWUPDATE" -i ./out/install_files.swu -v -k ../swupdate.pem \
 		|| error "swupdate failed"
 	ls /tmp/swupdate-test

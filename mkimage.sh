@@ -490,6 +490,7 @@ swdesc_tar() {
 	fi
 	write_entry images "$source" "type = \"archive\";" \
 		"path = \"$target$dest\";" \
+		"properties: { create-destination = \"true\"; };" \
 		"${preserve_attributes:+preserve-attributes = true;}"
 }
 
