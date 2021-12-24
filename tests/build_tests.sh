@@ -15,7 +15,9 @@ echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkimage-aes.conf
 ../genkey.sh --aes --config mkimage-aes.conf
 conf=mkimage-aes.conf build_check aes
 
-build_check board "swdesc 'iot-g4-es1 = '"
+build_check board "swdesc 'iot-g4-es1 = '" \
+	"version test '2 higher'" \
+	"version --board iot-g4-es1 test '1 higher'"
 build_check board_fail
 
 build_check exec_quoting "swdesc 'touch /tmp/swupdate-test'"

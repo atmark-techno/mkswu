@@ -14,7 +14,7 @@ export SWDESC_TEST=1
 
 check() {
 	local type="$1"
-	local file tar regex
+	local file tar regex board=""
 	local component version real_version
 	shift
 	case "$type" in
@@ -32,16 +32,17 @@ check() {
 		tar tf "$dir/"$tar "$@" > /dev/null || error "Missing files in $tar"
 		;;
 	version)
-		[ $# -eq 2 ] || error "version usage: <component> <version regex>"
+		[ $# -ge 2 ] && [ $1 = "--board" ] && board=$2 && shift 2
+		[ $# -eq 2 ] || error "version usage: <component> [--board <board>] <version regex>"
 		component="$1"
 		version="$2"
 
 		## from scripts/version.sh gen_newversion:
 		extract_swdesc_versions < "$dir/sw-description" \
 			> "$dir/sw-versions.present"
-		real_version=$(get_version "$component" "$dir/sw-versions.present")
+		real_version=$(get_version --install-if "$component" "$dir/sw-versions.present")
 
-		[[ "$real_version" =~ $version ]] ||
+		[[ "$real_version" =~ ^$version$ ]] ||
 			error "Version $component expected $version got $real_version"
 		;;
 	swdesc)

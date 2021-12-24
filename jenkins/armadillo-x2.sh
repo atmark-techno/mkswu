@@ -32,7 +32,8 @@ EOF
 
 . ./tests/common.sh
 
-build_check "$OUTPUT" "version boot 20.*" "version base_os .+" \
+build_check "$OUTPUT" "version --board AGX4500 boot '20[^ ]* different'" \
+	"version base_os '[^ ]+ higher'" \
 	"file imx-boot_armadillo_x2.* imx-boot_yakushima-eva.* '$ROOTFS'" \
 	"swdesc imx-boot_armadillo_x2 imx-boot_yakushima-eva '$ROOTFS'"
 mv "tests/out/$OUTPUT.swu" .

@@ -33,6 +33,8 @@ init_vars() {
 		probe_current
 	fi
 
+	board=$(awk '{print $1; exit}' /etc/hwrevision)
+
 	if needs_update base_os || needs_update_regex "extra_os.*" \
 	    || grep -q "CONTAINER_CLEAR" "$SWDESC"; then
 		update_rootfs=1

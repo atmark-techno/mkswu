@@ -258,7 +258,7 @@ $file"
 			   "install-if-${install_if} = true;"
 
 		# remember version for scripts
-		printf "%s\n" "$component $version $install_if" >> "$OUTDIR/sw-description-versions"
+		printf "%s\n" "$component $version $install_if ${board:-*}" >> "$OUTDIR/sw-description-versions"
 	elif [ -n "$version" ]; then
 		error "version $version was set without associated component"
 	fi
@@ -453,8 +453,8 @@ swdesc_boot() {
 	[ "$component" = "boot" ] \
 		|| error "Version component for swdesc_boot must be set to boot"
 	if [ -z "$version" ]; then
-		version=$(strings "$BOOT" |
-				grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*') \
+		version=$(strings "$BOOT" \
+				| grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*') \
 			|| error "Could not guess boot version in $BOOT"
 	fi
 
@@ -817,10 +817,11 @@ EOF
 	# Store highest versions in special comments
 	if [ -e "$OUTDIR/sw-description-versions" ]; then
 		track_used "$OUTDIR/sw-description-versions"
-		sort -u < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 -c \
+		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
+				| sort -u -k 1,1 -k 4,4 -c \
 			|| error "above component used multiple times with different versions or install-if mode"
-		sort -u < "$OUTDIR/sw-description-versions" | \
-			sed -e 's/^/  #VERSION /'
+		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
+				| sed -e 's/^/  #VERSION /'
 	elif [ -z "$FORCE_VERSION" ]; then
 		error "No versions found: empty image?" \
 		      "Set FORCE_VERSION=1 to allow building"

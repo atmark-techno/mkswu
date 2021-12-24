@@ -9,7 +9,24 @@ get_version() {
 
 	[ -e "$source" ] || return
 
-	awk '$1 == "'"$component"'" { print $2'"${install_if:+, \$3}"' }' < "$source"
+	# We need to handle two different file syntaxes here:
+	# - installed version files, "component version"
+	# - versions from sw-description, "component version install_if board"
+	# If board is set we need to not print default version so this requires
+	# remembering all versions for this component and printing the right one
+	# It is an error to request install-if on installed version files
+	# (but we don't enforce that check)
+	awk '$1 == "'"$component"'" {
+			if (NF == 2) { print $2; exit; }
+			board[$4]=$2'"${install_if:+ \" \"  \$3}"'
+		}
+		END {
+			if (board["'"$board"'"]) {
+				print board["'"$board"'"];
+			} else if (board["*"]) {
+				print board["*"];
+			}
+		}' < "$source"
 }
 
 # strict greater than

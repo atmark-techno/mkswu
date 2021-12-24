@@ -20,33 +20,16 @@ touch "$TMPDIR/sw-description"
 test_version_update() {
 	SWDESC="$SCRIPTSDIR/swdesc"
 	system_versions="$SCRIPTSDIR/sw-versions"
-	present="$SCRIPTSDIR/sw-versions.present"
 	merged="$SCRIPTSDIR/sw-versions.merged"
-
-	echo "Testing version extraction from generated files works"
-	extract_swdesc_versions < ./out/.kernel_update_plain/sw-description \
-		> "$present"
-	grep -qE 'extra_os.kernel [^ ]* different'  "$present" \
-		|| error "kernel_update_plain version extraction failed"
-
-	extract_swdesc_versions < ./out/.boot/sw-description \
-		> "$present"
-	grep -qE 'boot [^ ]* different'  "$present" \
-		|| error "boot version extraction failed"
-
-	extract_swdesc_versions < ./out/.pull_container_nginx/sw-description \
-		> "$present"
-	grep -qE 'container_nginx [^ ]* higher'  "$present" \
-		|| error "pull_container_nginx version extraction failed"
-	grep -qE 'extra_os.nginx [^ ]* higher'  "$present" \
-		|| error "pull_container_nginx version extraction failed"
-
-
-	echo "Testing version merging works"
 	cp "scripts/sw-versions" "$SCRIPTSDIR/" \
 		|| error "Source versions not found?"
 
-	echo "  #VERSION extra_os.kernel 5.10.82-1 different" > "$SWDESC"
+	echo "Test getting version from existing file (different format)"
+	version=$(get_version extra_os.kernel "$system_versions")
+	[ "$version" = "5.10.90-1" ] || error "Could not get system version"
+
+	echo "Testing version merging works"
+	echo "  #VERSION extra_os.kernel 5.10.82-1 different *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version extra_os.kernel)
 	[ "$version" = "5.10.82-1" ] || error "Could not get version"
@@ -55,17 +38,17 @@ test_version_update() {
 	version=$(get_version extra_os.kernel "$merged")
 	[ "$version" = "5.10.82-1" ] || error "Did not merge in new kernel version (different)"
 
-	echo "  #VERSION extra_os.kernel 5.10.82-1 higher" > "$SWDESC"
+	echo "  #VERSION extra_os.kernel 5.10.82-1 higher *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version extra_os.kernel "$merged")
 	[ "$version" = "5.10.90-1" ] || error "Merged new kernel version when it shouldn't have"
 
-	echo "  #VERSION extra_os.kernel 5.10.99-1 higher" > "$SWDESC"
+	echo "  #VERSION extra_os.kernel 5.10.99-1 higher *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version extra_os.kernel "$merged")
 	[ "$version" = "5.10.99-1" ] || error "Did not merge in new kernel version (higher)"
 
-	echo "  #VERSION boot 2020.04-at2 different" > "$SWDESC"
+	echo "  #VERSION boot 2020.04-at2 different *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot "$merged")
 	[ "$version" = "2020.04-at2" ] || error "Did not merge new boot version"
@@ -320,6 +303,7 @@ test_preserve_files_pre() {
 (
 	set -e
 	. ../scripts/common.sh
+	cleanup() { :; }
 	. ../scripts/versions.sh
 	test_version_update
 ) || error "versions test failed"
@@ -327,6 +311,7 @@ test_preserve_files_pre() {
 (
 	set -e
 	. ../scripts/common.sh
+	cleanup() { :; }
 	. ../scripts/post_rootfs.sh
 	test_passwd_update
 	test_cert_update
@@ -336,6 +321,7 @@ test_preserve_files_pre() {
 (
 	set -e
 	. ../scripts/common.sh
+	cleanup() { :; }
 	. ../scripts/pre_rootfs.sh
 	test_preserve_files_pre
 ) || error "pre test failed"
