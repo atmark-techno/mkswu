@@ -77,14 +77,6 @@ needs_update_regex() {
 	return 1
 }
 
-needs_reboot() {
-	[ -n "$needs_reboot" ]
-}
-
-update_rootfs() {
-	[ -n "$update_rootfs" ]
-}
-
 extract_swdesc_versions() {
 	# extract version comments
 	sed -ne "s/.*#VERSION //p"
@@ -120,21 +112,4 @@ gen_newversion() {
 		oldvers=$(get_version "$component" "$system_versions")
 		[ -z "$oldvers" ] && printf "%s\n" "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
-}
-
-update_running_versions() {
-	cp "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
-
-	[ "$(stat -f -c %T /etc/sw-versions)" = "overlayfs" ] || return
-
-	# support older version of overlayfs
-	local fsroot=/live/rootfs
-	[ -e "$fsroot" ] || fsroot=/
-
-	# bind-mount / somewhere else to write below it as well
-	mount --bind "$fsroot" /target || error "Could not bind mount rootfs"
-	mount -o remount,rw /target || error "Could not make rootfs rw"
-	cp /etc/sw-versions /target/etc/sw-versions \
-		|| error "Could not write $1 to /etc/sw-versions"
-	umount /target || error "Could not umount rootfs rw copy"
 }

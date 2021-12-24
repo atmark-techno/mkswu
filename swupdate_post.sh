@@ -4,7 +4,6 @@ TMPDIR="${TMPDIR:-/var/tmp}"
 SCRIPTSDIR="$TMPDIR/scripts"
 
 . "$SCRIPTSDIR/common.sh"
-. "$SCRIPTSDIR/versions.sh"
 
 . "$SCRIPTSDIR/post_init.sh"
 . "$SCRIPTSDIR/post_appfs.sh"

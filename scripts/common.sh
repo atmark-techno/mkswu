@@ -136,6 +136,14 @@ remove_bootdev_link() {
 	rm -f /dev/swupdate_bootdev
 }
 
+needs_reboot() {
+	[ -n "$needs_reboot" ]
+}
+
+update_rootfs() {
+	[ -n "$update_rootfs" ]
+}
+
 cleanup() {
 	remove_bootdev_link
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
