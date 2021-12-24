@@ -817,7 +817,9 @@ EOF
 	# Store highest versions in special comments
 	if [ -e "$OUTDIR/sw-description-versions" ]; then
 		track_used "$OUTDIR/sw-description-versions"
-		sort -Vr < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 | \
+		sort -u < "$OUTDIR/sw-description-versions" | sort -u -k 1,1 -c \
+			|| error "above component used multiple times with different versions or install-if mode"
+		sort -u < "$OUTDIR/sw-description-versions" | \
 			sed -e 's/^/  #VERSION /'
 	elif [ -z "$FORCE_VERSION" ]; then
 		error "No versions found: empty image?" \
