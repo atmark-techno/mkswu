@@ -1,0 +1,43 @@
+next
+====
+breaking changes:
+ - desc files: disallow using the same component with multiple versions
+previously the highest version would be kept for updating sw-versions, but
+this is no longer manageable with install-if different.
+
+features:
+ - version management: allow different versions for same component if
+installed in a different board section
+ - swdesc_*: add --install-if {different,higher} option to force mode
+This can be useful to get more coherent behaviour with hawkbit
+ - swdesc_tar/files: make relative paths relative to
+/var/app/rollback/volumes for non-os upates. forbid '../'s, and
+also forbid relative paths for os.
+
+fixes:
+ - examples/kernel_update_plain: fix comment, add modules
+ - swdesc_tar/files: create destination directory if absent
+
+
+3.15-at.1
+=========
+breaking changes:
+ - desc files: paths have been made relative to desc files
+
+features:
+ - genkey.sh: automatically create/update default config
+ - swdesc_tar: add --preserve-attributes switch
+
+fixes:
+ - podman_cleanup: handle new pod option
+ - swupdate_preserve_files: fix directory copy
+ - scripts: handle new overlayfs properly
+ - post_app: fix possible failure case where swap happened but we error into
+reboot case, leading to double-swap
+ - version managements: do not remove extra_os versions on base_os update
+ - examples/initial_setup.desc: fix using wrong public key for /etc/swupdate.pem update
+
+
+3.14-at.2
+=========
+ - first public release
