@@ -21,7 +21,7 @@ if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then
 fi
 
 # Set your own passwords for root and atmark users.
-# /!\ The install will fail if this is either are left unset
+# /!\ The install will fail if either passwords are left unset
 # You can generate your own hash with the following command:
 #   python3 -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.METHOD_SHA512))'
 # and update the part within the inner quotes e.g.
