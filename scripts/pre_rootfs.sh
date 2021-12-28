@@ -16,7 +16,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=1
+	local preserve_version=0 max_version=2
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -84,6 +84,16 @@ EOF
 /etc/network
 /etc/resolv.conf
 /etc/NetworkManager/system-connections
+EOF
+	fi
+	if [ "$preserve_version" -le 1 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v2 list: dtb symlink, ca-certificates, local.d
+/boot/armadillo.dtb
+/usr/local/share/ca-certificates
+/etc/local.d
+/etc/runlevels/default/local
 EOF
 	fi
 }

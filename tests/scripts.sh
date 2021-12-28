@@ -252,8 +252,19 @@ test_preserve_files_pre() {
 	update_preserve_list
 	grep -qE '^POST /tmp/preservetest' "$FLIST" \
 		|| error "update didn't keep preservetest on update"
-	grep -qE '/etc/atmark' "$FLIST" \
+	grep -qx "PRESERVE_FILES_VERSION 0" "$FLIST" \
+		&& error "VERSION didn't get updated properly"
+	grep -qx '/etc/atmark' "$FLIST" \
 		|| error "/etc/atmark wasn't added to list"
+	grep -qx '/boot/armadillo.dtb' "$FLIST" \
+		|| error "/boot/armadillo.dtb wasn't added to list"
+
+	echo "PRESERVE_FILES_VERSION 1" > "$FLIST"
+	update_preserve_list
+	grep -qx "PRESERVE_FILES_VERSION 1" "$FLIST" \
+		&& error "VERSION didn't get updated properly"
+	grep -qx '/boot/armadillo.dtb' "$FLIST" \
+		|| error "/boot/armadillo.dtb wasn't added to list"
 
 	echo grepme > "$SRC/copy space"
 	echo grepme > "$SRC/copy"
