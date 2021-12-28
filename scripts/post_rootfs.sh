@@ -177,9 +177,15 @@ post_copy_preserve_files() {
 }
 
 
-### workaround section, these can be removed once we consider we no longer
-### support a given version.
 baseos_upgrade_fixes() {
+	# if user has local certificates we should regenerate the bundle
+	if stat /target/usr/local/share/ca-certificates/* >/dev/null 2>&1; then
+		podman run --net=none --rootfs /target update-ca-certificates 2>/dev/null \
+			|| error "update-ca-certificates failed"
+	fi
+
+	### workaround section, these can be removed once we consider we no longer
+	### support a given version.
 	# v3.14.3-at.2
 	if grep -q /dev/mmcblk2 /proc/cmdline \
 	    && [ -e /dev/mmcblk2gp1 ] \
