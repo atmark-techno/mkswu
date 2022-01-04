@@ -892,7 +892,7 @@ make_cpio() {
 	sign sw-description
 	(
 		cd "$OUTDIR" || error "Could not enter %s" "$OUTDIR"
-		printf %s "$FILES" | cpio -ov -H crc -L
+		printf %s "$FILES" | cpio -o -H crc -L --quiet
 	) > "$OUT"
 
 	CPIO_FILES=$(cpio -t --quiet < "$OUT")
