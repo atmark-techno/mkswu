@@ -22,7 +22,8 @@ genkey() {
 		read -r -p $"Enter certificate common name: " CN
 	done
 
-	"$SCRIPT_DIR/genkey.sh" --cn "$CN" || error $"Could not generate swupdate certificate"
+	"$SCRIPT_DIR/genkey.sh" --quiet --cn "$CN" \
+		|| error $"Could not generate swupdate certificate"
 
 	# Also prompt for encryption
 	local AES=inval
@@ -34,7 +35,8 @@ genkey() {
 	done
 	case "$AES" in
 	[Yy]|[Yy][Ee][Ss])
-		"$SCRIPT_DIR/genkey.sh" --aes
+		"$SCRIPT_DIR/genkey.sh" --quiet --aes \
+			|| error $"Could not generate AES key"
 		;;
 	esac
 }

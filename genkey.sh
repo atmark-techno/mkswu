@@ -9,6 +9,7 @@ CONFIG="$SCRIPT_DIR"/mkimage.conf
 AES=
 PLAIN=
 CN=
+QUIET=
 CURVE=secp256k1
 DAYS=$((5*365))
 
@@ -24,6 +25,7 @@ usage() {
 	echo
 	echo "Options:"
 	echo "  -c, --config  path"
+	echo "  --quiet       Do not output info message after key creation"
 	echo
 	echo "Signing key options:"
 	echo "  --plain       generate signing key without encryption"
@@ -48,15 +50,17 @@ genkey_aes() {
 		return
 	fi
 
-	echo "Creating encryption keyfile $ENCRYPT_KEYFILE"
-	echo "You must also enable aes encryption with examples/initial_setup.desc"
-	echo "or equivalent"
-
 	oldumask=$(umask)
 	umask 0377
 	ENCRYPT_KEY="$(openssl rand -hex 32)" || error "No openssl?"
 	printf "%s\n" "$ENCRYPT_KEY $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
 	umask "$oldumask"
+
+	[ -n "$QUIET" ] && return
+	echo "Created encryption keyfile $ENCRYPT_KEYFILE"
+	echo "You must also enable aes encryption with examples/initial_setup.desc"
+	echo "or equivalent"
+
 }
 
 genkey_rsa() {
@@ -64,7 +68,7 @@ genkey_rsa() {
 	local PUBKEY="${PRIVKEY%.key}.pem"
 
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
-	if [ -s "$PRIVKEY" ]; then
+	if [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; then
 		printf "%s\n" "$PRIVKEY already exists, skipping"
 		return
 	fi
@@ -76,6 +80,8 @@ genkey_rsa() {
 		-keyout "$PRIVKEY" -out "$PUBKEY" -subj "/O=SWUpdate/CN=$CN" \
 		${PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
 		-days "$DAYS"
+
+	[ -n "$QUIET" ] && return
 
 	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards."
 	echo "The suggested way is using swupdate:"
@@ -109,6 +115,10 @@ while [ $# -ge 1 ]; do
 		;;
 	"--aes")
 		AES=1
+		shift
+		;;
+	"--quiet")
+		QUIET=1
 		shift
 		;;
 	"-h"|"--help"|"-"*)
