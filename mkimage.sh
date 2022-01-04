@@ -6,22 +6,22 @@
 # shellcheck disable=SC2039,SC1090,SC2165,SC2167
 
 if command -v gettext >/dev/null; then
-	_gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=mkimage gettext "$@"; }
+	_gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=mkimage gettext -- "$@"; }
 else
-	_gettext() { printf "%s\n" "$@"; }
+	_gettext() { printf -- "%s\n" "$@"; }
 fi
 
 error() {
 	local fmt="$1"
 	shift
-	printf "ERROR: $(_gettext "$fmt")\n" "$@" >&2
+	printf -- "ERROR: $(_gettext "$fmt")\n" "$@" >&2
 	exit 1
 }
 
 info() {
 	local fmt="$1"
 	shift
-	printf "$(_gettext "$fmt")\n" "$@"
+	printf -- "$(_gettext "$fmt")\n" "$@"
 }
 
 usage() {
