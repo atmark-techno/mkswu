@@ -5,21 +5,22 @@ l = ja
 translations = $(wildcard po/$(l)/*.po)
 locales = $(patsubst po/$(l)/%.po,locale/$(l)/LC_MESSAGES/%.mo,$(translations))
 
-pot = $(wildcard po/*.pot)
+pot = po/mkimage.pot po/genkey.pot po/init.pot
 
 all: $(locales) $(pot)
 
 
 po/mkimage.pot: mkimage.sh examples/enable_sshd.desc examples/hawkbit_register.desc
-	sed -e 's/info "\|error "/$$"/' < mkimage.sh | bash --dump-po-strings | sed -e 's/bash:/mkimage.sh:/' > po/mkimage.pot
-	sed -e 's/info "\|error "/$$"/' < examples/enable_sshd.desc | bash --dump-po-strings | sed -e 's/bash:/enable_sshd.desc:/' >> po/mkimage.pot
-	sed -e 's/info "\|error "/$$"/' < examples/hawkbit_register.desc | bash --dump-po-strings | sed -e 's/bash:/hawkbit_register.desc:/' >> po/mkimage.pot
+	./po/update.sh $@ $^
 
 po/genkey.pot: genkey.sh
-	sed -e 's/info "\|error "/$$"/' < genkey.sh | bash --dump-po-strings | sed -e 's/bash:/genkey.sh:/' > po/genkey.pot
+	./po/update.sh $@ $^
 
 po/init.pot: init.sh
-	bash --dump-po-strings $< > $@
+	./po/update.sh $@ $^
+
+po/$(l)/%.po: po/%.pot
+	msgmerge -o $@ $@ $<
 
 locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 	msgfmt -o $@ $<

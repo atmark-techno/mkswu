@@ -1,3 +1,7 @@
+# header
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8"
 #: mkimage.sh:28
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
@@ -130,15 +134,6 @@ msgstr ""
 #: mkimage.sh:349
 msgid "%s only allowed for swdesc_files and swdesc_tar"
 msgstr ""
-#: mkimage.sh:354
-msgid "%s requires an argument"
-msgstr ""
-#: mkimage.sh:356
-msgid "%s only allowed for swdesc_files and swdesc_tar"
-msgstr ""
-#: mkimage.sh:361
-msgid "%s requires an argument"
-msgstr ""
 #: mkimage.sh:363
 msgid "%s only allowed for swdesc_files"
 msgstr ""
@@ -262,19 +257,10 @@ msgstr ""
 #: mkimage.sh:974
 msgid "Could not get script dir"
 msgstr ""
-#: mkimage.sh:1005
-msgid "%s requires an argument"
-msgstr ""
-#: mkimage.sh:1010
-msgid "%s requires an argument"
-msgstr ""
 #: mkimage.sh:1012
 msgid "%s must end with .swu"
 msgstr ""
 #: mkimage.sh:1036
-msgid "%s does not exist"
-msgstr ""
-#: mkimage.sh:1053
 msgid "%s does not exist"
 msgstr ""
 #: mkimage.sh:1054
@@ -298,9 +284,9 @@ msgstr ""
 #: mkimage.sh:1082
 msgid "Successfully generated %s"
 msgstr ""
-#: enable_sshd.desc:4
+#: examples/enable_sshd.desc:4
 msgid "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
 msgstr ""
-#: hawkbit_register.desc:5
+#: examples/hawkbit_register.desc:5
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr ""

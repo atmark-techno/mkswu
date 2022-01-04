@@ -1,3 +1,7 @@
+# header
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8"
 #: init.sh:22
 msgid "Enter certificate common name: "
 msgstr ""
@@ -28,19 +32,10 @@ msgstr ""
 #: init.sh:78
 msgid "atmark user password (confirm): "
 msgstr ""
-#: init.sh:81
-msgid "Passwords do not match"
-msgstr ""
-#: init.sh:88
-msgid "Could not hash password"
-msgstr ""
 #: init.sh:97
 msgid "Could not copy initial_setup.desc from example dir"
 msgstr ""
 #: init.sh:101
-msgid "Could not update $desc"
-msgstr ""
-#: init.sh:105
 msgid "Could not update $desc"
 msgstr ""
 #: init.sh:111

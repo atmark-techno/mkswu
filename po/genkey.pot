@@ -1,3 +1,7 @@
+# header
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8"
 #: genkey.sh:36
 msgid "Usage: %s [options]"
 msgstr ""
@@ -74,12 +78,6 @@ msgstr ""
 msgid "    %s --aes"
 msgstr ""
 #: genkey.sh:109
-msgid "%s requires an argument"
-msgstr ""
-#: genkey.sh:115
-msgid "%s requires an argument"
-msgstr ""
-#: genkey.sh:120
 msgid "%s requires an argument"
 msgstr ""
 #: genkey.sh:151
