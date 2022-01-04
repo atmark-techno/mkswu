@@ -2,60 +2,76 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 
-#: init.sh:22
+#: init.sh:23
 msgid "Enter certificate common name: "
 msgstr "証明書のCommon nameを入力してください: "
 
-#: init.sh:34
+#: init.sh:27
+msgid "Enter private key password (4-1024 char) "
+msgstr "証明書の鍵のパスワードを入力ください（4-1024文字）"
+
+#: init.sh:30
+msgid "Empty key password is not recommended, re-enter empty to confirm"
+msgstr "空のパスワードをおすすめしません。もう一度入力したら進みます。"
+
+#: init.sh:32
+msgid "Must be between 4 and 1024 characters long"
+msgstr "パスワードは4-1024文字でお願いします。"
+
+#: init.sh:35
+msgid "private key password (confirm): "
+msgstr "証明書の鍵のパスワード（確認）: "
+
+#: init.sh:38
+msgid "Passwords do not match"
+msgstr "パスワードが一致しません"
+
+#: init.sh:57
 msgid "Use AES encryption? (N/y) "
 msgstr "アップデートイメージを暗号化しますか？ (N/y) "
 
-#: init.sh:55
+#: init.sh:78
 msgid "Allow updates signed by Atmark Techno? (Y/n) "
 msgstr ""
 "アットマークテクノが作成したイメージをインストール可能にしますか？ (Y/n) "
 
-#: init.sh:58
+#: init.sh:81
 msgid "root password: "
 msgstr "rootパスワード: "
 
-#: init.sh:61
+#: init.sh:84
 msgid "A root password is required"
 msgstr "rootパスワードが必要です。"
 
-#: init.sh:64
+#: init.sh:87
 msgid "root password (confirm): "
 msgstr "rootパスワード（確認）: "
 
-#: init.sh:67
-msgid "Passwords do not match"
-msgstr "パスワードが一致しません"
-
-#: init.sh:71
+#: init.sh:94
 msgid "Could not hash password"
 msgstr "パスワードを作成できませんでした。"
 
-#: init.sh:76
+#: init.sh:99
 msgid "atmark user password (empty = same as root): "
 msgstr "atmarkユーザのパスワード（空の場合はrootパスワードを使います）: "
 
-#: init.sh:78
+#: init.sh:101
 msgid "atmark user password (confirm): "
 msgstr "atmarkユーザのパスワード（確認）: "
 
-#: init.sh:97
+#: init.sh:120
 msgid "Could not copy initial_setup.desc from example dir"
 msgstr "initial_setup.descをコピーできませんでした"
 
-#: init.sh:101
+#: init.sh:124
 msgid "Could not update $desc"
 msgstr "$descを更新できませんでした"
 
-#: init.sh:111
+#: init.sh:134
 msgid "Could not generate initial setup swu"
 msgstr "最初書き込みのinitial_setup.swuの作成が失敗しました。"
 
-#: init.sh:113
+#: init.sh:136
 msgid ""
 "You can use \\\"$SCRIPT_DIR/initial_setup.swu\\\" as is or regenerate an "
 "image"
@@ -63,7 +79,7 @@ msgstr ""
 "\\\"$SCRIPT_DIR/initial_setup.swu\\\" をそのまま使えますが、追加 desc を入れ"
 "たかったら"
 
-#: init.sh:114
+#: init.sh:137
 msgid ""
 "with extra modules with \\\"$SCRIPT_DIR/mkimage.sh\\\" \\\"$SCRIPT_DIR/"
 "initial_setup.desc\\\" other_desc_files"
@@ -71,6 +87,6 @@ msgstr ""
 "このコマンドで作成してください： \\\"$SCRIPT_DIR/mkimage.sh\\\" \\"
 "\"$SCRIPT_DIR/initial_setup.desc\\\" other_desc_files"
 
-#: init.sh:123
+#: init.sh:146
 msgid "Config $CONFIG not found"
 msgstr "$CONFIG を見つかりませんでした。"

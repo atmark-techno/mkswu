@@ -6,6 +6,7 @@
 
 SCRIPT_DIR=$(dirname "$0")
 CONFIG="$SCRIPT_DIR"/mkimage.conf
+KEYPASS="$PRIVKEY_PASS"
 AES=
 PLAIN=
 CN=
@@ -151,6 +152,8 @@ if ! [ -r "$CONFIG" ]; then
 		|| error "Config %s not found - configure paths there or specify config with --config" "$CONFIG"
 fi
 . "$CONFIG"
+# prefer preserved PRIVKEY_PASS over config value if one was set
+[ -n "$KEYPASS" ] && PRIVKEY_PASS="$KEYPASS"
 
 if [ -n "$AES" ]; then
 	genkey_aes

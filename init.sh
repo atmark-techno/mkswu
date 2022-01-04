@@ -15,6 +15,7 @@ info() {
 
 genkey() {
 	local CN
+	local KEYPASS KEYPASS_CONFIRM
 
 	[[ -e "$PUBKEY" ]] && [[ -e "$PRIVKEY" ]] && return
 
@@ -22,8 +23,30 @@ genkey() {
 		read -r -p $"Enter certificate common name: " CN
 	done
 
-	"$SCRIPT_DIR/genkey.sh" --quiet --cn "$CN" \
-		|| exit 1
+	while true; do
+		read -s -r -p $"Enter private key password (4-1024 char) " KEYPASS
+		echo
+		if [[ -z "$KEYPASS" ]]; then
+			info $"Empty key password is not recommended, re-enter empty to confirm"
+		elif [[ "${#KEYPASS}" -lt 4 ]] || [[ "${#KEYPASS}" -gt 1024 ]]; then
+			info $"Must be between 4 and 1024 characters long"
+			continue
+		fi
+		read -s -r -p $"private key password (confirm): " KEYPASS_CONFIRM
+		echo
+		if [[ "$KEYPASS" != "$KEYPASS_CONFIRM" ]]; then
+			info $"Passwords do not match"
+			continue
+		fi
+		break
+	done
+
+	if [[ -n "$KEYPASS" ]]; then
+		echo "$KEYPASS" | PRIVKEY_PASS="stdin" \
+			"$SCRIPT_DIR/genkey.sh" --quiet --cn "$CN"
+	else
+		"$SCRIPT_DIR/genkey.sh" --plain --quiet --cn "$CN"
+	fi || exit 1
 
 	# Also prompt for encryption
 	local AES=inval

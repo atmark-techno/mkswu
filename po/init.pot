@@ -2,51 +2,63 @@
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8"
-#: init.sh:22
+#: init.sh:23
 msgid "Enter certificate common name: "
 msgstr ""
-#: init.sh:34
-msgid "Use AES encryption? (N/y) "
+#: init.sh:27
+msgid "Enter private key password (4-1024 char) "
 msgstr ""
-#: init.sh:55
-msgid "Allow updates signed by Atmark Techno? (Y/n) "
+#: init.sh:30
+msgid "Empty key password is not recommended, re-enter empty to confirm"
 msgstr ""
-#: init.sh:58
-msgid "root password: "
+#: init.sh:32
+msgid "Must be between 4 and 1024 characters long"
 msgstr ""
-#: init.sh:61
-msgid "A root password is required"
+#: init.sh:35
+msgid "private key password (confirm): "
 msgstr ""
-#: init.sh:64
-msgid "root password (confirm): "
-msgstr ""
-#: init.sh:67
+#: init.sh:38
 msgid "Passwords do not match"
 msgstr ""
-#: init.sh:71
-msgid "Could not hash password"
-msgstr ""
-#: init.sh:76
-msgid "atmark user password (empty = same as root): "
+#: init.sh:57
+msgid "Use AES encryption? (N/y) "
 msgstr ""
 #: init.sh:78
-msgid "atmark user password (confirm): "
+msgid "Allow updates signed by Atmark Techno? (Y/n) "
 msgstr ""
-#: init.sh:97
-msgid "Could not copy initial_setup.desc from example dir"
+#: init.sh:81
+msgid "root password: "
+msgstr ""
+#: init.sh:84
+msgid "A root password is required"
+msgstr ""
+#: init.sh:87
+msgid "root password (confirm): "
+msgstr ""
+#: init.sh:94
+msgid "Could not hash password"
+msgstr ""
+#: init.sh:99
+msgid "atmark user password (empty = same as root): "
 msgstr ""
 #: init.sh:101
+msgid "atmark user password (confirm): "
+msgstr ""
+#: init.sh:120
+msgid "Could not copy initial_setup.desc from example dir"
+msgstr ""
+#: init.sh:124
 msgid "Could not update $desc"
 msgstr ""
-#: init.sh:111
+#: init.sh:134
 msgid "Could not generate initial setup swu"
 msgstr ""
-#: init.sh:113
+#: init.sh:136
 msgid "You can use \\\"$SCRIPT_DIR/initial_setup.swu\\\" as is or regenerate an image"
 msgstr ""
-#: init.sh:114
+#: init.sh:137
 msgid "with extra modules with \\\"$SCRIPT_DIR/mkimage.sh\\\" \\\"$SCRIPT_DIR/initial_setup.desc\\\" other_desc_files"
 msgstr ""
-#: init.sh:123
+#: init.sh:146
 msgid "Config $CONFIG not found"
 msgstr ""
