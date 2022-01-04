@@ -23,7 +23,7 @@ genkey() {
 	done
 
 	"$SCRIPT_DIR/genkey.sh" --quiet --cn "$CN" \
-		|| error $"Could not generate swupdate certificate"
+		|| exit 1
 
 	# Also prompt for encryption
 	local AES=inval
@@ -36,7 +36,7 @@ genkey() {
 	case "$AES" in
 	[Yy]|[Yy][Ee][Ss])
 		"$SCRIPT_DIR/genkey.sh" --quiet --aes \
-			|| error $"Could not generate AES key"
+			|| exit 1
 		;;
 	esac
 }
@@ -120,7 +120,7 @@ if ! [[ -r "$CONFIG" ]]; then
         [[ "${CONFIG##*/}" = "mkimage.conf" ]] \
                 && "$SCRIPT_DIR/mkimage.sh" --mkconf
         [[ -r "$CONFIG" ]] \
-                || error $"Config $CONFIG not found - configure paths there or specify config with --config"
+                || error $"Config $CONFIG not found"
 fi
 . "$CONFIG"
 

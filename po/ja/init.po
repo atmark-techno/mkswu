@@ -1,9 +1,6 @@
 #: init.sh:22
 msgid "Enter certificate common name: "
 msgstr "証明書のCommon nameを入力してください: "
-#: init.sh:25
-msgid "Could not generate swupdate certificate"
-msgstr "証明書の作成が失敗しました。"
 #: init.sh:34
 msgid "Use AES encryption? (N/y) "
 msgstr "アップデートイメージを暗号化しますか？ (N/y) "
@@ -40,3 +37,12 @@ msgstr "$descを更新できませんでした"
 #: init.sh:109
 msgid "Could not generate initial setup swu"
 msgstr "最初書き込みのinitial_setup.swuの作成が失敗しました。"
+#: init.sh:113
+msgid "You can use \\\"$SCRIPT_DIR/initial_setup.swu\\\" as is or regenerate an image"
+msgstr "\\\"$SCRIPT_DIR/initial_setup.swu\\\" をそのまま使えますが、追加 desc を入れたかったら"
+#: init.sh:114
+msgid "with extra modules with \\\"$SCRIPT_DIR/mkimage.sh\\\" \\\"$SCRIPT_DIR/initial_setup.desc\\\" other_desc_files"
+msgstr "このコマンドで作成してください： \\\"$SCRIPT_DIR/mkimage.sh\\\" \\\"$SCRIPT_DIR/initial_setup.desc\\\" other_desc_files"
+#: init.sh:123
+msgid "Config $CONFIG not found"
+msgstr "$CONFIG を見つかりませんでした。"
