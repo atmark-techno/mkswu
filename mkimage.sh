@@ -5,38 +5,50 @@
 # SC2165/SC2167: use same variable for nested loops
 # shellcheck disable=SC2039,SC1090,SC2165,SC2167
 
-usage() {
-	echo "Usage: $0 [opts] desc [desc...]"
-	echo
-	echo "Options:"
-	echo "  -c, --config <conf>     path to config (default mkimage.conf)"
-	echo "  -o, --out <out.swu>     path to output file (default from first desc's name)"
-	echo "  --mkconf                generate default config file"
-	echo "  desc                    image description file(s), if multiple are given"
-	echo "                          then the generated image will merge all the contents"
-	echo
-	echo "desc file syntax:"
-	echo "  descriptions are imperative declarations building an image, the following"
-	echo "  commands available (see README for details):"
-	echo "  - swdesc_boot <bootfile>"
-	echo "  - swdesc_tar <tar_file> [--dest <dest>]"
-	echo "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
-	echo "  - swdesc_command '<cmd>'"
-	echo "  - swdesc_script <script>"
-	echo "  - swdesc_exec <file> '<cmd>' (file is \$1 in command)"
-	echo "  - swdesc_embed_container <image_archive>"
-	echo "  - swdesc_usb_container <image_archive>"
-	echo "  - swdesc_pull_container <image_url>"
-	echo
-	echo "In most cases --version <component> <version> should be set,"
-	echo "<component> must be extra_os.* in order to update rootfs"
-}
+if command -v gettext >/dev/null; then
+	_gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=mkimage gettext "$@"; }
+else
+	_gettext() { printf "%s\n" "$@"; }
+fi
 
 error() {
-	local line
-	printf %s "ERROR: " >&2
-	printf "%s\n" "$@" >&2
+	local fmt="$1"
+	shift
+	printf "ERROR: $(_gettext "$fmt")\n" "$@" >&2
 	exit 1
+}
+
+info() {
+	local fmt="$1"
+	shift
+	printf "$(_gettext "$fmt")\n" "$@"
+}
+
+usage() {
+	info "Usage: %s [opts] desc [desc...]" "$0"
+	info
+	info "Options:"
+	info "  -c, --config <conf>     path to config (default mkimage.conf)"
+	info "  -o, --out <out.swu>     path to output file (default from first desc's name)"
+	info "  --mkconf                generate default config file"
+	info "  desc                    image description file(s), if multiple are given"
+	info "                          then the generated image will merge all the contents"
+	info
+	info "desc file syntax:"
+	info "  descriptions are imperative declarations building an image, the following"
+	info "  commands available (see README for details):"
+	info "  - swdesc_boot <bootfile>"
+	info "  - swdesc_tar <tar_file> [--dest <dest>]"
+	info "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
+	info "  - swdesc_command '<cmd>'"
+	info "  - swdesc_script <script>"
+	info "  - swdesc_exec <file> '<cmd>' (file is \$1 in command)"
+	info "  - swdesc_embed_container <image_archive>"
+	info "  - swdesc_usb_container <image_archive>"
+	info "  - swdesc_pull_container <image_url>"
+	info
+	info "In most cases --version <component> <version> should be set,"
+	info "<component> must be extra_os.* in order to update rootfs"
 }
 
 write_line() {
@@ -62,15 +74,15 @@ link() {
 
 	track_used "$dest"
 
-	src=$(readlink -e "$src") || error "Cannot find source file: $1"
+	src=$(readlink -e "$src") || error "Cannot find source file: %s" "$1"
 
 	if [ -h "$dest" ]; then
 		existing=$(readlink "$dest")
 		[ "$src" = "$existing" ] && return
-		rm -f "$dest" || error "Could not remove previous link at $dest"
+		rm -f "$dest" || error "Could not remove previous link at %s" "$dest"
 	elif [ -e "$dest" ]; then
 		cmp "$src" "$dest" > /dev/null && return
-		rm -f "$dest" || error "Could not remove previous file at $dest"
+		rm -f "$dest" || error "Could not remove previous file at %s" "$dest"
 	fi
 
 	# files with hardlinks will mess up the order within the cpio,
@@ -78,9 +90,9 @@ link() {
 	# (e.g. rootfs after post script...)
 	# workaround by copying file (reflinks are ok) instead if required
 	if [ "$(stat -c %h "$src")" != 1 ]; then
-		cp --reflink=auto "$src" "$dest" || error "Could not copy $src to $dest"
+		cp --reflink=auto "$src" "$dest" || error "Could not copy %s to %s" "$src" "$dest"
 	else
-		ln -s "$(readlink -e "$src")" "$dest" || error "Could not link $dest to $src"
+		ln -s "$(readlink -e "$src")" "$dest" || error "Could not link %s to %s" "$dest" "$src"
 	fi
 }
 
@@ -106,8 +118,8 @@ encrypt_file() {
 setup_encryption() {
 	[ -z "$ENCRYPT_KEYFILE" ] && return
 	[ -e "$ENCRYPT_KEYFILE" ] \
-		|| error "AES encryption key $ENCRYPT_KEYFILE was set but not found." \
-			 "Please create it with genkey.sh --aes \"$ENCRYPT_KEYFILE\""
+		|| error "AES encryption key %s was set but not found.\nPlease create it with genkey.sh --aes \"%s\"" \
+			"$ENCRYPT_KEYFILE" "$ENCRYPT_KEYFILE"
 	ENCRYPT_KEY=$(cat "$ENCRYPT_KEYFILE")
 	# XXX if sw-description gets encrypted, its iv is here
 	ENCRYPT_KEY="${ENCRYPT_KEY% *}"
@@ -124,7 +136,7 @@ compress() {
 	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
 
 	zstd -10 "$file_src" -o "$file_out.tmp" \
-		|| error "failed to compress $file_src"
+		|| error "failed to compress %s" "$file_src"
 	mv "$file_out.tmp" "$file_out"
 }
 
@@ -137,7 +149,7 @@ write_entry_stdout() {
 	shift
 	local sha256 iv
 
-	[ -e "$file_src" ] || error "Missing source file: $file_src"
+	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
 
 	if [ -n "$compress" ]; then
 		# Check if already compressed
@@ -182,7 +194,7 @@ write_entry_stdout() {
 		file="$file.enc"
 		file_out="$file_out.enc"
 		iv=$(encrypt_file "$file_src" "$file_out") \
-			|| error "failed to encrypt $file_src"
+			|| error "failed to encrypt %s" "$file_src"
 		file_src="$file_out"
 
 	fi
@@ -199,7 +211,7 @@ $file"
 		sha256=$(cat "$file_out.sha256sum")
 	else
 		sha256=$(sha256sum < "$file_out") \
-			|| error "Checksumming $file_out failed"
+			|| error "Checksumming %s failed" "$file_out"
 		sha256=${sha256%% *}
 		printf "%s\n" "$sha256" > "$file_out.sha256sum"
 	fi
@@ -209,7 +221,7 @@ $file"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
 	if [ -n "$component" ]; then
-		[ -n "$version" ] || error "component $component was set with empty version"
+		[ -n "$version" ] || error "component %s was set with empty version" "$component"
 		if [ -z "$install_if" ]; then
 			case "$component" in
 			boot) install_if="different";;
@@ -221,7 +233,7 @@ $file"
 			local max
 			# handle only x.y.z.t or x.y.z-t
 			printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
-				|| error "Version $version must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
+				|| error "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)" "$version"
 			# ... and check for max values
 			if [ "${version%-*}" = "${version}" ]; then
 				# only dots, "old style version" valid for 16 bits, but now overflow
@@ -234,7 +246,7 @@ $file"
 				# base_os must be x.y.z-t format to avoid surprises
 				# with semver prerelease field filtering
 				[ "$component" = "base_os" ] \
-					&& error "base_os version $version must be in x[.y[.z]]-t format"
+					&& error "base_os version %s must be in x[.y[.z]]-t format" "$version"
 			else
 				# semver, signed int
 				max=2147483647
@@ -246,13 +258,13 @@ $file"
 				}
 				/[0-9][a-zA-Z]|[a-zA-Z][0-9]/ {
 					print "WARNING: " $1 " will be sorted alphabetically";
-				}' >&2 || error "version check failed: $version"
+				}' >&2 || error "version check failed: %s" "$version"
 			;;
 		different) ;;
 		*) error "install_if must be higher or different";;
 		esac
-		[ "${component#* }" = "$component" ] || error "component must not contain spaces ($component)"
-		[ "${version#* }" = "$version" ] || error "version must not contain spaces ($component = $version)"
+		[ "${component#* }" = "$component" ] || error "component must not contain spaces (%s)" "$component"
+		[ "${version#* }" = "$version" ] || error "version must not contain spaces (%s = %s)" "$component" "$version"
 		write_line "name = \"$component\";" \
 			   "version = \"$version\";" \
 			   "install-if-${install_if} = true;"
@@ -260,7 +272,7 @@ $file"
 		# remember version for scripts
 		printf "%s\n" "$component $version $install_if ${board:-*}" >> "$OUTDIR/sw-description-versions"
 	elif [ -n "$version" ]; then
-		error "version $version was set without associated component"
+		error "version %s was set without associated component" "$version"
 	fi
 	if [ -n "$main_version" ]; then
 		[ -n "$component" ] && [ -n "$version" ] \
@@ -310,12 +322,12 @@ parse_swdesc() {
 		fi
 		case "$NOPARSE$ARG" in
 		"-b"|"--board")
-			[ $# -lt 1 ] && error "$ARG requires an argument"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			board="$1"
 			SKIP=1
 			;;
 		"-v"|"--version")
-			[ $# -lt 2 ] && error "$ARG requires <component> <version> arguments"
+			[ $# -lt 2 ] && error "%s requires <component> <version> arguments" "$ARG"
 			component="$1"
 			version="$2"
 			SKIP=2
@@ -334,21 +346,21 @@ parse_swdesc() {
 			;;
 		"--preserve-attributes")
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
-				|| error "$ARG only allowed for swdesc_files and swdesc_tar"
+				|| error "%s only allowed for swdesc_files and swdesc_tar" "$ARG"
 			preserve_attributes=1
 			SKIP=0
 			;;
 		"-d"|"--dest")
-			[ $# -lt 1 ] && error "$ARG requires an argument"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
-				|| error "$ARG only allowed for swdesc_files and swdesc_tar"
+				|| error "%s only allowed for swdesc_files and swdesc_tar" "$ARG"
 			dest="$1"
 			SKIP=1
 			;;
 		"--basedir")
-			[ $# -lt 1 ] && error "$ARG requires an argument"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			[ "$CMD" = "files" ] \
-				|| error "$ARG only allowed for swdesc_files"
+				|| error "%s only allowed for swdesc_files" "$ARG"
 			basedir="$1"
 			SKIP=1
 			;;
@@ -359,7 +371,7 @@ parse_swdesc() {
 			NOPARSE=1
 			;;
 		"-"*)
-			error "$ARG is not a known swdesc_$CMD argument"
+			error "%s is not a known %s argument" "$ARG" "swdesc_$CMD"
 			;;
 		*)
 			set -- "$@" "$ARG"
@@ -407,11 +419,11 @@ parse_swdesc() {
 		;;
 	*container)
 		[ $# -eq 0 ] && [ -n "$image" ] && return
-		[ $# -eq 1 ] || error "Usage: swdesc_$CMD [options] image"
+		[ $# -eq 1 ] || error "Usage: %s [options] image" "swdesc_$CMD"
 		image="$1"
 		;;
 	*)
-		error "Unhandled command $CMD"
+		error "Unhandled command %s" "$CMD"
 		;;
 	esac
 }
@@ -432,7 +444,7 @@ pad_boot() {
 		fi
 	fi
 
-	size=$(stat -c "%s" "$src") || error "Cannot stat boot file: $src"
+	size=$(stat -c "%s" "$src") || error "Cannot stat boot file: %s" "$src"
 	if [ "$size" -gt "$BOOT_SIZE" ]; then
 		error "BOOT_SIZE set smaller than boot file actual size"
 	fi
@@ -455,7 +467,7 @@ swdesc_boot() {
 	if [ -z "$version" ]; then
 		version=$(strings "$BOOT" \
 				| grep -m1 -oE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*') \
-			|| error "Could not guess boot version in $BOOT"
+			|| error "Could not guess boot version in %s" "$BOOT"
 	fi
 
 	write_entry images "$BOOT" "type = \"raw\";" \
@@ -479,7 +491,7 @@ swdesc_tar() {
 	base_os|extra_os*)
 		dest="${dest:-/}"
 		if [ "${dest#/}" = "$dest" ]; then
-			error "OS update must have an absolute dest (was: $dest)"
+			error "OS update must have an absolute dest (was: %s)" "$dest"
 		fi
 		;;
 	*)
@@ -490,7 +502,7 @@ swdesc_tar() {
 			;;
 		/*)
 			[ -n "$target" ] \
-				&& error "OS is only writable for base/extra_os updates and dest ($dest) is not within volumes"
+				&& error "OS is only writable for base/extra_os updates and dest (%s) is not within volumes" "$dest"
 			;;
 		..*|*/../*|*/..)
 			error ".. is not allowed in destination path for os"
@@ -505,7 +517,7 @@ swdesc_tar() {
 	# for base_os updates: fix it
 	if [ "$component" = "base_os" ] \
 	    && [ -z "$preserve_attributes" ]; then
-		echo "Warning: automatically setting --preserve-attributes for base_os update" >&2
+		info "Warning: automatically setting --preserve-attributes for base_os update" >&2
 		preserve_attributes=1
 	fi
 	write_entry images "$source" "type = \"archive\";" \
@@ -539,8 +551,7 @@ swdesc_files() {
 
 	set -- $tarfiles_src
 	# XXX temporary warning -- until when?
-	[ -e "$1" ] || error "$1 does not exist" \
-		"please note swdesc_files syntax changed and no longer requires setting a name"
+	[ -e "$1" ] || error "%s does not exist\nplease note swdesc_files syntax changed and no longer requires setting a name" "$1"
 	if [ -z "$basedir" ]; then
 		[ -d "$1" ] && basedir="$1" || basedir=$(dirname "$1")
 	fi
@@ -548,9 +559,9 @@ swdesc_files() {
 	set --
 	for tarfile_raw in $tarfiles_src; do
 		tarfile=$(realpath -e -s --relative-to="$basedir" "$tarfile_raw") \
-			|| error "$tarfile_raw does not exist?"
+			|| error "%s does not exist?" "$tarfile_raw"
 		[ "${tarfile#../}" = "$tarfile" ] \
-			|| error "$tarfile_raw is not inside $basedir"
+			|| error "%s is not inside %s" "$tarfile_raw" "$basedir"
 
 		mtime=$({ printf "%s\n" "$mtime"; find "$tarfile_raw" -exec stat -c "%Y" {} +; } \
 				| awk '$1 > max { max=$1 } END { print max }')
@@ -563,7 +574,7 @@ swdesc_files() {
 	if ! [ -e "$file" ] \
 	    || [ "$mtime" -gt "$(stat -c "%Y" "$file")" ]; then
 		tar -cf "$file" -C "$basedir" "$@" \
-			|| error "Could not create tar for $file"
+			|| error "Could not create tar for %s" "$file"
 	fi
 
 	swdesc_tar "$file"
@@ -710,8 +721,8 @@ swdesc_usb_container() {
 
 	local image_usb=${image##*/}
 	if [ "${image_usb%.tar.*}" != "$image_usb" ]; then
-		echo "Warning: podman does not handle compressed container images without an extra uncompressed copy"
-		echo "you might want to keep the archive as simple .tar"
+		info "Warning: podman does not handle compressed container images without an extra uncompressed copy"
+		info "you might want to keep the archive as simple .tar"
 	fi
 	link "$image" "$OUTDIR/$image_usb"
 	sign "$image_usb"
@@ -775,7 +786,7 @@ EOF
 		board_normalize=$(printf %s "$board" | tr -c '[:alnum:]' '_')
 		board_hwcompat=$(eval "printf %s \"\$HW_COMPAT_$board_normalize"\")
 		[ -n "$board_hwcompat" ] || board_hwcompat="$HW_COMPAT"
-		[ -n "$board_hwcompat" ] || error "HW_COMPAT or HW_COMPAT_$board_normalize must be set"
+		[ -n "$board_hwcompat" ] || error "HW_COMPAT or HW_COMPAT_%s must be set" "$board_normalize"
 		indent=2 write_line "$board = {"
 		indent=4 write_line "hardware-compatibility = [ \"$board_hwcompat\" ];"
 		for file in "$OUTDIR/sw-description-"*"-$board"; do
@@ -823,8 +834,7 @@ EOF
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
 	elif [ -z "$FORCE_VERSION" ]; then
-		error "No versions found: empty image?" \
-		      "Set FORCE_VERSION=1 to allow building"
+		error "No versions found: empty image?\nSet FORCE_VERSION=1 to allow building"
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #FORCE_VERSION"
 	[ -n "$CONTAINER_CLEAR" ] && echo "  #CONTAINER_CLEAR"
@@ -861,14 +871,14 @@ sign() {
 	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
 	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
 	[ -n "$PUBKEY" ] || error "PUBKEY must be set"
-	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: $PRIVKEY"
-	[ -r "$PUBKEY" ] || error "Cannot read PUBKEY: $PUBKEY"
+	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: %s" "$PRIVKEY"
+	[ -r "$PUBKEY" ] || error "Cannot read PUBKEY: %s" "$PUBKEY"
 
 	openssl cms -sign -in "$file" -out "$file.sig.tmp" \
 		-signer "$PUBKEY" -inkey "$PRIVKEY" \
 		-outform DER -nosmimecap -binary \
 		${PRIVKEY_PASS:+-passin $PRIVKEY_PASS} \
-		|| error "Could not sign $file"
+		|| error "Could not sign %s" "$file"
 
 	# Note if anyone needs debugging, can be verified with:
 	# openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
@@ -881,13 +891,13 @@ make_cpio() {
 	check_common_mistakes sw-description
 	sign sw-description
 	(
-		cd "$OUTDIR" || error "Could not enter $OUTDIR"
+		cd "$OUTDIR" || error "Could not enter %s" "$OUTDIR"
 		printf %s "$FILES" | cpio -ov -H crc -L
 	) > "$OUT"
 
 	CPIO_FILES=$(cpio -t --quiet < "$OUT")
 	[ "$CPIO_FILES" = "$FILES" ] \
-		|| error "cpio does not contain files we requested (in the order we requested): check $OUT"
+		|| error "cpio does not contain files we requested (in the order we requested): check %s" "$OUT"
 }
 
 track_used() {
@@ -992,14 +1002,14 @@ sw-description.sig"
 		fi
 		case "$ARG" in
 		"-c"|"--config")
-			[ $# -lt 1 ] && error "$ARG requires an argument"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			CONFIG="$1"
 			SKIP=1
 			;;
 		"-o"|"--out")
-			[ $# -lt 1 ] && error "$ARG requires an argument"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			OUT="$1"
-			[ "${OUT%.swu}" != "$OUT" ] || error "$OUT must end with .swu"
+			[ "${OUT%.swu}" != "$OUT" ] || error "%s must end with .swu" "$OUT"
 			SKIP=1
 			;;
 		"--mkconf")
@@ -1023,7 +1033,7 @@ sw-description.sig"
 
 	if [ -n "$CONFIG" ]; then
 		update_mkimage_conf
-		[ -e "$CONFIG" ] || error "$CONFIG does not exist"
+		[ -e "$CONFIG" ] || error "%s does not exist" "$CONFIG"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
 		. "$CONFIG"
 	fi
@@ -1040,13 +1050,13 @@ sw-description.sig"
 	absolutize_file_paths
 	# build sw-desc fragments
 	for desc; do
-		[ -e "$desc" ] || error "$desc does not exist"
-		cd "$(dirname "$desc")" || error "cannot enter $desc directory"
+		[ -e "$desc" ] || error "%s does not exist" "$desc"
+		cd "$(dirname "$desc")" || error "cannot enter %s directory" "$desc"
 		. "./${desc##*/}"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
 		absolutize_file_paths
-		cd "$main_cwd" || error "Cannot return to $main_cwd we were in before"
+		cd "$main_cwd" || error "Cannot return to %s we were in before" "$main_cwd"
 	done
 
 	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$FORCE_VERSION" ] \
@@ -1062,14 +1072,14 @@ sw-description.sig"
 	make_cpio
 
 	if [ -n "$COPY_USB" ]; then
-		echo "----------------"
-		echo "You have sideloaded containers, copy all these files to USB drive:"
-		echo "$(shell_quote "$(realpath "$OUT")") $COPY_USB"
+		info "----------------"
+		info "You have sideloaded containers, copy all these files to USB drive:"
+		info "%s" "$(shell_quote "$(realpath "$OUT")") $COPY_USB"
 	fi
 
 	cleanup_outdir
 
-	echo "Successfully generated $OUT"
+	info "Successfully generated %s" "$OUT"
 }
 
 
