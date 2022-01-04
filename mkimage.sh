@@ -135,7 +135,7 @@ compress() {
 	# "! newer than" is equivalent to "older or equal than"
 	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
 
-	zstd -10 "$file_src" -o "$file_out.tmp" \
+	zstd -q -10 "$file_src" -o "$file_out.tmp" \
 		|| error "failed to compress %s" "$file_src"
 	mv "$file_out.tmp" "$file_out"
 }
