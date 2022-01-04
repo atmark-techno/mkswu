@@ -3,6 +3,7 @@
 /swupdate.aes-key
 /mkimage.conf
 /mkimage.conf.autosave*
+/initial_setup.desc
 # dot files are usually swu build dirs: ignore all except a few patterns
 .*
 !.gitignore

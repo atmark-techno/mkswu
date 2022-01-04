@@ -1,0 +1,51 @@
+#: init.sh:22
+msgid "Enter certificate common name: "
+msgstr ""
+#: init.sh:25
+msgid "Could not generate swupdate certificate"
+msgstr ""
+#: init.sh:34
+msgid "Use AES encryption? (N/y) "
+msgstr ""
+#: init.sh:56
+msgid "Allow updates signed by Atmark Techno? (Y/n) "
+msgstr ""
+#: init.sh:59
+msgid "root password: "
+msgstr ""
+#: init.sh:62
+msgid "A root password is required"
+msgstr ""
+#: init.sh:65
+msgid "root password (confirm): "
+msgstr ""
+#: init.sh:68
+msgid "Passwords do not match"
+msgstr ""
+#: init.sh:72
+msgid "Could not hash password"
+msgstr ""
+#: init.sh:77
+msgid "atmark user password (empty = same as root): "
+msgstr ""
+#: init.sh:79
+msgid "atmark user password (confirm): "
+msgstr ""
+#: init.sh:82
+msgid "Passwords do not match"
+msgstr ""
+#: init.sh:89
+msgid "Could not hash password"
+msgstr ""
+#: init.sh:95
+msgid "Could not copy initial_setup.desc from example dir"
+msgstr ""
+#: init.sh:99
+msgid "Could not update $desc"
+msgstr ""
+#: init.sh:103
+msgid "Could not update $desc"
+msgstr ""
+#: init.sh:109
+msgid "Could not generate initial setup swu"
+msgstr ""
