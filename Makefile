@@ -15,6 +15,9 @@ po/mkimage.pot: mkimage.sh examples/enable_sshd.desc examples/hawkbit_register.d
 	sed -e 's/info "\|error "/$$"/' < examples/enable_sshd.desc | bash --dump-po-strings | sed -e 's/bash:/enable_sshd.desc:/' >> po/mkimage.pot
 	sed -e 's/info "\|error "/$$"/' < examples/hawkbit_register.desc | bash --dump-po-strings | sed -e 's/bash:/hawkbit_register.desc:/' >> po/mkimage.pot
 
+po/genkey.pot: genkey.sh
+	sed -e 's/info "\|error "/$$"/' < genkey.sh | bash --dump-po-strings | sed -e 's/bash:/genkey.sh:/' > po/genkey.pot
+
 po/init.pot: init.sh
 	bash --dump-po-strings $< > $@
 

@@ -13,37 +13,49 @@ QUIET=
 CURVE=secp256k1
 DAYS=$((5*365))
 
+if command -v gettext >/dev/null; then
+        _gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=genkey gettext "$@"; }
+else
+        _gettext() { printf "%s\n" "$@"; }
+fi
 
 error() {
-	local line
-	printf "%s\n" "$@" >&2
+	local fmt="$1"
+	shift
+	printf "ERROR: $(_gettext "$fmt")\n" "$@" >&2
 	exit 1
 }
 
+info() {
+        local fmt="$1"
+        shift
+        printf "$(_gettext "$fmt")\n" "$@"
+}
+
 usage() {
-	echo "Usage: $0 [options]"
-	echo
-	echo "Options:"
-	echo "  -c, --config  path"
-	echo "  --quiet       Do not output info message after key creation"
-	echo
-	echo "Signing key options:"
-	echo "  --plain       generate signing key without encryption"
-	echo "  --cn          common name for key (mandatory for signing key)"
-	echo
-	echo "Encryption key options:"
-	echo "  --aes         generate aes key instead of default rsa key pair"
+	info "Usage: %s [options]" "$0"
+	info
+	info "Options:"
+	info "  -c, --config  path"
+	info "  --quiet       Do not output info message after key creation"
+	info
+	info "Signing key options:"
+	info "  --plain       generate signing key without encryption"
+	info "  --cn          common name for key (mandatory for signing key)"
+	info
+	info "Encryption key options:"
+	info "  --aes         generate aes key instead of default rsa key pair"
 }
 
 genkey_aes() {
 	local oldumask
 
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
-		echo "Info: using default aes key path"
+		info "Info: using default aes key path"
 		ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
 			'ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"' >> "$CONFIG" \
-			|| error "Could not update default ENCRYPT_KEYFILE in $CONFIG"
+			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
 	fi
 	if [ -s "$ENCRYPT_KEYFILE" ]; then
 		printf "%s\n" "$ENCRYPT_KEYFILE already exists, skipping"
@@ -52,14 +64,14 @@ genkey_aes() {
 
 	oldumask=$(umask)
 	umask 0377
-	ENCRYPT_KEY="$(openssl rand -hex 32)" || error "No openssl?"
+	ENCRYPT_KEY="$(openssl rand -hex 32)" || error "Generating random number failed"
 	printf "%s\n" "$ENCRYPT_KEY $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
 	umask "$oldumask"
 
 	[ -n "$QUIET" ] && return
-	echo "Created encryption keyfile $ENCRYPT_KEYFILE"
-	echo "You must also enable aes encryption with examples/initial_setup.desc"
-	echo "or equivalent"
+	info "Created encryption keyfile %s" "$ENCRYPT_KEYFILE"
+	info "You must also enable aes encryption with examples/initial_setup.desc"
+	info "or equivalent"
 
 }
 
@@ -74,38 +86,38 @@ genkey_rsa() {
 	fi
 	[ -n "$CN" ] || error "Certificate common name must be provided with --cn <name>"
 
-	echo "Creating signing key $PRIVKEY and its public counterpart ${PUBKEY##*/}"
+	info "Creating signing key %s and its public counterpart %s" "$PRIVKEY" "${PUBKEY##*/}"
 
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:"$CURVE" \
 		-keyout "$PRIVKEY" -out "$PUBKEY" -subj "/O=SWUpdate/CN=$CN" \
 		${PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
-		-days "$DAYS"
+		-days "$DAYS" || error "Generating certificate/key pair failed"
 
 	[ -n "$QUIET" ] && return
 
-	echo "$PUBKEY must be copied over to /etc/swupdate.pem on boards."
-	echo "The suggested way is using swupdate:"
-	echo "    ./mkimage.sh examples/initial_setup.desc"
-	echo "Please set user passwords in initial_setup.desc and generate the image."
-	echo "If you would like to encrypt your updates, generate your aes key now with:"
-	echo "    $0 --aes"
+	info "%s must be copied over to /etc/swupdate.pem on boards." "$PUBKEY"
+	info "The suggested way is using swupdate:"
+	info "    ./mkimage.sh examples/initial_setup.desc"
+	info "Please set user passwords in initial_setup.desc and generate the image."
+	info "If you would like to encrypt your updates, generate your aes key now with:"
+	info "    %s --aes" "$0"
 }
 
 while [ $# -ge 1 ]; do
 	case "$1" in
 	"-c"|"--config")
-		[ $# -lt 2 ] && error "$1 requires an argument"
+		[ $# -lt 2 ] && error "%s requires an argument" "$1"
 		CONFIG="$2"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG=$(realpath "$CONFIG")
 		shift 2
 		;;
 	"--cn")
-		[ $# -lt 2 ] && error "$1 requires an argument"
+		[ $# -lt 2 ] && error "%s requires an argument" "$1"
 		CN="$2"
 		shift 2
 		;;
 	"--days")
-		[ $# -lt 2 ] && error "$1 requires an argument"
+		[ $# -lt 2 ] && error "%s requires an argument" "$1"
 		DAYS="$2"
 		shift 2
 		;;
@@ -136,7 +148,7 @@ if ! [ -r "$CONFIG" ]; then
 	[ "${CONFIG##*/}" = "mkimage.conf" ] \
 		&& "$SCRIPT_DIR/mkimage.sh" --mkconf
 	[ -r "$CONFIG" ] \
-		|| error "Config $CONFIG not found - configure paths there or specify config with --config"
+		|| error "Config %s not found - configure paths there or specify config with --config" "$CONFIG"
 fi
 . "$CONFIG"
 

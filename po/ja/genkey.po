@@ -1,0 +1,81 @@
+#: genkey.sh:36
+msgid "Usage: %s [options]"
+msgstr ""
+#: genkey.sh:38
+msgid "Options:"
+msgstr ""
+#: genkey.sh:39
+msgid "  -c, --config  path"
+msgstr ""
+#: genkey.sh:40
+msgid "  --quiet       Do not output info message after key creation"
+msgstr ""
+#: genkey.sh:42
+msgid "Signing key options:"
+msgstr ""
+#: genkey.sh:43
+msgid "  --plain       generate signing key without encryption"
+msgstr ""
+#: genkey.sh:44
+msgid "  --cn          common name for key (mandatory for signing key)"
+msgstr ""
+#: genkey.sh:46
+msgid "Encryption key options:"
+msgstr ""
+#: genkey.sh:47
+msgid "  --aes         generate aes key instead of default rsa key pair"
+msgstr ""
+#: genkey.sh:54
+msgid "Info: using default aes key path"
+msgstr "info: 暗号化鍵のデフォルトパスを使います。"
+#: genkey.sh:58
+msgid "Could not update default ENCRYPT_KEYFILE in %s"
+msgstr "%s にENCRYPT_KEYFILEのデフォルトを書けませんでした。"
+#: genkey.sh:67
+msgid "Generating random number failed"
+msgstr "opensslコマンドが失敗しました。"
+#: genkey.sh:72
+msgid "Created encryption keyfile %s"
+msgstr "暗号化の鍵を作成しました：%s"
+#: genkey.sh:73
+msgid "You must also enable aes encryption with examples/initial_setup.desc"
+msgstr "examples/initial_setup.descで暗号化を有効にしてください。"
+#: genkey.sh:74
+msgid "or equivalent"
+msgstr " "
+#: genkey.sh:82
+msgid "PRIVKEY is not set in config file"
+msgstr ""
+#: genkey.sh:87
+msgid "Certificate common name must be provided with --cn <name>"
+msgstr "--cn <name>で証明書のcommon nameを指定してください。"
+#: genkey.sh:89
+msgid "Creating signing key %s and its public counterpart %s"
+msgstr "証明鍵 %s と証明書 %s を作成します。"
+#: genkey.sh:94
+msgid "Generating certificate/key pair failed"
+msgstr "証明鍵の作成が失敗しました。"
+#: genkey.sh:98
+msgid "%s must be copied over to /etc/swupdate.pem on boards."
+msgstr "%s を /etc/swupdate.pem にコピーしてください。"
+#: genkey.sh:99
+msgid "The suggested way is using swupdate:"
+msgstr "initial_setup イメージを以下のコマンドで作成したらできます："
+#: genkey.sh:100
+msgid "    ./mkimage.sh examples/initial_setup.desc"
+msgstr ""
+#: genkey.sh:101
+msgid "Please set user passwords in initial_setup.desc and generate the image."
+msgstr "ファイルのパスワードを設定してからイメージを作成してください。"
+#: genkey.sh:102
+msgid "If you would like to encrypt your updates, generate your aes key now with:"
+msgstr "イメージを暗号化しましたらAES鍵も先に作成してください："
+#: genkey.sh:103
+msgid "    %s --aes"
+msgstr ""
+#: genkey.sh:109
+msgid "%s requires an argument"
+msgstr "%s に引きすが必要です。"
+#: genkey.sh:151
+msgid "Config %s not found - configure paths there or specify config with --config"
+msgstr "%s のコンフィグファイルが存在しません。--configで指定してください。"
