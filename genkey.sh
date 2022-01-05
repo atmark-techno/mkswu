@@ -15,22 +15,32 @@ CURVE=secp256k1
 DAYS=$((5*365))
 
 if command -v gettext >/dev/null; then
-        _gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=genkey gettext "$@"; }
+        _gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=genkey gettext -- "$@"; }
 else
-        _gettext() { printf "%s\n" "$@"; }
+        _gettext() { printf -- "%s" "$@"; }
 fi
 
 error() {
+	if [ "$#" = "0" ] || [ -z "$1" ]; then
+		error "Error called without format string!"
+		exit 1
+	fi
+
 	local fmt="$1"
 	shift
-	printf "ERROR: $(_gettext "$fmt")\n" "$@" >&2
+	printf -- "ERROR: $(_gettext "$fmt")\n" "$@" >&2
 	exit 1
 }
 
 info() {
+	if [ "$#" = "0" ] || [ -z "$1" ]; then
+		echo
+		return
+	fi
+
         local fmt="$1"
         shift
-        printf "$(_gettext "$fmt")\n" "$@"
+        printf -- "$(_gettext "$fmt")\n" "$@"
 }
 
 usage() {

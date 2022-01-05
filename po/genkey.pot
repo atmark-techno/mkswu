@@ -3,6 +3,9 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8"
 #: genkey.sh
+msgid "Error called without format string!"
+msgstr ""
+#: genkey.sh
 msgid "Usage: %s [options]"
 msgstr ""
 #: genkey.sh

@@ -3,6 +3,9 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8"
 #: mkimage.sh
+msgid "Error called without format string!"
+msgstr ""
+#: mkimage.sh
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
 #: mkimage.sh
@@ -277,9 +280,6 @@ msgid "Cannot return to %s we were in before"
 msgstr ""
 #: mkimage.sh
 msgid "No or empty desc given?"
-msgstr ""
-#: mkimage.sh
-msgid "----------------"
 msgstr ""
 #: mkimage.sh
 msgid "You have sideloaded containers, copy all these files to USB drive:"

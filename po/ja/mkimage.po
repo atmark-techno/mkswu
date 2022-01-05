@@ -3,6 +3,10 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 
 #: mkimage.sh
+msgid "Error called without format string!"
+msgstr "不明なエラーが発生しました。"
+
+#: mkimage.sh
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
 

@@ -8,10 +8,15 @@
 if command -v gettext >/dev/null; then
 	_gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=mkimage gettext -- "$@"; }
 else
-	_gettext() { printf -- "%s\n" "$@"; }
+	_gettext() { printf -- "%s" "$@"; }
 fi
 
 error() {
+	if [ "$#" = "0" ] || [ -z "$1" ]; then
+		error "Error called without format string!"
+		exit 1
+	fi
+
 	local fmt="$1"
 	shift
 	printf -- "ERROR: $(_gettext "$fmt")\n" "$@" >&2
@@ -19,6 +24,11 @@ error() {
 }
 
 info() {
+	if [ "$#" = "0" ] || [ -z "$1" ]; then
+		echo
+		return
+	fi
+
 	local fmt="$1"
 	shift
 	printf -- "$(_gettext "$fmt")\n" "$@"
@@ -1100,9 +1110,9 @@ sw-description.sig"
 	make_cpio
 
 	if [ -n "$COPY_USB" ]; then
-		info "----------------"
 		info "You have sideloaded containers, copy all these files to USB drive:"
 		info "%s" "$(shell_quote "$(realpath "$OUT")") $COPY_USB"
+		info
 	fi
 
 	cleanup_outdir

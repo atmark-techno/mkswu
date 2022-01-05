@@ -3,6 +3,10 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 
 #: genkey.sh
+msgid "Error called without format string!"
+msgstr "不明なエラーが発生しました。"
+
+#: genkey.sh
 msgid "Usage: %s [options]"
 msgstr ""
 
@@ -64,7 +68,7 @@ msgstr " "
 
 #: genkey.sh
 msgid "PRIVKEY is not set in config file"
-msgstr ""
+msgstr "PRIVKEY変数を設定してください。"
 
 #: genkey.sh
 msgid "Certificate common name must be provided with --cn <name>"
