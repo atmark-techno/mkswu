@@ -138,7 +138,7 @@ mkimageinitswu() {
 	info ""
 	info $"Note that once installed, you must preserve this directory as losing"
 	info $"key files means you will no longer be able to install new updates without"
-	info $"manually adjusting /etc/swupdate.pem on clients"
+	info $"manually adjusting /etc/swupdate.pem on devices"
 }
 
 

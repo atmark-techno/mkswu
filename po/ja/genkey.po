@@ -79,8 +79,8 @@ msgid "Generating certificate/key pair failed"
 msgstr "証明鍵の作成が失敗しました。"
 
 #: genkey.sh:99
-msgid "%s must be copied over to /etc/swupdate.pem on boards."
-msgstr "%s を /etc/swupdate.pem にコピーしてください。"
+msgid "%s must be copied over to /etc/swupdate.pem on devices."
+msgstr "%s をデバイスの /etc/swupdate.pem にコピーしてください。"
 
 #: genkey.sh:100
 msgid "The suggested way is using swupdate:"

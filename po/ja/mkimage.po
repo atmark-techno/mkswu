@@ -113,7 +113,6 @@ msgid "Could not link %s to %s"
 msgstr "%s を %s にリンクできませんでした。"
 
 #: mkimage.sh:121
-#, fuzzy
 msgid ""
 "AES encryption key %s was set but not found.\\nPlease create it with genkey."
 "sh --aes"

@@ -60,7 +60,7 @@ msgstr ""
 msgid "Generating certificate/key pair failed"
 msgstr ""
 #: genkey.sh:99
-msgid "%s must be copied over to /etc/swupdate.pem on boards."
+msgid "%s must be copied over to /etc/swupdate.pem on devices."
 msgstr ""
 #: genkey.sh:100
 msgid "The suggested way is using swupdate:"

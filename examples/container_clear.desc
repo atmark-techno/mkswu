@@ -1,5 +1,5 @@
 # CONTAINER_CLEAR will remove your applications before installing new ones
-# so could leave your board without any software on installation failures!
+# so could leave your device without any software on installation failures!
 # !! Do not use in production !!
 CONTAINER_CLEAR=1
 FORCE_VERSION=1

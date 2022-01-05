@@ -96,7 +96,7 @@ genkey_rsa() {
 
 	[ -n "$QUIET" ] && return
 
-	info "%s must be copied over to /etc/swupdate.pem on boards." "$PUBKEY"
+	info "%s must be copied over to /etc/swupdate.pem on devices." "$PUBKEY"
 	info "The suggested way is using swupdate:"
 	info "    ./mkimage.sh examples/initial_setup.desc"
 	info "Please set user passwords in initial_setup.desc and generate the image."

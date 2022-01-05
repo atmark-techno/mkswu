@@ -66,7 +66,7 @@ msgstr ""
 msgid "key files means you will no longer be able to install new updates without"
 msgstr ""
 #: init.sh:141
-msgid "manually adjusting /etc/swupdate.pem on clients"
+msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr ""
 #: init.sh:150
 msgid "Config $CONFIG not found"
