@@ -230,7 +230,7 @@ EOF
 				/target/etc/containers/storage.conf \
 				|| error "could not rewrite storage.conf"
 		fi
-		if needs_update "base_os"; then
+		if update_baseos; then
 			baseos_upgrade_fixes
 			post_copy_preserve_files
 		fi

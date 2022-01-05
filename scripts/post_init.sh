@@ -17,8 +17,9 @@ init() {
 		needs_reboot=1
 	fi
 
-	if [ -e "$SCRIPTSDIR/update_rootfs" ]; then
-		update_rootfs=1
+	if [ -f "$SCRIPTSDIR/update_rootfs" ]; then
+		update_rootfs=$(cat "$SCRIPTSDIR/update_rootfs") \
+			|| error "Could not read update_rootfs variable but file existed?!"
 	fi
 }
 

@@ -144,6 +144,10 @@ update_rootfs() {
 	[ -n "$update_rootfs" ]
 }
 
+update_baseos() {
+	[ "$update_rootfs" = "baseos" ]
+}
+
 cleanup() {
 	remove_bootdev_link
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay

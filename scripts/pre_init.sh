@@ -36,7 +36,9 @@ init_vars() {
 	# non-fatal if not present
 	board=$(awk '{print $1; exit}' /etc/hwrevision 2>/dev/null)
 
-	if needs_update base_os || needs_update_regex "extra_os.*" \
+	if needs_update base_os; then
+		update_rootfs=baseos
+	elif needs_update_regex "extra_os.*" \
 	    || grep -q "CONTAINER_CLEAR" "$SWDESC"; then
 		update_rootfs=1
 	fi
@@ -55,7 +57,7 @@ save_vars() {
 			|| error "Could not save need to reboot variable"
 	fi
 	if update_rootfs; then
-		touch "$SCRIPTSDIR/update_rootfs" \
+		echo "$update_rootfs" > "$SCRIPTSDIR/update_rootfs" \
 			|| error "Could not save rootfs update variable"
 	fi
 }
