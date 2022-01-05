@@ -2,84 +2,84 @@
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8"
-#: genkey.sh:37
+#: genkey.sh
 msgid "Usage: %s [options]"
 msgstr ""
-#: genkey.sh:39
+#: genkey.sh
 msgid "Options:"
 msgstr ""
-#: genkey.sh:40
+#: genkey.sh
 msgid "  -c, --config  path"
 msgstr ""
-#: genkey.sh:41
+#: genkey.sh
 msgid "  --quiet       Do not output info message after key creation"
 msgstr ""
-#: genkey.sh:43
+#: genkey.sh
 msgid "Signing key options:"
 msgstr ""
-#: genkey.sh:44
+#: genkey.sh
 msgid "  --plain       generate signing key without encryption"
 msgstr ""
-#: genkey.sh:45
+#: genkey.sh
 msgid "  --cn          common name for key (mandatory for signing key)"
 msgstr ""
-#: genkey.sh:47
+#: genkey.sh
 msgid "Encryption key options:"
 msgstr ""
-#: genkey.sh:48
+#: genkey.sh
 msgid "  --aes         generate aes key instead of default rsa key pair"
 msgstr ""
-#: genkey.sh:55
+#: genkey.sh
 msgid "Info: using default aes key path"
 msgstr ""
-#: genkey.sh:59
+#: genkey.sh
 msgid "Could not update default ENCRYPT_KEYFILE in %s"
 msgstr ""
-#: genkey.sh:68
+#: genkey.sh
 msgid "Generating random number failed"
 msgstr ""
-#: genkey.sh:73
+#: genkey.sh
 msgid "Created encryption keyfile %s"
 msgstr ""
-#: genkey.sh:74
+#: genkey.sh
 msgid "You must also enable aes encryption with examples/initial_setup.desc"
 msgstr ""
-#: genkey.sh:75
+#: genkey.sh
 msgid "or equivalent"
 msgstr ""
-#: genkey.sh:83
+#: genkey.sh
 msgid "PRIVKEY is not set in config file"
 msgstr ""
-#: genkey.sh:88
+#: genkey.sh
 msgid "Certificate common name must be provided with --cn <name>"
 msgstr ""
-#: genkey.sh:90
+#: genkey.sh
 msgid "Creating signing key %s and its public counterpart %s"
 msgstr ""
-#: genkey.sh:95
+#: genkey.sh
 msgid "Generating certificate/key pair failed"
 msgstr ""
-#: genkey.sh:99
+#: genkey.sh
 msgid "%s must be copied over to /etc/swupdate.pem on devices."
 msgstr ""
-#: genkey.sh:100
+#: genkey.sh
 msgid "The suggested way is using swupdate:"
 msgstr ""
-#: genkey.sh:101
+#: genkey.sh
 msgid "    ./mkimage.sh examples/initial_setup.desc"
 msgstr ""
-#: genkey.sh:102
+#: genkey.sh
 msgid "Please set user passwords in initial_setup.desc and generate the image."
 msgstr ""
-#: genkey.sh:103
+#: genkey.sh
 msgid "If you would like to encrypt your updates, generate your aes key now with:"
 msgstr ""
-#: genkey.sh:104
+#: genkey.sh
 msgid "    %s --aes"
 msgstr ""
-#: genkey.sh:110
+#: genkey.sh
 msgid "%s requires an argument"
 msgstr ""
-#: genkey.sh:152
+#: genkey.sh
 msgid "Config %s not found - configure paths there or specify config with --config"
 msgstr ""

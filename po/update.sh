@@ -5,11 +5,12 @@ dump_po_strings() {
 	local script="$1"
 
 	if head -n 1 "$script" | grep -q bash; then
-		bash --dump-po-strings "$script"
+		bash --dump-po-strings "$script" \
+			| sed -e 's@^\(#.*\):[0-9]*@\1@'
 	else
 		sed -e 's/info "\|error "/$"/' < "$script" \
 			| bash --dump-po-strings \
-			| sed -e 's@bash:@'"$script"':@'
+			| sed -e 's@bash:[0-9]*@'"$script"'@'
 	fi
 }
 

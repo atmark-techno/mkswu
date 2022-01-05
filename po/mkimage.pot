@@ -2,297 +2,297 @@
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8"
-#: mkimage.sh:28
+#: mkimage.sh
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
-#: mkimage.sh:30
+#: mkimage.sh
 msgid "Options:"
 msgstr ""
-#: mkimage.sh:31
+#: mkimage.sh
 msgid "  -c, --config <conf>     path to config (default mkimage.conf)"
 msgstr ""
-#: mkimage.sh:32
+#: mkimage.sh
 msgid "  -o, --out <out.swu>     path to output file (default from first desc's name)"
 msgstr ""
-#: mkimage.sh:33
+#: mkimage.sh
 msgid "  --mkconf                generate default config file"
 msgstr ""
-#: mkimage.sh:34
+#: mkimage.sh
 msgid "  desc                    image description file(s), if multiple are given"
 msgstr ""
-#: mkimage.sh:35
+#: mkimage.sh
 msgid "                          then the generated image will merge all the contents"
 msgstr ""
-#: mkimage.sh:37
+#: mkimage.sh
 msgid "desc file syntax:"
 msgstr ""
-#: mkimage.sh:38
+#: mkimage.sh
 msgid "  descriptions are imperative declarations building an image, the following"
 msgstr ""
-#: mkimage.sh:39
+#: mkimage.sh
 msgid "  commands available (see README for details):"
 msgstr ""
-#: mkimage.sh:40
+#: mkimage.sh
 msgid "  - swdesc_boot <bootfile>"
 msgstr ""
-#: mkimage.sh:41
+#: mkimage.sh
 msgid "  - swdesc_tar <tar_file> [--dest <dest>]"
 msgstr ""
-#: mkimage.sh:42
+#: mkimage.sh
 msgid "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
 msgstr ""
-#: mkimage.sh:43
+#: mkimage.sh
 msgid "  - swdesc_command '<cmd>'"
 msgstr ""
-#: mkimage.sh:44
+#: mkimage.sh
 msgid "  - swdesc_script <script>"
 msgstr ""
-#: mkimage.sh:45
+#: mkimage.sh
 msgid "  - swdesc_exec <file> '<cmd>' (file is \\$1 in command)"
 msgstr ""
-#: mkimage.sh:46
+#: mkimage.sh
 msgid "  - swdesc_embed_container <image_archive>"
 msgstr ""
-#: mkimage.sh:47
+#: mkimage.sh
 msgid "  - swdesc_usb_container <image_archive>"
 msgstr ""
-#: mkimage.sh:48
+#: mkimage.sh
 msgid "  - swdesc_pull_container <image_url>"
 msgstr ""
-#: mkimage.sh:50
+#: mkimage.sh
 msgid "In most cases --version <component> <version> should be set,"
 msgstr ""
-#: mkimage.sh:51
+#: mkimage.sh
 msgid "<component> must be extra_os.* in order to update rootfs"
 msgstr ""
-#: mkimage.sh:77
+#: mkimage.sh
 msgid "Cannot find source file: %s"
 msgstr ""
-#: mkimage.sh:82
+#: mkimage.sh
 msgid "Could not remove previous link at %s"
 msgstr ""
-#: mkimage.sh:85
+#: mkimage.sh
 msgid "Could not remove previous file at %s"
 msgstr ""
-#: mkimage.sh:93
+#: mkimage.sh
 msgid "Could not copy %s to %s"
 msgstr ""
-#: mkimage.sh:95
+#: mkimage.sh
 msgid "Could not link %s to %s"
 msgstr ""
-#: mkimage.sh:121
+#: mkimage.sh
 msgid "AES encryption key %s was set but not found.\\nPlease create it with genkey.sh --aes"
 msgstr ""
-#: mkimage.sh:139
+#: mkimage.sh
 msgid "failed to compress %s"
 msgstr ""
-#: mkimage.sh:152
+#: mkimage.sh
 msgid "Missing source file: %s"
 msgstr ""
-#: mkimage.sh:197
+#: mkimage.sh
 msgid "failed to encrypt %s"
 msgstr ""
-#: mkimage.sh:214
+#: mkimage.sh
 msgid "Checksumming %s failed"
 msgstr ""
-#: mkimage.sh:224
+#: mkimage.sh
 msgid "component %s was set with empty version"
 msgstr ""
-#: mkimage.sh:236
+#: mkimage.sh
 msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
 msgstr ""
-#: mkimage.sh:249
+#: mkimage.sh
 msgid "base_os version %s must be in x[.y[.z]]-t format"
 msgstr ""
-#: mkimage.sh:264
+#: mkimage.sh
 msgid "version check failed for %s: %s must be <= %s"
 msgstr ""
-#: mkimage.sh:265
+#: mkimage.sh
 msgid "version check failed for %s: %s must not mix alpha and digits"
 msgstr ""
-#: mkimage.sh:289
+#: mkimage.sh
 msgid "metadata (+ part) in semver are ignored by swupdate, please use something else than %s"
 msgstr ""
-#: mkimage.sh:292
+#: mkimage.sh
 msgid "install_if must be higher or different"
 msgstr ""
-#: mkimage.sh:294
+#: mkimage.sh
 msgid "component must not contain spaces (%s)"
 msgstr ""
-#: mkimage.sh:295
+#: mkimage.sh
 msgid "version must not contain spaces (%s = %s)"
 msgstr ""
-#: mkimage.sh:303
+#: mkimage.sh
 msgid "version %s was set without associated component"
 msgstr ""
-#: mkimage.sh:307
+#: mkimage.sh
 msgid "use as main version requested but component/version not set?"
 msgstr ""
-#: mkimage.sh:353
+#: mkimage.sh
 msgid "%s requires an argument"
 msgstr ""
-#: mkimage.sh:358
+#: mkimage.sh
 msgid "%s requires <component> <version> arguments"
 msgstr ""
-#: mkimage.sh:371
+#: mkimage.sh
 msgid "--install-if must be higher or different"
 msgstr ""
-#: mkimage.sh:377
+#: mkimage.sh
 msgid "%s only allowed for swdesc_files and swdesc_tar"
 msgstr ""
-#: mkimage.sh:391
+#: mkimage.sh
 msgid "%s only allowed for swdesc_files"
 msgstr ""
-#: mkimage.sh:402
+#: mkimage.sh
 msgid "%s is not a known %s argument"
 msgstr ""
-#: mkimage.sh:412
+#: mkimage.sh
 msgid "Usage: swdesc_boot [options] boot_file"
 msgstr ""
-#: mkimage.sh:417
+#: mkimage.sh
 msgid "Usage: swdesc_tar [options] file.tar"
 msgstr ""
-#: mkimage.sh:422
+#: mkimage.sh
 msgid "Usage: swdesc_files [options] file [files...]"
 msgstr ""
-#: mkimage.sh:427
+#: mkimage.sh
 msgid "Usage: swdesc_command [options] cmd [cmd..]"
 msgstr ""
-#: mkimage.sh:435
+#: mkimage.sh
 msgid "Usage: swdesc_script [options] script"
 msgstr ""
-#: mkimage.sh:440
+#: mkimage.sh
 msgid "Usage: swdesc_exec [options] file command"
 msgstr ""
-#: mkimage.sh:450
+#: mkimage.sh
 msgid "Usage: %s [options] image"
 msgstr ""
-#: mkimage.sh:454
+#: mkimage.sh
 msgid "Unhandled command %s"
 msgstr ""
-#: mkimage.sh:475
+#: mkimage.sh
 msgid "Cannot stat boot file: %s"
 msgstr ""
-#: mkimage.sh:477
+#: mkimage.sh
 msgid "BOOT_SIZE set smaller than boot file actual size"
 msgstr ""
-#: mkimage.sh:494
+#: mkimage.sh
 msgid "Version component for swdesc_boot must be set to boot"
 msgstr ""
-#: mkimage.sh:498
+#: mkimage.sh
 msgid "Could not guess boot version in %s"
 msgstr ""
-#: mkimage.sh:522
+#: mkimage.sh
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr ""
-#: mkimage.sh:533
+#: mkimage.sh
 msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes"
 msgstr ""
-#: mkimage.sh:536
+#: mkimage.sh
 msgid ".. is not allowed in destination path for volume update"
 msgstr ""
-#: mkimage.sh:548
+#: mkimage.sh
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
 msgstr ""
-#: mkimage.sh:582
+#: mkimage.sh
 msgid "%s does not exist\\nplease note swdesc_files syntax changed and no longer requires setting a name"
 msgstr ""
-#: mkimage.sh:590
+#: mkimage.sh
 msgid "%s does not exist?"
 msgstr ""
-#: mkimage.sh:592
+#: mkimage.sh
 msgid "%s is not inside %s"
 msgstr ""
-#: mkimage.sh:605
+#: mkimage.sh
 msgid "Could not create tar for %s"
 msgstr ""
-#: mkimage.sh:752
+#: mkimage.sh
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
 msgstr ""
-#: mkimage.sh:753
+#: mkimage.sh
 msgid "you might want to keep the archive as simple .tar"
 msgstr ""
-#: mkimage.sh:776
+#: mkimage.sh
 msgid "Could not create script.tar"
 msgstr ""
-#: mkimage.sh:800
+#: mkimage.sh
 msgid "DESCRIPTION must be set"
 msgstr ""
-#: mkimage.sh:817
+#: mkimage.sh
 msgid "HW_COMPAT or HW_COMPAT_%s must be set"
 msgstr ""
-#: mkimage.sh:836
+#: mkimage.sh
 msgid "HW_COMPAT must be set"
 msgstr ""
-#: mkimage.sh:861
+#: mkimage.sh
 msgid "above component used multiple times with different versions or install-if mode"
 msgstr ""
-#: mkimage.sh:865
+#: mkimage.sh
 msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
 msgstr ""
-#: mkimage.sh:874
+#: mkimage.sh
 msgid "invalid POST_ACTION \\\"%s\\\", must be empty, poweroff or wait"
 msgstr ""
-#: mkimage.sh:891
+#: mkimage.sh
 msgid "Please set user passwords (usermod command in .desc)"
 msgstr ""
-#: mkimage.sh:900
+#: mkimage.sh
 msgid "PRIVKEY must be set"
 msgstr ""
-#: mkimage.sh:901
+#: mkimage.sh
 msgid "PUBKEY must be set"
 msgstr ""
-#: mkimage.sh:902
+#: mkimage.sh
 msgid "Cannot read PRIVKEY: %s"
 msgstr ""
-#: mkimage.sh:903
+#: mkimage.sh
 msgid "Cannot read PUBKEY: %s"
 msgstr ""
-#: mkimage.sh:909
+#: mkimage.sh
 msgid "Could not sign %s"
 msgstr ""
-#: mkimage.sh:922
+#: mkimage.sh
 msgid "Could not enter %s"
 msgstr ""
-#: mkimage.sh:928
+#: mkimage.sh
 msgid "cpio does not contain files we requested (in the order we requested): check %s"
 msgstr ""
-#: mkimage.sh:989
+#: mkimage.sh
 msgid "Could not update default config"
 msgstr ""
-#: mkimage.sh:1002
+#: mkimage.sh
 msgid "Could not get script dir"
 msgstr ""
-#: mkimage.sh:1040
+#: mkimage.sh
 msgid "%s must end with .swu"
 msgstr ""
-#: mkimage.sh:1064
+#: mkimage.sh
 msgid "%s does not exist"
 msgstr ""
-#: mkimage.sh:1082
+#: mkimage.sh
 msgid "cannot enter %s directory"
 msgstr ""
-#: mkimage.sh:1087
+#: mkimage.sh
 msgid "Cannot return to %s we were in before"
 msgstr ""
-#: mkimage.sh:1091
+#: mkimage.sh
 msgid "No or empty desc given?"
 msgstr ""
-#: mkimage.sh:1103
+#: mkimage.sh
 msgid "----------------"
 msgstr ""
-#: mkimage.sh:1104
+#: mkimage.sh
 msgid "You have sideloaded containers, copy all these files to USB drive:"
 msgstr ""
-#: mkimage.sh:1105
+#: mkimage.sh
 msgid "%s"
 msgstr ""
-#: mkimage.sh:1110
+#: mkimage.sh
 msgid "Successfully generated %s"
 msgstr ""
-#: examples/enable_sshd.desc:4
+#: examples/enable_sshd.desc
 msgid "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
 msgstr ""
-#: examples/hawkbit_register.desc:5
+#: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr ""
