@@ -87,6 +87,20 @@ msgstr ""
 "このコマンドで作成してください： \\\"$SCRIPT_DIR/mkimage.sh\\\" \\"
 "\"$SCRIPT_DIR/initial_setup.desc\\\" other_desc_files"
 
-#: init.sh:146
+#: init.sh:139
+msgid "Note that once installed, you must preserve this directory as losing"
+msgstr ""
+"インストールしたら、このディレクトリをなくさないように気をつけてください。"
+
+#: init.sh:140
+msgid ""
+"key files means you will no longer be able to install new updates without"
+msgstr "鍵をなくしましたら新たなアップデートをクライアントの /etc/swupdate.pem"
+
+#: init.sh:141
+msgid "manually adjusting /etc/swupdate.pem on clients"
+msgstr "を直さないとインストールできなくなります。"
+
+#: init.sh:150
 msgid "Config $CONFIG not found"
 msgstr "$CONFIG を見つかりませんでした。"

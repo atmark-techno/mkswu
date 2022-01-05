@@ -59,6 +59,15 @@ msgstr ""
 #: init.sh:137
 msgid "with extra modules with \\\"$SCRIPT_DIR/mkimage.sh\\\" \\\"$SCRIPT_DIR/initial_setup.desc\\\" other_desc_files"
 msgstr ""
-#: init.sh:146
+#: init.sh:139
+msgid "Note that once installed, you must preserve this directory as losing"
+msgstr ""
+#: init.sh:140
+msgid "key files means you will no longer be able to install new updates without"
+msgstr ""
+#: init.sh:141
+msgid "manually adjusting /etc/swupdate.pem on clients"
+msgstr ""
+#: init.sh:150
 msgid "Config $CONFIG not found"
 msgstr ""

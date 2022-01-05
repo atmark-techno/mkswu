@@ -135,6 +135,10 @@ mkimageinitswu() {
 	echo
 	info $"You can use \"$SCRIPT_DIR/initial_setup.swu\" as is or regenerate an image"
 	info $"with extra modules with \"$SCRIPT_DIR/mkimage.sh\" \"$SCRIPT_DIR/initial_setup.desc\" other_desc_files"
+	info ""
+	info $"Note that once installed, you must preserve this directory as losing"
+	info $"key files means you will no longer be able to install new updates without"
+	info $"manually adjusting /etc/swupdate.pem on clients"
 }
 
 

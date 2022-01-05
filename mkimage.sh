@@ -118,8 +118,8 @@ encrypt_file() {
 setup_encryption() {
 	[ -z "$ENCRYPT_KEYFILE" ] && return
 	[ -e "$ENCRYPT_KEYFILE" ] \
-		|| error "AES encryption key %s was set but not found.\nPlease create it with genkey.sh --aes \"%s\"" \
-			"$ENCRYPT_KEYFILE" "$ENCRYPT_KEYFILE"
+		|| error "AES encryption key %s was set but not found.\nPlease create it with genkey.sh --aes" \
+			"$ENCRYPT_KEYFILE"
 	ENCRYPT_KEY=$(cat "$ENCRYPT_KEYFILE")
 	# XXX if sw-description gets encrypted, its iv is here
 	ENCRYPT_KEY="${ENCRYPT_KEY% *}"
@@ -533,7 +533,7 @@ swdesc_tar() {
 				&& error "OS is only writable for base/extra_os updates and dest (%s) is not within volumes" "$dest"
 			;;
 		..*|*/../*|*/..)
-			error ".. is not allowed in destination path for os"
+			error ".. is not allowed in destination path for volume update"
 			;;
 		*)
 			dest="/var/app/rollback/volumes/$dest"
@@ -871,7 +871,7 @@ EOF
 	wait) echo " #POSTACT_WAIT";;
 	container) echo " #POSTACT_CONTAINER";;
 	""|reboot) ;;
-	*) error "invalid POST_ACTION \"$POST_ACTION\", must be empty, poweroff or wait";;
+	*) error "invalid POST_ACTION \"%s\", must be empty, poweroff or wait" "$POST_ACTION";;
 	esac
 
 	# and also add extra debug comments
