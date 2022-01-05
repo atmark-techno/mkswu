@@ -4,6 +4,11 @@ breaking changes:
  - desc files: disallow using the same component with multiple versions
 previously the highest version would be kept for updating sw-versions, but
 this is no longer manageable with install-if different.
+- versions: disallow alnum mix in semver versions (e.g. 1.2.3-abc1),
+Because swupdate ordering and sort -V have different behaviour there.
+- versions: also check for previously incorrectly identical versions
+when using install-if different (big numbers in semver, + part of semver)
+
 
 features:
  - version management: allow different versions for same component if
@@ -13,6 +18,7 @@ This can be useful to get more coherent behaviour with hawkbit
  - swdesc_tar/files: make relative paths relative to
 /var/app/rollback/volumes for non-os upates. forbid '../'s, and
 also forbid relative paths for os.
+- Japanese translation if LC_MESSAGES is set to ja*
 
 fixes:
  - examples/kernel_update_plain: fix comment, add modules

@@ -26,13 +26,20 @@ build_check exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 build_fail ../examples/initial_setup
 build_fail files_os_nonabs_fail
 build_fail files_dotdot_fail
+build_fail version_toobig_fail
+build_fail version_toobig2_fail
+build_fail version_alnum_fail
+build_fail version_alnum2_fail
+build_fail version_non_alnum_fail
+build_fail version_component_space_fail
+build_fail version_space_fail
 
 rm -f zoo/hardlink zoo/hardlink2
 echo foo > zoo/hardlink
 ln zoo/hardlink zoo/hardlink2
 build_check hardlink_order
-[ "$(cpio -t < out/hardlink_order.swu)" = "sw-description
+[ "$(cpio --quiet -t < out/hardlink_order.swu)" = "sw-description
 sw-description.sig
 scripts.tar.zst
 hardlink
-swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio -t < out/hardlink_order.swu)"
+swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"

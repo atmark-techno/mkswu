@@ -147,7 +147,7 @@ write_entry_stdout() {
 	local compress="$compress"
 	local install_if="$install_if"
 	shift
-	local sha256 iv
+	local sha256 iv err
 
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
 
@@ -251,16 +251,44 @@ $file"
 				# semver, signed int
 				max=2147483647
 			fi
-			printf %s "$version" | tr '.-' '\n' | awk '
+			err=$(printf %s "$version" | tr '.-' '\n' | awk '
 				/^[0-9]+$/ && $1 > '$max' {
-					print $1 " must be <= '$max'";
-					exit(1);
+					print "1 " $1;
+					exit
 				}
 				/[0-9][a-zA-Z]|[a-zA-Z][0-9]/ {
-					print "WARNING: " $1 " will be sorted alphabetically";
-				}' >&2 || error "version check failed: %s" "$version"
+					print "2 " $1;
+					exit
+				}')
+			case "$err" in
+			1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
+			2\ *) error "version check failed for %s: %s must not mix alpha and digits" "$version" "${err#* }";;
+			esac
 			;;
-		different) ;;
+		different)
+			# different still goes through integer parsing, but is more relaxed
+			# as different ordering does not matter, and pure lexicographical
+			# is also allowed... Who said painful ?...
+			if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Z  a-z0-9.-]+)?$'; then
+				# same max check as above without mixed alnum check
+				local max=2147483647
+				[ "${version%-*}" = "${version}" ] \
+					&& printf %s "${version}" | grep -qE '\..*\..*\.' \
+					&& max=65535
+				err=$(printf %s "$version" | tr '.-' '\n' | awk '
+					/^[0-9]+$/ && $1 > '$max' {
+						print "1 " $1;
+						exit
+					}')
+				case "$err" in
+				1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
+				esac
+			else
+				# Oh, and semvers with + are also identical!...
+				printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Z  a-z0-9.-+]+)?$' \
+					&& error "metadata (+ part) in semver are ignored by swupdate, please use something else than %s"
+			fi
+	 ;;
 		*) error "install_if must be higher or different";;
 		esac
 		[ "${component#* }" = "$component" ] || error "component must not contain spaces (%s)" "$component"

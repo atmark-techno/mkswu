@@ -21,7 +21,7 @@ check() {
 	file)
 		[ $# -gt 0 ] || error "file check has no argument"
 		for file; do
-			cpio -t < "$swu"| grep -qx "$file" ||
+			cpio --quiet -t < "$swu"| grep -qx "$file" ||
 				error "$file not in swu"
 		done
 		;;
