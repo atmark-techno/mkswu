@@ -11,6 +11,21 @@ else
 	_gettext() { printf -- "%s" "$@"; }
 fi
 
+printmsg() {
+	local level=$1
+	shift
+	[ "$VERBOSE" -lt "$level" ] && return
+
+	if [ "$#" = "0" ] || [ -z "$1" ]; then
+		echo
+		return
+	fi
+
+	local fmt="$1"
+	shift
+	printf -- "$(_gettext "$fmt")\n" "$@"
+}
+
 error() {
 	if [ "$#" = "0" ] || [ -z "$1" ]; then
 		error "Error called without format string!"
@@ -23,27 +38,20 @@ error() {
 	exit 1
 }
 
+warning() {
+	printmsg 1 "$@" >&2
+}
+
 info() {
-	[ "$VERBOSE" -lt 1 ] && return
-
-	if [ "$#" = "0" ] || [ -z "$1" ]; then
-		echo
-		return
-	fi
-
-	local fmt="$1"
-	shift
-	printf -- "$(_gettext "$fmt")\n" "$@"
+	printmsg 2 "$@"
 }
 
 trace() {
-	[ "$VERBOSE" -lt 2 ] && return
-	printf "%s\n" "$@" >&2
+	printmsg 3 "$@" >&2
 }
 
 debug() {
-	[ "$VERBOSE" -lt 3 ] && return
-	printf "%s\n" "$@" >&2
+	printmsg 4 "$@" >&2
 }
 
 usage() {
@@ -1040,7 +1048,7 @@ genkey_aes() {
 			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
 	fi
 	if [ -s "$ENCRYPT_KEYFILE" ]; then
-		info "%s already exists, skipping" "$ENCRYPT_KEYFILE"
+		warning "%s already exists, skipping" "$ENCRYPT_KEYFILE"
 		return
 	fi
 
@@ -1096,7 +1104,7 @@ mkimage() {
 sw-description.sig"
 	local FIRST_SWDESC_INIT=1
 	local COPY_USB=""
-	local VERBOSE=1
+	local VERBOSE=2
 
 	# config file variables
 	local PRIVKEY PUBKEY PRIVKEY_PASS
