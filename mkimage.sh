@@ -24,6 +24,8 @@ error() {
 }
 
 info() {
+	[ "$VERBOSE" -lt 1 ] && return
+
 	if [ "$#" = "0" ] || [ -z "$1" ]; then
 		echo
 		return
@@ -32,6 +34,16 @@ info() {
 	local fmt="$1"
 	shift
 	printf -- "$(_gettext "$fmt")\n" "$@"
+}
+
+trace() {
+	[ "$VERBOSE" -lt 2 ] && return
+	printf "%s\n" "$@" >&2
+}
+
+debug() {
+	[ "$VERBOSE" -lt 3 ] && return
+	printf "%s\n" "$@" >&2
 }
 
 usage() {
@@ -159,6 +171,7 @@ write_entry_stdout() {
 	shift
 	local sha256 iv err
 
+	trace "Processing $file"
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
 
 	if [ -n "$compress" ]; then
@@ -1020,6 +1033,7 @@ mkimage() {
 sw-description.sig"
 	local FIRST_SWDESC_INIT=1
 	local COPY_USB=""
+	local VERBOSE=1
 
 	# default default values
 	local BOOT_SIZE="4M"
@@ -1038,6 +1052,10 @@ sw-description.sig"
 			SKIP=$((SKIP-1))
 			continue
 		fi
+		if [ "$SKIP" -lt 0 ]; then
+			set -- "$@" "$ARG"
+			continue
+		fi
 		case "$ARG" in
 		"-c"|"--config")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
@@ -1050,9 +1068,19 @@ sw-description.sig"
 			[ "${OUT%.swu}" != "$OUT" ] || error "%s must end with .swu" "$OUT"
 			SKIP=1
 			;;
+		"-v"|"--verbose")
+			VERBOSE=$((VERBOSE+1))
+			;;
+		"-q"|"--quiet")
+			VERBOSE=$((VERBOSE-1))
+			;;
 		"--mkconf")
 			update_mkimage_conf
 			exit 0
+			;;
+		"--")
+			# stop parsing
+			SKIP=-1
 			;;
 		"-h"|"--help"|"-"*)
 			usage
@@ -1078,9 +1106,9 @@ sw-description.sig"
 
 
 	# actual image building
-	OUTDIR=$(dirname "$OUT")/.$(basename "$OUT" .swu)
+	OUTDIR=$(dirname -- "$OUT")/.$(basename -- "$OUT" .swu)
 	mkdir -p "$OUTDIR"
-	OUTDIR=$(realpath "$OUTDIR")
+	OUTDIR=$(realpath -- "$OUTDIR")
 	rm -f "$OUTDIR/sw-description-"* "$OUTDIR/used_files"
 	track_used "$OUTDIR"
 
@@ -1089,7 +1117,7 @@ sw-description.sig"
 	# build sw-desc fragments
 	for desc; do
 		[ -e "$desc" ] || error "%s does not exist" "$desc"
-		cd "$(dirname "$desc")" || error "cannot enter %s directory" "$desc"
+		cd "$(dirname -- "$desc")" || error "cannot enter %s directory" "$desc"
 		. "./${desc##*/}"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
