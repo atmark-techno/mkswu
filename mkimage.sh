@@ -1038,6 +1038,10 @@ sw-description.sig"
 	local COPY_USB=""
 	local VERBOSE=1
 
+	# config file variables
+	local PRIVKEY PUBKEY PRIVKEY_PASS
+	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
+
 	# default default values
 	local BOOT_SIZE="4M"
 	local compress=1
@@ -1104,6 +1108,13 @@ sw-description.sig"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
 		. "$CONFIG"
 	fi
+	# restore env var if they previously had been set
+	[ -n "$SWMK_PRIVKEY" ] && PRIVKEY="$SWMK_PRIVKEY"
+	[ -n "$SWMK_PUBKEY" ] && PUBKEY="$SWMK_PUBKEY"
+	[ -n "$SWMK_PRIVKEY_PASS" ] && PRIVKEY_PASS="$SWMK_PRIVKEY_PASS"
+	[ -n "$SWMK_ENCRYPT_KEYFILE" ] && ENCRYPT_KEYFILE="$SWMK_ENCRYPT_KEYFILE"
+	[ -n "$SWMK_HW_COMPAT" ] && HW_COMPAT="$SWMK_HW_COMPAT"
+	[ -n "$SWMK_DESCRIPTION" ] && DESCRIPTION="$SWMK_DESCRIPTION"
 
 
 	# actual image building

@@ -42,7 +42,7 @@ genkey() {
 	done
 
 	if [[ -n "$KEYPASS" ]]; then
-		echo "$KEYPASS" | PRIVKEY_PASS="stdin" \
+		echo "$KEYPASS" | SWMK_PRIVKEY_PASS="stdin" \
 			"$SCRIPT_DIR/genkey.sh" --quiet --cn "$CN"
 	else
 		"$SCRIPT_DIR/genkey.sh" --plain --quiet --cn "$CN"
