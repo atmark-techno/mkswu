@@ -363,7 +363,7 @@ msgstr ""
 "い。"
 
 #: mkimage.sh
-msgid "invalid POST_ACTION \\\"%s\\\", must be empty, poweroff or wait"
+msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
 msgstr ""
 "POST_ACTION %s が間違ってます。（empty, poweroff, waitのどれかにしてくださ"
 "い）"
@@ -440,9 +440,8 @@ msgid "PRIVKEY is not set in config file"
 msgstr "PRIVKEY変数を設定してください。"
 
 #: mkimage.sh
-#, fuzzy
 msgid "PUBKEY is not set in config file"
-msgstr "PRIVKEY変数を設定してください。"
+msgstr "PUBKEY変数を設定してください。"
 
 #: mkimage.sh
 msgid "Certificate common name must be provided with --cn <name>"
@@ -480,6 +479,101 @@ msgstr "イメージを暗号化しましたらAES鍵も先に作成してくだ
 #: mkimage.sh
 msgid "    %s --aes"
 msgstr ""
+
+#: mkimage.sh
+msgid "Enter certificate common name:"
+msgstr "証明書のCommon nameを入力してください:"
+
+#: mkimage.sh
+msgid "Enter private key password (4-1024 char)"
+msgstr "証明書の鍵のパスワードを入力ください（4-1024文字"
+
+#: mkimage.sh
+msgid "Empty key password is not recommended, re-enter empty to confirm"
+msgstr "空のパスワードをおすすめしません。もう一度入力したら進みます。"
+
+#: mkimage.sh
+msgid "Must be between 4 and 1024 characters long"
+msgstr "パスワードは4-1024文字でお願いします。"
+
+#: mkimage.sh
+msgid "private key password (confirm):"
+msgstr "証明書の鍵のパスワード（確認）:"
+
+#: mkimage.sh
+msgid "Passwords do not match"
+msgstr "パスワードが一致しません"
+
+#: mkimage.sh
+msgid "Use AES encryption? (N/y)"
+msgstr "アップデートイメージを暗号化しますか？ (N/y)"
+
+#: mkimage.sh
+msgid "Generated %s"
+msgstr ""
+
+#: mkimage.sh
+msgid "Allow updates signed by Atmark Techno? (Y/n)"
+msgstr ""
+"アットマークテクノが作成したイメージをインストール可能にしますか？ (Y/n)"
+
+#: mkimage.sh
+msgid "root password:"
+msgstr "rootパスワード:"
+
+#: mkimage.sh
+msgid "A root password is required"
+msgstr "rootパスワードが必要です。"
+
+#: mkimage.sh
+msgid "root password (confirm):"
+msgstr "rootパスワード（確認）:"
+
+#: mkimage.sh
+msgid "Could not hash password"
+msgstr "パスワードを作成できませんでした。"
+
+#: mkimage.sh
+msgid "atmark user password (empty = same as root):"
+msgstr "atmarkユーザのパスワード（空の場合はrootパスワードを使います）:"
+
+#: mkimage.sh
+msgid "atmark user password (confirm):"
+msgstr "atmarkユーザのパスワード（確認）:"
+
+#: mkimage.sh
+msgid "Could not copy initial_setup.desc from example dir"
+msgstr "initial_setup.descをコピーできませんでした"
+
+#: mkimage.sh
+msgid "Could not update %s"
+msgstr "%sを更新できませんでした"
+
+#: mkimage.sh
+msgid "Could not generate initial setup swu"
+msgstr "最初書き込みのinitial_setup.swuの作成が失敗しました。"
+
+#: mkimage.sh
+msgid "You can use \"%s\" as is or regenerate an image"
+msgstr "\"%s\" をそのまま使えますが、追加 desc を入れたかったら"
+
+#: mkimage.sh
+msgid "with extra modules with \"%s\" \"%s\" other_desc_files"
+msgstr "このコマンドで作成してください： \"%s\" \"%s\" other_desc_files"
+
+#: mkimage.sh
+msgid "Note that once installed, you must preserve this directory as losing"
+msgstr ""
+"インストールしたら、このディレクトリをなくさないように気をつけてください。"
+
+#: mkimage.sh
+msgid ""
+"key files means you will no longer be able to install new updates without"
+msgstr "鍵をなくしましたら新たなアップデートをデバイスの /etc/swupdate.pem"
+
+#: mkimage.sh
+msgid "manually adjusting /etc/swupdate.pem on devices"
+msgstr "を直さないとインストールできなくなります。"
 
 #: mkimage.sh
 msgid "Could not get script dir"

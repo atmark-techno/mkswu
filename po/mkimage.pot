@@ -249,7 +249,7 @@ msgstr ""
 msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
 msgstr ""
 #: mkimage.sh
-msgid "invalid POST_ACTION \\\"%s\\\", must be empty, poweroff or wait"
+msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
 msgstr ""
 #: mkimage.sh
 msgid "Please set user passwords (usermod command in .desc)"
@@ -331,6 +331,75 @@ msgid "If you would like to encrypt your updates, generate your aes key now with
 msgstr ""
 #: mkimage.sh
 msgid "    %s --aes"
+msgstr ""
+#: mkimage.sh
+msgid "Enter certificate common name:"
+msgstr ""
+#: mkimage.sh
+msgid "Enter private key password (4-1024 char)"
+msgstr ""
+#: mkimage.sh
+msgid "Empty key password is not recommended, re-enter empty to confirm"
+msgstr ""
+#: mkimage.sh
+msgid "Must be between 4 and 1024 characters long"
+msgstr ""
+#: mkimage.sh
+msgid "private key password (confirm):"
+msgstr ""
+#: mkimage.sh
+msgid "Passwords do not match"
+msgstr ""
+#: mkimage.sh
+msgid "Use AES encryption? (N/y)"
+msgstr ""
+#: mkimage.sh
+msgid "Generated %s"
+msgstr ""
+#: mkimage.sh
+msgid "Allow updates signed by Atmark Techno? (Y/n)"
+msgstr ""
+#: mkimage.sh
+msgid "root password:"
+msgstr ""
+#: mkimage.sh
+msgid "A root password is required"
+msgstr ""
+#: mkimage.sh
+msgid "root password (confirm):"
+msgstr ""
+#: mkimage.sh
+msgid "Could not hash password"
+msgstr ""
+#: mkimage.sh
+msgid "atmark user password (empty = same as root):"
+msgstr ""
+#: mkimage.sh
+msgid "atmark user password (confirm):"
+msgstr ""
+#: mkimage.sh
+msgid "Could not copy initial_setup.desc from example dir"
+msgstr ""
+#: mkimage.sh
+msgid "Could not update %s"
+msgstr ""
+#: mkimage.sh
+msgid "Could not generate initial setup swu"
+msgstr ""
+#: mkimage.sh
+msgid "You can use \"%s\" as is or regenerate an image"
+msgstr ""
+#: mkimage.sh
+msgid "with extra modules with \"%s\" \"%s\" other_desc_files"
+msgstr ""
+#: mkimage.sh
+msgid "Note that once installed, you must preserve this directory as losing"
+msgstr ""
+#: mkimage.sh
+msgid "key files means you will no longer be able to install new updates without"
+msgstr ""
+#: mkimage.sh
+msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr ""
 #: mkimage.sh
 msgid "Could not get script dir"

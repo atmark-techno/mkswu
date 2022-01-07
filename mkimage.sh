@@ -54,6 +54,29 @@ debug() {
 	printmsg 4 "$@" >&2
 }
 
+# dash doesn't handle read -s
+# and even if it did we wouldn't have gettext wrapping
+# so provide our own helper
+prompt() {
+	local var="$1"
+	local prompt_fmt="$2"
+	shift 2
+
+	if [ -n "$PASS" ]; then
+		trap "stty echo" EXIT INT QUIT
+		stty -echo
+	fi
+
+	printf -- "$(_gettext "$prompt_fmt") " "$@"
+	read -r "$var"
+
+	if [ -n "$PASS" ]; then
+		stty echo
+		trap "" EXIT INT QUIT
+		echo
+	fi
+}
+
 usage() {
 	info "Usage: %s [opts] desc [desc...]" "$0"
 	info
@@ -1091,6 +1114,150 @@ genkey_sign() {
 	info "    %s --aes" "$0"
 }
 
+mkinit_genkey() {
+	local GENKEY_CN
+	local KEYPASS KEYPASS_CONFIRM
+
+	[ -e "$PUBKEY" ] && [ -e "$PRIVKEY" ] && return
+
+	while [ -z "$GENKEY_CN" ]; do
+		prompt GENKEY_CN "Enter certificate common name:"
+	done
+
+	while true; do
+		PASS=1 prompt KEYPASS "Enter private key password (4-1024 char)"
+		if [ -z "$KEYPASS" ]; then
+			info "Empty key password is not recommended, re-enter empty to confirm"
+		elif [ "${#KEYPASS}" -lt 4 ] || [ "${#KEYPASS}" -gt 1024 ]; then
+			info "Must be between 4 and 1024 characters long"
+			continue
+		fi
+		PASS=1 prompt KEYPASS_CONFIRM "private key password (confirm):"
+		echo
+		if [ "$KEYPASS" != "$KEYPASS_CONFIRM" ]; then
+			info "Passwords do not match"
+			continue
+		fi
+		break
+	done
+
+	if [ -n "$KEYPASS" ]; then
+		echo "$KEYPASS" | PRIVKEY_PASS="stdin" \
+			VERBOSE=1 genkey_sign
+	else
+		GENKEY_PLAIN=1 VERBOSE=1 genkey_sign
+	fi || exit 1
+
+	# Also prompt for encryption
+	local AES
+
+	[ -n "$ENCRYPT_KEYFILE" ] && [ -e "$ENCRYPT_KEYFILE" ] && return
+
+	while true; do
+		prompt AES "Use AES encryption? (N/y)"
+		case "$AES" in
+	        [Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1) AES=1; break;;
+	        [Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") AES=""; break;;
+		esac
+	done
+	if [ -n "$AES" ]; then
+		VERBOSE=1 genkey_aes
+		info "Generated %s" "$ENCRYPT_KEYFILE"
+	fi
+}
+
+mkinit_geninitdesc() {
+	local KEEPATMARKPEM
+	local ROOTPW
+	local ROOTPW_CONFIRM
+	local ATMARKPW
+	local ATMARKPW_CONFIRM
+	local desc="$SCRIPT_DIR/initial_setup.desc"
+
+	[ -e "$desc" ] && return
+
+	while true; do
+		prompt KEEPATMARKPEM "Allow updates signed by Atmark Techno? (Y/n)"
+		case "$KEEPATMARKPEM" in
+	        [Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1|"")
+			KEEPATMARKPEM=1; break;;
+	        [Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0)
+			KEEPATMARKPEM=""; break;;
+		esac
+	done
+	while true; do
+		PASS=1 prompt ROOTPW "root password:"
+		if [ -z "$ROOTPW" ]; then
+			info "A root password is required"
+			continue
+		fi
+		PASS=1 prompt ROOTPW_CONFIRM "root password (confirm):"
+		if [ "$ROOTPW" != "$ROOTPW_CONFIRM" ]; then
+			info "Passwords do not match"
+			continue
+		fi
+		ROOTPW=$(echo "$ROOTPW" | sed -e "s/\"/\"'\"'r/")
+		ROOTPW=$(printf 'import crypt; print(crypt.crypt(r"%s", crypt.METHOD_SHA512))' "${ROOTPW}" | python3)
+		[ -n "$ROOTPW" ] || error "Could not hash password"
+		break
+	done
+
+	while true; do
+		PASS=1 prompt ATMARKPW "atmark user password (empty = same as root):"
+		echo
+		PASS=1 prompt ATMARKPW_CONFIRM "atmark user password (confirm):"
+		echo
+		if [ "$ATMARKPW" != "$ATMARKPW_CONFIRM" ]; then
+			info "Passwords do not match"
+			continue
+		fi
+		if [ -z "$ATMARKPW" ]; then
+			ATMARKPW="$ROOTPW_CONFIRM"
+		fi
+		ATMARKPW=$(echo "$ROOTPW" | sed -e "s/\"/\"'\"'r/")
+		ATMARKPW=$(printf 'import crypt; print(crypt.crypt(r"%s", crypt.METHOD_SHA512))' "$ATMARKPW" | python3)
+		[ -n "$ATMARKPW" ] || error "Could not hash password"
+		break
+	done
+
+
+	# cleanup if we fail here
+	trap "rm -f $desc" EXIT
+
+	cp "$SCRIPT_DIR/examples/initial_setup.desc" "$desc" \
+		|| error "Could not copy initial_setup.desc from example dir"
+	if [ -z "$KEEPATMARKPEM" ]; then
+		sed -i -e 's@>> /etc/swupdate.pem@> /etc/swupdate.pem@' "$desc" \
+			|| error "Could not update %s" "$desc"
+	fi
+
+	sed -i -e 's:\(^[ \t]*"usermod\).*atmark:\1 -p '\'\""'$ATMARKPW'"\"\'' atmark:' \
+			-e 's:\(^[ \t]*"usermod\).*root:\1 -p '\'\""'$ROOTPW'"\"\'' root:' "$desc" \
+		|| error "Could not update %s" "$desc"
+
+	trap "" EXIT
+}
+
+mkinit_mkimageinitswu() {
+	"$0" "$CONF_DIR/initial_setup.desc" || error "Could not generate initial setup swu"
+	echo
+	info "You can use \"%s\" as is or regenerate an image" "$CONF_DIR/initial_setup.swu"
+	info "with extra modules with \"%s\" \"%s\" other_desc_files" \
+		"$0" "$CONF_DIR/initial_setup.swu"
+	info
+	info "Note that once installed, you must preserve this directory as losing"
+	info "key files means you will no longer be able to install new updates without"
+	info "manually adjusting /etc/swupdate.pem on devices"
+}
+
+
+mkimage_init() {
+	mkinit_genkey
+	mkinit_geninitdesc
+	mkinit_mkimageinitswu
+}
+
+
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
@@ -1104,6 +1271,7 @@ mkimage() {
 sw-description.sig"
 	local FIRST_SWDESC_INIT=1
 	local COPY_USB=""
+	local MKINIT=""
 	local VERBOSE=2
 
 	# config file variables
@@ -1157,6 +1325,9 @@ sw-description.sig"
 			update_mkimage_conf
 			exit 0
 			;;
+		"--init")
+			MKINIT=1
+			;;
 		"--genkey")
 			GENKEY=1
 			;;
@@ -1205,6 +1376,12 @@ sw-description.sig"
 	[ -n "$SWMK_HW_COMPAT" ] && HW_COMPAT="$SWMK_HW_COMPAT"
 	[ -n "$SWMK_DESCRIPTION" ] && DESCRIPTION="$SWMK_DESCRIPTION"
 
+	if [ -n "$MKINIT" ]; then
+		[ $# -gt 0 ] && error "genkey mode had extra arguments?"
+		[ -n "$OUT" ] && error "--out not handled in genkey mode"
+		mkimage_init
+		exit 0
+	fi
 	if [ -n "$GENKEY" ]; then
 		[ $# -gt 0 ] && error "genkey mode had extra arguments?"
 		[ -n "$OUT" ] && error "--out not handled in genkey mode"
