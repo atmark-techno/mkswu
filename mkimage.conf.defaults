@@ -1,8 +1,4 @@
-# This file is read even if another config file is passed in argument,
-# and is meant to define default values for image generation (e.g. key files)
-# Use --config "" if you want to skip loading it.
-
-# public and private key locations for signing purpose, mandatory.
+# public and private key locations for signing purpose.
 PRIVKEY="$SCRIPT_DIR/swupdate.key"
 PUBKEY="$SCRIPT_DIR/swupdate.pem"
 

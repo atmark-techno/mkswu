@@ -972,13 +972,13 @@ cleanup_outdir() {
 }
 
 update_mkimage_conf() {
-	local confdir=$(dirname "$CONFIG") confbase=${CONFIG##*/}
+	local confbase="${CONFIG##*/}"
 	[ "$confbase" != mkimage.conf ] && return
 
 	# subshell to not source multiple versions of same file
 	(
 		set -e
-		sha=$(sha256sum "$confdir/mkimage.conf.defaults")
+		sha=$(sha256sum "$SCRIPT_DIR/mkimage.conf.defaults")
 		sha=${sha%% *}
 		if [ -e "$CONFIG" ]; then
 			. "$CONFIG"
@@ -991,14 +991,17 @@ update_mkimage_conf() {
 			cp "$CONFIG" "$CONFIG.autosave-$(date +%Y%m%d)"
 
 			# update hash, trim comments/empty lines past auto section comment
+			# and update obsolete header if still present
 			sed -e "s/^\(DEFAULTS_MKIMAGE_CONF_SHA256=\).*/\1\"$sha\"/" \
 			    -e '/^## auto section/p' -e '/^## auto section/,$ {/^#\|^$/ d}' \
+			    -e 's/^# defaults section: if you remove this include you must keep this file up/# defaults section: used to keep auto section comments below up to date/' \
+			    -e 's/^# to date with mkimage.conf\(.defaults\)\? changes!/# if you remove it the file will not be edited again./' \
+			    -e '/^\. .*mkimage.conf.defaults/d' \
 			    "$CONFIG" > "$CONFIG.new"
 		else
 			cat > "$CONFIG.new" <<EOF
-# defaults section: if you remove this include you must keep this file up
-# to date with mkimage.conf.defaults changes!
-. "\$SCRIPT_DIR/mkimage.conf.defaults"
+# defaults section: used to keep auto section comments below up to date
+# if you remove it the file will not be edited again.
 DEFAULTS_MKIMAGE_CONF_SHA256="$sha"
 
 ## user section: this won't be touched
@@ -1006,7 +1009,7 @@ DEFAULTS_MKIMAGE_CONF_SHA256="$sha"
 ## auto section: you can make changes here but comments will be lost
 EOF
 		fi
-		sed -e 's/^[^#$]/#&/' "$confdir/mkimage.conf.defaults" >> "$CONFIG.new"
+		sed -e 's/^[^#$]/#&/' "$SCRIPT_DIR/mkimage.conf.defaults" >> "$CONFIG.new"
 		mv "$CONFIG.new" "$CONFIG"
 
 	) || error "Could not update default config"
@@ -1092,11 +1095,9 @@ sw-description.sig"
 		esac
 	done
 
-	if [ -z "$OUT" ]; then
-		# OUT defaults to first swu name if not set
-		OUT="${1%.desc}.swu"
+	if [ -e "$SCRIPT_DIR/mkimage.conf.defaults" ]; then
+		. "$SCRIPT_DIR/mkimage.conf.defaults"
 	fi
-
 	if [ -n "$CONFIG" ]; then
 		update_mkimage_conf
 		[ -e "$CONFIG" ] || error "%s does not exist" "$CONFIG"
@@ -1106,6 +1107,10 @@ sw-description.sig"
 
 
 	# actual image building
+	if [ -z "$OUT" ]; then
+		# OUT defaults to first swu name if not set
+		OUT="${1%.desc}.swu"
+	fi
 	OUTDIR=$(dirname -- "$OUT")/.$(basename -- "$OUT" .swu)
 	mkdir -p "$OUTDIR"
 	OUTDIR=$(realpath -- "$OUTDIR")
