@@ -53,6 +53,7 @@ usage() {
 	info "  -c, --config <conf>     path to config (default mkimage.conf)"
 	info "  -o, --out <out.swu>     path to output file (default from first desc's name)"
 	info "  --mkconf                generate default config file"
+	info "  --genkey                toggle key generation mode (see below for suboptions)"
 	info "  desc                    image description file(s), if multiple are given"
 	info "                          then the generated image will merge all the contents"
 	info
@@ -71,6 +72,11 @@ usage() {
 	info
 	info "In most cases --version <component> <version> should be set,"
 	info "<component> must be extra_os.* in order to update rootfs"
+	info
+	info "Key generation options:"
+	info "  --cn          common name for key (mandatory for signing key)"
+	info "  --plain       generate signing key without encryption"
+	info "  --aes         generate aes key instead of default rsa key pair"
 }
 
 write_line() {
@@ -1023,6 +1029,60 @@ absolutize_file_paths() {
 		|| ENCRYPT_KEYFILE=$(realpath "$ENCRYPT_KEYFILE")
 }
 
+genkey_aes() {
+	local oldumask
+
+	if [ -z "$ENCRYPT_KEYFILE" ]; then
+		info "Info: using default aes key path"
+		ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"
+		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
+			'ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"' >> "$CONFIG" \
+			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
+	fi
+	if [ -s "$ENCRYPT_KEYFILE" ]; then
+		info "%s already exists, skipping" "$ENCRYPT_KEYFILE"
+		return
+	fi
+
+	oldumask=$(umask)
+	umask 0377
+	ENCRYPT_KEY="$(openssl rand -hex 32)" || error "Generating random number failed"
+	printf "%s\n" "$ENCRYPT_KEY $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
+	umask "$oldumask"
+
+	info "Created encryption keyfile %s" "$ENCRYPT_KEYFILE"
+	info "You must also enable aes encryption with examples/initial_setup.desc"
+	info "or equivalent"
+}
+
+genkey_sign() {
+	local oldumask
+	local CURVE="${GENKEY_CURVE:-secp256k1}"
+	local DAYS="${GENKEY_DAYS:-$((5*365))}"
+
+	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
+	[ -n "$PUBKEY" ] || error "PUBKEY is not set in config file"
+	if [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; then
+		info "%s already exists, skipping" "$PRIVKEY"
+		return
+	fi
+	[ -n "$GENKEY_CN" ] || error "Certificate common name must be provided with --cn <name>"
+
+	info "Creating signing key %s and its public counterpart %s" "$PRIVKEY" "${PUBKEY##*/}"
+
+	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:"$CURVE" \
+		-keyout "$PRIVKEY" -out "$PUBKEY" -subj "/O=SWUpdate/CN=$GENKEY_CN" \
+		${GENKEY_PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
+		-days "$DAYS" || error "Generating certificate/key pair failed"
+
+	info "%s must be copied over to /etc/swupdate.pem on devices." "$PUBKEY"
+	info "The suggested way is using swupdate:"
+	info "    ./mkimage.sh examples/initial_setup.desc"
+	info "Please set user passwords in initial_setup.desc and generate the image."
+	info "If you would like to encrypt your updates, generate your aes key now with:"
+	info "    %s --aes" "$0"
+}
+
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
@@ -1041,6 +1101,10 @@ sw-description.sig"
 	# config file variables
 	local PRIVKEY PUBKEY PRIVKEY_PASS
 	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
+
+	# genkey options
+	local GENKEY=""
+	local GENKEY_AES="" GENKEY_PLAIN="" GENKEY_CN=""
 
 	# default default values
 	local BOOT_SIZE="4M"
@@ -1085,6 +1149,23 @@ sw-description.sig"
 			update_mkimage_conf
 			exit 0
 			;;
+		"--genkey")
+			GENKEY=1
+			;;
+		"--aes")
+			[ -n "$GENKEY" ] || error "%s must be passed after --genkey" "$ARG"
+			GENKEY_AES=1
+			;;
+		"--plain")
+			[ -n "$GENKEY" ] || error "%s must be passed after --genkey" "$ARG"
+			GENKEY_PLAIN=1
+			;;
+		"--cn")
+			[ -n "$GENKEY" ] || error "%s must be passed after --genkey" "$ARG"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			GENKEY_CN="$1"
+			SKIP=1
+			;;
 		"--")
 			# stop parsing
 			SKIP=-1
@@ -1115,6 +1196,17 @@ sw-description.sig"
 	[ -n "$SWMK_ENCRYPT_KEYFILE" ] && ENCRYPT_KEYFILE="$SWMK_ENCRYPT_KEYFILE"
 	[ -n "$SWMK_HW_COMPAT" ] && HW_COMPAT="$SWMK_HW_COMPAT"
 	[ -n "$SWMK_DESCRIPTION" ] && DESCRIPTION="$SWMK_DESCRIPTION"
+
+	if [ -n "$GENKEY" ]; then
+		[ $# -gt 0 ] && error "genkey mode had extra arguments?"
+		[ -n "$OUT" ] && error "--out not handled in genkey mode"
+		if [ -n "$GENKEY_AES" ]; then
+			genkey_aes
+		else
+			genkey_sign
+		fi
+		exit 0
+	fi
 
 
 	# actual image building

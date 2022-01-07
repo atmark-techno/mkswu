@@ -30,6 +30,12 @@ msgstr ""
 
 #: mkimage.sh
 msgid ""
+"  --genkey                toggle key generation mode (see below for "
+"suboptions)"
+msgstr ""
+
+#: mkimage.sh
+msgid ""
 "  desc                    image description file(s), if multiple are given"
 msgstr ""
 
@@ -94,6 +100,22 @@ msgstr ""
 
 #: mkimage.sh
 msgid "<component> must be extra_os.* in order to update rootfs"
+msgstr ""
+
+#: mkimage.sh
+msgid "Key generation options:"
+msgstr ""
+
+#: mkimage.sh
+msgid "  --cn          common name for key (mandatory for signing key)"
+msgstr ""
+
+#: mkimage.sh
+msgid "  --plain       generate signing key without encryption"
+msgstr ""
+
+#: mkimage.sh
+msgid "  --aes         generate aes key instead of default rsa key pair"
 msgstr ""
 
 #: mkimage.sh
@@ -386,6 +408,80 @@ msgid "Could not update default config"
 msgstr "デフォルトのコンフィグファイルをアップデートできませんでした。"
 
 #: mkimage.sh
+msgid "Info: using default aes key path"
+msgstr "info: 暗号化鍵のデフォルトパスを使います。"
+
+#: mkimage.sh
+msgid "Could not update default ENCRYPT_KEYFILE in %s"
+msgstr "%s にENCRYPT_KEYFILEのデフォルトを書けませんでした。"
+
+#: mkimage.sh
+msgid "%s already exists, skipping"
+msgstr ""
+
+#: mkimage.sh
+msgid "Generating random number failed"
+msgstr "opensslコマンドが失敗しました。"
+
+#: mkimage.sh
+msgid "Created encryption keyfile %s"
+msgstr "暗号化の鍵を作成しました：%s"
+
+#: mkimage.sh
+msgid "You must also enable aes encryption with examples/initial_setup.desc"
+msgstr "examples/initial_setup.descで暗号化を有効にしてください。"
+
+#: mkimage.sh
+msgid "or equivalent"
+msgstr " "
+
+#: mkimage.sh
+msgid "PRIVKEY is not set in config file"
+msgstr "PRIVKEY変数を設定してください。"
+
+#: mkimage.sh
+#, fuzzy
+msgid "PUBKEY is not set in config file"
+msgstr "PRIVKEY変数を設定してください。"
+
+#: mkimage.sh
+msgid "Certificate common name must be provided with --cn <name>"
+msgstr "--cn <name>で証明書のcommon nameを指定してください。"
+
+#: mkimage.sh
+msgid "Creating signing key %s and its public counterpart %s"
+msgstr "証明鍵 %s と証明書 %s を作成します。"
+
+#: mkimage.sh
+msgid "Generating certificate/key pair failed"
+msgstr "証明鍵の作成が失敗しました。"
+
+#: mkimage.sh
+msgid "%s must be copied over to /etc/swupdate.pem on devices."
+msgstr "%s をデバイスの /etc/swupdate.pem にコピーしてください。"
+
+#: mkimage.sh
+msgid "The suggested way is using swupdate:"
+msgstr "initial_setup イメージを以下のコマンドで作成したらできます："
+
+#: mkimage.sh
+msgid "    ./mkimage.sh examples/initial_setup.desc"
+msgstr ""
+
+#: mkimage.sh
+msgid "Please set user passwords in initial_setup.desc and generate the image."
+msgstr "ファイルのパスワードを設定してからイメージを作成してください。"
+
+#: mkimage.sh
+msgid ""
+"If you would like to encrypt your updates, generate your aes key now with:"
+msgstr "イメージを暗号化しましたらAES鍵も先に作成してください："
+
+#: mkimage.sh
+msgid "    %s --aes"
+msgstr ""
+
+#: mkimage.sh
 msgid "Could not get script dir"
 msgstr "スクリプトのディレクトリが読み取れませんでした。"
 
@@ -394,8 +490,20 @@ msgid "%s must end with .swu"
 msgstr "%s は「.swu」で終わらせてください。"
 
 #: mkimage.sh
+msgid "%s must be passed after --genkey"
+msgstr ""
+
+#: mkimage.sh
 msgid "%s does not exist"
 msgstr "%s が存在しません。"
+
+#: mkimage.sh
+msgid "genkey mode had extra arguments?"
+msgstr ""
+
+#: mkimage.sh
+msgid "--out not handled in genkey mode"
+msgstr ""
 
 #: mkimage.sh
 msgid "cannot enter %s directory"
@@ -432,6 +540,3 @@ msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
 msgstr ""
-
-#~ msgid "version check failed for %s: %s must be alphanumeric"
-#~ msgstr "%s バージョンの %s を数字かローマ字にしてください。"

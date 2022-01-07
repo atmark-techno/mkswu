@@ -21,6 +21,9 @@ msgstr ""
 msgid "  --mkconf                generate default config file"
 msgstr ""
 #: mkimage.sh
+msgid "  --genkey                toggle key generation mode (see below for suboptions)"
+msgstr ""
+#: mkimage.sh
 msgid "  desc                    image description file(s), if multiple are given"
 msgstr ""
 #: mkimage.sh
@@ -67,6 +70,18 @@ msgid "In most cases --version <component> <version> should be set,"
 msgstr ""
 #: mkimage.sh
 msgid "<component> must be extra_os.* in order to update rootfs"
+msgstr ""
+#: mkimage.sh
+msgid "Key generation options:"
+msgstr ""
+#: mkimage.sh
+msgid "  --cn          common name for key (mandatory for signing key)"
+msgstr ""
+#: mkimage.sh
+msgid "  --plain       generate signing key without encryption"
+msgstr ""
+#: mkimage.sh
+msgid "  --aes         generate aes key instead of default rsa key pair"
 msgstr ""
 #: mkimage.sh
 msgid "Cannot find source file: %s"
@@ -264,13 +279,76 @@ msgstr ""
 msgid "Could not update default config"
 msgstr ""
 #: mkimage.sh
+msgid "Info: using default aes key path"
+msgstr ""
+#: mkimage.sh
+msgid "Could not update default ENCRYPT_KEYFILE in %s"
+msgstr ""
+#: mkimage.sh
+msgid "%s already exists, skipping"
+msgstr ""
+#: mkimage.sh
+msgid "Generating random number failed"
+msgstr ""
+#: mkimage.sh
+msgid "Created encryption keyfile %s"
+msgstr ""
+#: mkimage.sh
+msgid "You must also enable aes encryption with examples/initial_setup.desc"
+msgstr ""
+#: mkimage.sh
+msgid "or equivalent"
+msgstr ""
+#: mkimage.sh
+msgid "PRIVKEY is not set in config file"
+msgstr ""
+#: mkimage.sh
+msgid "PUBKEY is not set in config file"
+msgstr ""
+#: mkimage.sh
+msgid "Certificate common name must be provided with --cn <name>"
+msgstr ""
+#: mkimage.sh
+msgid "Creating signing key %s and its public counterpart %s"
+msgstr ""
+#: mkimage.sh
+msgid "Generating certificate/key pair failed"
+msgstr ""
+#: mkimage.sh
+msgid "%s must be copied over to /etc/swupdate.pem on devices."
+msgstr ""
+#: mkimage.sh
+msgid "The suggested way is using swupdate:"
+msgstr ""
+#: mkimage.sh
+msgid "    ./mkimage.sh examples/initial_setup.desc"
+msgstr ""
+#: mkimage.sh
+msgid "Please set user passwords in initial_setup.desc and generate the image."
+msgstr ""
+#: mkimage.sh
+msgid "If you would like to encrypt your updates, generate your aes key now with:"
+msgstr ""
+#: mkimage.sh
+msgid "    %s --aes"
+msgstr ""
+#: mkimage.sh
 msgid "Could not get script dir"
 msgstr ""
 #: mkimage.sh
 msgid "%s must end with .swu"
 msgstr ""
 #: mkimage.sh
+msgid "%s must be passed after --genkey"
+msgstr ""
+#: mkimage.sh
 msgid "%s does not exist"
+msgstr ""
+#: mkimage.sh
+msgid "genkey mode had extra arguments?"
+msgstr ""
+#: mkimage.sh
+msgid "--out not handled in genkey mode"
 msgstr ""
 #: mkimage.sh
 msgid "cannot enter %s directory"
