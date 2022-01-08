@@ -710,12 +710,12 @@ swdesc_exec() {
 
 	case "$component" in
 	base_os|extra_os*)
-		chroot_cmd="podman run --rm --rootfs /target sh -c $(shell_quote "$cmd") -- "
+		chroot_cmd="podman run --net=host --rm --rootfs /target sh -c $(shell_quote "$cmd") -- "
 		;;
 	*)
 		# If target is read-only we need special handling to run (silly podman tries
 		# to write to / otherwise) but keep volumes writable
-		chroot_cmd="podman run --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
+		chroot_cmd="podman run --net=host --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/var/app/rollback/volumes"
 		chroot_cmd="$chroot_cmd --rootfs /target sh -c $(shell_quote "$cmd") -- "
 		;;
