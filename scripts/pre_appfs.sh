@@ -40,6 +40,17 @@ umount_or_reboot() {
 	fi
 }
 
+podman_killall() {
+	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
+		printf "WARNING: %s\n" "$@" >&2
+		podman kill -a
+		podman ps --format '{{.ID}}' \
+			| timeout 30s xargs podman wait
+	fi
+	podman pod rm -a -f
+	podman rm -a -f
+}
+
 prepare_appfs() {
 	local dev="${partdev}5"
 	local mountopt="compress=zstd:3,space_cache=v2,subvol"
@@ -58,18 +69,11 @@ prepare_appfs() {
 	fi
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
-		echo "Persistent storage is used for podman, stopping all containers before taking snapshot" >&2
-		echo "This is only for development, do not use this mode for production!" >&2
-		podman kill -a
-		podman pod rm -a -f
-		podman rm -a -f
+		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" "This is only for development, do not use this mode for production!" >&2
 	fi
 
 	if grep -q "CONTAINER_CLEAR" "$SWDESC"; then
-		echo "CONTAINER_CLEAR requested: stopping and destroying all container data first" >&2
-		podman kill -a
-		podman pod rm -a -f
-		podman rm -a -f
+		podman_killall "CONTAINER_CLEAR requested: stopping and destroying all container data first" >&2
 		btrfs_subvol_delete "boot_0/containers_storage"
 		btrfs_subvol_delete "boot_0/volumes"
 		btrfs_subvol_delete "boot_1/containers_storage"

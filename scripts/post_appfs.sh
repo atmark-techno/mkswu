@@ -21,14 +21,24 @@ exchange_btrfs_snapshots() {
 	fi
 }
 
+podman_killall() {
+	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
+		printf "WARNING: %s\n" "$@" >&2
+		podman kill -a
+		podman ps --format '{{.ID}}' \
+			| timeout 30s xargs podman wait
+	fi
+	podman pod rm -a -f
+	podman rm -a -f
+}
+
 swap_btrfs_snapshots() {
 	exchange_btrfs_snapshots || return 1
 
 	# we need to now remount the volumes with the new data,
 	# so stop all countainers and restart them
-	podman kill -a
-	podman pod rm -a -f
-	podman rm -a -f
+	podman_killall "Stopping containers to swap storage"
+
 	if ! umount /var/lib/containers/storage_readonly \
 	    || ! mount /var/lib/containers/storage_readonly \
 	    || ! umount /var/app/rollback/volumes \
