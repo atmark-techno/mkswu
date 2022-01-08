@@ -6,7 +6,7 @@
 # shellcheck disable=SC2039,SC1090,SC2165,SC2167
 
 if command -v gettext >/dev/null; then
-	_gettext() { TEXTDOMAINDIR="$SCRIPT_DIR/locale" TEXTDOMAIN=mkimage gettext -- "$@"; }
+	_gettext() { TEXTDOMAINDIR="$TEXTDOMAINDIR" TEXTDOMAIN=mkimage gettext -- "$@"; }
 else
 	_gettext() { printf -- "%s" "$@"; }
 fi
@@ -1065,9 +1065,9 @@ genkey_aes() {
 
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		info "Info: using default aes key path"
-		ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"
+		ENCRYPT_KEYFILE="$CONF_DIR/swupdate.aes-key"
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
-			'ENCRYPT_KEYFILE="$SCRIPT_DIR/swupdate.aes-key"' >> "$CONFIG" \
+			'ENCRYPT_KEYFILE="$CONF_DIR/swupdate.aes-key"' >> "$CONFIG" \
 			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
 	fi
 	if [ -s "$ENCRYPT_KEYFILE" ]; then
@@ -1172,7 +1172,7 @@ mkinit_geninitdesc() {
 	local ROOTPW_CONFIRM
 	local ATMARKPW
 	local ATMARKPW_CONFIRM
-	local desc="$SCRIPT_DIR/initial_setup.desc"
+	local desc="$CONF_DIR/initial_setup.desc"
 
 	[ -e "$desc" ] && return
 
@@ -1263,7 +1263,8 @@ mkimage() {
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
 	local OUT=""
 	local OUTDIR=""
-	local CONFIG="$SCRIPT_DIR/mkimage.conf"
+	local CONF_DIR="$SCRIPT_DIR"
+	local CONFIG="$CONF_DIR/mkimage.conf"
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="swupdate_pre.sh"
 	local POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
@@ -1273,6 +1274,7 @@ sw-description.sig"
 	local COPY_USB=""
 	local MKINIT=""
 	local VERBOSE=2
+	local TEXTDOMAINDIR="$SCRIPT_DIR/locale"
 
 	# config file variables
 	local PRIVKEY PUBKEY PRIVKEY_PASS
