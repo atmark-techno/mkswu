@@ -1,5 +1,7 @@
 error() {
-	printf "%s\n" "$@" >&2
+	printf -- "----------------------------------------------\n" >&2
+	printf -- "/!\ %s\n" "$@" >&2
+	printf -- "----------------------------------------------\n" >&2
 
 	# redefine error as no-op: this avoids looping if one of the cleanup operations fail
 	error() { printf "%s\n" "$@" >&2; }
@@ -8,7 +10,7 @@ error() {
 	if [ -n "$soft_fail" ]; then
 		echo "An error happened after changes have been applied" >&2
 		echo "This most likely means success status cannot be reported correctly." >&2
-		echo "Reboot to finish applying anything left" >&2
+		echo "Rebooting to finish applying anything left" >&2
 		reboot
 	fi
 	unlock_update
