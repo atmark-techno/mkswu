@@ -171,8 +171,8 @@ mount_target_rootfs() {
 	mkdir -p /target/boot /target/mnt /target/target
 	touch /target/.created
 
+	update_preserve_list
 	if needs_update "base_os"; then
-		update_preserve_list
 		copy_preserve_files
 		return
 	fi
