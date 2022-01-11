@@ -25,7 +25,8 @@ build_check ../examples/pull_container_nginx \
 	"swdesc nginx_start.**tar.zst docker.io/nginx"
 
 # boot: prereq fullfilled by yakushima tar
-touch ../imx-boot_armadillo_x2
+[ -e ../imx-boot_armadillo_x2 ] \
+	|| echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e' > ../imx-boot_armadillo_x2
 build_check ../examples/boot "file imx-boot_armadillo_x2.*.zst" "version boot '202.* different'" "swdesc imx-boot_armadillo_x2"
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
