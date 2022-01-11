@@ -38,6 +38,22 @@ locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 check:
 	./tests/run.sh
 
+TAG ?= $(shell git describe --tags)
+TARNAME = mkswu-$(TAG)
+
+dist:
+	@if ! [ -e .git ]; then \
+		echo "make dist can only run within git directory"; \
+		false; \
+	fi
+	@if ! git diff-index --ignore-submodules=untracked --quiet HEAD; then \
+		echo "git index is not clean: please run make clean and check submodules"; \
+		false; \
+	fi
+	git ls-files --recurse-submodules | \
+		tar -cazf $(TARNAME).tar.gz --xform s:^:$(TARNAME)/: --verbatim-files-from -T-
+
+
 install: all
 	install -D -t $(DESTDIR)$(BIN) mkswu
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES $(locales)
