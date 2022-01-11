@@ -1,4 +1,4 @@
-_mkimage_sh()
+_mkswu()
 {
 	local cur prev words cword split
 	_init_completion || return
@@ -15,4 +15,4 @@ _mkimage_sh()
 
 	COMPREPLY=($(compgen -W '-o --out -c --config' -- "$cur"))
 	_filedir 'desc'
-} && complete -F _mkimage_sh mkimage.sh
+} && complete -F _mkswu mkswu

@@ -9,7 +9,7 @@ for verification of sw-description and container images if side-loaded.
 Note that encryption does not use this key.
 
 
-## mkimage.sh
+## mkswu
 
 Helper to generate swupdate image.
 
@@ -135,7 +135,7 @@ swdesc_pull_container <image url>
 
 Sample config files, try from git root:
 
- ./mkimage.sh -o foo.swu examples/foo.conf
+ ./mkswu -o foo.swu examples/foo.conf
 
 read each .conf file for their requirements (files to pre-create)
 all examples expect keys to have been generated before (./genkey.sh),

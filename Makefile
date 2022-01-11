@@ -8,7 +8,7 @@ LOCALEDIR = $(PREFIX)/share/locale
 l = ja
 translations = $(wildcard po/$(l)/*.po)
 locales = $(patsubst po/$(l)/%.po,locale/$(l)/LC_MESSAGES/%.mo,$(translations))
-pot = po/mkimage.pot
+pot = po/mkswu.pot
 
 # XXX install example data more cleanly
 install_scripts = $(wildcard scripts/*sh) $(wildcard scripts/podman_*)
@@ -20,7 +20,7 @@ install_hawkbit = hawkbit/nginx_hawkbit.conf hawkbit/mysql_utf8.cnf hawkbit/dock
 
 all: $(locales) $(pot)
 
-po/mkimage.pot: mkimage.sh examples/enable_sshd.desc examples/hawkbit_register.desc
+po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc
 	./po/update.sh $@ $^
 
 po/$(l)/%.po: po/%.pot

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# minimal wrapper around mkimage.sh --genkey for backwards compatibility
+# minimal wrapper around mkswu --genkey for backwards compatibility
 SCRIPT_DIR=$(dirname "$0")
 
-exec "$SCRIPT_DIR/mkimage.sh" --genkey "$@"
+exec "$SCRIPT_DIR/mkswu" --genkey "$@"
 

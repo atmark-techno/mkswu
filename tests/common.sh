@@ -65,7 +65,7 @@ build_check() {
 	shift
 
 	echo "Building $name"
-	"$TESTS_DIR/../mkimage.sh" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	"$TESTS_DIR/../mkswu" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
 
 	for check; do
 		eval check "$check"
@@ -81,5 +81,5 @@ build_fail() {
 	shift
 
 	echo "Building $name (must fail)"
-	! "$TESTS_DIR/../mkimage.sh" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	! "$TESTS_DIR/../mkswu" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
 }

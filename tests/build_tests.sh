@@ -12,7 +12,7 @@ build_check install_files \
 
 cp -f ../mkimage.conf mkimage-aes.conf
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkimage-aes.conf
-../genkey.sh --aes --config mkimage-aes.conf
+../mkswu --genkey --aes --config mkimage-aes.conf
 conf=mkimage-aes.conf build_check aes
 
 build_check board "swdesc 'iot-g4-es1 = '" \

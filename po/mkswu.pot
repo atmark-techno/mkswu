@@ -2,439 +2,439 @@
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8"
-#: mkimage.sh
+#: mkswu
 msgid "Error called without format string!"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Options:"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  -c, --config <conf>     path to config (default mkimage.conf)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  -o, --out <out.swu>     path to output file (default from first desc's name)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  --mkconf                generate default config file"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  --genkey                toggle key generation mode (see below for suboptions)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  desc                    image description file(s), if multiple are given"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "                          then the generated image will merge all the contents"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "desc file syntax:"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  descriptions are imperative declarations building an image, the following"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  commands available (see README for details):"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_boot <bootfile>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_tar <tar_file> [--dest <dest>]"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_command '<cmd>'"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_script <script>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_exec <file> '<cmd>' (file is \\$1 in command)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_embed_container <image_archive>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_usb_container <image_archive>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  - swdesc_pull_container <image_url>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "In most cases --version <component> <version> should be set,"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "<component> must be extra_os.* in order to update rootfs"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Key generation options:"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  --cn          common name for key (mandatory for signing key)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  --plain       generate signing key without encryption"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "  --aes         generate aes key instead of default rsa key pair"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Cannot find source file: %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not remove previous link at %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not remove previous file at %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not copy %s to %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not link %s to %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "AES encryption key %s was set but not found.\\nPlease create it with genkey.sh --aes"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "failed to compress %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Missing source file: %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "failed to encrypt %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Checksumming %s failed"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "component %s was set with empty version"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "base_os version %s must be in x[.y[.z]]-t format"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "version check failed for %s: %s must be <= %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "version check failed for %s: %s must not mix alpha and digits"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "metadata (+ part) in semver are ignored by swupdate, please use something else than %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "install_if must be higher or different"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "component must not contain spaces (%s)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "version must not contain spaces (%s = %s)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "version %s was set without associated component"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "use as main version requested but component/version not set?"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s requires an argument"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s requires <component> <version> arguments"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "--install-if must be higher or different"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s only allowed for swdesc_files and swdesc_tar"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s only allowed for swdesc_files"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s is not a known %s argument"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: swdesc_boot [options] boot_file"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: swdesc_tar [options] file.tar"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: swdesc_files [options] file [files...]"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: swdesc_command [options] cmd [cmd..]"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: swdesc_script [options] script"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: swdesc_exec [options] file command"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Usage: %s [options] image"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Unhandled command %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Cannot stat boot file: %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "BOOT_SIZE set smaller than boot file actual size"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Version component for swdesc_boot must be set to boot"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not guess boot version in %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid ".. is not allowed in destination path for volume update"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s does not exist\\nplease note swdesc_files syntax changed and no longer requires setting a name"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s does not exist?"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s is not inside %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not create tar for %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "you might want to keep the archive as simple .tar"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not create script.tar"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "DESCRIPTION must be set"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "HW_COMPAT or HW_COMPAT_%s must be set"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "HW_COMPAT must be set"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "above component used multiple times with different versions or install-if mode"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Please set user passwords (usermod command in .desc)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "PRIVKEY must be set"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "PUBKEY must be set"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Cannot read PRIVKEY: %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Cannot read PUBKEY: %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not sign %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not enter %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "cpio does not contain files we requested (in the order we requested): check %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not update default config"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Info: using default aes key path"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not update default ENCRYPT_KEYFILE in %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s already exists, skipping"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Generating random number failed"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Created encryption keyfile %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "You must also enable aes encryption with examples/initial_setup.desc"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "or equivalent"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "PRIVKEY is not set in config file"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "PUBKEY is not set in config file"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Certificate common name must be provided with --cn <name>"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Creating signing key %s and its public counterpart %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Generating certificate/key pair failed"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s must be copied over to /etc/swupdate.pem on devices."
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "The suggested way is using swupdate:"
 msgstr ""
-#: mkimage.sh
-msgid "    ./mkimage.sh examples/initial_setup.desc"
+#: mkswu
+msgid "    %s examples/initial_setup.desc"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Please set user passwords in initial_setup.desc and generate the image."
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "If you would like to encrypt your updates, generate your aes key now with:"
 msgstr ""
-#: mkimage.sh
-msgid "    %s --aes"
+#: mkswu
+msgid "    %s --genkey --aes"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Enter certificate common name:"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Enter private key password (4-1024 char)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Empty key password is not recommended, re-enter empty to confirm"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Must be between 4 and 1024 characters long"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "private key password (confirm):"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Passwords do not match"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Use AES encryption? (N/y)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Generated %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Allow updates signed by Atmark Techno? (Y/n)"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "root password:"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "A root password is required"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "root password (confirm):"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not hash password"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "atmark user password (empty = same as root):"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "atmark user password (confirm):"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not copy initial_setup.desc from example dir"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not update %s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not generate initial setup swu"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "You can use \"%s\" as is or regenerate an image"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "with extra modules with \"%s\" \"%s\" other_desc_files"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Note that once installed, you must preserve this directory as losing"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "key files means you will no longer be able to install new updates without"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Could not get script dir"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s must end with .swu"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s must be passed after --genkey"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s does not exist"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "genkey mode had extra arguments?"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "--out not handled in genkey mode"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "cannot enter %s directory"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Cannot return to %s we were in before"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "No or empty desc given?"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "%s"
 msgstr ""
-#: mkimage.sh
+#: mkswu
 msgid "Successfully generated %s"
 msgstr ""
 #: examples/enable_sshd.desc

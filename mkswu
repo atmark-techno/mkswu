@@ -6,7 +6,7 @@
 # shellcheck disable=SC2039,SC1090,SC2165,SC2167
 
 if command -v gettext >/dev/null; then
-	_gettext() { TEXTDOMAINDIR="$TEXTDOMAINDIR" TEXTDOMAIN=mkimage gettext -- "$@"; }
+	_gettext() { TEXTDOMAINDIR="$TEXTDOMAINDIR" TEXTDOMAIN=mkswu gettext -- "$@"; }
 else
 	_gettext() { printf -- "%s" "$@"; }
 fi
@@ -1108,10 +1108,10 @@ genkey_sign() {
 
 	info "%s must be copied over to /etc/swupdate.pem on devices." "$PUBKEY"
 	info "The suggested way is using swupdate:"
-	info "    ./mkimage.sh examples/initial_setup.desc"
+	info "    %s examples/initial_setup.desc" "$0"
 	info "Please set user passwords in initial_setup.desc and generate the image."
 	info "If you would like to encrypt your updates, generate your aes key now with:"
-	info "    %s --aes" "$0"
+	info "    %s --genkey --aes" "$0"
 }
 
 mkinit_genkey() {
@@ -1444,7 +1444,7 @@ sw-description.sig"
 }
 
 
-# check if sourced: basename $0 should only be mkimage.sh if run directly
-[ "$(basename "$0")" = "mkimage.sh" ] || return
+# check if sourced: basename $0 should only be mkswu if run directly
+[ "$(basename "$0")" != "mkswu" ] && return
 
 mkimage "$@"
