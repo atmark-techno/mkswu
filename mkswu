@@ -1012,6 +1012,8 @@ update_mkimage_conf() {
 	local confbase="${CONFIG##*/}"
 	[ "$confbase" != mkimage.conf ] && return
 
+	[ -e "$CONF_DIR" ] || mkdir -p "$CONF_DIR"
+
 	# subshell to not source multiple versions of same file
 	(
 		set -e
@@ -1360,6 +1362,15 @@ sw-description.sig"
 			;;
 		esac
 	done
+
+	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then
+		SCRIPT_DIR=${SCRIPT_DIR%/bin}/share/mkswu
+		TEXTDOMAINDIR="${SCRIPT_DIR%/mkswu}/locale"
+		CONF_DIR="$HOME/mkswu"
+		CONFIG="$CONF_DIR/mkimage.conf"
+		EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+		POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
+	fi
 
 	if [ -e "$SCRIPT_DIR/mkimage.conf.defaults" ]; then
 		. "$SCRIPT_DIR/mkimage.conf.defaults"
