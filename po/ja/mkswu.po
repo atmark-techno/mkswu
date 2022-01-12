@@ -641,6 +641,14 @@ msgid "%s must be passed after --genkey"
 msgstr "%s は --genkey の後にしか使えません。"
 
 #: mkswu
+msgid "mkswu not installed and could not guess mkswu version from git"
+msgstr "mkswu のバージョンが分かりませんでした。"
+
+#: mkswu
+msgid "mkswu version %s"
+msgstr ""
+
+#: mkswu
 msgid "--%s had extra arguments?"
 msgstr "%s に引数が必要です。"
 

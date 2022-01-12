@@ -444,6 +444,12 @@ msgstr ""
 msgid "%s must be passed after --genkey"
 msgstr ""
 #: mkswu
+msgid "mkswu not installed and could not guess mkswu version from git"
+msgstr ""
+#: mkswu
+msgid "mkswu version %s"
+msgstr ""
+#: mkswu
 msgid "--%s had extra arguments?"
 msgstr ""
 #: mkswu

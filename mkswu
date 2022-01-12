@@ -1334,6 +1334,7 @@ sw-description.sig"
 	local MODE=""
 	local VERBOSE=2
 	local TEXTDOMAINDIR="$SCRIPT_DIR/locale"
+	local MKSWU_VERSION=""
 
 	# config file variables
 	local PRIVKEY PUBKEY PRIVKEY_PASS
@@ -1446,6 +1447,15 @@ sw-description.sig"
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			GENKEY_CN="$1"
 			SKIP=1
+			;;
+		"--version")
+			if [ -z "$MKSWU_VERSION" ]; then
+				[ -e "$SCRIPT_DIR/.git" ] \
+					|| error "mkswu not installed and could not guess mkswu version from git"
+				MKSWU_VERSION="$(git --git-dir "$SCRIPT_DIR/.git" describe)"
+			fi
+			info "mkswu version %s" "$MKSWU_VERSION"
+			exit 0
 			;;
 		"--")
 			# stop parsing
