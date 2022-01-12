@@ -3,8 +3,13 @@
 set -e
 
 TESTS_DIR=$(dirname "${BASH_SOURCE[0]}")
-. $TESTS_DIR/../scripts/versions.sh
-MKSWU=${MKSWU:-$TESTS_DIR/../mkswu}
+MKSWU=$(command -v "${MKSWU:-$TESTS_DIR/../mkswu}") \
+	|| error "mkswu script not found"
+SCRIPTS_DIR="$TESTS_DIR/../scripts"
+if [ "${MKSWU%/usr/bin/mkswu}" != "$MKSWU" ]; then
+	SCRIPTS_DIR="${MKSWU%/bin/mkswu}/share/mkswu/scripts"
+fi
+. "${SCRIPTS_DIR}/versions.sh"
 
 error() {
 	printf "%s\n" "$@" >&2

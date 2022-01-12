@@ -33,4 +33,49 @@ if [ "$(id -u)" = "0" ]; then
 fi
 
 $SU ./jenkins/armadillo-x2.sh
-$SU ./tests/run.sh
+
+# If we want to build debian package, quite a bit of work...
+case "$1" in
+deb)
+	if ! dpkg -s debhelper >/dev/null 2>&1; then
+		sudo apt update
+		sudo apt install -y debhelper
+	fi
+	VERSION=$(git describe | tr '-' '.')
+	make dist
+
+	rm -rf /tmp/mkswu && mkdir /tmp/mkswu
+	GIT_WORK_TREE=/tmp/mkswu git reset --hard HEAD
+	mv "mkswu_$VERSION.orig.tar.xz" /tmp
+	cd /tmp/mkswu
+
+	if ! head -n 1 debian/changelog | grep -qF "($VERSION-1)"; then
+		# add new entry to debian changelog if we're not clean
+		# the normal way of doing that is through dch but devscripts
+		# pulls in quite a few deps, so just wade it through...
+		cat > debian/newchangelog <<EOF
+mkswu ($VERSION-1) experimental; urgency=low
+
+  * jenkins autoupdate, not meant for releasing
+
+ -- jenkins jenkins <no-reply@atmark-techno.com>  $(date -R)
+
+EOF
+		cat debian/changelog >> debian/newchangelog
+		mv debian/newchangelog debian/changelog
+	fi
+	dpkg-buildpackage -us -uc
+
+	sudo dpkg -i "../mkswu_${VERSION}-1_all.deb"
+	mkswu --genkey --config-dir . --plain --cn test
+	mkswu --import
+	rm -f mkswu.conf
+	MKSWU=mkswu ./tests/run.sh
+
+	mkdir -p /work/deb
+	mv ../mkswu_* /work/deb/
+	;;
+*)
+	$SU ./tests/run.sh
+	;;
+esac

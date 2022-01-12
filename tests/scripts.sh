@@ -9,6 +9,13 @@ set -e
 
 cd "$(dirname "$0")"
 
+MKSWU=$(command -v "${MKSWU:-$PWD/../mkswu}") \
+	|| error "mkswu script not found"
+SCRIPTS_SRC_DIR="$PWD/../scripts"
+if [ "${MKSWU%/usr/bin/mkswu}" != "$MKSWU" ]; then
+	SCRIPTS_SRC_DIR="${MKSWU%/bin/mkswu}/share/mkswu/scripts"
+fi
+
 export TEST_SCRIPTS=1
 SWDESC=/dev/null
 SCRIPTSDIR=./out/scripts
@@ -144,11 +151,11 @@ test_cert_update() {
 	SWUPDATE_PEM="$SCRIPTSDIR/swupdate.pem"
 
 	echo "swupdate certificate: default setup fails"
-	cat ../swupdate-onetime-public.pem > "$SWUPDATE_PEM"
+	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
 	( update_swupdate_certificate; ) && error "certificate update should have failed"
 
 	echo "swupdate certificate: default setup with allow OK"
-	cat ../swupdate-onetime-public.pem > "$SWUPDATE_PEM"
+	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
 	echo "ALLOW_PUBLIC_CERT" > "$SCRIPTSDIR/swdesc"
 	( SWDESC="$SCRIPTSDIR/swdesc" update_swupdate_certificate; ) \
 		|| error "should be ok with allow public cert"
@@ -159,7 +166,7 @@ test_cert_update() {
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp256k1 \
 		-keyout "$SCRIPTSDIR/key" -out "$SCRIPTSDIR/pub" -subj "/O=SWUpdate/CN=test" \
 		-nodes || error "Could not generate new key"
-	cat ../swupdate-onetime-public.pem > "$SWUPDATE_PEM"
+	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
 	cat "$SCRIPTSDIR/pub" >> "$SWUPDATE_PEM"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok with new key"
@@ -313,17 +320,17 @@ test_preserve_files_pre() {
 # run in subshell as we cannot source all at once
 (
 	set -e
-	. ../scripts/common.sh
+	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
-	. ../scripts/versions.sh
+	. "$SCRIPTS_SRC_DIR/versions.sh"
 	test_version_update
 ) || error "versions test failed"
 
 (
 	set -e
-	. ../scripts/common.sh
+	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
-	. ../scripts/post_rootfs.sh
+	. "$SCRIPTS_SRC_DIR/post_rootfs.sh"
 	test_passwd_update
 	test_cert_update
 	test_preserve_files_post
@@ -331,9 +338,9 @@ test_preserve_files_pre() {
 
 (
 	set -e
-	. ../scripts/common.sh
+	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
-	. ../scripts/pre_rootfs.sh
+	. "$SCRIPTS_SRC_DIR/pre_rootfs.sh"
 	test_preserve_files_pre
 ) || error "pre test failed"
 
