@@ -8,6 +8,9 @@ this is no longer manageable with install-if different.
 Because swupdate ordering and sort -V have different behaviour there.
 - versions: also check for previously incorrectly identical versions
 when using install-if different (big numbers in semver, + part of semver)
+- rename mkimage.sh to mkswu and roll all secondary scripts within it,
+suggesting to use the mkswu package instead of running from git.
+- rename mkimage.conf to mkswu.conf (this should be transparently converted)
 
 
 features:
@@ -19,6 +22,11 @@ This can be useful to get more coherent behaviour with hawkbit
 /var/app/rollback/volumes for non-os upates. forbid '../'s, and
 also forbid relative paths for os.
 - Japanese translation if LC_MESSAGES is set to ja*
+- add mkswu --init for first setup, which will guide user through
+key generation and fill in initial_setup.desc
+- add mkswu --import to import previously existing config into
+$HOME/mkswu
+- add mkswu --version
 
 fixes:
  - examples/kernel_update_plain: fix comment, add modules

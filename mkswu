@@ -81,10 +81,12 @@ usage() {
 	info "Usage: %s [opts] desc [desc...]" "$0"
 	info
 	info "Options:"
-	info "  -c, --config <conf>     path to config (default mkswu.conf)"
+	info "  -c, --config <conf>     path to config (default ~/mkswu/mkswu.conf)"
 	info "  -o, --out <out.swu>     path to output file (default from first desc's name)"
-	info "  --mkconf                generate default config file"
+	info "  --init                  walk through initial key and first image generation"
+	info "  --import                import current directory's config and keys into config dir"
 	info "  --genkey                toggle key generation mode (see below for suboptions)"
+	info "  --version               print version and exit"
 	info "  desc                    image description file(s), if multiple are given"
 	info "                          then the generated image will merge all the contents"
 	info
