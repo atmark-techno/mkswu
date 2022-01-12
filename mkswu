@@ -1076,6 +1076,8 @@ EOF
 mkswu_import() {
 	# import standalone config file and its keys to $HOME/swu
 	local NEW_CONFIG_DIR="$CONFIG_DIR"
+	[ "${CONFIG#$CONFIG_DIR}" = "$CONFIG" ] \
+		|| NEW_CONFIG_DIR="$HOME/mkswu"
 	local NEW_CONFIG="$NEW_CONFIG_DIR/mkswu.conf"
 	[ -e "$CONFIG" ] || error "%s does not exist\nUse --config to specify what to import" "$CONFIG"
 	CONFIG_DIR="$(realpath "$(dirname "$CONFIG")")" \
@@ -1368,7 +1370,6 @@ sw-description.sig"
 			fi
 		done
 	done
-	CONFIG_DIR="$HOME/mkswu"
 	[ -e "$CONFIG" ] || CONFIG="$CONFIG_DIR/mkswu.conf"
 
 	local ARG SKIP=0
