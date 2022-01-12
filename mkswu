@@ -1400,6 +1400,7 @@ sw-description.sig"
 		"--config-dir")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			CONFIG_DIR="$1"
+			[ -e "$1/mkswu.conf" ] && CONFIG="$1/mkswu.conf"
 			SKIP=1
 			;;
 		"-o"|"--out")
