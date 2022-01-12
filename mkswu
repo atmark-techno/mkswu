@@ -1021,21 +1021,20 @@ update_mkswu_conf() {
 
 	# subshell to not source multiple versions of same file
 	(
-		set -e
+		set +e
 		sha=$(sha256sum "$SCRIPT_DIR/mkswu.conf.defaults")
 		sha=${sha%% *}
 		if [ -e "$CONFIG" ]; then
-			. "$CONFIG"
+			DEFAULTS_MKSWU_CONF_SHA256=$(sed -ne 's/DEFAULTS_\(MKIMAGE\|MKSWU\)_CONF_SHA256="\(.*\)"/\2/p' "$CONFIG")
 			# config exist + no sha: don't update
-			[ -n "$DEFAULTS_MKIMAGE_CONF_SHA256" ] \
-				&& [ -z "$DEFAULTS_MKSWU_CONF_SHA256" ] \
-				&& DEFAULTS_MKSWU_CONF_SHA256="$DEFAULTS_MKIMAGE_CONF_SHA256"
 			[ -z "$DEFAULTS_MKSWU_CONF_SHA256" ] && exit
 			# sha didn't change: don't update
 			[ "$DEFAULTS_MKSWU_CONF_SHA256" = "$sha" ] && exit
 
 			# keep old version
-			cp "$CONFIG" "$CONFIG.autosave-$(date +%Y%m%d)"
+			cp "$CONFIG" "$CONFIG.autosave-$(date +%Y%m%d)" \
+				|| error "Could not update config %s" "$CONFIG"
+			
 
 			# update hash, trim comments/empty lines past auto section comment
 			# and update obsolete header if still present
@@ -1047,7 +1046,8 @@ update_mkswu_conf() {
 			    "$CONFIG" > "$NEW_CONFIG.new" \
 			    || error "Could not update config %s" "$CONFIG"
 		else
-			cat > "$NEW_CONFIG.new" <<EOF
+			cat > "$NEW_CONFIG.new" <<EOF \
+				|| error "Could not update config %s" "$CONFIG"
 # defaults section: used to keep auto section comments below up to date
 # if you remove it the file will not be edited again.
 DEFAULTS_MKSWU_CONF_SHA256="$sha"
