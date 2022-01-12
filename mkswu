@@ -1333,9 +1333,8 @@ sw-description.sig"
 
 	local ARG SKIP=0
 	for ARG; do
-		shift
 		# skip previously used argument
-		# using a for loop means we can't shit ahead
+		# using a for loop means we can't shift ahead
 		if [ "$SKIP" -gt 0 ]; then
 			SKIP=$((SKIP-1))
 			continue
@@ -1343,6 +1342,13 @@ sw-description.sig"
 		if [ "$SKIP" -lt 0 ]; then
 			set -- "$@" "$ARG"
 			continue
+		fi
+
+		shift
+		# split --switch=value
+		if [ "${ARG#--*=}" != "$ARG" ]; then
+			set -- "${ARG#--*=}" "$@"
+			ARG="${ARG%%=*}"
 		fi
 		case "$ARG" in
 		"-c"|"--config")
@@ -1398,6 +1404,7 @@ sw-description.sig"
 			set -- "$@" "$ARG"
 			;;
 		esac
+		[ "$SKIP" -gt 0 ] && shift "$SKIP"
 	done
 
 	if [ -e "$SCRIPT_DIR/mkswu.conf.defaults" ]; then
