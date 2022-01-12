@@ -190,7 +190,8 @@ baseos_upgrade_fixes() {
 	if grep -q /dev/mmcblk2 /proc/cmdline \
 	    && [ -e /dev/mmcblk2gp1 ] \
 	    && ! grep -q /dev/mmcblk2gp1 /target/etc/fstab; then
-		cat >> /target/etc/fstab <<'EOF'
+		cat >> /target/etc/fstab <<'EOF' \
+			|| error "Could not append to target /etc/fstab"
 /dev/mmcblk2gp1	/var/at-log			vfat	defaults			0 0
 EOF
 	fi
