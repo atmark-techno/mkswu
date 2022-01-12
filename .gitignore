@@ -20,3 +20,8 @@
 *.tar.xz
 *.img
 imx-boot*
+# debian files
+debian/debhelper-build-stamp
+debian/files
+debian/mkswu
+debian/mkswu.substvars

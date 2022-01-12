@@ -16,9 +16,16 @@ install_examples = $(wildcard examples/*desc) $(wildcard examples/*sh)
 install_hawkbit = hawkbit/nginx_hawkbit.conf hawkbit/mysql_utf8.cnf hawkbit/docker-compose.yml hawkbit/create-update.sh hawkbit/.env
 
 
-.PHONY: all install check
+.PHONY: all install check clean
 
 all: $(locales) $(pot)
+
+clean:
+	rm -rf tests/out
+	@# tests input
+	rm -f tests/zoo/* tests/mkswu-aes.conf tests/swupdate.aes-key
+	rm -f examples/Image examples/imx8mp-yakushima-eva.dtb examples/nginx_start.tar imx-boot_armadillo_x2 examples/linux-at-5.10.9-r3.apk
+
 
 po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc
 	./po/update.sh $@ $^
@@ -42,7 +49,7 @@ check:
 	./tests/run.sh
 
 TAG ?= $(shell git describe --tags)
-TARNAME = mkswu-$(TAG)
+TARNAME = mkswu_$(subst -,.,$(TAG))
 
 dist:
 	@if ! [ -e .git ]; then \
@@ -54,7 +61,7 @@ dist:
 		false; \
 	fi
 	git ls-files --recurse-submodules | \
-		tar -cazf $(TARNAME).tar.gz --xform s:^:$(TARNAME)/: --verbatim-files-from -T-
+		tar -caJf $(TARNAME).orig.tar.xz --xform s:^:$(TARNAME)/: --verbatim-files-from -T-
 
 
 install: all
