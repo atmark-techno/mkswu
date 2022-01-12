@@ -11,7 +11,7 @@ build_check install_files \
 	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar"
 
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
-../mkswu --genkey --aes --config mkswu-aes.conf
+"$MKSWU" --genkey --aes --config mkswu-aes.conf
 conf=mkswu-aes.conf build_check aes
 
 build_check board "swdesc 'iot-g4-es1 = '" \

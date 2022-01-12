@@ -11,7 +11,7 @@ if [ "$CLEAN_TESTS_OUT" = "yes" ]; then
 	rm -rf ./out
 fi
 
-../mkswu --genkey --cn test --plain
+"${MKSWU:-../mkswu}" --genkey --cn test --plain
 
 ./examples.sh
 ./build_tests.sh

@@ -4,6 +4,7 @@ set -e
 
 TESTS_DIR=$(dirname "${BASH_SOURCE[0]}")
 . $TESTS_DIR/../scripts/versions.sh
+MKSWU=${MKSWU:-$TESTS_DIR/../mkswu}
 
 error() {
 	printf "%s\n" "$@" >&2
@@ -65,7 +66,7 @@ build_check() {
 	shift
 
 	echo "Building $name"
-	"$TESTS_DIR/../mkswu" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	"$MKSWU" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
 
 	for check; do
 		eval check "$check"
@@ -81,5 +82,5 @@ build_fail() {
 	shift
 
 	echo "Building $name (must fail)"
-	! "$TESTS_DIR/../mkswu" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	! "$MKSWU" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
 }
