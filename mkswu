@@ -1071,6 +1071,45 @@ EOF
 	fi
 }
 
+mkswu_import() {
+	# import standalone config file and its keys to $HOME/swu
+	local NEW_CONFIG_DIR="$CONFIG_DIR"
+	local NEW_CONFIG="$NEW_CONFIG_DIR/mkswu.conf"
+	[ -e "$CONFIG" ] || error "%s does not exist\nUse --config to specify what to import" "$CONFIG"
+	CONFIG_DIR="$(realpath "$(dirname "$CONFIG")")" \
+		|| error "Could not resolve %s directory name" "$CONFIG"
+
+	if [ -e "$NEW_CONFIG" ]; then
+		info "Config %s already exists, skipping import" "$NEW_CONFIG"
+		return
+	fi
+
+	info "Importing config %s and associated keys to %s" "$CONFIG" "$NEW_CONFIG_DIR"
+
+	mkdir -vp "$NEW_CONFIG_DIR"
+	for file in "$PRIVKEY" "$PUBKEY" "$ENCRYPT_KEYFILE"; do
+		[ -z "$file" ] && continue
+		# try to second-guess key position: if key file is in
+		# new config dir we probably meant to use old one
+		[ "${file#$NEW_CONFIG_DIR}" != "$file" ] \
+			&& file="$CONFIG_DIR/${file#$NEW_CONFIG_DIR}"
+		[ -e "$file" ] \
+			|| error "Key file %s could not be found, try setting absolute path in config file and reimport" "${file##*/}"
+
+		cp -v "$file" "$NEW_CONFIG_DIR/" \
+			|| error "Could not copy %s to %s" "$file" "$NEW_CONFIG_DIR/"
+	done
+
+	sed -e "s@^PRIVKEY=.*@PRIVKEY=\"\$CONFIG_DIR/$(basename "$PRIVKEY")\"@" \
+	    -e "s@^PUBKEY=.*@PUBKEY=\"\$CONFIG_DIR/$(basename "$PUBKEY")\"@" \
+	    -e "s@^ENCRYPT_KEYFILE=.*@ENCRYPT_KEYFILE=\"\$CONFIG_DIR/$(basename "$ENCRYPT_KEYFILE")\"@" \
+	    "$CONFIG" > "$NEW_CONFIG" \
+		|| error "Could not update config %s" "$NEW_CONFIG"
+
+	info "Imported config %s to %s" "$CONFIG" "$NEW_CONFIG"
+	info "You can know check mkswu works with new config and remove the old directory"
+}
+
 absolutize_file_paths() {
 	[ "${PRIVKEY#/}" != "$PRIVKEY" ] || PRIVKEY=$(realpath "$PRIVKEY")
 	[ "${PUBKEY#/}" != "$PUBKEY" ] || PUBKEY=$(realpath "$PUBKEY")
@@ -1079,7 +1118,7 @@ absolutize_file_paths() {
 		|| ENCRYPT_KEYFILE=$(realpath "$ENCRYPT_KEYFILE")
 }
 
-genkey_aes() {
+mkswu_genkey_aes() {
 	local oldumask
 
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
@@ -1105,7 +1144,7 @@ genkey_aes() {
 	info "or equivalent"
 }
 
-genkey_sign() {
+mkswu_genkey_sign() {
 	local oldumask
 	local CURVE="${GENKEY_CURVE:-secp256k1}"
 	local DAYS="${GENKEY_DAYS:-$((5*365))}"
@@ -1162,9 +1201,9 @@ mkinit_genkey() {
 
 	if [ -n "$KEYPASS" ]; then
 		echo "$KEYPASS" | PRIVKEY_PASS="stdin" \
-			VERBOSE=1 genkey_sign
+			VERBOSE=1 mkswu_genkey_sign
 	else
-		GENKEY_PLAIN=1 VERBOSE=1 genkey_sign
+		GENKEY_PLAIN=1 VERBOSE=1 mkswu_genkey_sign
 	fi || exit 1
 
 	# Also prompt for encryption
@@ -1180,7 +1219,7 @@ mkinit_genkey() {
 		esac
 	done
 	if [ -n "$AES" ]; then
-		VERBOSE=1 genkey_aes
+		VERBOSE=1 mkswu_genkey_aes
 		info "Generated %s" "$ENCRYPT_KEYFILE"
 	fi
 }
@@ -1272,12 +1311,11 @@ mkinit_mkimageinitswu() {
 }
 
 
-mkimage_init() {
+mkswu_init() {
 	mkinit_genkey
 	mkinit_geninitdesc
 	mkinit_mkimageinitswu
 }
-
 
 mkimage() {
 	local SCRIPT_DIR
@@ -1293,7 +1331,7 @@ mkimage() {
 sw-description.sig"
 	local FIRST_SWDESC_INIT=1
 	local COPY_USB=""
-	local MKINIT=""
+	local MODE=""
 	local VERBOSE=2
 	local TEXTDOMAINDIR="$SCRIPT_DIR/locale"
 
@@ -1302,7 +1340,6 @@ sw-description.sig"
 	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
 
 	# genkey options
-	local GENKEY=""
 	local GENKEY_AES="" GENKEY_PLAIN="" GENKEY_CN=""
 
 	# default default values
@@ -1353,7 +1390,13 @@ sw-description.sig"
 		case "$ARG" in
 		"-c"|"--config")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
-			CONFIG="$1"
+			CONFIG="$(realpath -e "$1")" \
+				|| error "%s does not exist" "$1"
+			SKIP=1
+			;;
+		"--config-dir")
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			CONFIG_DIR="$1"
 			SKIP=1
 			;;
 		"-o"|"--out")
@@ -1369,25 +1412,37 @@ sw-description.sig"
 			VERBOSE=$((VERBOSE-1))
 			;;
 		"--mkconf")
-			update_mkimage_conf
+			update_mkswu_conf
 			exit 0
 			;;
 		"--init")
-			MKINIT=1
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			MODE=init
+			;;
+		"--import")
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			MODE=import
+			# for import mode, also use config in current directory if
+			# another one wasn't already found/set
+			if ! [ -e "$CONFIG" ]; then
+				[ -e "mkimage.conf" ] && CONFIG="$PWD/mkimage.conf"
+				[ -e "mkswu.conf" ] && CONFIG="$PWD/mkswu.conf"
+			fi
 			;;
 		"--genkey")
-			GENKEY=1
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			MODE=genkey_sign
 			;;
 		"--aes")
-			[ -n "$GENKEY" ] || error "%s must be passed after --genkey" "$ARG"
-			GENKEY_AES=1
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after --genkey" "$ARG"
+			MODE=genkey_aes
 			;;
 		"--plain")
-			[ -n "$GENKEY" ] || error "%s must be passed after --genkey" "$ARG"
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after --genkey" "$ARG"
 			GENKEY_PLAIN=1
 			;;
 		"--cn")
-			[ -n "$GENKEY" ] || error "%s must be passed after --genkey" "$ARG"
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after --genkey" "$ARG"
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			GENKEY_CN="$1"
 			SKIP=1
@@ -1411,7 +1466,7 @@ sw-description.sig"
 		. "$SCRIPT_DIR/mkswu.conf.defaults"
 	fi
 	if [ -n "$CONFIG" ]; then
-		update_mkimage_conf
+		update_mkswu_conf
 		[ -e "$CONFIG" ] || error "%s does not exist" "$CONFIG"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
 		. "$CONFIG"
@@ -1424,23 +1479,12 @@ sw-description.sig"
 	[ -n "$SWMK_HW_COMPAT" ] && HW_COMPAT="$SWMK_HW_COMPAT"
 	[ -n "$SWMK_DESCRIPTION" ] && DESCRIPTION="$SWMK_DESCRIPTION"
 
-	if [ -n "$MKINIT" ]; then
-		[ $# -gt 0 ] && error "genkey mode had extra arguments?"
-		[ -n "$OUT" ] && error "--out not handled in genkey mode"
-		mkimage_init
+	if [ -n "$MODE" ]; then
+		[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
+		[ -n "$OUT" ] && error "%s is incompatible with --%s" "out" "$MODE"
+		"mkswu_$MODE"
 		exit 0
 	fi
-	if [ -n "$GENKEY" ]; then
-		[ $# -gt 0 ] && error "genkey mode had extra arguments?"
-		[ -n "$OUT" ] && error "--out not handled in genkey mode"
-		if [ -n "$GENKEY_AES" ]; then
-			genkey_aes
-		else
-			genkey_sign
-		fi
-		exit 0
-	fi
-
 
 	# actual image building
 	if [ -z "$OUT" ]; then

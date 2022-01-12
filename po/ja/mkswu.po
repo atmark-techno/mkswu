@@ -310,11 +310,11 @@ msgstr ""
 msgid ""
 "%s does not exist\\nplease note swdesc_files syntax changed and no longer "
 "requires setting a name"
-msgstr ""
+msgstr "%s が存在しません。"
 
 #: mkswu
-msgid "%s does not exist?"
-msgstr "%s は存在しません。"
+msgid "%s does not exist"
+msgstr "%s が存在しません。"
 
 #: mkswu
 msgid "%s is not inside %s"
@@ -401,11 +401,60 @@ msgstr "%s ディレクトリに入れませんでした。"
 msgid ""
 "cpio does not contain files we requested (in the order we requested): check "
 "%s"
+msgstr "%s ファイルに設定した中身を確認できませんでした。"
+
+#: mkswu
+msgid ""
+"Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already "
+"exists!"
 msgstr ""
+"mkimage.conf から mkswu.conf にコンバートしようとしてますが、mkswu.conf はす"
+"でに存在します。"
+
+#: mkswu
+msgid "Could not update config %s"
+msgstr "%sを更新できませんでした"
+
+#: mkswu
+msgid "Updated config file %s"
+msgstr "コンフィグを更新しました：%s"
 
 #: mkswu
 msgid "Could not update default config"
 msgstr "デフォルトのコンフィグファイルをアップデートできませんでした。"
+
+#: mkswu
+msgid "%s does not exist\\nUse --config to specify what to import"
+msgstr "%s が存在しません。\\n--config で指定してください。"
+
+#: mkswu
+msgid "Could not resolve %s directory name"
+msgstr "%s のディレクトリを確定できませんでした。"
+
+#: mkswu
+msgid "Config %s already exists, skipping import"
+msgstr "%s のコンフィグファイルがすでに存在します。--importを中止します。"
+
+#: mkswu
+msgid "Importing config %s and associated keys to %s"
+msgstr "%s のコンフィグファイルとその鍵を %s にコピーします。"
+
+#: mkswu
+msgid ""
+"Key file %s could not be found, try setting absolute path in config file and "
+"reimport"
+msgstr ""
+"%s の鍵ファイルを見つかりませんでした。コンフィグに絶対パスを設定してみてくだ"
+"さい。"
+
+#: mkswu
+msgid "Imported config %s to %s"
+msgstr "%s のコンフィグファイルを %s にコピーしました。"
+
+#: mkswu
+msgid ""
+"You can know check mkswu works with new config and remove the old directory"
+msgstr "mkswu でイメージ作成を試してから前のディレクトリを消してください。"
 
 #: mkswu
 msgid "Info: using default aes key path"
@@ -417,7 +466,7 @@ msgstr "%s にENCRYPT_KEYFILEのデフォルトを書けませんでした。"
 
 #: mkswu
 msgid "%s already exists, skipping"
-msgstr ""
+msgstr "%s はすでに存在します。このファイルの作成を中止します。"
 
 #: mkswu
 msgid "Generating random number failed"
@@ -510,7 +559,7 @@ msgstr "アップデートイメージを暗号化しますか？ (N/y)"
 
 #: mkswu
 msgid "Generated %s"
-msgstr ""
+msgstr "%s を作成しました。"
 
 #: mkswu
 msgid "Allow updates signed by Atmark Techno? (Y/n)"
@@ -584,20 +633,16 @@ msgid "%s must end with .swu"
 msgstr "%s は「.swu」で終わらせてください。"
 
 #: mkswu
+msgid "%s is incompatible with --%s"
+msgstr "%s と --%s は一緒に使えません。"
+
+#: mkswu
 msgid "%s must be passed after --genkey"
-msgstr ""
+msgstr "%s は --genkey の後にしか使えません。"
 
 #: mkswu
-msgid "%s does not exist"
-msgstr "%s が存在しません。"
-
-#: mkswu
-msgid "genkey mode had extra arguments?"
-msgstr ""
-
-#: mkswu
-msgid "--out not handled in genkey mode"
-msgstr ""
+msgid "--%s had extra arguments?"
+msgstr "%s に引数が必要です。"
 
 #: mkswu
 msgid "cannot enter %s directory"
@@ -628,9 +673,10 @@ msgstr "%s を作成しました。"
 #: examples/enable_sshd.desc
 msgid "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
 msgstr ""
+"examples/enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてください。"
 
 #: examples/hawkbit_register.desc
 msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
-msgstr ""
+msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"

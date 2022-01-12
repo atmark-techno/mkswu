@@ -12,7 +12,7 @@ msgstr ""
 msgid "Options:"
 msgstr ""
 #: mkswu
-msgid "  -c, --config <conf>     path to config (default mkimage.conf)"
+msgid "  -c, --config <conf>     path to config (default mkswu.conf)"
 msgstr ""
 #: mkswu
 msgid "  -o, --out <out.swu>     path to output file (default from first desc's name)"
@@ -216,7 +216,7 @@ msgstr ""
 msgid "%s does not exist\\nplease note swdesc_files syntax changed and no longer requires setting a name"
 msgstr ""
 #: mkswu
-msgid "%s does not exist?"
+msgid "%s does not exist"
 msgstr ""
 #: mkswu
 msgid "%s is not inside %s"
@@ -276,7 +276,37 @@ msgstr ""
 msgid "cpio does not contain files we requested (in the order we requested): check %s"
 msgstr ""
 #: mkswu
+msgid "Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already exists!"
+msgstr ""
+#: mkswu
+msgid "Could not update config %s"
+msgstr ""
+#: mkswu
+msgid "Updated config file %s"
+msgstr ""
+#: mkswu
 msgid "Could not update default config"
+msgstr ""
+#: mkswu
+msgid "%s does not exist\\nUse --config to specify what to import"
+msgstr ""
+#: mkswu
+msgid "Could not resolve %s directory name"
+msgstr ""
+#: mkswu
+msgid "Config %s already exists, skipping import"
+msgstr ""
+#: mkswu
+msgid "Importing config %s and associated keys to %s"
+msgstr ""
+#: mkswu
+msgid "Key file %s could not be found, try setting absolute path in config file and reimport"
+msgstr ""
+#: mkswu
+msgid "Imported config %s to %s"
+msgstr ""
+#: mkswu
+msgid "You can know check mkswu works with new config and remove the old directory"
 msgstr ""
 #: mkswu
 msgid "Info: using default aes key path"
@@ -408,16 +438,13 @@ msgstr ""
 msgid "%s must end with .swu"
 msgstr ""
 #: mkswu
+msgid "%s is incompatible with --%s"
+msgstr ""
+#: mkswu
 msgid "%s must be passed after --genkey"
 msgstr ""
 #: mkswu
-msgid "%s does not exist"
-msgstr ""
-#: mkswu
-msgid "genkey mode had extra arguments?"
-msgstr ""
-#: mkswu
-msgid "--out not handled in genkey mode"
+msgid "--%s had extra arguments?"
 msgstr ""
 #: mkswu
 msgid "cannot enter %s directory"
