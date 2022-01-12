@@ -1,0 +1,20 @@
+# header
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+#: mkimage.sh
+msgid "Running mkimage.sh from git is deprecated"
+msgstr "git からの mkimage.sh を使えなくなりました。"
+
+#: mkimage.sh
+msgid "Please install the atmark mkswu debian package and run mkswu instead"
+msgstr "mkswu パッケージをインストールしてから mkswu を使ってください。"
+
+#: mkimage.sh
+msgid ""
+"If you already had generated keys and/or images, you can use mkswu --import"
+msgstr "すでに鍵等を作成していたら、このディレクトリから"
+
+#: mkimage.sh
+msgid "in this directory to import previous config"
+msgstr "mkswu --import で前のコンフィグレーションをインポートできます。"

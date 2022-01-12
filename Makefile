@@ -23,6 +23,9 @@ all: $(locales) $(pot)
 po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc
 	./po/update.sh $@ $^
 
+po/mkimage.pot: mkimage.sh
+	./po/update.sh $@ $^
+
 po/$(l)/%.po: po/%.pot
 	msgmerge -o $@ $@ $<
 
