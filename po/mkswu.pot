@@ -12,16 +12,22 @@ msgstr ""
 msgid "Options:"
 msgstr ""
 #: mkswu
-msgid "  -c, --config <conf>     path to config (default mkswu.conf)"
+msgid "  -c, --config <conf>     path to config (default ~/mkswu/mkswu.conf)"
 msgstr ""
 #: mkswu
 msgid "  -o, --out <out.swu>     path to output file (default from first desc's name)"
 msgstr ""
 #: mkswu
-msgid "  --mkconf                generate default config file"
+msgid "  --init                  walk through initial key and first image generation"
+msgstr ""
+#: mkswu
+msgid "  --import                import current directory's config and keys into config dir"
 msgstr ""
 #: mkswu
 msgid "  --genkey                toggle key generation mode (see below for suboptions)"
+msgstr ""
+#: mkswu
+msgid "  --version               print version and exit"
 msgstr ""
 #: mkswu
 msgid "  desc                    image description file(s), if multiple are given"
@@ -285,9 +291,6 @@ msgstr ""
 msgid "Updated config file %s"
 msgstr ""
 #: mkswu
-msgid "Could not update default config"
-msgstr ""
-#: mkswu
 msgid "%s does not exist\\nUse --config to specify what to import"
 msgstr ""
 #: mkswu
@@ -448,6 +451,18 @@ msgid "mkswu not installed and could not guess mkswu version from git"
 msgstr ""
 #: mkswu
 msgid "mkswu version %s"
+msgstr ""
+#: mkswu
+msgid "Config already imported (%s). Remove it if you really want to import something else"
+msgstr ""
+#: mkswu
+msgid "Could not find config file to import, specify it with --config"
+msgstr ""
+#: mkswu
+msgid "Please import current config with mkswu --import first"
+msgstr ""
+#: mkswu
+msgid "Config file not found, create one with mkswu --init"
 msgstr ""
 #: mkswu
 msgid "--%s had extra arguments?"

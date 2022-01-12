@@ -1370,7 +1370,10 @@ sw-description.sig"
 			fi
 		done
 	done
-	[ -e "$CONFIG" ] || CONFIG="$CONFIG_DIR/mkswu.conf"
+	# not found if doesn't start with /
+	# just checking for -e $CONFIG would find ./mkimage.conf...
+	[ "${CONFIG#/}" != "$CONFIG" ] \
+		|| CONFIG="$CONFIG_DIR/mkswu.conf"
 
 	local ARG SKIP=0
 	for ARG; do
@@ -1401,7 +1404,7 @@ sw-description.sig"
 		"--config-dir")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			CONFIG_DIR="$1"
-			[ -e "$1/mkswu.conf" ] && CONFIG="$1/mkswu.conf"
+			CONFIG="$1/mkswu.conf"
 			SKIP=1
 			;;
 		"-o"|"--out")
@@ -1479,7 +1482,16 @@ sw-description.sig"
 	if [ -e "$SCRIPT_DIR/mkswu.conf.defaults" ]; then
 		. "$SCRIPT_DIR/mkswu.conf.defaults"
 	fi
+	if [ "$MODE" = "import" ] && [ "$CONFIG" = "$HOME/mkswu/mkswu.conf" ]; then
+		[ -e "$CONFIG" ] && error "Config already imported (%s). Remove it if you really want to import something else" "$CONFIG"
+		error "Could not find config file to import, specify it with --config"
+	fi
+	if [ -z "$MODE" ] && ! [ -e "$CONFIG" ]; then
+		[ -e "mkimage.conf" ] && error "Please import current config with mkswu --import first"
+		error "Config file not found, create one with mkswu --init"
+	fi
 	if [ -n "$CONFIG" ]; then
+		trace "Loading config %s" "$CONFIG"
 		update_mkswu_conf
 		[ -e "$CONFIG" ] || error "%s does not exist" "$CONFIG"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
@@ -1511,7 +1523,7 @@ sw-description.sig"
 	rm -f "$OUTDIR/sw-description-"* "$OUTDIR/used_files"
 	track_used "$OUTDIR"
 
-	main_cwd=$PWD
+	main_cwd="$PWD"
 	absolutize_file_paths
 	# build sw-desc fragments
 	for desc; do

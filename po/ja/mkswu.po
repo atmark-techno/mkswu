@@ -15,7 +15,7 @@ msgid "Options:"
 msgstr ""
 
 #: mkswu
-msgid "  -c, --config <conf>     path to config (default mkswu.conf)"
+msgid "  -c, --config <conf>     path to config (default ~/mkswu/mkswu.conf)"
 msgstr ""
 
 #: mkswu
@@ -25,13 +25,24 @@ msgid ""
 msgstr ""
 
 #: mkswu
-msgid "  --mkconf                generate default config file"
+msgid ""
+"  --init                  walk through initial key and first image generation"
+msgstr ""
+
+#: mkswu
+msgid ""
+"  --import                import current directory's config and keys into "
+"config dir"
 msgstr ""
 
 #: mkswu
 msgid ""
 "  --genkey                toggle key generation mode (see below for "
 "suboptions)"
+msgstr ""
+
+#: mkswu
+msgid "  --version               print version and exit"
 msgstr ""
 
 #: mkswu
@@ -420,10 +431,6 @@ msgid "Updated config file %s"
 msgstr "コンフィグを更新しました：%s"
 
 #: mkswu
-msgid "Could not update default config"
-msgstr "デフォルトのコンフィグファイルをアップデートできませんでした。"
-
-#: mkswu
 msgid "%s does not exist\\nUse --config to specify what to import"
 msgstr "%s が存在しません。\\n--config で指定してください。"
 
@@ -649,6 +656,28 @@ msgid "mkswu version %s"
 msgstr ""
 
 #: mkswu
+msgid ""
+"Config already imported (%s). Remove it if you really want to import "
+"something else"
+msgstr ""
+"%s のコンフィグがすでに存在します。本当にインポートしたかったらファイルを消し"
+"てからまたインポートしてください。"
+
+#: mkswu
+msgid "Could not find config file to import, specify it with --config"
+msgstr ""
+"インポートするべきコンフィグを見つかりませんでした。--config で指定してくださ"
+"い。"
+
+#: mkswu
+msgid "Please import current config with mkswu --import first"
+msgstr "コンフィグを mkswu --import で先にロードしてください。"
+
+#: mkswu
+msgid "Config file not found, create one with mkswu --init"
+msgstr "コンフィグを見つかりませんでした。 mkswu --init で作成してください。"
+
+#: mkswu
 msgid "--%s had extra arguments?"
 msgstr "%s に引数が必要です。"
 
@@ -688,3 +717,6 @@ msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
+
+#~ msgid "Could not update default config"
+#~ msgstr "デフォルトのコンフィグファイルをアップデートできませんでした。"

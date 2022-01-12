@@ -67,6 +67,9 @@ EOF
 	dpkg-buildpackage -us -uc
 
 	sudo dpkg -i "../mkswu_${VERSION}-1_all.deb"
+
+	# clean existing user config and retest with package
+	rm -rf ~/mkswu
 	mkswu --genkey --config-dir . --plain --cn test
 	mkswu --import
 	rm -f mkswu.conf
