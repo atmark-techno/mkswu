@@ -1,6 +1,6 @@
 # public and private key locations for signing purpose.
-PRIVKEY="$CONF_DIR/swupdate.key"
-PUBKEY="$CONF_DIR/swupdate.pem"
+PRIVKEY="$CONFIG_DIR/swupdate.key"
+PUBKEY="$CONFIG_DIR/swupdate.pem"
 
 # private key password, if set. defaults to prompting for password.
 # Note that this is not safe if you store the key and its password
@@ -15,7 +15,7 @@ ENCRYPT_KEYFILE=""
 # you might no longer be able to install atmark updates.
 # See documentation for help if you require changing it:
 # https://sbabic.github.io/swupdate/sw-description.html#hardware-compatibility
-HW_COMPAT="#RE:^at1.*$"
+HW_COMPAT="#RE:^at1(-.*)?$"
 
 # Description is an informative string describing your update in verbose mode
 # You probably want to override this in your image descriptions

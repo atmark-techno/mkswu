@@ -81,7 +81,7 @@ usage() {
 	info "Usage: %s [opts] desc [desc...]" "$0"
 	info
 	info "Options:"
-	info "  -c, --config <conf>     path to config (default mkimage.conf)"
+	info "  -c, --config <conf>     path to config (default mkswu.conf)"
 	info "  -o, --out <out.swu>     path to output file (default from first desc's name)"
 	info "  --mkconf                generate default config file"
 	info "  --genkey                toggle key generation mode (see below for suboptions)"
@@ -647,7 +647,7 @@ swdesc_files() {
 	set --
 	for tarfile_raw in $tarfiles_src; do
 		tarfile=$(realpath -e -s --relative-to="$basedir" "$tarfile_raw") \
-			|| error "%s does not exist?" "$tarfile_raw"
+			|| error "%s does not exist" "$tarfile_raw"
 		[ "${tarfile#../}" = "$tarfile" ] \
 			|| error "%s is not inside %s" "$tarfile_raw" "$basedir"
 
@@ -1008,50 +1008,67 @@ cleanup_outdir() {
 		| xargs rm -f
 }
 
-update_mkimage_conf() {
+update_mkswu_conf() {
 	local confbase="${CONFIG##*/}"
-	[ "$confbase" != mkimage.conf ] && return
+	local NEW_CONFIG="$CONFIG"
+	
+	if [ "$confbase" = mkimage.conf ]; then
+		NEW_CONFIG="$(dirname "$CONFIG")/mkswu.conf"
+		[ -e "$NEW_CONFIG" ] && error "Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already exists!"
+	fi
 
-	[ -e "$CONF_DIR" ] || mkdir -p "$CONF_DIR"
+	[ -e "$CONFIG_DIR" ] || mkdir -vp "$CONFIG_DIR"
 
 	# subshell to not source multiple versions of same file
 	(
 		set -e
-		sha=$(sha256sum "$SCRIPT_DIR/mkimage.conf.defaults")
+		sha=$(sha256sum "$SCRIPT_DIR/mkswu.conf.defaults")
 		sha=${sha%% *}
 		if [ -e "$CONFIG" ]; then
 			. "$CONFIG"
 			# config exist + no sha: don't update
-			[ -z "$DEFAULTS_MKIMAGE_CONF_SHA256" ] && exit
+			[ -n "$DEFAULTS_MKIMAGE_CONF_SHA256" ] \
+				&& [ -z "$DEFAULTS_MKSWU_CONF_SHA256" ] \
+				&& DEFAULTS_MKSWU_CONF_SHA256="$DEFAULTS_MKIMAGE_CONF_SHA256"
+			[ -z "$DEFAULTS_MKSWU_CONF_SHA256" ] && exit
 			# sha didn't change: don't update
-			[ "$DEFAULTS_MKIMAGE_CONF_SHA256" = "$sha" ] && exit
+			[ "$DEFAULTS_MKSWU_CONF_SHA256" = "$sha" ] && exit
 
 			# keep old version
 			cp "$CONFIG" "$CONFIG.autosave-$(date +%Y%m%d)"
 
 			# update hash, trim comments/empty lines past auto section comment
 			# and update obsolete header if still present
-			sed -e "s/^\(DEFAULTS_MKIMAGE_CONF_SHA256=\).*/\1\"$sha\"/" \
+			sed -e "s/^DEFAULTS_\(MKSWU\|MKIMAGE\)_CONF_SHA256=.*/DEFAULTS_MKSWU_CONF_SHA256=\"$sha\"/" \
 			    -e '/^## auto section/p' -e '/^## auto section/,$ {/^#\|^$/ d}' \
 			    -e 's/^# defaults section: if you remove this include you must keep this file up/# defaults section: used to keep auto section comments below up to date/' \
 			    -e 's/^# to date with mkimage.conf\(.defaults\)\? changes!/# if you remove it the file will not be edited again./' \
 			    -e '/^\. .*mkimage.conf.defaults/d' \
-			    "$CONFIG" > "$CONFIG.new"
+			    "$CONFIG" > "$NEW_CONFIG.new" \
+			    || error "Could not update config %s" "$CONFIG"
 		else
-			cat > "$CONFIG.new" <<EOF
+			cat > "$NEW_CONFIG.new" <<EOF
 # defaults section: used to keep auto section comments below up to date
 # if you remove it the file will not be edited again.
-DEFAULTS_MKIMAGE_CONF_SHA256="$sha"
+DEFAULTS_MKSWU_CONF_SHA256="$sha"
 
 ## user section: this won't be touched
 
 ## auto section: you can make changes here but comments will be lost
 EOF
 		fi
-		sed -e 's/^[^#$]/#&/' "$SCRIPT_DIR/mkimage.conf.defaults" >> "$CONFIG.new"
-		mv "$CONFIG.new" "$CONFIG"
+		sed -e 's/^[^#$]/#&/' "$SCRIPT_DIR/mkswu.conf.defaults" >> "$NEW_CONFIG.new" \
+			&& mv "$NEW_CONFIG.new" "$NEW_CONFIG" \
+			|| error "Could not update config %s" "$CONFIG"
 
-	) || error "Could not update default config"
+		info "Updated config file %s" "$NEW_CONFIG"
+	) || exit
+
+	# if renamed, remove old config after all is done
+	if [ "$CONFIG" != "$NEW_CONFIG" ] && [ -e "$NEW_CONFIG" ]; then
+		rm -f "$CONFIG"
+		CONFIG="$NEW_CONFIG"
+	fi
 }
 
 absolutize_file_paths() {
@@ -1067,9 +1084,9 @@ genkey_aes() {
 
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		info "Info: using default aes key path"
-		ENCRYPT_KEYFILE="$CONF_DIR/swupdate.aes-key"
+		ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
-			'ENCRYPT_KEYFILE="$CONF_DIR/swupdate.aes-key"' >> "$CONFIG" \
+			'ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"' >> "$CONFIG" \
 			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
 	fi
 	if [ -s "$ENCRYPT_KEYFILE" ]; then
@@ -1174,7 +1191,7 @@ mkinit_geninitdesc() {
 	local ROOTPW_CONFIRM
 	local ATMARKPW
 	local ATMARKPW_CONFIRM
-	local desc="$CONF_DIR/initial_setup.desc"
+	local desc="$CONFIG_DIR/initial_setup.desc"
 
 	[ -e "$desc" ] && return
 
@@ -1241,11 +1258,13 @@ mkinit_geninitdesc() {
 }
 
 mkinit_mkimageinitswu() {
-	"$0" "$CONF_DIR/initial_setup.desc" || error "Could not generate initial setup swu"
+	"$0" --config-dir "$CONFIG_DIR" --config "$CONFIG" \
+			"$CONFIG_DIR/initial_setup.desc" \
+		|| error "Could not generate initial setup swu"
 	echo
-	info "You can use \"%s\" as is or regenerate an image" "$CONF_DIR/initial_setup.swu"
+	info "You can use \"%s\" as is or regenerate an image" "$CONFIG_DIR/initial_setup.swu"
 	info "with extra modules with \"%s\" \"%s\" other_desc_files" \
-		"$0" "$CONF_DIR/initial_setup.swu"
+		"$0" "$CONFIG_DIR/initial_setup.swu"
 	info
 	info "Note that once installed, you must preserve this directory as losing"
 	info "key files means you will no longer be able to install new updates without"
@@ -1265,8 +1284,8 @@ mkimage() {
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
 	local OUT=""
 	local OUTDIR=""
-	local CONF_DIR="$SCRIPT_DIR"
-	local CONFIG="$CONF_DIR/mkimage.conf"
+	local CONFIG_DIR
+	local CONFIG
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="swupdate_pre.sh"
 	local POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
@@ -1293,6 +1312,24 @@ sw-description.sig"
 	local component version board dest
 
 	set -e
+
+	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then
+		SCRIPT_DIR=${SCRIPT_DIR%/bin}/share/mkswu
+		TEXTDOMAINDIR="${SCRIPT_DIR%/mkswu}/locale"
+		EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+		POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
+	fi
+
+	for CONFIG_DIR in "$SCRIPT_DIR" "$HOME/mkswu"; do
+		for CONFIG in mkswu.conf mkimage.conf; do
+			if [ -e "$CONFIG_DIR/$CONFIG" ]; then
+				CONFIG="$CONFIG_DIR/$CONFIG"
+				break 2
+			fi
+		done
+	done
+	CONFIG_DIR="$HOME/mkswu"
+	[ -e "$CONFIG" ] || CONFIG="$CONFIG_DIR/mkswu.conf"
 
 	local ARG SKIP=0
 	for ARG; do
@@ -1363,17 +1400,8 @@ sw-description.sig"
 		esac
 	done
 
-	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then
-		SCRIPT_DIR=${SCRIPT_DIR%/bin}/share/mkswu
-		TEXTDOMAINDIR="${SCRIPT_DIR%/mkswu}/locale"
-		CONF_DIR="$HOME/mkswu"
-		CONFIG="$CONF_DIR/mkimage.conf"
-		EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
-		POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
-	fi
-
-	if [ -e "$SCRIPT_DIR/mkimage.conf.defaults" ]; then
-		. "$SCRIPT_DIR/mkimage.conf.defaults"
+	if [ -e "$SCRIPT_DIR/mkswu.conf.defaults" ]; then
+		. "$SCRIPT_DIR/mkswu.conf.defaults"
 	fi
 	if [ -n "$CONFIG" ]; then
 		update_mkimage_conf
@@ -1381,7 +1409,7 @@ sw-description.sig"
 		[ "${CONFIG#/}" = "$CONFIG" ] && CONFIG="./$CONFIG"
 		. "$CONFIG"
 	fi
-	# restore env var if they previously had been set
+	# Force config values from env
 	[ -n "$SWMK_PRIVKEY" ] && PRIVKEY="$SWMK_PRIVKEY"
 	[ -n "$SWMK_PUBKEY" ] && PUBKEY="$SWMK_PUBKEY"
 	[ -n "$SWMK_PRIVKEY_PASS" ] && PRIVKEY_PASS="$SWMK_PRIVKEY_PASS"

@@ -57,7 +57,7 @@ dist:
 install: all
 	install -D -t $(DESTDIR)$(BIN) mkswu
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES $(locales)
-	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkimage.conf.defaults
+	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
 	install -D -t $(DESTDIR)$(SHARE) swupdate_post.sh

@@ -1,8 +1,11 @@
 /swupdate.key
 /swupdate.pem
 /swupdate.aes-key
+/mkswu.conf
+/mkswu.conf.autosave*
 /mkimage.conf
 /mkimage.conf.autosave*
+/mkimage.conf.defaults
 /initial_setup.desc
 # dot files are usually swu build dirs: ignore all except a few patterns
 .*
@@ -13,5 +16,7 @@
 *.swu
 # common input binaries
 *.tar.zst
+*.tar.gz
+*.tar.xz
 *.img
 imx-boot*

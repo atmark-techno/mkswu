@@ -10,10 +10,9 @@ build_check spaces "file test\ space.tar.zst"
 build_check install_files \
 	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar"
 
-cp -f ../mkimage.conf mkimage-aes.conf
-echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkimage-aes.conf
-../mkswu --genkey --aes --config mkimage-aes.conf
-conf=mkimage-aes.conf build_check aes
+echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
+../mkswu --genkey --aes --config mkswu-aes.conf
+conf=mkswu-aes.conf build_check aes
 
 build_check board "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \

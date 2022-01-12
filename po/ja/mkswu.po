@@ -15,7 +15,7 @@ msgid "Options:"
 msgstr ""
 
 #: mkswu
-msgid "  -c, --config <conf>     path to config (default mkimage.conf)"
+msgid "  -c, --config <conf>     path to config (default mkswu.conf)"
 msgstr ""
 
 #: mkswu
