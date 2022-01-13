@@ -131,7 +131,7 @@ msgstr ""
 
 #: mkswu
 msgid "Cannot find source file: %s"
-msgstr "%s ファイルを見つかりませんでした。"
+msgstr "%s ファイルが見つかりませんでした。"
 
 #: mkswu
 msgid "Could not remove previous link at %s"
@@ -171,7 +171,7 @@ msgstr "%s を暗号化できませんでした。"
 
 #: mkswu
 msgid "Checksumming %s failed"
-msgstr "%s のチェックサムができませんでした。"
+msgstr "%s のチェックサムの生成ができませんでした。"
 
 #: mkswu
 msgid "component %s was set with empty version"
@@ -182,8 +182,8 @@ msgid ""
 "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers "
 "only)"
 msgstr ""
-"%s のバージョンは x.y.z.t (<65536の数字のみ)か x.y.z-t (x-z 数字のみ）にして"
-"ください。"
+"%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z 数字のみ）に"
+"してください。"
 
 #: mkswu
 msgid "base_os version %s must be in x[.y[.z]]-t format"
@@ -195,15 +195,15 @@ msgstr "%s バージョンの %s を %s 以下にしてください。"
 
 #: mkswu
 msgid "version check failed for %s: %s must not mix alpha and digits"
-msgstr "%s バージョンの %s を数字とローマ字が混ざってます。"
+msgstr "%s バージョンの %s に数字とローマ字が混ざってます。"
 
 #: mkswu
 msgid ""
 "metadata (+ part) in semver are ignored by swupdate, please use something "
 "else than %s"
 msgstr ""
-"%s バージョンに+がありますが、swupdateがその部分を無視します。他を使ってくだ"
-"さい。"
+"%s バージョンに+が含まれていますが、swupdateがその部分を無視します。他を使っ"
+"てください。"
 
 #: mkswu
 msgid "install_if must be higher or different"
@@ -279,15 +279,15 @@ msgstr ""
 
 #: mkswu
 msgid "Unhandled command %s"
-msgstr "%s コマンドが分かりません。"
+msgstr "%s コマンドを実行できません。"
 
 #: mkswu
 msgid "Cannot stat boot file: %s"
-msgstr "%s ファイルをアクセスできません。"
+msgstr "%s ファイルにアクセスできません。"
 
 #: mkswu
 msgid "BOOT_SIZE set smaller than boot file actual size"
-msgstr "BOOT_SIZE変数はファイルサイズより小さかったです。"
+msgstr "BOOT_SIZE変数はファイルサイズより小さいです。"
 
 #: mkswu
 msgid "Version component for swdesc_boot must be set to boot"
@@ -310,7 +310,7 @@ msgstr ""
 
 #: mkswu
 msgid ".. is not allowed in destination path for volume update"
-msgstr ".. を展開先に使えません。"
+msgstr ".. は展開先に使えません。"
 
 #: mkswu
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
@@ -343,11 +343,11 @@ msgstr "Warning: podmanでは、圧縮するとコピーの回数が増えます
 
 #: mkswu
 msgid "you might want to keep the archive as simple .tar"
-msgstr "普通の.tarにした方が効率的です。"
+msgstr "普通のtarアーカイブにした方が効率的です。"
 
 #: mkswu
 msgid "Could not create script.tar"
-msgstr "script.tarを作成で来ませんでした。"
+msgstr "script.tarを作成できませんでした。"
 
 #: mkswu
 msgid "DESCRIPTION must be set"
@@ -365,12 +365,12 @@ msgstr "HW_COMPAT変数を設定してください。"
 msgid ""
 "above component used multiple times with different versions or install-if "
 "mode"
-msgstr "上記のcomponentを別のバージョンかinstall-ifで使われました。"
+msgstr "上記のcomponentが別のバージョンかinstall-ifで使われました。"
 
 #: mkswu
 msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
 msgstr ""
-"バージョンを見つかりませんでした。--versionかFORCE_VERSION=1を使ってくださ"
+"バージョンが見つかりませんでした。--versionかFORCE_VERSION=1を使ってくださ"
 "い。"
 
 #: mkswu
@@ -402,7 +402,7 @@ msgstr "PUBKEY %s を読み取れません。"
 
 #: mkswu
 msgid "Could not sign %s"
-msgstr "%s を証明できませんでした。"
+msgstr "%s に署名できませんでした。"
 
 #: mkswu
 msgid "Could not enter %s"
@@ -424,15 +424,15 @@ msgstr ""
 
 #: mkswu
 msgid "Could not update config %s"
-msgstr "%sを更新できませんでした"
+msgstr "%s を更新できませんでした。"
 
 #: mkswu
 msgid "Updated config file %s"
-msgstr "コンフィグを更新しました：%s"
+msgstr "コンフィグファイルを更新しました：%s"
 
 #: mkswu
 msgid "Could not resolve %s directory name"
-msgstr "%s のディレクトリを確定できませんでした。"
+msgstr "%s のディレクトリが見つかりませんでした。"
 
 #: mkswu
 msgid "Config %s already exists, skipping import"
@@ -447,8 +447,8 @@ msgid ""
 "Key file %s could not be found, try setting absolute path in config file and "
 "reimport"
 msgstr ""
-"%s の鍵ファイルを見つかりませんでした。コンフィグに絶対パスを設定してみてくだ"
-"さい。"
+"%s の鍵ファイルを見つかりませんでした。コンフィグファイルに絶対パスを設定して"
+"みてください。"
 
 #: mkswu
 msgid "Imported config %s to %s"
@@ -501,11 +501,11 @@ msgstr "--cn <name>で証明書のcommon nameを指定してください。"
 
 #: mkswu
 msgid "Creating signing key %s and its public counterpart %s"
-msgstr "証明鍵 %s と証明書 %s を作成します。"
+msgstr "署名鍵 %s と証明書 %s を作成します。"
 
 #: mkswu
 msgid "Generating certificate/key pair failed"
-msgstr "証明鍵の作成が失敗しました。"
+msgstr "署名鍵の作成に失敗しました。"
 
 #: mkswu
 msgid "%s must be copied over to /etc/swupdate.pem on devices."
@@ -513,7 +513,7 @@ msgstr "%s をデバイスの /etc/swupdate.pem にコピーしてください�
 
 #: mkswu
 msgid "The suggested way is using swupdate:"
-msgstr "initial_setup イメージを以下のコマンドで作成したらできます："
+msgstr "initial_setup イメージを以下のコマンドで作成できます："
 
 #: mkswu
 msgid "    mkswu initial_setup.desc"
@@ -526,7 +526,7 @@ msgstr "ファイルのパスワードを設定してからイメージを作成
 #: mkswu
 msgid ""
 "If you would like to encrypt your updates, generate your aes key now with:"
-msgstr "イメージを暗号化しましたらAES鍵も先に作成してください："
+msgstr "イメージを暗号化したい場合、AES鍵を先に作成してください："
 
 #: mkswu
 msgid "    mkswu --genkey --aes"
@@ -542,11 +542,11 @@ msgstr "証明書の鍵のパスワードを入力ください（4-1024文字）
 
 #: mkswu
 msgid "Empty key password is not recommended, re-enter empty to confirm"
-msgstr "空のパスワードをおすすめしません。もう一度入力したら進みます。"
+msgstr "空のパスワードは推奨しません。もう一度入力したら進みます。"
 
 #: mkswu
 msgid "Must be between 4 and 1024 characters long"
-msgstr "パスワードは4-1024文字でお願いします。"
+msgstr "パスワードは4-1024文字でなければなりません。"
 
 #: mkswu
 msgid "private key password (confirm):"
@@ -554,7 +554,7 @@ msgstr "証明書の鍵のパスワード（確認）:"
 
 #: mkswu
 msgid "Passwords do not match"
-msgstr "パスワードが一致しません"
+msgstr "パスワードが一致しません。"
 
 #: mkswu
 msgid "Use AES encryption? (N/y)"
@@ -595,11 +595,11 @@ msgstr "atmarkユーザのパスワード（確認）:"
 
 #: mkswu
 msgid "Could not copy initial_setup.desc from example dir"
-msgstr "initial_setup.descをコピーできませんでした"
+msgstr "initial_setup.descをコピーできませんでした。"
 
 #: mkswu
 msgid "Could not update %s"
-msgstr "%sを更新できませんでした"
+msgstr "%s を更新できませんでした。"
 
 #: mkswu
 msgid "Could not generate initial setup swu"
@@ -607,25 +607,24 @@ msgstr "最初書き込みのinitial_setup.swuの作成が失敗しました。"
 
 #: mkswu
 msgid "You can use \"%s\" as is or regenerate an image"
-msgstr "\"%s\" をそのまま使えますが、追加 desc を入れたかったら"
+msgstr "\"%s\" をそのまま使えますが、追加の desc を入れたい場合"
 
 #: mkswu
 msgid "with extra modules with: mkswu \"%s\" other_desc_files"
-msgstr "このコマンドで作成してください： mkswu \"%s\" other_desc_files"
+msgstr "次のコマンドで作成してください： mkswu \"%s\" other_desc_files"
 
 #: mkswu
 msgid "Note that once installed, you must preserve this directory as losing"
-msgstr ""
-"インストールしたら、このディレクトリをなくさないように気をつけてください。"
+msgstr "インストール後は、このディレクトリを削除しないように注意してください。"
 
 #: mkswu
 msgid ""
 "key files means you will no longer be able to install new updates without"
-msgstr "鍵をなくしましたら新たなアップデートをデバイスの /etc/swupdate.pem"
+msgstr "鍵を失うと新たなアップデートはデバイスの /etc/swupdate.pem"
 
 #: mkswu
 msgid "manually adjusting /etc/swupdate.pem on devices"
-msgstr "を直さないとインストールできなくなります。"
+msgstr "を修正しないとインストールできなくなります。"
 
 #: mkswu
 msgid "Could not get script dir"
@@ -637,7 +636,7 @@ msgstr "%s は「.swu」で終わらせてください。"
 
 #: mkswu
 msgid "%s is incompatible with --%s"
-msgstr "%s と --%s は一緒に使えません。"
+msgstr "%s と --%s は同時に使えません。"
 
 #: mkswu
 msgid "%s must be passed after --genkey"
@@ -654,8 +653,8 @@ msgstr ""
 #: mkswu
 msgid "Could not find config file to import, specify it with --config"
 msgstr ""
-"インポートするべきコンフィグを見つかりませんでした。--config で指定してくださ"
-"い。"
+"インポートするべきコンフィグファイルが見つかりませんでした。--config で指定し"
+"てください。"
 
 #: mkswu
 msgid "Please import current config with mkswu --import first"
@@ -663,7 +662,8 @@ msgstr "コンフィグを mkswu --import で先にロードしてください�
 
 #: mkswu
 msgid "Config file not found, create one with mkswu --init"
-msgstr "コンフィグを見つかりませんでした。 mkswu --init で作成してください。"
+msgstr ""
+"コンフィグファイルが見つかりませんでした。 mkswu --init で作成してください。"
 
 #: mkswu
 msgid "--%s had extra arguments?"
