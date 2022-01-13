@@ -678,6 +678,10 @@ msgid "Cannot return to %s we were in before"
 msgstr "%s ディレクトリに戻れませんでした。"
 
 #: mkswu
+msgid "Successfully included %s contents"
+msgstr "%s を組み込みました。"
+
+#: mkswu
 msgid "No or empty desc given?"
 msgstr "descファイルを読み取れませんでした。"
 

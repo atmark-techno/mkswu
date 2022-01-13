@@ -468,6 +468,9 @@ msgstr ""
 msgid "Cannot return to %s we were in before"
 msgstr ""
 #: mkswu
+msgid "Successfully included %s contents"
+msgstr ""
+#: mkswu
 msgid "No or empty desc given?"
 msgstr ""
 #: mkswu

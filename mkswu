@@ -1529,6 +1529,7 @@ sw-description.sig"
 		# this is required if a desc file sets a key path
 		absolutize_file_paths
 		cd "$main_cwd" || error "Cannot return to %s we were in before" "$main_cwd"
+		[ "$desc" != "$1" ] && info "Successfully included %s contents" "$desc"
 	done
 
 	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$FORCE_VERSION" ] \
