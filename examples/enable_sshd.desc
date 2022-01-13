@@ -1,7 +1,7 @@
-# add your public key in examples/enable_sshd/root/.ssh/authorized_keys
+# add your public key in enable_sshd/root/.ssh/authorized_keys
 if [ -z "$SWDESC_TEST" ]; then
 	grep -qE '^ssh-' enable_sshd/root/.ssh/authorized_keys \
-		|| error "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
+		|| error "Add your keys in enable_sshd/root/.ssh/authorized_keys"
 fi
 swdesc_files --version extra_os.sshd 1 \
 	--dest /root enable_sshd/root

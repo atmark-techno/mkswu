@@ -431,10 +431,6 @@ msgid "Updated config file %s"
 msgstr "コンフィグを更新しました：%s"
 
 #: mkswu
-msgid "%s does not exist\\nUse --config to specify what to import"
-msgstr "%s が存在しません。\\n--config で指定してください。"
-
-#: mkswu
 msgid "Could not resolve %s directory name"
 msgstr "%s のディレクトリを確定できませんでした。"
 
@@ -520,8 +516,8 @@ msgid "The suggested way is using swupdate:"
 msgstr "initial_setup イメージを以下のコマンドで作成したらできます："
 
 #: mkswu
-msgid "    %s examples/initial_setup.desc"
-msgstr "「%s examples/initial_setup.desc」で暗号化を有効にしてください。"
+msgid "    mkswu initial_setup.desc"
+msgstr "「mkswu initial_setup.desc」で暗号化を有効にしてください。"
 
 #: mkswu
 msgid "Please set user passwords in initial_setup.desc and generate the image."
@@ -533,7 +529,7 @@ msgid ""
 msgstr "イメージを暗号化しましたらAES鍵も先に作成してください："
 
 #: mkswu
-msgid "    %s --genkey --aes"
+msgid "    mkswu --genkey --aes"
 msgstr ""
 
 #: mkswu
@@ -542,7 +538,7 @@ msgstr "証明書のCommon nameを入力してください:"
 
 #: mkswu
 msgid "Enter private key password (4-1024 char)"
-msgstr "証明書の鍵のパスワードを入力ください（4-1024文字"
+msgstr "証明書の鍵のパスワードを入力ください（4-1024文字）"
 
 #: mkswu
 msgid "Empty key password is not recommended, re-enter empty to confirm"
@@ -614,8 +610,8 @@ msgid "You can use \"%s\" as is or regenerate an image"
 msgstr "\"%s\" をそのまま使えますが、追加 desc を入れたかったら"
 
 #: mkswu
-msgid "with extra modules with \"%s\" \"%s\" other_desc_files"
-msgstr "このコマンドで作成してください： \"%s\" \"%s\" other_desc_files"
+msgid "with extra modules with: mkswu \"%s\" other_desc_files"
+msgstr "このコマンドで作成してください： mkswu \"%s\" other_desc_files"
 
 #: mkswu
 msgid "Note that once installed, you must preserve this directory as losing"
@@ -654,14 +650,6 @@ msgstr "mkswu のバージョンが分かりませんでした。"
 #: mkswu
 msgid "mkswu version %s"
 msgstr ""
-
-#: mkswu
-msgid ""
-"Config already imported (%s). Remove it if you really want to import "
-"something else"
-msgstr ""
-"%s のコンフィグがすでに存在します。本当にインポートしたかったらファイルを消し"
-"てからまたインポートしてください。"
 
 #: mkswu
 msgid "Could not find config file to import, specify it with --config"
@@ -708,15 +696,11 @@ msgid "Successfully generated %s"
 msgstr "%s を作成しました。"
 
 #: examples/enable_sshd.desc
-msgid "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
-msgstr ""
-"examples/enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてください。"
+msgid "Add your keys in enable_sshd/root/.ssh/authorized_keys"
+msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてください。"
 
 #: examples/hawkbit_register.desc
 msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
-
-#~ msgid "Could not update default config"
-#~ msgstr "デフォルトのコンフィグファイルをアップデートできませんでした。"

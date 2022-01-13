@@ -1075,11 +1075,8 @@ EOF
 
 mkswu_import() {
 	# import standalone config file and its keys to $HOME/swu
-	local NEW_CONFIG_DIR="$CONFIG_DIR"
-	[ "${CONFIG#$CONFIG_DIR}" = "$CONFIG" ] \
-		|| NEW_CONFIG_DIR="$HOME/mkswu"
+	local NEW_CONFIG_DIR="${MKSWU_IMPORT_CONFIG_DIR:-$HOME/mkswu}"
 	local NEW_CONFIG="$NEW_CONFIG_DIR/mkswu.conf"
-	[ -e "$CONFIG" ] || error "%s does not exist\nUse --config to specify what to import" "$CONFIG"
 	CONFIG_DIR="$(realpath "$(dirname "$CONFIG")")" \
 		|| error "Could not resolve %s directory name" "$CONFIG"
 
@@ -1093,10 +1090,6 @@ mkswu_import() {
 	mkdir -vp "$NEW_CONFIG_DIR"
 	for file in "$PRIVKEY" "$PUBKEY" "$ENCRYPT_KEYFILE"; do
 		[ -z "$file" ] && continue
-		# try to second-guess key position: if key file is in
-		# new config dir we probably meant to use old one
-		[ "${file#$NEW_CONFIG_DIR}" != "$file" ] \
-			&& file="$CONFIG_DIR/${file#$NEW_CONFIG_DIR}"
 		[ -e "$file" ] \
 			|| error "Key file %s could not be found, try setting absolute path in config file and reimport" "${file##*/}"
 
@@ -1170,10 +1163,10 @@ mkswu_genkey_sign() {
 
 	info "%s must be copied over to /etc/swupdate.pem on devices." "$PUBKEY"
 	info "The suggested way is using swupdate:"
-	info "    %s examples/initial_setup.desc" "$0"
+	info "    mkswu initial_setup.desc"
 	info "Please set user passwords in initial_setup.desc and generate the image."
 	info "If you would like to encrypt your updates, generate your aes key now with:"
-	info "    %s --genkey --aes" "$0"
+	info "    mkswu --genkey --aes"
 }
 
 mkinit_genkey() {
@@ -1306,8 +1299,8 @@ mkinit_mkimageinitswu() {
 		|| error "Could not generate initial setup swu"
 	echo
 	info "You can use \"%s\" as is or regenerate an image" "$CONFIG_DIR/initial_setup.swu"
-	info "with extra modules with \"%s\" \"%s\" other_desc_files" \
-		"$0" "$CONFIG_DIR/initial_setup.swu"
+	info "with extra modules with: mkswu \"%s\" other_desc_files" \
+		"$CONFIG_DIR/initial_setup.swu"
 	info
 	info "Note that once installed, you must preserve this directory as losing"
 	info "key files means you will no longer be able to install new updates without"
@@ -1399,6 +1392,8 @@ sw-description.sig"
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			CONFIG="$(realpath -e "$1")" \
 				|| error "%s does not exist" "$1"
+			CONFIG_DIR="${CONFIG%/*}"
+			[ -n "$CONFIG_DIR" ] || CONFIG_DIR=/
 			SKIP=1
 			;;
 		"--config-dir")
@@ -1435,6 +1430,7 @@ sw-description.sig"
 			if ! [ -e "$CONFIG" ]; then
 				[ -e "mkimage.conf" ] && CONFIG="$PWD/mkimage.conf"
 				[ -e "mkswu.conf" ] && CONFIG="$PWD/mkswu.conf"
+				CONFIG_DIR="$PWD"
 			fi
 			;;
 		"--genkey")
@@ -1482,8 +1478,7 @@ sw-description.sig"
 	if [ -e "$SCRIPT_DIR/mkswu.conf.defaults" ]; then
 		. "$SCRIPT_DIR/mkswu.conf.defaults"
 	fi
-	if [ "$MODE" = "import" ] && [ "$CONFIG" = "$HOME/mkswu/mkswu.conf" ]; then
-		[ -e "$CONFIG" ] && error "Config already imported (%s). Remove it if you really want to import something else" "$CONFIG"
+	if [ "$MODE" = "import" ] && ! [ -e "$CONFIG" ]; then
 		error "Could not find config file to import, specify it with --config"
 	fi
 	if [ -z "$MODE" ] && ! [ -e "$CONFIG" ]; then

@@ -291,9 +291,6 @@ msgstr ""
 msgid "Updated config file %s"
 msgstr ""
 #: mkswu
-msgid "%s does not exist\\nUse --config to specify what to import"
-msgstr ""
-#: mkswu
 msgid "Could not resolve %s directory name"
 msgstr ""
 #: mkswu
@@ -354,7 +351,7 @@ msgstr ""
 msgid "The suggested way is using swupdate:"
 msgstr ""
 #: mkswu
-msgid "    %s examples/initial_setup.desc"
+msgid "    mkswu initial_setup.desc"
 msgstr ""
 #: mkswu
 msgid "Please set user passwords in initial_setup.desc and generate the image."
@@ -363,7 +360,7 @@ msgstr ""
 msgid "If you would like to encrypt your updates, generate your aes key now with:"
 msgstr ""
 #: mkswu
-msgid "    %s --genkey --aes"
+msgid "    mkswu --genkey --aes"
 msgstr ""
 #: mkswu
 msgid "Enter certificate common name:"
@@ -423,7 +420,7 @@ msgstr ""
 msgid "You can use \"%s\" as is or regenerate an image"
 msgstr ""
 #: mkswu
-msgid "with extra modules with \"%s\" \"%s\" other_desc_files"
+msgid "with extra modules with: mkswu \"%s\" other_desc_files"
 msgstr ""
 #: mkswu
 msgid "Note that once installed, you must preserve this directory as losing"
@@ -451,9 +448,6 @@ msgid "mkswu not installed and could not guess mkswu version from git"
 msgstr ""
 #: mkswu
 msgid "mkswu version %s"
-msgstr ""
-#: mkswu
-msgid "Config already imported (%s). Remove it if you really want to import something else"
 msgstr ""
 #: mkswu
 msgid "Could not find config file to import, specify it with --config"
@@ -486,7 +480,7 @@ msgstr ""
 msgid "Successfully generated %s"
 msgstr ""
 #: examples/enable_sshd.desc
-msgid "Add your keys in examples/enable_sshd/root/.ssh/authorized_keys"
+msgid "Add your keys in enable_sshd/root/.ssh/authorized_keys"
 msgstr ""
 #: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
