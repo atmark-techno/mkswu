@@ -1216,7 +1216,6 @@ mkinit_genkey() {
 			continue
 		fi
 		PASS=1 prompt KEYPASS_CONFIRM "private key password (confirm):"
-		echo
 		if [ "$KEYPASS" != "$KEYPASS_CONFIRM" ]; then
 			info "Passwords do not match"
 			continue
@@ -1287,9 +1286,7 @@ mkinit_geninitdesc() {
 
 	while true; do
 		PASS=1 prompt ATMARKPW "atmark user password (empty = same as root):"
-		echo
 		PASS=1 prompt ATMARKPW_CONFIRM "atmark user password (confirm):"
-		echo
 		if [ "$ATMARKPW" != "$ATMARKPW_CONFIRM" ]; then
 			info "Passwords do not match"
 			continue
