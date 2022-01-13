@@ -261,6 +261,9 @@ msgstr ""
 msgid "Please set user passwords (usermod command in .desc)"
 msgstr ""
 #: mkswu
+msgid "Duplicate files detected in sw-description: duplicate swdesc_* commands?\\n%s"
+msgstr ""
+#: mkswu
 msgid "PRIVKEY must be set"
 msgstr ""
 #: mkswu

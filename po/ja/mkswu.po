@@ -385,6 +385,11 @@ msgstr ""
 "ユーザーのパスワードを指定してください（.descファイルのusermodコマンド）"
 
 #: mkswu
+msgid ""
+"Duplicate files detected in sw-description: duplicate swdesc_* commands?\\n%s"
+msgstr ""
+
+#: mkswu
 msgid "PRIVKEY must be set"
 msgstr "PRIVKEY変数を設定してください。"
 

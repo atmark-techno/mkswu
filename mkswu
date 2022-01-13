@@ -121,10 +121,13 @@ write_line() {
 }
 
 reindent() {
-	local padding
+	local padding file
 	padding=$(printf "%*s" "${indent:-0}" "")
 
-	sed -e "s/^/$padding/" "$@"
+	for file; do
+		[ -e "$file" ] || continue
+		sed -e "s/^/$padding/" "$file"
+	done
 }
 
 
@@ -869,8 +872,9 @@ EOF
 	# handle boards files first
 	for file in "$OUTDIR/sw-description-"*-*; do
 		[ -e "$file" ] || break
-		track_used "$file"
 		board="${file#*sw-description-*-}"
+		[ "$board" = "-" ] && continue
+		track_used "$file"
 		[ -e "$OUTDIR/sw-description-done-$board" ] && continue
 		touch "$OUTDIR/sw-description-done-$board"
 		board_normalize=$(printf %s "$board" | tr -c '[:alnum:]' '_')
@@ -881,13 +885,18 @@ EOF
 		indent=4 write_line "hardware-compatibility = [ \"$board_hwcompat\" ];"
 		for file in "$OUTDIR/sw-description-"*"-$board"; do
 			[ -s "$file" ] || continue
+			# also include common section if any
+			# XXX in case of duplicate here we should favor
+			# current board's file and ignore second one instead
+			# but it would be better with an explicit "board=none" kind
+			# of syntax. The problem would be when to consider these
+			# elements versions for sw-versions merging script, as we'd
+			# need to check if a board matched first, so leave for later.
+			check_duplicate_files "$file" "$OUTDIR/sw-description-$section"
 			section=${file##*sw-description-}
 			section=${section%%-*}
 			indent=4 write_line "$section: ("
-			indent=6 reindent "$file"
-			# also need to include common files if any
-			[ -e "$OUTDIR/sw-description-$section" ] \
-				&& indent=6 reindent "$OUTDIR/sw-description-$section"
+			indent=6 reindent "$file" "$OUTDIR/sw-description-$section"
 			indent=4 write_line ");"
 		done
 		indent=2 write_line "};"
@@ -910,8 +919,9 @@ EOF
 		file="$OUTDIR/sw-description-$section"
 		[ -e "$file" ] || continue
 		track_used "$file"
+		check_duplicate_files "$file"
 		indent=2 write_line "" "$section: ("
-		indent=4 reindent "$OUTDIR/sw-description-$section"
+		indent=4 reindent "$file"
 		indent=2 write_line ");"
 	done
 
@@ -951,6 +961,24 @@ check_common_mistakes() {
 	# grep for common patterns of easy mistakes that would fail installing
 	! grep -qF '$6$salt$hash' "$swdesc" \
 		|| error "Please set user passwords (usermod command in .desc)"
+}
+
+check_duplicate_files() {
+	local file duplicates
+
+	duplicates=$(for file; do
+		[ -e "$file" ] || continue
+		cat "$file"
+	done | awk -F\" '
+		/filename/ {
+			if (seen[$2]) {
+				print $2
+			}
+			seen[$2] = 1;
+		}
+	')
+
+	[ -z "$duplicates" ] || error "Duplicate files detected in sw-description: duplicate swdesc_* commands?\n%s" "$duplicates"
 }
 
 sign() {
