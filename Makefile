@@ -1,7 +1,8 @@
-PREFIX = /usr
+PREFIX ?= /usr
 BIN = $(PREFIX)/bin
 SHARE = $(PREFIX)/share/mkswu
 LOCALEDIR = $(PREFIX)/share/locale
+BASH_COMPLETION_DIR = $(PREFIX)/share/bash-completion/completions
 
 # could be possible to handle wildcard of languages later
 # https://stackoverflow.com/a/40881718
@@ -71,6 +72,7 @@ install: all
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
+	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) bash_completion.d/mkswu
 	install -D -t $(DESTDIR)$(SHARE) swupdate_post.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode

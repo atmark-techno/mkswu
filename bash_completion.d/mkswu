@@ -1,0 +1,33 @@
+_mkswu()
+{
+	local cur prev words cword split
+	local word mode="" options
+	_init_completion || return
+	case "$prev" in
+	-o|--out)
+		_filedir
+		return
+		;;
+	-c|--config)
+		_filedir 'conf'
+		return
+		;;
+	esac
+	for word in "${words[@]}"; do
+		case "$word" in
+		--genkey) mode=genkey;;
+		--aes) mode=genkey_aes;;
+		--init) mode=init;;
+		--import) mode=import;;
+		esac
+	done
+
+	options="-c --config -v --verbose -q --quiet -h --help --version"
+	case "$mode" in
+	genkey) options+=" --aes --cn --plain";;
+	genkey_aes|init|import) :;;
+	"") options+=" -o --out --init --import --genkey";;
+	esac
+	COMPREPLY=($(compgen -W "$options" -- "$cur"))
+	[ -z "$mode" ] && _filedir 'desc'
+} && complete -F _mkswu mkswu
