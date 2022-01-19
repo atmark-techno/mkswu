@@ -68,11 +68,13 @@ dist:
 install: all
 	install -D -t $(DESTDIR)$(BIN) mkswu
 	sed -i -e "s/MKSWU_VERSION=\"/&$(TAG)/" $(DESTDIR)$(BIN)/mkswu
+	install -D -t $(DESTDIR)$(BIN) podman_partial_image
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
 	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) bash_completion.d/mkswu
+	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) bash_completion.d/podman_partial_image
 	install -D -t $(DESTDIR)$(SHARE) swupdate_post.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode

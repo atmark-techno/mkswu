@@ -18,7 +18,7 @@ inspect_image() {
 	local image="$1"
 
 	podman inspect --format "{{.RootFS.Layers}}" "$image" |
-		sed -e 's/^\[\|\]$//g' -e 's/\<sha256://g' -e 's/ /\n/g' >> "$tmpdir/known_hashs"
+		sed -e 's/^\[//g' -e 's/\]$//g' -e 's/\<sha256://g' -e 's/ /\n/g' >> "$tmpdir/known_hashs"
 }
 
 trim_archives() {

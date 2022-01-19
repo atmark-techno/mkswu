@@ -131,7 +131,7 @@ swdesc_pull_container <image url>
   Pull container from network into storage
 
 
-## podman_partial_image.sh
+## podman_partial_image
 
 Generate image file from tags or image ids.
 If a base image/tag is given, remove objects from image file that

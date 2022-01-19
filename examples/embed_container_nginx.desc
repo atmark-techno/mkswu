@@ -1,6 +1,6 @@
 # generated with the following:
 # $ podman pull docker.io/arm64v8/nginx:alpine
-# $ ./podman_partial_image.sh -R s@docker.io/arm64v8/nginx@docker.io/nginx@g -o examples/nginx_alpine.tar docker.io/arm64v8/nginx:alpine
+# $ podman_partial_image -R s@docker.io/arm64v8/nginx@docker.io/nginx@g -o examples/nginx_alpine.tar docker.io/arm64v8/nginx:alpine
 swdesc_embed_container "nginx_alpine.tar" --version container_nginx 1
 swdesc_files --version extra_os.nginx 1 \
 	nginx_start
