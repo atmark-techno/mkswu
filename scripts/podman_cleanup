@@ -21,14 +21,10 @@ usage() {
 	echo " --dry-run        Print what would be removed instead of removing"
 }
 
-# redefine podman_start helper as noop to allow
-# sourcing conf files
-append_args() { :; }
-set_command() { :; }
-
 get_pod_infra_container_tag() {
 	local infra_container
 
+	infra_container=$({ grep -E '^infra_container=' "$conf" && echo 'echo "$infra_container"'; } | sh)
 	infra_container=$(. "$conf"; echo "$infra_container")
 
 	if [ -z "$infra_container" ]; then
@@ -62,13 +58,27 @@ get_pod_infra_container_tag() {
 }
 
 get_conf_image() {
-	local pod
-	tag=$(. "$conf"; echo "$image")
+	local tag type
+	tag=$({ grep -E '^image=' "$conf" && echo 'echo "$image"'; } | sh)
 	if [ -z "$tag" ]; then
-		# maybe a pod?
-		grep -qE "^type=pod$" "$conf" &&
+		type=$({ grep -E '^type=' "$conf" && echo 'echo "$type"'; } | sh)
+		case "$type" in
+		pod)
 			get_pod_infra_container_tag
-		return
+			return
+			;;
+		container|"")
+			# tag defaults to name, which itself defaults to filename
+			tag=$({ grep -E '^name=' "$conf" && echo 'echo "$name"'; } | sh)
+			if [ -z "$tag" ]; then
+				tag="${conf##*/}"
+				tag="${tag%.conf}"
+			fi
+			;;
+		*)
+			# network or other new unhandled type
+			return
+		esac
 	fi
 
 	# if tag starts with a / it's likely a rootfs,
