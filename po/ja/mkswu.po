@@ -692,9 +692,7 @@ msgstr "descファイルを読み取れませんでした。"
 
 #: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
-msgstr ""
-"別ファイルのコンテナがあります。以下のファイルをUSBメモリにコピーしてくださ"
-"い："
+msgstr "以下のファイルをUSBメモリにコピーしてください："
 
 #: mkswu
 msgid "%s"
