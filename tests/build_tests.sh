@@ -12,7 +12,8 @@ build_check install_files \
 
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
 "$MKSWU" --genkey --aes --config mkswu-aes.conf
-MKSWU_ENCRYPY_KEYFILE=$PWD/swupdate.aes-key build_check aes
+MKSWU_ENCRYPT_KEYFILE=$PWD/swupdate.aes-key build_check aes \
+	"swdesc 'ivt ='" "file scripts.tar.zst.enc"
 
 build_check board "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
