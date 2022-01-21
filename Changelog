@@ -31,6 +31,8 @@ $HOME/mkswu
 fixes:
  - examples/kernel_update_plain: fix comment, add modules
  - swdesc_tar/files: create destination directory if absent
+ - kill swupdate post-update instead of waiting for openrc
+ to do it with plenty of failure messages
 
 
 3.15-at.1
