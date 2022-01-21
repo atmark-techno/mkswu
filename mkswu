@@ -1325,7 +1325,7 @@ mkinit_mkimageinitswu() {
 	echo
 	info "You can use \"%s\" as is or regenerate an image" "$CONFIG_DIR/initial_setup.swu"
 	info "with extra modules with: mkswu \"%s\" other_desc_files" \
-		"$CONFIG_DIR/initial_setup.swu"
+		"$CONFIG_DIR/initial_setup.desc"
 	info
 	info "Note that once installed, you must preserve this directory as losing"
 	info "key files means you will no longer be able to install new updates without"
