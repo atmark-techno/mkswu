@@ -58,7 +58,7 @@ get_pod_infra_container_tag() {
 }
 
 get_conf_image() {
-	local tag type
+	local tag type autostart pull
 	tag=$({ grep -E '^image=' "$conf" && echo 'echo "$image"'; } | sh)
 	if [ -z "$tag" ]; then
 		type=$({ grep -E '^type=' "$conf" && echo 'echo "$type"'; } | sh)
@@ -90,6 +90,16 @@ get_conf_image() {
 			image inspect --format '{{.Id}}' \
 			"$tag" 2>/dev/null; then
 		[ -n "$FAIL_MISSING" ] || return
+		# don't fail if image is autostart: user can pull themselves
+		autostart=$({ grep -E '^autostart=' "$conf" && echo 'echo "$autostart"' || echo 'echo yes'; } | sh)
+		case "$autostart" in
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") return;;
+		esac
+		# also don't fail if it is set to pull automatically
+		pull=$({ grep -E '^pull=' "$conf" && echo 'echo "$pull"'; } | sh)
+		case "$pull" in
+		always|missing) return;;
+		esac
 		error "image $tag in $conf not found in image store !"
 	fi
 }
