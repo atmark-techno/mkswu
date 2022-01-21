@@ -1,5 +1,5 @@
-next
-====
+3.15-at.2
+=========
 breaking changes:
  - desc files: disallow using the same component with multiple versions
 previously the highest version would be kept for updating sw-versions, but
@@ -21,18 +21,22 @@ This can be useful to get more coherent behaviour with hawkbit
  - swdesc_tar/files: make relative paths relative to
 /var/app/rollback/volumes for non-os upates. forbid '../'s, and
 also forbid relative paths for os.
-- Japanese translation if LC_MESSAGES is set to ja*
-- add mkswu --init for first setup, which will guide user through
+ - Japanese translation if LC_MESSAGES is set to ja*, and add more
+messages overall
+ - add mkswu --init for first setup, which will guide user through
 key generation and fill in initial_setup.desc
-- add mkswu --import to import previously existing config into
+ - add mkswu --import to import previously existing config into
 $HOME/mkswu
-- add mkswu --version
+ - add mkswu --version
+ - add debian package
 
 fixes:
  - examples/kernel_update_plain: fix comment, add modules
  - swdesc_tar/files: create destination directory if absent
  - kill swupdate post-update instead of waiting for openrc
- to do it with plenty of failure messages
+to do it with plenty of failure messages
+ - podman_cleanup: relax failure conditions when image is missing
+but container does not autostart or autopulls the image
 
 
 3.15-at.1
