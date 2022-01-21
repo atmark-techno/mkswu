@@ -177,7 +177,17 @@ post_copy_preserve_files() {
 }
 
 
+# strict version comparison
+# when we have a bug for e.g. until 3.15.0-at.1,
+# we must also include 3.15.0-at.1.<date> for people who built
+# manual updates, so we must check < 3.15.0-at.2 in practice.
+version_greater_than() {
+	! printf "%s\n" "$2" "$1" | sort -VC
+}
+
 baseos_upgrade_fixes() {
+	local baseos_version
+
 	# if user has local certificates we should regenerate the bundle
 	if stat /target/usr/local/share/ca-certificates/* >/dev/null 2>&1; then
 		podman run --net=none --rootfs /target update-ca-certificates 2>/dev/null \
@@ -186,8 +196,17 @@ baseos_upgrade_fixes() {
 
 	### workaround section, these can be removed once we consider we no longer
 	### support a given version.
-	# v3.14.3-at.2
-	if grep -q /dev/mmcblk2 /proc/cmdline \
+
+	# note this is the currently running version,
+	# not the version we install (which would always be too recent!)
+	baseos_version=$(cat /etc/atmark-release) || return
+
+	# not a baseos install? skip fixes...
+	[ -n "$baseos_version" ] || return
+
+	# add /var/at-log to fstab
+	if version_greater_than "$baseos_version" "3.15.0-at.1" \
+	    && grep -q /dev/mmcblk2 /proc/cmdline \
 	    && [ -e /dev/mmcblk2gp1 ] \
 	    && ! grep -q /dev/mmcblk2gp1 /target/etc/fstab; then
 		cat >> /target/etc/fstab <<'EOF' \
