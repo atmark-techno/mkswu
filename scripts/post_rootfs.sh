@@ -214,6 +214,14 @@ baseos_upgrade_fixes() {
 /dev/mmcblk2gp1	/var/at-log			vfat	defaults			0 0
 EOF
 	fi
+
+	# add noatime to fstab
+	if version_greater_than "$baseos_version" "3.15.0-at.2" \
+	    && ! grep -q noatime /target/etc/fstab; then
+		sed -i -e '/squashfs/ ! s/defaults/&,noatime/' \
+				-e 's/,subvol=/,noatime&/' /target/etc/fstab \
+			|| error "Could not update fstab"
+	fi
 }
 
 
