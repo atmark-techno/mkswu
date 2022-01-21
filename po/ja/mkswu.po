@@ -679,6 +679,10 @@ msgid "cannot enter %s directory"
 msgstr "%s ディレクトリに入れませんでした。"
 
 #: mkswu
+msgid "Warning: %s does not end in .desc, wrong file?"
+msgstr "Warning: %s は.descファイルではありません。"
+
+#: mkswu
 msgid "Cannot return to %s we were in before"
 msgstr "%s ディレクトリに戻れませんでした。"
 

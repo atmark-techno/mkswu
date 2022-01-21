@@ -1549,6 +1549,7 @@ sw-description.sig"
 	for desc; do
 		[ -e "$desc" ] || error "%s does not exist" "$desc"
 		cd "$(dirname -- "$desc")" || error "cannot enter %s directory" "$desc"
+		[ "${desc%.desc}" != "$desc" ] || info "Warning: %s does not end in .desc, wrong file?" "$desc"
 		. "./${desc##*/}"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path

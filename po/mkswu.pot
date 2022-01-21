@@ -468,6 +468,9 @@ msgstr ""
 msgid "cannot enter %s directory"
 msgstr ""
 #: mkswu
+msgid "Warning: %s does not end in .desc, wrong file?"
+msgstr ""
+#: mkswu
 msgid "Cannot return to %s we were in before"
 msgstr ""
 #: mkswu
