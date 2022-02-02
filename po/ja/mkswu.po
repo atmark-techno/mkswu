@@ -194,8 +194,12 @@ msgid "version check failed for %s: %s must be <= %s"
 msgstr "%s バージョンの %s を %s 以下にしてください。"
 
 #: mkswu
-msgid "version check failed for %s: %s must not mix alpha and digits"
-msgstr "%s バージョンの %s に数字とローマ字が混ざってます。"
+msgid ""
+"version check failed for %s: %s must not mix alpha and digits\\ne.g.\\n"
+"\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+msgstr ""
+"%s バージョンの %s に数字とローマ字が混ざっています。\\n例:\\n\\t1.2.3-"
+"rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
 
 #: mkswu
 msgid ""

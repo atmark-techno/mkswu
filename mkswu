@@ -327,7 +327,8 @@ $file"
 				}')
 			case "$err" in
 			1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
-			2\ *) error "version check failed for %s: %s must not mix alpha and digits" "$version" "${err#* }";;
+			2\ *) error "version check failed for %s: %s must not mix alpha and digits\ne.g.\n\t1.2.3-rc.4\n\t1.2.3.4\n\t1.2.3-4" \
+				"$version" "${err#* }";;
 			esac
 			;;
 		different)
