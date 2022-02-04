@@ -1,9 +1,8 @@
 #!/bin/sh
 
-# SC2039: local is ok for dash and busybox ash
-# SC1090: non-constant source directives
-# SC2165/SC2167: use same variable for nested loops
-# shellcheck disable=SC2039,SC1090,SC2165,SC2167
+# disable noisy shellcheck warnings
+# shellcheck disable=SC2039,SC1090,SC2165,SC2167,SC2064,SC2015
+# shellcheck disable=SC2247,SC2119,SC1090,SC2120,SC3043,SC3013
 
 if command -v gettext >/dev/null; then
 	_gettext() { TEXTDOMAINDIR="$TEXTDOMAINDIR" TEXTDOMAIN=mkswu gettext -- "$@"; }
@@ -12,7 +11,7 @@ else
 fi
 
 printmsg() {
-	local level=$1
+	local level="$1"
 	shift
 	[ "$VERBOSE" -lt "$level" ] && return
 
@@ -23,6 +22,7 @@ printmsg() {
 
 	local fmt="$1"
 	shift
+	# shellcheck disable=SC2059 # fmt is a build time constant
 	printf -- "$(_gettext "$fmt")\n" "$@"
 }
 
@@ -34,6 +34,7 @@ error() {
 
 	local fmt="$1"
 	shift
+	# shellcheck disable=SC2059 # fmt is a build time constant
 	printf -- "ERROR: $(_gettext "$fmt")\n" "$@" >&2
 	exit 1
 }
@@ -67,8 +68,9 @@ prompt() {
 		stty -echo
 	fi
 
+	# shellcheck disable=SC2059 # fmt is a build time constant
 	printf -- "$(_gettext "$prompt_fmt") " "$@"
-	read -r "$var"
+	read -r "${var?}"
 
 	if [ -n "$PASS" ]; then
 		stty echo
@@ -643,6 +645,7 @@ swdesc_files() {
 "
 	parse_swdesc files "$@"
 
+	# shellcheck disable=SC2086 # we want word splitting here...
 	set -- $tarfiles_src
 	# XXX temporary warning -- until when?
 	[ -e "$1" ] || error "%s does not exist\nplease note swdesc_files syntax changed and no longer requires setting a name" "$1"
@@ -693,6 +696,7 @@ swdesc_exec_nochroot() {
 
 	parse_swdesc exec "$@"
 
+	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec_nochroot with a non-empty file, but not referring to it with $1'
 
@@ -711,6 +715,7 @@ swdesc_exec() {
 
 	parse_swdesc exec "$@"
 
+	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
 
@@ -768,6 +773,7 @@ swdesc_script() {
 
 	parse_swdesc script "$@"
 
+	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	swdesc_exec "$script" 'sh $1'
 }
 
@@ -779,6 +785,7 @@ swdesc_script_nochroot() {
 
 	parse_swdesc script "$@"
 
+	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	swdesc_exec_nochroot "$script" 'sh $1'
 }
 
@@ -791,6 +798,7 @@ swdesc_embed_container() {
 
 	parse_swdesc embed_container "$@"
 
+	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly -l $1'
 }
 
@@ -802,6 +810,7 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
+	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly "'"$image"'"'
 }
 
@@ -813,7 +822,7 @@ swdesc_usb_container() {
 
 	parse_swdesc usb_container "$@"
 
-	local image_usb=${image##*/}
+	local image_usb="${image##*/}"
 	if [ "${image_usb%.tar.*}" != "$image_usb" ]; then
 		info "Warning: podman does not handle compressed container images without an extra uncompressed copy"
 		info "you might want to keep the archive as simple .tar"
@@ -823,6 +832,7 @@ swdesc_usb_container() {
 	COPY_USB="${COPY_USB:+$COPY_USB }$(shell_quote "$(realpath "$image")")"
 	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
+	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
 }
 
@@ -843,6 +853,7 @@ embedded_preinstall_script() {
 	fi
 
 
+	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_exec_nochroot "$OUTDIR/scripts.tar" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
 			'mkdir ${TMPDIR:-/var/tmp}/scripts' \
 			'cd ${TMPDIR:-/var/tmp}/scripts' \
@@ -959,6 +970,7 @@ EOF
 check_common_mistakes() {
 	local swdesc="$OUTDIR/$1"
 
+	# shellcheck disable=SC2016 # $ in single quotes... duh
 	# grep for common patterns of easy mistakes that would fail installing
 	! grep -qF '$6$salt$hash' "$swdesc" \
 		|| error "Please set user passwords (usermod command in .desc)"
@@ -1024,7 +1036,7 @@ track_used() {
 
 	for file; do
 		# only track files inside outdir
-		[ "${file#$OUTDIR}" = "$file" ] && continue
+		[ "${file#"$OUTDIR"}" = "$file" ] && continue
 
 		printf "%s\n" "$file" >> "$OUTDIR/used_files"
 	done
@@ -1150,6 +1162,7 @@ mkswu_genkey_aes() {
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		info "Info: using default aes key path"
 		ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"
+		# shellcheck disable=SC2016 # $CONFIG_DIR in single quotes on purpose
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
 			'ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"' >> "$CONFIG" \
 			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
@@ -1364,7 +1377,7 @@ sw-description.sig"
 	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
 
 	# genkey options
-	local GENKEY_AES="" GENKEY_PLAIN="" GENKEY_CN=""
+	local GENKEY_PLAIN="" GENKEY_CN=""
 
 	# default default values
 	local BOOT_SIZE="4M"
