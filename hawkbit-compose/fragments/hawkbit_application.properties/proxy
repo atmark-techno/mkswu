@@ -1,0 +1,2 @@
+# automatically re-use host/port from http headers
+server.forward-headers-strategy=NATIVE

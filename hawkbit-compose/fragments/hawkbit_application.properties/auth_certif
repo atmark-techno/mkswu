@@ -1,0 +1,2 @@
+hawkbit.server.ddi.security.authentication.header.enabled=false
+hawkbit.server.ddi.security.authentication.header.authority=hawkbit

@@ -1,0 +1,5 @@
+map $ssl_client_s_dn $ssl_client_s_dn_cn
+{
+    default "";
+    ~(^|,)CN=(?<CN>[^,]+) $CN;
+}

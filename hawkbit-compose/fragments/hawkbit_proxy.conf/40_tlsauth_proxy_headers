@@ -1,0 +1,2 @@
+	    proxy_set_header X-Ssl-Client-Cn $ssl_client_s_dn_cn;
+	    proxy_set_header X-Ssl-Issuer-Hash-1 hawkbit;

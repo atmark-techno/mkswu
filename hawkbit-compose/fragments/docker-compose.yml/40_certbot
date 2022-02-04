@@ -1,0 +1,9 @@
+            - ./data/certbot_webroot:/var/www
+    certbot:
+        image: certbot/certbot
+        restart: unless-stopped
+        volumes:
+            - ./data/nginx_certs:/etc/letsencrypt
+            - ./data/certbot_webroot:/var/www
+        entrypoint: []
+        command: [/bin/sh, -c, "trap exit TERM INT QUIT; while :; do certbot renew; sleep 24h & wait $$!; done"]

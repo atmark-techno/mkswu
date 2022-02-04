@@ -15,7 +15,7 @@ pot = po/mkswu.pot
 install_scripts = $(wildcard scripts/*sh) $(wildcard scripts/podman_*)
 install_completions = $(wildcard bash_completion.d/*)
 install_examples = $(wildcard examples/*desc) $(wildcard examples/*sh)
-install_hawkbit = hawkbit/nginx_hawkbit.conf hawkbit/mysql_utf8.cnf hawkbit/docker-compose.yml hawkbit/.env
+install_hawkbit = hawkbit-compose/setup_container.sh hawkbit-compose/fragments
 
 
 .PHONY: all install check clean
@@ -85,5 +85,5 @@ install: all
 	cp -t $(DESTDIR)$(SHARE)/examples/nginx_start/etc/atmark/containers examples/nginx_start/etc/atmark/containers/nginx.conf
 	install -d $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh
 	cp -t $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh examples/enable_sshd/root/.ssh/authorized_keys
-	install -d $(DESTDIR)$(SHARE)/hawkbit
-	cp -t $(DESTDIR)$(SHARE)/hawkbit $(install_hawkbit)
+	install -d $(DESTDIR)$(SHARE)/hawkbit-compose
+	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
