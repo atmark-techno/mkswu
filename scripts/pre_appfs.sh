@@ -45,7 +45,7 @@ podman_killall() {
 		printf "WARNING: %s\n" "$@" >&2
 		podman kill -a
 		podman ps --format '{{.ID}}' \
-			| timeout 30s xargs podman wait
+			| timeout 30s xargs -r podman wait
 	fi
 	podman pod rm -a -f
 	podman rm -a -f
