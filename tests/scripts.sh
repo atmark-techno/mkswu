@@ -28,6 +28,7 @@ test_version_update() {
 	SWDESC="$SCRIPTSDIR/swdesc"
 	system_versions="$SCRIPTSDIR/sw-versions"
 	merged="$SCRIPTSDIR/sw-versions.merged"
+	board="iot-g4-es1"
 	cp "scripts/sw-versions" "$SCRIPTSDIR/" \
 		|| error "Source versions not found?"
 
@@ -82,6 +83,24 @@ test_version_update() {
 	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
 	version=$(get_version other_boot "$merged")
 	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
+
+	cp "$merged" "$system_versions"
+	echo "  #VERSION boot 2020.04-at3 different $board" > "$SWDESC"
+	echo "  #VERSION boot 2020.04-at4 different not-$board" >> "$SWDESC"
+	gen_newversion
+	version=$(get_version boot "$merged")
+	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
+	[ "$version" = "2020.04-at3" ] || error "Did not merge correct new boot version"
+	version=$(get_version other_boot "$merged")
+	[ "$version" = "2020.04-at2" ] || error "other_boot should not stay at previous boot value"
+
+	: > "$system_versions"
+	gen_newversion
+	version=$(get_version boot "$merged")
+	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
+	[ "$version" = "2020.04-at3" ] || error "Did not merge correct new boot version"
+	version=$(get_version other_boot "$merged")
+	[ -z "$version" ] || error "other_boot should not be set"
 }
 
 # test user copy on rootfs

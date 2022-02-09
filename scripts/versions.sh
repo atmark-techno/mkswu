@@ -100,16 +100,11 @@ extract_swdesc_versions() {
 }
 
 gen_newversion() {
-	local component oldvers newvers install_if
+	local component oldvers newvers install_if newvers_board
 	local system_versions="${system_versions:-/etc/sw-versions}"
+	[ -e "$system_versions" ] || system_versions=/dev/null
 
 	extract_swdesc_versions < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present"
-
-	if ! [ -e "$system_versions" ]; then
-		sed -e 's/^[^ ]* //' "$SCRIPTSDIR/sw-versions.present" \
-			> "$SCRIPTSDIR/sw-versions.merged"
-		return
-	fi
 
 	# Merge files, keeping order of original sw-versions,
 	# then appending other lines from new one in order as well.
@@ -125,7 +120,11 @@ gen_newversion() {
 		version_update "$install_if" "$oldvers" "$newvers" || newvers="$oldvers"
 		printf "%s\n" "$component $newvers"
 	done < "$system_versions" > "$SCRIPTSDIR/sw-versions.merged"
-	while read -r component newvers install_if; do
+	while read -r component newvers install_if newvers_board; do
+		case "$newvers_board" in
+		"*"|"$board") ;;
+		*) continue;;
+		esac
 		oldvers=$(get_version "$component" "$system_versions")
 		[ -z "$oldvers" ] && printf "%s\n" "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
