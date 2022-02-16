@@ -950,6 +950,7 @@ EOF
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #FORCE_VERSION"
 	[ -n "$CONTAINER_CLEAR" ] && echo "  #CONTAINER_CLEAR"
+	[ -n "$NO_PRESERVE_FILES" ] && echo "  #NO_PRESERVE_FILES"
 	case "$POST_ACTION" in
 	poweroff) echo " #POSTACT_POWEROFF";;
 	wait) echo " #POSTACT_WAIT";;

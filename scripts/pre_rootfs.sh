@@ -20,6 +20,8 @@ update_preserve_list() {
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
+	grep -q "NO_PRESERVE_FILES" "$SWDESC" && return
+
 	mkdir_p_target /etc
 
 	if [ -e "/etc/swupdate_preserve_files" ]; then
@@ -103,6 +105,7 @@ copy_preserve_files() {
 	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
+	grep -q "NO_PRESERVE_FILES" "$SWDESC" && return
 
 	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_pre"

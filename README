@@ -44,6 +44,8 @@ CONTAINER_CLEAR: if set, swupdate will kill running containers and
                  /etc/atmark/containers/*.conf before continuing install.
                  /!\ if install fails this will leave your system
                  with no application, usage is discouraged /!\
+NO_PRESERVE_FILES: if set, swupdate will not copy files listed in
+                   /etc/swupdate_preserve_files when base_os is updated
 
 
 Common options for all helpers:
