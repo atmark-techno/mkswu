@@ -206,6 +206,23 @@ compress() {
 	mv "$file_out.tmp" "$file_out"
 }
 
+append_file() {
+	printf "%s\n" "$FILES_FIRST" "$FILES" \
+			| grep -q -x "$file" \
+		&& return
+
+	# we want to install anything marked base_os first,
+	# because if base_os is written anything like swdesc_command
+	# cannot run until baseos has been extracted
+	if [ -n "$install_first" ] || [ "$component" = "base_os" ]; then
+		FILES_FIRST="$FILES_FIRST
+$file"
+	else
+		FILES="$FILES
+$file"
+	fi
+}
+
 write_entry_stdout() {
 	local file_src="$1"
 	local file="${file_src##*/}"
@@ -266,8 +283,7 @@ write_entry_stdout() {
 
 	fi
 
-	printf %s "$FILES" | grep -q -x "$file" || FILES="$FILES
-$file"
+	append_file "$file"
 
 	[ "$file_src" = "$file_out" ] && track_used "$file_out" \
 		|| link "$file_src" "$file_out"
@@ -839,6 +855,7 @@ swdesc_usb_container() {
 embedded_preinstall_script() {
 	local f update=""
 	local component="" version="" board="" main_version="" install_if=""
+	local install_first=1
 
 	[ -e "$OUTDIR/scripts.tar" ] || update=1
 	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
@@ -1020,6 +1037,8 @@ sign() {
 }
 
 make_cpio() {
+	FILES="${FILES_FIRST}${FILES}"
+
 	check_common_mistakes sw-description
 	sign sw-description
 	(
@@ -1364,8 +1383,9 @@ mkimage() {
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="swupdate_pre.sh"
 	local POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
-	local FILES="sw-description
+	local FILES_FIRST="sw-description
 sw-description.sig"
+	local FILES=""
 	local FIRST_SWDESC_INIT=1
 	local COPY_USB=""
 	local MODE=""
@@ -1384,7 +1404,7 @@ sw-description.sig"
 	local BOOT_SIZE="4M"
 	local compress=1
 	local main_cwd desc
-	local component version board dest
+	local component version board dest install_first=""
 
 	set -e
 
