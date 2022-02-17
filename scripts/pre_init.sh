@@ -76,7 +76,8 @@ fail_redundant_update() {
 			if cmp -s /target/etc/sw-versions \
 					"$SCRIPTSDIR/sw-versions.merged"; then
 				rm -rf "$SCRIPTSDIR"
-				error "Update looks like it already had been installed but rolled back, failing on purpose -- rollback again to use it"
+				error "Update looks like it already had been installed but rolled back, failing on purpose." \
+					"Set SW_ALLOW_ROLLBACK=1 environment variable to force installing anyway."
 			fi
 			umount /target
 		fi
