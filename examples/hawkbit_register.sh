@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# Script configuration: edit this!
+# Script configuration: edit this if required!
+# user given here must have CREATE_TARGET,READ_TARGET_SECURITY_TOKEN permissions
 HAWKBIT_USER=device
 HAWKBIT_PASSWORD=
 HAWKBIT_URL=
@@ -12,16 +13,11 @@ CUSTOM_SWUPDATE_CFG=""
 SSL_NO_CHECK_CERT=
 # or set to cafile that must have been updated first
 SSL_CAFILE=
-# .. or add your own options if required
+# ... or paste here base64 encoded crt content
+SSL_CA_BASE64="
+"
+# ... or add your own options if required
 CURLOPT=-s
-
-# Configuration required on server
-# you'll want something like this in your application.properties config to allow device creation:
-#hawkbit.server.im.users[1].username=device
-#hawkbit.server.im.users[1].password={noop}test
-# or ...password={bcrypt}$2a$12$gA8HoyIVTGypGXIHXgfl.eM/eqXdcwHgEpsmaRN/svm17Gu4oFvEm
-#hawkbit.server.im.users[1].permissions=CREATE_TARGET,READ_TARGET_SECURITY_TOKEN
-
 
 error() {
 	printf "%s\n" "$@" >&2
@@ -51,9 +47,14 @@ init() {
 	else
 		# set default for swupdate
 		SSL_CAFILE="/etc/ssl/certs/ca-certificates.crt"
-
 	fi
-
+	if [ -n "$SSL_CA_BASE64" ]; then
+		echo "$SSL_CA_BASE64" \
+			| base64 -d > /usr/local/share/ca-certificates/hawkbit.crt \
+			|| error "Could not write certificate"
+		update-ca-certificates \
+			|| error "Could not update-ca-certificates"
+	fi
 
 	wait_network
 
@@ -95,8 +96,10 @@ register_device() {
 
 update_swupdate_cfg() {
 	# nuke the suricatta section if present, then append our own
-	sed '/suricatta:/,/}/d' < /etc/swupdate.cfg > swupdate.cfg
-	cat >> swupdate.cfg <<EOF
+	sed '/suricatta:/,/}/d' < /etc/swupdate.cfg > swupdate.cfg \
+		|| error "Could not update swupdate.cfg"
+	cat >> swupdate.cfg <<EOF \
+		|| error "Could not update swupdate.cfg"
 suricatta: {
   url = "${HAWKBIT_URL%/}";
   tenant = "$HAWKBIT_TENANT";
@@ -105,20 +108,27 @@ suricatta: {
   cafile = "$SSL_CAFILE";
 EOF
 	if [ -n "$SSL_NO_CHECK_CERT" ]; then
-		echo "  nocheckcert = true;" >> swupdate.cfg
+		echo "  nocheckcert = true;" >> swupdate.cfg \
+			|| error "Could not update swupdate.cfg"
 	fi
 	if [ -n "$CUSTOM_SWUPDATE_SURICATTA_CFG" ]; then
-		printf "%s\n" "$CUSTOM_SWUPDATE_SURICATTA_CFG" >> swupdate.cfg
+		printf "%s\n" "$CUSTOM_SWUPDATE_SURICATTA_CFG" >> swupdate.cfg \
+			|| error "Could not update swupdate.cfg"
 	fi
-	echo "}" >> swupdate.cfg
+	echo "}" >> swupdate.cfg \
+		|| error "Could not update swupdate.cfg"
 	if [ -n "$CUSTOM_SWUPDATE_CFG" ]; then
-		echo >> swupdate.cfg
-		printf "%s\n" "$CUSTOM_SWUPDATE_CFG" >> swupdate.cfg
+		echo >> swupdate.cfg \
+			|| error "Could not update swupdate.cfg"
+		printf "%s\n" "$CUSTOM_SWUPDATE_CFG" >> swupdate.cfg \
+			|| error "Could not update swupdate.cfg"
 	fi
-	mv swupdate.cfg /etc/swupdate.cfg
+	mv swupdate.cfg /etc/swupdate.cfg \
+		|| error "Could not update swupdate.cfg"
 
 	# enable the service
-	rc-update add swupdate-hawkbit default
+	rc-update add swupdate-hawkbit default \
+		|| error "Could not update swupdate.cfg"
 }
 
 main() {
