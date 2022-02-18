@@ -13,8 +13,9 @@ pot = po/mkswu.pot
 
 # XXX install example data more cleanly
 install_scripts = $(wildcard scripts/*sh) $(wildcard scripts/podman_*)
+install_completions = $(wildcard bash_completion.d/*)
 install_examples = $(wildcard examples/*desc) $(wildcard examples/*sh)
-install_hawkbit = hawkbit/nginx_hawkbit.conf hawkbit/mysql_utf8.cnf hawkbit/docker-compose.yml hawkbit/create-update.sh hawkbit/.env
+install_hawkbit = hawkbit/nginx_hawkbit.conf hawkbit/mysql_utf8.cnf hawkbit/docker-compose.yml hawkbit/.env
 
 
 .PHONY: all install check clean
@@ -66,15 +67,14 @@ dist:
 
 
 install: all
-	install -D -t $(DESTDIR)$(BIN) mkswu
+	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
 	sed -i -e "s/MKSWU_VERSION=\"/&$(TAG)/" $(DESTDIR)$(BIN)/mkswu
 	install -D -t $(DESTDIR)$(BIN) podman_partial_image
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
-	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) bash_completion.d/mkswu
-	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) bash_completion.d/podman_partial_image
+	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) $(install_completions)
 	install -D -t $(DESTDIR)$(SHARE) swupdate_post.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode

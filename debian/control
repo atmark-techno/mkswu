@@ -10,6 +10,7 @@ Package: mkswu
 Depends:
  cpio,
  zstd,
+ jq,
  ${misc:Depends}
 Architecture: all
 Description: build SWU images for armadillo base OS 

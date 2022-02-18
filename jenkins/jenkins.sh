@@ -39,7 +39,7 @@ case "$1" in
 deb)
 	if ! dpkg -s debhelper >/dev/null 2>&1; then
 		sudo apt update
-		sudo apt install -y debhelper
+		sudo apt install -y debhelper jq
 	fi
 	VERSION=$(git describe | tr '-' '.')
 	make dist
