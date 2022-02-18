@@ -1124,7 +1124,7 @@ EOF
 			&& mv "$NEW_CONFIG.new" "$NEW_CONFIG" \
 			|| error "Could not update config %s" "$CONFIG"
 
-		info "Updated config file %s" "$NEW_CONFIG"
+		info "Updated config file %s" "$NEW_CONFIG" >&2
 	) || exit
 
 	# if renamed, remove old config after all is done
@@ -1229,6 +1229,10 @@ mkswu_genkey_sign() {
 	info "Please set user passwords in initial_setup.desc and generate the image."
 	info "If you would like to encrypt your updates, generate your aes key now with:"
 	info "    mkswu --genkey --aes"
+}
+
+mkswu_get_config_path() {
+	printf "%s\n" "$CONFIG"
 }
 
 mkinit_genkey() {
@@ -1493,6 +1497,9 @@ sw-description.sig"
 				CONFIG_DIR="$PWD"
 			fi
 			;;
+		"--get-config-path")
+			MODE=get_config_path
+			;;
 		"--genkey")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
 			MODE=genkey_sign
@@ -1535,9 +1542,7 @@ sw-description.sig"
 		[ "$SKIP" -gt 0 ] && shift "$SKIP"
 	done
 
-	if [ -e "$SCRIPT_DIR/mkswu.conf.defaults" ]; then
-		. "$SCRIPT_DIR/mkswu.conf.defaults"
-	fi
+	. "$SCRIPT_DIR/mkswu.conf.defaults"
 	if [ "$MODE" = "import" ] && ! [ -e "$CONFIG" ]; then
 		error "Could not find config file to import, specify it with --config"
 	fi

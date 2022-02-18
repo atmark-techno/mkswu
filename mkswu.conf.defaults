@@ -20,3 +20,31 @@ HW_COMPAT="#RE:^at1(-.*)?$"
 # Description is an informative string describing your update in verbose mode
 # You probably want to override this in your image descriptions
 DESCRIPTION="Atmark firmware image"
+
+
+
+# Settings below are for hawkbit_push_update
+# hawkbit user account name to use for uploading updates.
+# If you are using the setup_container script mkswu has proper permissions
+HAWKBIT_USER=mkswu
+# clear text password of $HAWKBIT_USER
+HAWKBIT_PASSWORD=""
+
+# URL of hawkbit server e.g. https://hawkbit.domain.tld
+HAWKBIT_URL=""
+
+# curl options required to connect to hawkbit (e.g. ca certificate)
+HAWKBIT_CURLOPT=""
+
+# comma-separated list of devices 'id', e.g.
+# armadillo-00c7-0001-0006 or armadillo-00c7-0001-0006,armadillo-00c7-0001-0007
+# there will be no test group if left empty
+ROLLOUT_TEST_DEVICES=
+
+# number of groups to split the rollout into
+ROLLOUT_N_GROUPS=2
+
+# percent of successes required to trigger the next rollout start
+ROLLOUT_SUCCESS_THRESHOLD=70
+# percent of failures after which the next step will not start automatically
+ROLLOUT_ERROR_THRESHOLD=30

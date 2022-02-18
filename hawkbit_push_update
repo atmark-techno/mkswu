@@ -1,15 +1,5 @@
 #!/bin/sh
 
-HAWKBIT_USER=mkimage
-HAWKBIT_PASSWORD=
-HAWKBIT_URL=
-VENDOR=atmark
-# comma-separated list of devices 'id'
-ROLLOUT_TEST_DEVICES=
-ROLLOUT_N_GROUPS=2
-ROLLOUT_SUCCESS_THRESHOLD=70
-ROLLOUT_ERROR_THRESHOLD=30
-
 error() {
 	printf "%s\n" "$@" >&2
 	exit 1
@@ -30,11 +20,11 @@ curl_check() {
 	# curl --fail-with-body requires curl 7.76+: emulate it...
 	# from https://superuser.com/a/1641410
 
-	if ! httpcode=$(curl -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" \
+	if ! httpcode=$(curl $HAWKBIT_CURLOPT -s -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" \
 				--write-out "%{http_code}" "$@"); then
 		# run again without -s for error
 		echo "curl failed:" >&2
-		curl -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" "$@"
+		curl $HAWKBIT_CURLOPT -u "$HAWKBIT_USER:$HAWKBIT_PASSWORD" "$@"
 		exit 1
 	fi
 
@@ -64,7 +54,7 @@ create_update() {
 		curl_check -X POST -H "Content-Type: application/json" \
 			"$HAWKBIT_URL/rest/v1/softwaremodules" \
 			-o softwaremodule -d '[{
-				"vendor": "'"$VENDOR"'",
+				"vendor": "'"$DESCRIPTION"'",
 				"name": "'"$name"'",
 				"version": "'"$version"'",
 				"description": "'"$description"'",
@@ -275,6 +265,7 @@ usage() {
 	echo "Usage: $0 [options] file.swu"
 	echo
 	echo "rollout creation:"
+	echo "  --no-rollout: only upload the file without creating a rollout"
 	echo "  --new: create new rollout even if there already is an existing one"
 	echo "  --failed: Apply rollout only to nodes that previously failed update"
 	echo
@@ -289,6 +280,15 @@ main() {
 	local create_rollout=1 start_rollout="" keep_tmpdir="" rname
 	local name="" version="" description=""
 	local swu="" swutype="application"
+	local config=""
+	local HAWKBIT_USER=mkswu HAWKBIT_PASSWORD="" HAWKBIT_URL="" HAWKBIT_CURLOPT=""
+	local ROLLOUT_TEST_DEVICES="" ROLLOUT_N_GROUPS=2
+	local ROLLOUT_SUCCESS_THRESHOLD=70 ROLLOUT_ERROR_THRESHOLD=30
+	local SCRIPT_DIR
+	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
+	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then
+                SCRIPT_DIR=${SCRIPT_DIR%/bin}/share/mkswu
+	fi
 
 	command -v curl > /dev/null || error "Need curl installed"
 	command -v jq > /dev/null || error "Need jq installed"
@@ -330,6 +330,21 @@ main() {
 	done
 	[ -n "$swu" ] || error "Need to pass an swu update file as argument"
 
+	if [ -e "$SCRIPT_DIR/mkswu" ]; then
+		mkswu="$SCRIPT_DIR/mkswu"
+	else
+		command -v mkswu > /dev/null || error "mkswu is required for configuration"
+		mkswu=mkswu
+	fi
+	config=$("$mkswu" --get-config-path) \
+		|| error "Could not guess config path, is mkswu configured?"
+	. "$SCRIPT_DIR/mkswu.conf.defaults"
+	. "$config"
+
+	[ -n "$HAWKBIT_URL" ] || error "HAWKBIT_URL must be set in $config"
+	[ -n "$HAWKBIT_USER" ] || error "HAWKBIT_USER must be set in $config"
+	[ -n "$HAWKBIT_PASSWORD" ] || error "HAWKBIT_PASSWORD must be set in $config"
+
 	tmpdir=$(mktemp -d -t hawkbit_update.XXXXXX) \
 		|| error "Could not create tmpdir"
 	trap "rm -rf '$tmpdir'" EXIT
@@ -341,7 +356,7 @@ main() {
 	# - name = name of first component found
 	# - version = version of first component found
 	# - swutype = application unless base_os is set
-	cpio -i sw-description < "$swu" || error "$swu is not a swu image?"
+	cpio -i --quiet sw-description < "$swu" || error "$swu is not a swu image?"
 	if grep -q MAIN_VERSION sw-description; then
 		name=$(sed -ne 's/.*MAIN_COMPONENT //p' sw-description)
 		version=$(sed -ne 's/.*MAIN_VERSION //p' sw-description)
