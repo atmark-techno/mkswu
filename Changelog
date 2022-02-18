@@ -1,3 +1,25 @@
+3.15-at.3
+=========
+breaking changes:
+ - rename hawkbit/create-updates.sh to hawkbit_push_update and install it
+to bin dir
+
+features:
+ - add NO_PRESERVE_FILES option to skip handling copyback when using custom
+rootfs
+ - full rework of hawkbit container: use hawkbit-compose/setup_container.sh
+to generate appropriate docker-compose.yml and config files
+
+fixes:
+ - fix sw-versions handling for board-specific updates (e.g. boot image) that
+might generate multiple lines. This was harmless. Such duplicate lines will
+also now be removed.
+ - improve various error messages
+ - do not try to wait for podman containers to stop if none were running
+ - install base_os first if present in the image. This allows running
+swdesc_exec or similar even if a base_os update is coming that would
+previously fail because /target is empty
+
 3.15-at.2
 =========
 breaking changes:

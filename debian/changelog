@@ -1,3 +1,11 @@
+mkswu (3.15.at.3-1) experimental; urgency=low
+
+  * misc fixes (see changelog)
+  * install hawkbit_push_update in /usr/bin
+  * add hawkbit-compose scripts
+
+ -- Dominique Martinet <dominique.martinet@atmark-techno.com>  Fri, 18 Jan 2022 13:41:40 +0900
+
 mkswu (3.15.at.2-1) experimental; urgency=low
 
   * Initial release.
