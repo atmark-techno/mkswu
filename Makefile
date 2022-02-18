@@ -50,8 +50,9 @@ locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 check:
 	./tests/run.sh
 
-TAG ?= $(shell git describe --tags)
-TARNAME = mkswu_$(subst -,.,$(TAG))
+TAG ?= $(subst -,.,$(shell git describe --tags))
+
+TARNAME = mkswu_$(TAG)
 
 dist:
 	@if ! [ -e .git ]; then \
@@ -63,8 +64,9 @@ dist:
 		false; \
 	fi
 	git ls-files --recurse-submodules | \
-		tar -caJf $(TARNAME).orig.tar.xz --xform s:^:$(TARNAME)/: --verbatim-files-from -T-
-
+		tar -caJf $(TARNAME).orig.tar.xz --xform "s:^:$(TARNAME)/:S" --verbatim-files-from -T-
+	git ls-files hawkbit-compose | \
+		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
 
 install: all
 	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
