@@ -469,7 +469,7 @@ fix_hawkbit_users_id() {
 finalize_hawkbit() {
 	fix_hawkbit_users_id
 	assemble_fragments "$CONFIG_DIR/data/hawkbit_application.properties" \
-			pollingTime update_size rabbitmq proxy "auth_*"
+			pollingTime update_size rabbitmq "auth_*"
 }
 
 ##########################
@@ -563,6 +563,7 @@ prompt_reverse_proxy() {
 	update_template "docker-compose.yml/20_hawkbit_ports" -e 's/#EXPOSE//'
 	update_template "hawkbit_proxy.conf/10_cert_domain" -e "s/CERT_DOMAIN/$REVERSE_PROXY_CERT_DOMAIN/"
 	update_template "hawkbit_proxy.conf/25_cert_domain" -e "s/CERT_DOMAIN/$REVERSE_PROXY_CERT_DOMAIN/"
+	update_template "hawkbit_application.properties/proxy" -e "s/CERT_DOMAIN/$REVERSE_PROXY_CERT_DOMAIN/"
 
 	prompt_reply REVERSE_PROXY_CLIENT_CERT \
 		$"CA file path (leave empty to disable client authentication)" \
@@ -735,11 +736,11 @@ main() {
 	if ! [[ -d "$CONFIG_DIR" ]]; then
 		mkdir -p "$CONFIG_DIR" \
 			|| error $"Could not create directory"
-		# don't create link to self...
-		[[ "$CONFIG_DIR" = "$SCRIPT_DIR" ]] \
-			|| ln -s "$(realpath -P "$0")" "$CONFIG_DIR"/ \
-			|| error $"Could not create script link"
 		touch "$PROMPT_FILE"
+	fi
+	if [[ -e "$CONFIG_DIR/setup_container.conf" ]]; then
+		ln -s "$(realpath -P "$0")" "$CONFIG_DIR"/ \
+			|| error $"Could not create script link"
 	fi
 	cd "$CONFIG_DIR" \
 		|| error $"Could not enter config dir"
