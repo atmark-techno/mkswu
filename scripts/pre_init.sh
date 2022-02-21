@@ -88,9 +88,8 @@ init() {
 	lock_update
 	cleanup
 
-	gen_newversion
-
 	init_vars
+	gen_newversion
 
 	fail_redundant_update
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
