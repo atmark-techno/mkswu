@@ -35,7 +35,9 @@ init_vars() {
 
 	# non-fatal if not present
 	board=$(awk '{print $1; exit}' /etc/hwrevision 2>/dev/null)
+}
 
+init_vars_update() {
 	if needs_update base_os; then
 		update_rootfs=baseos
 	elif needs_update_regex "extra_os.*" \
@@ -90,6 +92,7 @@ init() {
 
 	init_vars
 	gen_newversion
+	init_vars_update
 
 	fail_redundant_update
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
