@@ -109,23 +109,27 @@ gen_newversion() {
 	# Merge files, keeping order of original sw-versions,
 	# then appending other lines from new one in order as well.
 	# Could probably do better but it works and files are small..
-	while read -r component oldvers; do
-		case "$component" in
-		other_boot) continue;;
-		boot) printf "%s\n" "other_boot $oldvers";;
-		esac
-		newvers=$(get_version --install-if "$component")
-		install_if=${newvers##* }
-		newvers=${newvers% *}
-		version_update "$install_if" "$oldvers" "$newvers" || newvers="$oldvers"
-		printf "%s\n" "$component $newvers"
-	done < "$system_versions" > "$SCRIPTSDIR/sw-versions.merged"
+	awk '!filter[$1] { filter[$1]=1; print }' "$system_versions" \
+		| while read -r component oldvers; do
+			case "$component" in
+			other_boot) continue;;
+			boot) printf "%s\n" "other_boot $oldvers";;
+			esac
+			newvers=$(get_version --install-if "$component")
+			install_if=${newvers##* }
+			newvers=${newvers% *}
+			version_update "$install_if" "$oldvers" "$newvers" \
+				|| newvers="$oldvers"
+			printf "%s\n" "$component $newvers"
+		done > "$SCRIPTSDIR/sw-versions.merged" \
+		|| error "Version generation from current versions failed"
 	while read -r component newvers install_if newvers_board; do
 		case "$newvers_board" in
 		"*"|"$board") ;;
 		*) continue;;
 		esac
 		oldvers=$(get_version "$component" "$system_versions")
-		[ -z "$oldvers" ] && printf "%s\n" "$component $newvers"
-	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged"
+		[ -n "$oldvers" ] || printf "%s\n" "$component $newvers"
+	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged" \
+		|| error "Version generation from new versions in swu failed"
 }
