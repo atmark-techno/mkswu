@@ -59,6 +59,7 @@ dist:
 		echo "make dist can only run within git directory"; \
 		false; \
 	fi
+	@git update-index --refresh
 	@if ! git diff-index --ignore-submodules=untracked --quiet HEAD; then \
 		echo "git index is not clean: please run make clean and check submodules"; \
 		false; \
