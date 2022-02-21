@@ -21,6 +21,7 @@ usage() {
 	echo $"  --reset-proxy       reset proxy-related settings"
 	echo $"  --reset-users       reset hawkbit users"
 	echo $"  --add-user <user>   add extra hawkbit admin user"
+	echo $"  --del-user <user>   delete hawkbit user with given name"
 }
 
 ######################
@@ -410,6 +411,20 @@ hawkbit.server.im.users[0].password={bcrypt}$pass
 hawkbit.server.im.users[0].permissions=$permissions
 EOF
 }
+
+hawkbit_del_user() {
+	local user fragment
+	echo $"Removing users: $*"
+	for user; do
+		fragment="$FRAGMENTS/hawkbit_application.properties/users_$user"
+		if ! [[ -e "$fragment" ]]; then
+			echo "User $user did not exist!"
+			continue
+		fi
+		rm -f "$fragment"
+	done
+}
+
 hawkbit_reset_users() {
 	local f
 	echo $"Removing users:"
@@ -631,7 +646,7 @@ main() {
 	local DOCKER_NEEDS_SUDO=""
 	local NODEFAULT="" NOSAVE=""
 	local RUN_COMPOSE=""
-	local reset_proxy="" reset_users="" add_users=() user
+	local reset_proxy="" reset_users="" add_users=() del_users=() user
 
 	local arg argopt
 	while [[ "$#" -gt 0 ]]; do
@@ -668,6 +683,11 @@ main() {
 		"--add-user")
 			[[ "$#" -ge 2 ]] || error $"$arg requires an argument"
 			add_users+=( "$2" )
+			shift
+			;;
+		"--del-user")
+			[[ "$#" -ge 2 ]] || error $"$arg requires an argument"
+			del_users+=( "$2" )
 			shift
 			;;
 		"--help"|"-h")
@@ -767,6 +787,9 @@ main() {
 	for user in "${add_users[@]}"; do
 		RESET_PW=1 hawkbit_add_user "$user"
 	done
+	if [[ "${#del_users[@]}" -gt 0 ]]; then
+		hawkbit_del_user "${del_users[@]}"
+	fi
 	prompt_hawkbit_users
 	prompt_reverse_proxy
 	finalize_hawkbit
