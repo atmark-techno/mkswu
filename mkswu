@@ -1477,8 +1477,24 @@ sw-description.sig"
 			[ "${OUT%.swu}" != "$OUT" ] || error "%s must end with .swu" "$OUT"
 			SKIP=1
 			;;
+		"-vv"*)
+			ARG=${ARG#-}
+			while [ "${ARG#v}" != "$ARG" ]; do
+				ARG="${ARG#v}"
+				VERBOSE=$((VERBOSE+1))
+			done
+			[ -z "$ARG" ] || error "Only v can be repeated in -vvv..."
+			;;
 		"-v"|"--verbose")
 			VERBOSE=$((VERBOSE+1))
+			;;
+		"-qq"*)
+			ARG=${ARG#-}
+			while [ "${ARG#q}" != "$ARG" ]; do
+				ARG="${ARG#q}"
+				VERBOSE=$((VERBOSE-1))
+			done
+			[ -z "$ARG" ] || error "Only q can be repeated in -qqq..."
 			;;
 		"-q"|"--quiet")
 			VERBOSE=$((VERBOSE-1))
