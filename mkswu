@@ -1143,7 +1143,7 @@ mkswu_import() {
 		|| error "Could not resolve %s directory name" "$CONFIG"
 
 	if [ -e "$NEW_CONFIG" ]; then
-		info "Config %s already exists, skipping import" "$NEW_CONFIG"
+		warning "Config %s already exists, skipping import" "$NEW_CONFIG"
 		return
 	fi
 
@@ -1212,7 +1212,7 @@ mkswu_genkey_sign() {
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
 	[ -n "$PUBKEY" ] || error "PUBKEY is not set in config file"
 	if [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; then
-		info "%s already exists, skipping" "$PRIVKEY"
+		warning "%s already exists, skipping" "$PRIVKEY"
 		return
 	fi
 	[ -n "$GENKEY_CN" ] || error "Certificate common name must be provided with --cn <name>"
