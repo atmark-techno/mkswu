@@ -1232,8 +1232,12 @@ mkswu_genkey_sign() {
 	info "    mkswu --genkey --aes"
 }
 
-mkswu_get_config_path() {
-	printf "%s\n" "$CONFIG"
+mkswu_get_var() {
+	local var="$GET_VAR_VAR"
+	case "$var" in
+	*[!0-9a-zA-Z_]*) error "Invalid variable name %s" "$var";;
+	esac
+	eval printf "%s\\\n" "\$$var"
 }
 
 mkinit_genkey() {
@@ -1498,8 +1502,11 @@ sw-description.sig"
 				CONFIG_DIR="$PWD"
 			fi
 			;;
-		"--get-config-path")
-			MODE=get_config_path
+		"--get-var")
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			GET_VAR_VAR="$1"
+			SKIP=1
+			MODE=get_var
 			;;
 		"--genkey")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"

@@ -336,7 +336,7 @@ main() {
 		command -v mkswu > /dev/null || error "mkswu is required for configuration"
 		mkswu=mkswu
 	fi
-	config=$("$mkswu" --get-config-path) \
+	config=$("$mkswu" --get-var CONFIG) \
 		|| error "Could not guess config path, is mkswu configured?"
 	. "$SCRIPT_DIR/mkswu.conf.defaults"
 	. "$config"
