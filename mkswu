@@ -680,6 +680,7 @@ swdesc_files() {
 		mtime=$({ printf "%s\n" "$mtime"; find "$tarfile_raw" -exec stat -c "%Y" {} +; } \
 				| awk '$1 > max { max=$1 } END { print max }')
 		set -- "$@" "$tarfile"
+		track_used "$tarfile"
 	done
 
 	set_file_from_content "$basedir" "$dest" "$@"
@@ -1059,7 +1060,11 @@ track_used() {
 		# only track files inside outdir
 		[ "${file#"$OUTDIR"}" = "$file" ] && continue
 
-		printf "%s\n" "$file" >> "$OUTDIR/used_files"
+		if [ -d "$file" ]; then
+			find "$file" -type f
+		else
+			printf "%s\n" "$file"
+		fi >> "$OUTDIR/used_files"
 	done
 }
 
