@@ -1031,14 +1031,19 @@ sign() {
 		${PRIVKEY_PASS:+-passin $PRIVKEY_PASS} \
 		|| error "Could not sign %s" "$file"
 
-	# Note if anyone needs debugging, can be verified with:
-	# openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
-	#     -nosmimecap -binary -CAfile "$PUBKEY" > /dev/null
-
 	mv "$file.sig.tmp" "$file.sig"
 }
 
-make_cpio() {
+verify() {
+	# note: this is only a helper for debug
+	local file="$1"
+	openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
+		-nosmimecap -binary -CAfile "$PUBKEY" > /dev/null \
+		|| error "Signature verification failed for $file"
+	echo "$file: OK"
+}
+
+mkcpio() {
 	FILES="${FILES_FIRST}${FILES}"
 
 	check_common_mistakes sw-description
@@ -1086,7 +1091,7 @@ cleanup_outdir() {
 update_mkswu_conf() {
 	local confbase="${CONFIG##*/}"
 	local NEW_CONFIG="$CONFIG"
-	
+
 	if [ "$confbase" = mkimage.conf ]; then
 		NEW_CONFIG="$(dirname "$CONFIG")/mkswu.conf"
 		[ -e "$NEW_CONFIG" ] && error "Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already exists!"
@@ -1109,7 +1114,6 @@ update_mkswu_conf() {
 			# keep old version
 			cp "$CONFIG" "$CONFIG.autosave-$(date +%Y%m%d)" \
 				|| error "Could not update config %s" "$CONFIG"
-			
 
 			# update hash, trim comments/empty lines past auto section comment
 			# and update obsolete header if still present
@@ -1153,6 +1157,7 @@ mkswu_import() {
 	CONFIG_DIR="$(realpath "$(dirname "$CONFIG")")" \
 		|| error "Could not resolve %s directory name" "$CONFIG"
 
+	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
 	if [ -e "$NEW_CONFIG" ]; then
 		warning "Config %s already exists, skipping import" "$NEW_CONFIG"
 		return
@@ -1191,6 +1196,7 @@ absolutize_file_paths() {
 mkswu_genkey_aes() {
 	local oldumask
 
+	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		info "Info: using default aes key path"
 		ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"
@@ -1220,6 +1226,7 @@ mkswu_genkey_sign() {
 	local CURVE="${GENKEY_CURVE:-secp256k1}"
 	local DAYS="${GENKEY_DAYS:-$((5*365))}"
 
+	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
 	[ -n "$PUBKEY" ] || error "PUBKEY is not set in config file"
 	if [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; then
@@ -1243,12 +1250,61 @@ mkswu_genkey_sign() {
 	info "    mkswu --genkey --aes"
 }
 
-mkswu_get_var() {
-	local var="$GET_VAR_VAR"
-	case "$var" in
-	*[!0-9a-zA-Z_]*) error "Invalid variable name %s" "$var";;
+mkswu_internal() {
+	[ $# -lt 1 ] && error "%s requires an argument" "--internal"
+	local command="$1"
+	shift
+	case "$command" in
+	get_var)
+		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
+		local var
+		for var; do
+			case "$var" in
+			*[!0-9a-zA-Z_]*) error "Invalid variable name %s" "$var";;
+			esac
+			eval printf "%s\\\n" "\$$var"
+		done
+		;;
+	sign)
+		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
+		local file
+		for file; do
+			[ -e "$file" ] || error "%s does not exist" "$file"
+			OUTDIR=$(dirname "$file")
+			sign "$(basename "$file")"
+		done
+		;;
+
+	verify)
+		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
+		local file
+		for file; do
+			[ -e "$file" ] || error "%s does not exist" "$file"
+			[ -e "$file.sig" ] || error "%s does not exist" "$file.sig"
+			verify "$file"
+		done
+		;;
+	mkcpio)
+		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
+		OUT="$1"
+		[ "${OUT%.swu}" != "$OUT" ] || error "%s must end with .swu" "$OUT"
+		OUTDIR=$(dirname -- "$OUT")/.$(basename -- "$OUT" .swu)
+		shift
+		FILES_FIRST=""
+		if [ $# -eq 0 ]; then
+			[ -e "$OUT" ] || error "%s does not exist" "$OUT"
+			FILES="$(cpio -t --quiet < "$OUT")"
+			info "Packing:\n%s" "$FILES"
+		else
+			FILES=$(printf "%s\n" "$@")
+		fi
+		mkcpio
+		info "Successfully generated %s" "$OUT"
+		;;
+	*)
+		error "Unrecognized internal command %s" "$command"
+		;;
 	esac
-	eval printf "%s\\\n" "\$$var"
 }
 
 mkinit_genkey() {
@@ -1529,11 +1585,9 @@ sw-description.sig"
 				CONFIG_DIR="$PWD"
 			fi
 			;;
-		"--get-var")
-			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
-			GET_VAR_VAR="$1"
-			SKIP=1
-			MODE=get_var
+		"--internal")
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			MODE=internal
 			;;
 		"--genkey")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
@@ -1566,9 +1620,12 @@ sw-description.sig"
 			# stop parsing
 			SKIP=-1
 			;;
-		"-h"|"--help"|"-"*)
+		"-h"|"--help")
 			usage
 			exit 0
+			;;
+		"-"*)
+			error "Unrecognized option %s" "$ARG"
 			;;
 		*)
 			set -- "$@" "$ARG"
@@ -1601,9 +1658,8 @@ sw-description.sig"
 	[ -n "$MKSWU_DESCRIPTION" ] && DESCRIPTION="$MKSWU_DESCRIPTION"
 
 	if [ -n "$MODE" ]; then
-		[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
 		[ -n "$OUT" ] && error "%s is incompatible with --%s" "out" "$MODE"
-		"mkswu_$MODE"
+		"mkswu_$MODE" "$@"
 		exit 0
 	fi
 
@@ -1643,7 +1699,7 @@ sw-description.sig"
 	# probably want to sed these out at some point for compatibility
 	# (Note this is only required to run swupdate on debian,
 	#  not for image generation)
-	make_cpio
+	mkcpio
 
 	if [ -n "$COPY_USB" ]; then
 		info "You have sideloaded containers, copy all these files to USB drive:"
