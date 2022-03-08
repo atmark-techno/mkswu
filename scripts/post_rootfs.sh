@@ -235,8 +235,6 @@ post_rootfs() {
 
 	# if other fs was recreated: fix partition-specific things
 	if [ -e /target/.created ]; then
-		rm -f /target/.created
-
 		# fwenv: either generate a new one for mmc, or copy for sd boot (supersedes version in update)
 		if [ "$rootdev" = "/dev/mmcblk2" ]; then
 			cat > /target/etc/fw_env.config <<EOF \
@@ -263,7 +261,6 @@ EOF
 			baseos_upgrade_fixes
 			post_copy_preserve_files
 		fi
-
 	fi
 
 	# extra fixups on update
@@ -277,6 +274,10 @@ EOF
 		update_swupdate_certificate
 	fi
 
+	# mark filesystem as ready for reuse if something failed
+	rm -f /target/.created \
+		|| error "Could not remove .created internal file from rootfs"
+
 	# and finally set version where appropriate.
 	if ! needs_reboot; then
 		# updating current version with what is being installed:
@@ -287,7 +288,6 @@ EOF
 		cp "$SCRIPTSDIR/sw-versions.merged" "/target/etc/sw-versions" \
 			|| error "Could not set sw-versions"
 	fi
-
 
 	rm -f "$SCRIPTSDIR/sw-versions.merged" "$SCRIPTSDIR/sw-versions.present"
 }

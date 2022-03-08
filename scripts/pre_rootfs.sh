@@ -151,7 +151,8 @@ mount_target_rootfs() {
 	# If there is no base_os update we can use it.
 	if ! needs_update "base_os" \
 	    && mount "$dev" /target 2>/dev/null; then
-		if [ -s /etc/.rootfs_update_timestamp ] \
+		if [ ! -e /target/.created ] \
+		    && [ -s /etc/.rootfs_update_timestamp ] \
 		    && [ "$(cat /etc/.rootfs_update_timestamp 2>/dev/null)" \
 		    = "$(cat /target/etc/.rootfs_update_timestamp 2>/dev/null)" ]; then
 			echo "Other fs up to date, skipping copy"
