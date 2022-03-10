@@ -156,7 +156,8 @@ overwrite_to_target() {
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
 		rm -rf "$TARGET/$f"
-		cp -a "$file" "$TARGET/$file"
+		cp -a "$file" "$TARGET/$file" \
+			|| error "Failed to copy $file from previous rootfs"
 	done
 }
 

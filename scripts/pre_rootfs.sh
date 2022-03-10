@@ -11,7 +11,8 @@ copy_to_target() {
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
-		cp -aTn "$file" "$TARGET/$file"
+		cp -aTn "$file" "$TARGET/$file" \
+			|| error "Failed to copy $file from previous rootfs"
 	done
 }
 

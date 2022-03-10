@@ -103,9 +103,12 @@ mkdir_p_target() {
 
 	mkdir "$TARGET/$dir" \
 		|| error "Could not create $TARGET/$dir"
-	chown --reference "$dir" "$TARGET/$dir"
-	chmod --reference "$dir" "$TARGET/$dir"
-	touch --reference "$dir" "$TARGET/$dir"
+	chown --reference "$dir" "$TARGET/$dir" \
+		|| error "Could not chown $dir"
+	chmod --reference "$dir" "$TARGET/$dir" \
+		|| error "Could not chmod $dir"
+	touch --reference "$dir" "$TARGET/$dir" \
+		|| error "Could set $dir timestamp"
 }
 
 is_mountpoint() {
