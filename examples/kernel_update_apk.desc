@@ -7,17 +7,18 @@
 # install-if different mode here
 install_if=different
 
-swdesc_exec "linux-at-5.10.9-r3.apk" 'apk add $1' \
-	--version extra_os.kernel 5.10.9-3 \
+# set version once for all below swdesc elements unless
+# forced with --version
+component=extra_os.kernel
+version=5.10.82-1
+
+swdesc_exec "linux-at-5.10.9-r3.apk" 'apk add $1'
 
 # it's also possible to have a whole update via internet
-#swdesc_command "apk add linux-at" --version extra_os.kernel 5.10.9-3
+#swdesc_command "apk add linux-at"
 
 
 # add the kernel to files to be preserved on OS update
-swdesc_command --version extra_os.kernel 5.10.9-3 \
-        'grep -qE "^POST /boot" /etc/swupdate_preserve_files || echo -e "POST /boot\nPOST /lib/modules" >> /etc/swupdate_preserve_files'
-
-
-# unset install_if for next .desc file if any
-unset install_if
+swdesc_script update_preserve_files.sh -- \
+	"POST /boot" \
+	"POST /lib/modules"

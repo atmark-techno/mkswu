@@ -395,6 +395,58 @@ test_post_success() {
 	rm -f "$atlog"
 }
 
+test_update_preserve_files() {
+	file="$SCRIPTSDIR/swupdate_preserve_files"
+
+	echo "preserve files normal remove/append"
+	printf "%s\n" "POST /removeme1" "/tmp/leaveme" "/removeme2" > "$file"
+	main --file "$file" "POST add1" "add2" --del "POST /removeme1" "/removeme2" "/tmp/leave" --add "add3" "/tmp/leaveme"
+	[ "$(cat "$file")" = "/tmp/leaveme
+POST add1
+add2
+add3" ] || error "normal remove/append bad content: $(cat "$file")"
+
+
+	echo "preserve files comment remove/append"
+	printf "%s\n" "POST /removeme1" "/tmp/leaveme" "/removeme2" > "$file"
+	main --file "$file" --comment "test comment" "POST add1" "add2" --del "POST /removeme1" "/removeme2" "/tmp/leave"
+	[ "$(cat "$file")" = "# test comment: POST /removeme1
+/tmp/leaveme
+# test comment: /removeme2
+# test comment
+POST add1
+add2" ] || error "normal remove/append bad content: $(cat "$file")"
+
+	echo "delete with regex"
+	printf "%s\n" "POST /removeme1" "/tmp/leaveme" "/removeme2 space" > "$file"
+	main --file "$file" --del-regex "POST /rem.*" --comment "test comment" "/removeme2 sp.*" "/tmp/leave"
+	[ "$(cat "$file")" = "/tmp/leaveme
+# test comment: /removeme2 space" ] || error "normal remove/append bad content: $(cat "$file")"
+
+	echo "start from no file"
+	rm -f "$file"
+	main --file "$file" "ok" "ok"
+	[ "$(cat "$file")" = "ok" ] || error "didn't create file"
+
+	echo "multiple files"
+	rm -f "$file"
+	main --file "$file" "ok" --file "${file}_2" "ok"
+	[ "$(cat "$file")" = "ok" ] || error "didn't create file"
+	[ "$(cat "${file}_2")" = "ok" ] || error "didn't create file2"
+
+
+	echo "Bad option fails"
+	printf "%s\n" "ok" > "$file"
+	! (
+		main --file "$file" "add" --whatever
+	) 2>/dev/null || error "Didn't fail as expected"
+	(
+		main --file "$file" "add" --whatever
+	) 2>&1 | grep -q 'Invalid argument --whatever' \
+		|| error "Didn't fail as expected"
+	[ "$(cat "$file")" = "ok" ] || error "arg failure modified file"
+}
+
 # run in subshell as we cannot source all at once
 (
 	set -e
@@ -429,5 +481,11 @@ test_post_success() {
 	. "$SCRIPTS_SRC_DIR/post_success.sh"
 	test_post_success
 ) || error "post success failed"
+
+(
+	# source it to try other shells
+	. ../examples/update_preserve_files.sh
+	test_update_preserve_files
+) || error "update_preserve_files failed"
 
 true
