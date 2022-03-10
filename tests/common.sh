@@ -6,6 +6,8 @@ TESTS_DIR=$(dirname "${BASH_SOURCE[0]}")
 MKSWU=$(command -v "${MKSWU:-$TESTS_DIR/../mkswu}") \
 	|| error "mkswu script not found"
 SCRIPTS_DIR="$TESTS_DIR/../scripts"
+# tests assume no encryption unless forced
+export MKSWU_ENCRYPT_KEYFILE=""
 if [ "${MKSWU%/usr/bin/mkswu}" != "$MKSWU" ]; then
 	SCRIPTS_DIR="${MKSWU%/bin/mkswu}/share/mkswu/scripts"
 fi
