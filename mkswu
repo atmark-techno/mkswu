@@ -304,8 +304,8 @@ write_entry_stdout() {
 	write_line "{"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
-	if [ -n "$component" ]; then
-		[ -n "$version" ] || error "component %s was set with empty version" "$component"
+	if [ -n "$version" ]; then
+		[ -n "$component" ] || error "version %s was set without associated component" "$version"
 		if [ -z "$install_if" ]; then
 			case "$component" in
 			boot) install_if="different";;
@@ -389,7 +389,7 @@ write_entry_stdout() {
 	fi
 	if [ -n "$main_version" ]; then
 		[ -n "$component" ] && [ -n "$version" ] \
-			|| error "use as main version requested but component/version not set?"
+			|| error "%s requires --version to be set" "--main-version"
 		write_line "# MAIN_COMPONENT $component" \
 			   "# MAIN_VERSION $version"
 	fi
@@ -1484,7 +1484,8 @@ sw-description.sig"
 	local BOOT_SIZE="4M"
 	local compress=1
 	local main_cwd desc
-	local component version board dest install_first=""
+	local component version board="" dest=""
+	local install_first="" main_version=""
 
 	set -e
 
@@ -1685,6 +1686,8 @@ sw-description.sig"
 		[ -e "$desc" ] || error "%s does not exist" "$desc"
 		cd "$(dirname -- "$desc")" || error "cannot enter %s directory" "$desc"
 		[ "${desc%.desc}" != "$desc" ] || info "Warning: %s does not end in .desc, wrong file?" "$desc"
+		component="${desc%.desc}"
+		version=""
 		. "./${desc##*/}"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
