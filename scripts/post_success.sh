@@ -1,9 +1,34 @@
+post_success_rootfs() {
+	local newstate
+
+	if needs_reboot; then
+		newstate="${partdev}$((ab+1))"
+	else
+		newstate="${partdev}$((!ab+1))"
+	fi
+
+	echo "$newstate $(date +%s)" > "/var/log/swupdate/last_update" \
+		|| error "Could not record last update partition"
+}
+
 post_success_hawkbit() {
 	local dev="${partdev}5"
 	local basemount newstate
 
 	# hawkbit service requires transmitting install status on next
 	# restart, so keep track of it in appfs
+
+	# /var/log is shared and not mounted on target
+	touch /var/log/swupdate/hawkbit_install_done \
+		|| error "Could not create hawkbit install marker file"
+
+	# The following is no longer required from atmark-x2-base 1.4 onwards
+	# We should theorically check apk version, but that is slow,
+	# so check abos-ctrl command exitance instead.
+	# Note we check on current OS, not updated one: this is because
+	# we need this to work in case of failed update.
+	# XXX add cleanup of subvolume in post root fixup when we remove this
+	[ -e /usr/sbin/abos-ctrl ] && return
 
 	basemount=$(mktemp -d -t btrfs-swupdate.XXXXXX) || error "Could not create temp dir"
 	if ! mount -t btrfs -o subvol=/swupdate "$dev" "$basemount" 2>/dev/null; then
@@ -44,8 +69,10 @@ set_fw_update_ind() {
 		|| echo "Could not set FW_UPDATE_IND" >&2
 }
 
-
 post_success() {
+	[ -d "/var/log/swupdate" ] || mkdir /var/log/swupdate \
+		|| error "Could not mkdir /var/log/swupdate"
+	post_success_rootfs
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
 	set_fw_update_ind
