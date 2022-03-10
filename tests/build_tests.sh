@@ -23,6 +23,9 @@ build_check board_fail
 build_check exec_quoting "swdesc 'touch /tmp/swupdate-test'"
 build_check exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 
+build_check swdesc_script
+build_check swdesc_script_nochroot
+
 build_fail ../examples/initial_setup
 build_fail files_os_nonabs_fail
 build_fail files_dotdot_fail

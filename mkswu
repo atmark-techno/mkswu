@@ -517,8 +517,12 @@ parse_swdesc() {
 		;;
 	script)
 		[ $# -eq 0 ] && [ -n "$script" ] && return
-		[ $# -eq 1 ] || error "Usage: swdesc_script [options] script"
+		[ $# -ge 1 ] || error "Usage: swdesc_script [options] script [args]"
 		script="$1"
+		shift
+		for ARG; do
+			cmd="${cmd:+$cmd }$(shell_quote "$ARG")"
+		done
 		;;
 	exec)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
@@ -787,24 +791,24 @@ swdesc_script() {
 	local script="$script"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" cmd="$cmd"
 
 	parse_swdesc script "$@"
 
 	# shellcheck disable=SC2016 # $1 in single quotes on purpose
-	swdesc_exec "$script" 'sh $1'
+	swdesc_exec "$script" 'sh $1'" $cmd"
 }
 
 swdesc_script_nochroot() {
 	local script="$script"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" cmd="$cmd"
 
 	parse_swdesc script "$@"
 
 	# shellcheck disable=SC2016 # $1 in single quotes on purpose
-	swdesc_exec_nochroot "$script" 'sh $1'
+	swdesc_exec_nochroot "$script" 'sh $1'" $cmd"
 }
 
 
