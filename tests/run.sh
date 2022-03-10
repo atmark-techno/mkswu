@@ -13,6 +13,7 @@ fi
 
 "${MKSWU:-../mkswu}" --genkey --cn test --plain
 
+. ./common.sh
 ./examples.sh
 ./build_tests.sh
 
@@ -93,13 +94,30 @@ if command -v "$SWUPDATE" > /dev/null; then
 		ls "/tmp/swupdate-test/1 \\, \", ',"$'\n'"bar" /tmp/swupdate-test/2 /tmp/swupdate-test/3 \
 			|| error "exec_nochroot did not create expected files"
 		ls "/target/tmp/swupdate-test/1 \\, \", ',"$'\n'"bar" /target/tmp/swupdate-test/2  /target/tmp/swupdate-test/3 \
-			|| error "exec  did not create expected files"
+			|| error "exec did not create expected files"
 		rm -rf /tmp/swupdate-test /target/tmp/swupdate-test
+
+		# tests/swdesc_script quoting
+		mkdir /target/tmp/swupdate-test
+		"$SWUPDATE" -i ./out/swdesc_script.swu -v -k ../swupdate.pem \
+			|| error "swupdate failed"
+		[ "$(cat /target/tmp/swupdate-test/preserve)" = "# ## okay
+line1
+line2 with space and ! \ @" ] || error "updated content does not match (podman)"
+		rm -rf /target/tmp/swupdate-test
 
 		# tests/exec_readonly (failure test)
 		"$SWUPDATE" -i ./out/exec_readonly.swu -v -k ../swupdate.pem \
 			&& error "Should not have succeeded"
 	fi
+
+	mkdir /tmp/swupdate-test
+	"$SWUPDATE" -i ./out/swdesc_script_nochroot.swu -v -k ../swupdate.pem \
+		|| error "swupdate failed"
+	[ "$(cat /tmp/swupdate-test/preserve)" = "# ## okay
+line1
+line2 with space and ! \ @" ] || error "updated content does not match (nochroot)"
+	rm -rf /tmp/swupdate-test
 fi
 
 # finish with a successful command to not keep last failed on purpose test result
