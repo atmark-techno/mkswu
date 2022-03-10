@@ -120,7 +120,7 @@ msgstr ""
 msgid "Checksumming %s failed"
 msgstr ""
 #: mkswu
-msgid "component %s was set with empty version"
+msgid "version %s was set without associated component"
 msgstr ""
 #: mkswu
 msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
@@ -147,10 +147,7 @@ msgstr ""
 msgid "version must not contain spaces (%s = %s)"
 msgstr ""
 #: mkswu
-msgid "version %s was set without associated component"
-msgstr ""
-#: mkswu
-msgid "use as main version requested but component/version not set?"
+msgid "%s requires --version to be set"
 msgstr ""
 #: mkswu
 msgid "%s requires an argument"
@@ -183,7 +180,7 @@ msgstr ""
 msgid "Usage: swdesc_command [options] cmd [cmd..]"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_script [options] script"
+msgid "Usage: swdesc_script [options] script [args]"
 msgstr ""
 #: mkswu
 msgid "Usage: swdesc_exec [options] file command"
@@ -279,6 +276,9 @@ msgstr ""
 msgid "Could not sign %s"
 msgstr ""
 #: mkswu
+msgid "Signature verification failed for $file"
+msgstr ""
+#: mkswu
 msgid "Could not enter %s"
 msgstr ""
 #: mkswu
@@ -295,6 +295,9 @@ msgid "Updated config file %s"
 msgstr ""
 #: mkswu
 msgid "Could not resolve %s directory name"
+msgstr ""
+#: mkswu
+msgid "--%s had extra arguments?"
 msgstr ""
 #: mkswu
 msgid "Config %s already exists, skipping import"
@@ -364,6 +367,24 @@ msgid "If you would like to encrypt your updates, generate your aes key now with
 msgstr ""
 #: mkswu
 msgid "    mkswu --genkey --aes"
+msgstr ""
+#: mkswu
+msgid "Invalid variable name %s"
+msgstr ""
+#: mkswu
+msgid "Variable %s was not set"
+msgstr ""
+#: mkswu
+msgid "%s must end with .swu"
+msgstr ""
+#: mkswu
+msgid "Packing:\\n%s"
+msgstr ""
+#: mkswu
+msgid "Successfully generated %s"
+msgstr ""
+#: mkswu
+msgid "Unrecognized internal command %s"
 msgstr ""
 #: mkswu
 msgid "Enter certificate common name:"
@@ -438,7 +459,10 @@ msgstr ""
 msgid "Could not get script dir"
 msgstr ""
 #: mkswu
-msgid "%s must end with .swu"
+msgid "Only v can be repeated in -vvv..."
+msgstr ""
+#: mkswu
+msgid "Only q can be repeated in -qqq..."
 msgstr ""
 #: mkswu
 msgid "%s is incompatible with --%s"
@@ -453,6 +477,9 @@ msgstr ""
 msgid "mkswu version %s"
 msgstr ""
 #: mkswu
+msgid "Unrecognized option %s"
+msgstr ""
+#: mkswu
 msgid "Could not find config file to import, specify it with --config"
 msgstr ""
 #: mkswu
@@ -460,9 +487,6 @@ msgid "Please import current config with mkswu --import first"
 msgstr ""
 #: mkswu
 msgid "Config file not found, create one with mkswu --init"
-msgstr ""
-#: mkswu
-msgid "--%s had extra arguments?"
 msgstr ""
 #: mkswu
 msgid "cannot enter %s directory"
@@ -484,9 +508,6 @@ msgid "You have sideloaded containers, copy all these files to USB drive:"
 msgstr ""
 #: mkswu
 msgid "%s"
-msgstr ""
-#: mkswu
-msgid "Successfully generated %s"
 msgstr ""
 #: examples/enable_sshd.desc
 msgid "Add your keys in enable_sshd/root/.ssh/authorized_keys"

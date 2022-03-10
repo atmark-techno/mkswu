@@ -174,8 +174,8 @@ msgid "Checksumming %s failed"
 msgstr "%s のチェックサムの生成ができませんでした。"
 
 #: mkswu
-msgid "component %s was set with empty version"
-msgstr "%s のバージョンcomponentにバージョンが足りません。"
+msgid "version %s was set without associated component"
+msgstr "バージョン %s に component はありません！"
 
 #: mkswu
 msgid ""
@@ -222,12 +222,8 @@ msgid "version must not contain spaces (%s = %s)"
 msgstr "バージョンの %s = %s にスペースを入れないでください。"
 
 #: mkswu
-msgid "version %s was set without associated component"
-msgstr "バージョン %s に component はありません！"
-
-#: mkswu
-msgid "use as main version requested but component/version not set?"
-msgstr "--main-versionが設定されましたが、バージョンがありません。"
+msgid "%s requires --version to be set"
+msgstr "%s に --version の設定が必要です。"
 
 #: mkswu
 msgid "%s requires an argument"
@@ -270,7 +266,7 @@ msgid "Usage: swdesc_command [options] cmd [cmd..]"
 msgstr ""
 
 #: mkswu
-msgid "Usage: swdesc_script [options] script"
+msgid "Usage: swdesc_script [options] script [args]"
 msgstr ""
 
 #: mkswu
@@ -414,6 +410,10 @@ msgid "Could not sign %s"
 msgstr "%s に署名できませんでした。"
 
 #: mkswu
+msgid "Signature verification failed for $file"
+msgstr "%s の証明確認が失敗しました"
+
+#: mkswu
 msgid "Could not enter %s"
 msgstr "%s ディレクトリに入れませんでした。"
 
@@ -442,6 +442,10 @@ msgstr "コンフィグファイルを更新しました：%s"
 #: mkswu
 msgid "Could not resolve %s directory name"
 msgstr "%s のディレクトリが見つかりませんでした。"
+
+#: mkswu
+msgid "--%s had extra arguments?"
+msgstr "%s に引数が必要です。"
 
 #: mkswu
 msgid "Config %s already exists, skipping import"
@@ -542,6 +546,30 @@ msgid "    mkswu --genkey --aes"
 msgstr ""
 
 #: mkswu
+msgid "Invalid variable name %s"
+msgstr "%s 変数は認識できません。"
+
+#: mkswu
+msgid "Variable %s was not set"
+msgstr "%s 変数は設定されてません。"
+
+#: mkswu
+msgid "%s must end with .swu"
+msgstr "%s は「.swu」で終わらせてください。"
+
+#: mkswu
+msgid "Packing:\\n%s"
+msgstr "以下のファイルを組み込みます：\\n%s"
+
+#: mkswu
+msgid "Successfully generated %s"
+msgstr "%s を作成しました。"
+
+#: mkswu
+msgid "Unrecognized internal command %s"
+msgstr "%s コマンドを認識できません"
+
+#: mkswu
 msgid "Enter certificate common name:"
 msgstr "証明書のCommon nameを入力してください:"
 
@@ -640,8 +668,12 @@ msgid "Could not get script dir"
 msgstr "スクリプトのディレクトリが読み取れませんでした。"
 
 #: mkswu
-msgid "%s must end with .swu"
-msgstr "%s は「.swu」で終わらせてください。"
+msgid "Only v can be repeated in -vvv..."
+msgstr "-v の後にvしか繰り返せません"
+
+#: mkswu
+msgid "Only q can be repeated in -qqq..."
+msgstr "-q の後にqしか繰り返せません"
 
 #: mkswu
 msgid "%s is incompatible with --%s"
@@ -657,7 +689,11 @@ msgstr "mkswu のバージョンが分かりませんでした。"
 
 #: mkswu
 msgid "mkswu version %s"
-msgstr ""
+msgstr "mksvu バージョン %s"
+
+#: mkswu
+msgid "Unrecognized option %s"
+msgstr "%s オプションを認識できません"
 
 #: mkswu
 msgid "Could not find config file to import, specify it with --config"
@@ -673,10 +709,6 @@ msgstr "コンフィグを mkswu --import で先にロードしてください�
 msgid "Config file not found, create one with mkswu --init"
 msgstr ""
 "コンフィグファイルが見つかりませんでした。 mkswu --init で作成してください。"
-
-#: mkswu
-msgid "--%s had extra arguments?"
-msgstr "%s に引数が必要です。"
 
 #: mkswu
 msgid "cannot enter %s directory"
@@ -706,10 +738,6 @@ msgstr "以下のファイルをUSBメモリにコピーしてください："
 msgid "%s"
 msgstr ""
 
-#: mkswu
-msgid "Successfully generated %s"
-msgstr "%s を作成しました。"
-
 #: examples/enable_sshd.desc
 msgid "Add your keys in enable_sshd/root/.ssh/authorized_keys"
 msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてください。"
@@ -719,3 +747,6 @@ msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
+
+#~ msgid "component %s was set with empty version"
+#~ msgstr "%s のバージョンcomponentにバージョンが足りません。"
