@@ -338,6 +338,7 @@ main() {
 	fi
 	config=$("$mkswu" --internal get_var CONFIG) \
 		|| error "Could not guess config path, is mkswu configured?"
+	config="${config#CONFIG=}"
 	. "$SCRIPT_DIR/mkswu.conf.defaults"
 	. "$config"
 

@@ -1257,12 +1257,16 @@ mkswu_internal() {
 	case "$command" in
 	get_var)
 		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
-		local var
+		local var val
 		for var; do
 			case "$var" in
 			*[!0-9a-zA-Z_]*) error "Invalid variable name %s" "$var";;
 			esac
-			eval printf "%s\\\n" "\$$var"
+			# check if set
+			eval 'val=${'"$var"'+1}'
+			[ -n "$val" ] || error "Variable %s was not set" "$var"
+			eval 'val=$'"$var"
+			printf "%s=%s\n" "$var" "$val"
 		done
 		;;
 	sign)
