@@ -1,4 +1,5 @@
 post_success_rootfs() {
+	# record last updated partition for abos-ctrl
 	local newstate
 
 	if needs_reboot; then
@@ -12,15 +13,13 @@ post_success_rootfs() {
 }
 
 post_success_hawkbit() {
+	# hawkbit service requires transmitting install status on next restart
 	local dev="${partdev}5"
 	local basemount newstate
 
-	# hawkbit service requires transmitting install status on next
-	# restart, so keep track of it in appfs
-
 	# /var/log is shared and not mounted on target
 	touch /var/log/swupdate/hawkbit_install_done \
-		|| error "Could not create hawkbit install marker file"
+		|| warning "Could not create hawkbit install marker file"
 
 	# The following is no longer required from atmark-x2-base 1.4 onwards
 	# We should theorically check apk version, but that is slow,
@@ -30,12 +29,12 @@ post_success_hawkbit() {
 	# XXX add cleanup of subvolume in post root fixup when we remove this
 	[ -e /usr/sbin/abos-ctrl ] && return
 
-	basemount=$(mktemp -d -t btrfs-swupdate.XXXXXX) || error "Could not create temp dir"
+	basemount=$(mktemp -d -t btrfs-swupdate.XXXXXX) || warning "Could not create temp dir"
 	if ! mount -t btrfs -o subvol=/swupdate "$dev" "$basemount" 2>/dev/null; then
-		mount -o subvol=/ "$dev" "$basemount" || error "Could not mount app root"
-		btrfs subvolume create "$basemount/swupdate" || error "Could not create swupdate subvolume"
-		umount "$basemount" || error "Could not umount app root"
-		mount -o subvol=/swupdate "$dev" "$basemount" || error "Could not mount swupdate subvolume"
+		mount -o subvol=/ "$dev" "$basemount" || warning "Could not mount app root"
+		btrfs subvolume create "$basemount/swupdate" || warning "Could not create swupdate subvolume"
+		umount "$basemount" || warning "Could not umount app root"
+		mount -o subvol=/swupdate "$dev" "$basemount" || warning "Could not mount swupdate subvolume"
 	fi
 
 	if needs_reboot; then
@@ -44,8 +43,8 @@ post_success_hawkbit() {
 		newstate="${partdev}$((!ab+1))"
 	fi
 
-	echo "$newstate" > "$basemount/updated-rootfs" || error "Could not write success file"
-	umount "$basemount" || error "Could not umount swupdate subvolume"
+	echo "$newstate" > "$basemount/updated-rootfs" || warning "Could not write success file"
+	umount "$basemount" || warning "Could not umount swupdate subvolume"
 	rmdir "$basemount"
 }
 
@@ -71,7 +70,7 @@ set_fw_update_ind() {
 
 post_success() {
 	[ -d "/var/log/swupdate" ] || mkdir /var/log/swupdate \
-		|| error "Could not mkdir /var/log/swupdate"
+		|| warning "Could not mkdir /var/log/swupdate"
 	post_success_rootfs
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
