@@ -1700,6 +1700,7 @@ sw-description.sig"
 		[ "${desc%.desc}" != "$desc" ] || info "Warning: %s does not end in .desc, wrong file?" "$desc"
 		component="${desc%.desc}"
 		version=""
+		install_if=""
 		. "./${desc##*/}"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
