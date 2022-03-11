@@ -9,7 +9,61 @@ post_success_rootfs() {
 	fi
 
 	echo "$newstate $(date +%s)" > "/var/log/swupdate/last_update" \
-		|| error "Could not record last update partition"
+		|| warning "Could not record last update partition"
+}
+
+post_success_atlog() {
+	# record update to atlog
+	# in particular, we log:
+	# - date
+	# - destination partition
+	# - updated versions
+	local newstate
+	local versions
+	# variables for tests
+	local atlog="${atlog:-/var/at-log/atlog}"
+	local old_versions="${old_versions:-/etc/sw-versions}"
+	local new_versions="${new_versions:-$SCRIPTSDIR/sw-versions.merged}"
+
+	# nothing to do if /var/at-log is not mounted (except print a warning)
+	if [ "$atlog" = "/var/at-log/atlog" ] && ! mountpoint -q /var/at-log; then
+		warning "/var/at-log is not mounted, cannot trace update"
+		return
+	fi
+
+	if needs_reboot; then
+		newstate="${partdev}$((ab+1))"
+	else
+		newstate="${partdev}$((!ab+1))"
+		old_versions="/target/$old_versions"
+	fi
+
+	[ -e "$old_versions" ] || old_versions=/dev/null
+
+	if ! versions="$(awk '
+		newvers == 0 { oldv[$1]=$2 }
+		newvers == 1 { newv[$1]=$2 }
+		END {
+			for (comp in newv) {
+				old = oldv[comp] ? oldv[comp] : "unset";
+				if (old != newv[comp])
+					printf("%s: %s -> %s, ", comp, old, newv[comp]);
+			}
+			for (comp in oldv) {
+				if (newv[comp] == "")
+					printf("%s: %s -> unset, ", comp, oldv[comp]);
+			}
+		}' "$old_versions" newvers=1 "$new_versions")"; then
+			warning "Could not compare new/old versions for atlog"
+			versions="(could not compare versions)"
+	fi
+	versions="${versions%, }"
+
+	[ -n "$versions" ] || versions="(no new version)"
+
+	echo "$(date +"%b %_d %H:%M:%S") $HOSTNAME NOTICE swupdate: Installed update to $newstate: $versions" \
+		>> "$atlog" \
+		|| warning "Could not record update to atlog"
 }
 
 post_success_hawkbit() {
@@ -72,9 +126,12 @@ post_success() {
 	[ -d "/var/log/swupdate" ] || mkdir /var/log/swupdate \
 		|| warning "Could not mkdir /var/log/swupdate"
 	post_success_rootfs
+	post_success_atlog
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
 	set_fw_update_ind
 }
+
+[ -n "$TEST_SCRIPTS" ] && return
 
 post_success

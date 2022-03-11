@@ -281,6 +281,9 @@ EOF
 
 	# and finally set version where appropriate.
 	if ! needs_reboot; then
+		# record current versions to other rootfs
+		cp /etc/sw-versions /target/etc/sw-versions \
+			|| error "Could not copy current sw-versions to other fs"
 		# updating current version with what is being installed:
 		# we should avoid failing from here on.
 		update_running_versions "$SCRIPTSDIR/sw-versions.merged"
@@ -290,7 +293,7 @@ EOF
 			|| error "Could not set sw-versions"
 	fi
 
-	rm -f "$SCRIPTSDIR/sw-versions.merged" "$SCRIPTSDIR/sw-versions.present"
+	rm -f "$SCRIPTSDIR/sw-versions.present"
 }
 
 [ -n "$TEST_SCRIPTS" ] && return

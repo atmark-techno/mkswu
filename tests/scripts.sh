@@ -336,6 +336,65 @@ test_preserve_files_pre() {
 	rm -f "$TARGET/$SRC/copy"*
 }
 
+test_post_success() {
+	atlog="$SCRIPTSDIR/atlog"
+	old_versions="$SCRIPTSDIR/old_versions"
+	new_versions="$SCRIPTSDIR/new_versions"
+	partdev="/dev/mmcblk2p"
+	ab=1
+
+	# no old version
+	echo "post_success: no old versions"
+	printf "%s\n" "comp1 1" "comp2 2" "comp3 3" > "$new_versions"
+	post_success_atlog
+	grep -qF "comp1: unset -> 1" "$atlog" \
+		|| error "no-old missing comp1: $(cat "$atlog")"
+	grep -qF "comp2: unset -> 2" "$atlog" \
+		|| error "no-old missing comp2: $(cat "$atlog")"
+	grep -qF "comp3: unset -> 3" "$atlog" \
+		|| error "no-old missing comp3: $(cat "$atlog")"
+	grep -qF "update to ${partdev}2" "$atlog" \
+		|| error "Wrong partition used: $(cat "$atlog")"
+	rm -f "$atlog"
+
+	echo "post_success: normal some update/new"
+	ab=0
+	printf "%s\n" "comp1 1" "comp2 1" > "$old_versions"
+	post_success_atlog
+	grep -qF "comp1:" "$atlog" \
+		&& error "samever comp1 shouldn't have been listed: $(cat "$atlog")"
+	grep -qF "comp2: 1 -> 2" "$atlog" \
+		|| error "update missing comp2: $(cat "$atlog")"
+	grep -qF "comp3: unset -> 3" "$atlog" \
+		|| error "unset missing comp3: $(cat "$atlog")"
+	grep -qF "update to ${partdev}1" "$atlog" \
+		|| error "Wrong partition used: $(cat "$atlog")"
+	grep -qE "^[A-Z][a-z][a-z] [0-9 ][0-9] [0-2][0-9]:[0-5][0-9]:[0-6][0-9] $HOSTNAME NOTICE swupdate: Installed" "$atlog" \
+		|| error "Date or header is wrong: $(cat "$atlog")"
+	rm -f "$atlog"
+
+	echo "post_success: single new"
+	printf "%s\n" "comp1 1" "comp2 2" > "$old_versions"
+	post_success_atlog
+	grep -qE "Installed update to /dev/mmcblk2p1: comp3: unset -\> 3$" "$atlog" \
+		&& error "single-new wrong text: $(cat "$atlog")"
+	rm -f "$atlog"
+
+	echo "post_success: single update"
+	printf "%s\n" "comp1 1" "comp2 1" "comp3 3" > "$old_versions"
+	post_success_atlog
+	grep -qE "Installed update to /dev/mmcblk2p1: comp2: 1 -\> 2$" "$atlog" \
+		&& error "single-new wrong text: $(cat "$atlog")"
+	rm -f "$atlog"
+
+	echo "post_success: no update (e.g. force version)"
+	printf "%s\n" "comp1 1" "comp2 2" "comp3 3" > "$old_versions"
+	post_success_atlog
+	grep -qE "Installed update to /dev/mmcblk2p1: (no new version)$" "$atlog" \
+		&& error "single-new wrong text: $(cat "$atlog")"
+	rm -f "$atlog"
+}
+
 # run in subshell as we cannot source all at once
 (
 	set -e
@@ -362,5 +421,13 @@ test_preserve_files_pre() {
 	. "$SCRIPTS_SRC_DIR/pre_rootfs.sh"
 	test_preserve_files_pre
 ) || error "pre test failed"
+
+(
+	set -e
+	. "$SCRIPTS_SRC_DIR/common.sh"
+	needs_reboot() { return 0; }
+	. "$SCRIPTS_SRC_DIR/post_success.sh"
+	test_post_success
+) || error "post success failed"
 
 true
