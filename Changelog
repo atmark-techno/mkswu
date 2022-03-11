@@ -1,7 +1,16 @@
 next
 ====
+breaking change:
+ - component, version and install_if variables are reset before parsing each
+desc file. component is set to desc file name, the other two are emptied.
+
 features:
  - allow setting ZSTD_CLEVEL to change compression level
+ - log update contents to at-log and store last update partition to
+/var/log/swupdate/last_update
+ - add update_preserve_files.sh helper script to manage this file
+ - allow trailing arguments for swdesc_script
+ - set FW_UPDATE_IND after install unless no reboot is needed
 
 3.15-at.3
 =========
