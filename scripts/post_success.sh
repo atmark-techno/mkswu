@@ -116,6 +116,7 @@ set_fw_update_ind() {
 	local led_dir=/sys/class/leds/FW_UPDATE_IND
 
 	[ -e "$led_dir/brightness" ] || return
+	needs_reboot || return
 
 	# It's too late to fail, but try to warn if we couldn't set led
 	cat "$led_dir/max_brightness" > "$led_dir/brightness" \
