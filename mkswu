@@ -1749,6 +1749,7 @@ sw-description.sig"
 		cd "$(dirname -- "$desc")" || error "cannot enter %s directory" "$desc"
 		[ "${desc%.desc}" != "$desc" ] || info "Warning: %s does not end in .desc, wrong file?" "$desc"
 		component="${desc%.desc}"
+		component=${component##*/}
 		version=""
 		install_if=""
 		. "./${desc##*/}"
