@@ -1374,6 +1374,18 @@ mkinit_genkey() {
 	fi
 }
 
+geninitdesc_hashpw() {
+	local plain="$1"
+
+	if command -v python3 >/dev/null; then
+		printf 'import crypt; print(crypt.crypt(r"%s", crypt.METHOD_SHA512))' "$plain" | python3
+	elif command -v mkpasswd >/dev/null; then
+		printf "%s" "$plain" | mkpasswd
+	else
+		error "No command to hash password"
+	fi
+}
+
 mkinit_geninitdesc() {
 	local KEEPATMARKPEM
 	local ROOTPW
@@ -1405,7 +1417,7 @@ mkinit_geninitdesc() {
 			continue
 		fi
 		ROOTPW=$(echo "$ROOTPW" | sed -e "s/\"/\"'\"'r/")
-		ROOTPW=$(printf 'import crypt; print(crypt.crypt(r"%s", crypt.METHOD_SHA512))' "${ROOTPW}" | python3)
+		ROOTPW=$(geninitdesc_hashpw "$ROOTPW")
 		[ -n "$ROOTPW" ] || error "Could not hash password"
 		break
 	done
@@ -1421,7 +1433,7 @@ mkinit_geninitdesc() {
 			ATMARKPW="$ROOTPW_CONFIRM"
 		fi
 		ATMARKPW=$(echo "$ROOTPW" | sed -e "s/\"/\"'\"'r/")
-		ATMARKPW=$(printf 'import crypt; print(crypt.crypt(r"%s", crypt.METHOD_SHA512))' "$ATMARKPW" | python3)
+		ATMARKPW=$(geninitdesc_hashpw "$ATMARKPW")
 		[ -n "$ATMARKPW" ] || error "Could not hash password"
 		break
 	done
