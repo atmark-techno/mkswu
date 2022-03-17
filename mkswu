@@ -63,7 +63,7 @@ prompt() {
 	local prompt_fmt="$2"
 	shift 2
 
-	if [ -n "$PASS" ]; then
+	if [ -n "$PASS" ] && tty -s; then
 		trap "stty echo" EXIT INT QUIT
 		stty -echo
 	fi
@@ -72,7 +72,7 @@ prompt() {
 	printf -- "$(_gettext "$prompt_fmt") " "$@"
 	read -r "${var?}"
 
-	if [ -n "$PASS" ]; then
+	if [ -n "$PASS" ] && tty -s; then
 		stty echo
 		trap "" EXIT INT QUIT
 		echo
