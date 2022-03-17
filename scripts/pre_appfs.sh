@@ -102,9 +102,11 @@ prepare_appfs() {
 		|| error "Could not create volumes subvol"
 	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
 
-	mount -t btrfs -o "$mountopt=boot_${ab}/containers_storage" "$dev" /target/var/lib/containers/storage_readonly \
+	mount -t btrfs -o "$mountopt=boot_${ab}/containers_storage" \
+			"$dev" /target/var/lib/containers/storage_readonly \
 		|| error "Could not mount containers_storage subvol"
-	mount -t btrfs -o "$mountopt=boot_${ab}/volumes" "$dev" /target/var/app/rollback/volumes \
+	mount -t btrfs -o "$mountopt=boot_${ab}/volumes" \
+			"$dev" /target/var/app/rollback/volumes \
 		|| error "Could not mount rollback/volume subvol"
 	mount -t btrfs -o "$mountopt=volumes" "$dev" /target/var/app/volumes \
 		|| error "Could not mount volume subvol"
