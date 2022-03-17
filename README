@@ -61,9 +61,16 @@ Common options for all helpers:
     if an update writes to rootfs then it must be named "base_os"
     (in which case OS is wiped first) or extra_os* (in which case
     the OS is copied over first)
-  - In most case component/version can be skipped (or component set
-    to an empty string), in which case the file will always be
-    reinstalled so this is not recommended.
+  - In most case component/version can be skipped, then "$component"
+    and "$version" variables will be used. component defaults to the
+    desc file's basename (e.g. 'foo.desc' would be 'foo'), but version
+    has no default and must explicitly be set unless FORCE_VERSION
+    is set in which case file will always be reinstalled.
+
+--extra-os
+  prefix component with 'extra_os.' to get root filesystem mounted
+  read-write. This is not required if version is set explicitly,
+  and has no effect if set before version.
 
 --install-if <mode>
   mode can be one of higher or different.

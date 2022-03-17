@@ -5,18 +5,19 @@ PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
 ORIG_ENCRYPT_KEYFILE="$ENCRYPT_KEYFILE"
 ENCRYPT_KEYFILE=""
 
+component=extra_os.initial_setup
+version=1
+
 # Set our own swupdate certificate.
 # change the '>>' to '>' if you do not want to keep the Armadillo
 # Base OS update certificate. You will no longer be able to update
 # directly from atmark-techno.com servers.
-swdesc_exec --version extra_os.initial_setup 1 \
-	"$ORIG_PUBKEY" 'cat $1 >> /etc/swupdate.pem'
+swdesc_exec "$ORIG_PUBKEY" 'cat $1 >> /etc/swupdate.pem'
 
 # If encryption is setup, also send encryption key
 if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then
-	swdesc_files --version extra_os.initial_setup 1 \
-		--dest /etc "$ORIG_ENCRYPT_KEYFILE"
-	swdesc_command --version extra_os.initial_setup 1 \
+	swdesc_files --dest /etc "$ORIG_ENCRYPT_KEYFILE"
+	swdesc_command \
 		"sed -i -e 's/# aes-key-file/aes-key-file/' /etc/swupdate.cfg"
 fi
 
@@ -28,9 +29,9 @@ fi
 #       "usermod -p '"'$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.'"' root"
 # You can also lock the account, e.g.
 #       "usermod -L atmark"
-swdesc_command --version extra_os.initial_setup 1 \
-	"usermod -p '"'$6$salt$hash'"' atmark" \
-	"usermod -p '"'$6$salt$hash'"' root"
+swdesc_command \
+	"usermod -p '"'$6$salt$hash'"' root" \
+	"usermod -p '"'$6$salt$hash'"' atmark"
 
 
 # uncomment if you would like to poweroff the system after the update is complete

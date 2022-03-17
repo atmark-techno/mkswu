@@ -46,3 +46,25 @@ sw-description.sig
 scripts.tar.zst
 hardlink
 swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
+
+rm -rf "$TESTS_DIR/out/init"
+"$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
+	|| error "mkswu --init failed"
+cn
+privkeypass
+privkeypass
+
+
+root
+root
+atmark
+atmark
+y
+
+EOF
+# in order:
+# certif common name, private key pass x2, aes encryption (default=n), allow atmark updates (default=y),
+# root pass x2, atmark pass x2, autoupdate (force y) + frequency (default weekly)
+
+dir="$TESTS_DIR/out/init/.initial_setup" check swdesc usermod
+dir="$TESTS_DIR/out/init/.initial_setup" check swdesc swupdate-url

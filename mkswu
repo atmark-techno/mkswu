@@ -445,9 +445,11 @@ parse_swdesc() {
 			version="$2"
 			SKIP=2
 			;;
+		"--extra-os")
+			[ "${component#extra_os.}" != "$component" ] || component="extra_os.$component"
+			;;
 		"--main-version")
 			main_version=1
-			SKIP=0
 			;;
 		"--install-if")
 			install_if="$1"
@@ -461,7 +463,6 @@ parse_swdesc() {
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
 				|| error "%s only allowed for swdesc_files and swdesc_tar" "$ARG"
 			preserve_attributes=1
-			SKIP=0
 			;;
 		"-d"|"--dest")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"

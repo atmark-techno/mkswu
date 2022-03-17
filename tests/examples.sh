@@ -20,8 +20,8 @@ build_check ../examples/enable_sshd "version extra_os.sshd '[^ ]+ higher'" \
 tar -C ../examples/nginx_start -cf ../examples/nginx_start.tar .
 build_check ../examples/pull_container_nginx \
 	"file-tar nginx_start*.tar.zst ./etc/atmark/containers/nginx.conf" \
-	"version container_nginx '[^ ]+ higher'" \
-	"version extra_os.nginx '[^ ]+ higher'" \
+	"version pull_container_nginx '[^ ]+ higher'" \
+	"version extra_os.pull_container_nginx '[^ ]+ higher'" \
 	"swdesc nginx_start.**tar.zst docker.io/nginx"
 
 # boot: prereq fullfilled by yakushima tar

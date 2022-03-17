@@ -11,6 +11,7 @@ features:
  - add update_preserve_files.sh helper script to manage this file
  - allow trailing arguments for swdesc_script
  - set FW_UPDATE_IND after install unless no reboot is needed
+ - add --extra-os swdesc_* switch that adds extra_os. to component
 
 3.15-at.3
 =========

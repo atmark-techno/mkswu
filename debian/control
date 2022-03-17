@@ -13,7 +13,7 @@ Depends:
  jq,
  ${misc:Depends}
 Architecture: all
-Description: build SWU images for armadillo base OS 
+Description: build SWU images for armadillo base OS
  scripts for building armadillo base OS updates
  .
  Can install OS updates, containers or arbitrary files/commands with
