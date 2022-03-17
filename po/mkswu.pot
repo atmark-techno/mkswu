@@ -411,6 +411,12 @@ msgstr ""
 msgid "Generated %s"
 msgstr ""
 #: mkswu
+msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
+msgstr ""
+#: mkswu
+msgid "Select update frequency ([weekly]/daily)"
+msgstr ""
+#: mkswu
 msgid "Allow updates signed by Atmark Techno? (Y/n)"
 msgstr ""
 #: mkswu

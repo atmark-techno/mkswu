@@ -1387,8 +1387,31 @@ geninitdesc_hashpw() {
 	fi
 }
 
+geninitdesc_prompt_autoupdate() {
+	while true; do
+		prompt AUTOUPDATE "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
+		case "$AUTOUPDATE" in
+		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
+			break;;
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
+			AUTOUPDATE=""; return;;
+		esac
+	done
+
+	while true; do
+		prompt AUTOUPDATE "Select update frequency ([weekly]/daily)"
+		case "$AUTOUPDATE" in
+		weekly|"")
+			AUTOUPDATE="next week"; break;;
+		daily)
+			AUTOUPDATE="tomorrow"; break;;
+		esac
+	done
+}
+
 mkinit_geninitdesc() {
 	local KEEPATMARKPEM
+	local AUTOUPDATE=""
 	local ROOTPW
 	local ROOTPW_CONFIRM
 	local ATMARKPW
@@ -1439,6 +1462,10 @@ mkinit_geninitdesc() {
 		break
 	done
 
+	if [ -n "$KEEPATMARKPEM" ]; then
+		geninitdesc_prompt_autoupdate
+	fi
+
 
 	# cleanup if we fail here
 	trap "rm -f $desc" EXIT
@@ -1453,6 +1480,16 @@ mkinit_geninitdesc() {
 	sed -i -e 's:\(^[ \t]*"usermod\).*atmark:\1 -p '\'\""'$ATMARKPW'"\"\'' atmark:' \
 			-e 's:\(^[ \t]*"usermod\).*root:\1 -p '\'\""'$ROOTPW'"\"\'' root:' "$desc" \
 		|| error "Could not update %s" "$desc"
+
+	if [ -n "$AUTOUPDATE" ]; then
+		cat >> "$desc" <<EOF
+
+# autoupdate
+swdesc_command 'rc-update add swupdate-url default' \
+        'echo https://download.atmark-techno.com/armadillo-iot-g4/image/baseos-x2-latest.swu > /etc/swupdate.watch' \
+        'echo -e "schedule=\"0 $AUTOUPDATE\"\nrdelay=21600" > /etc/conf.d/swupdate-url'
+EOF
+	fi
 
 	trap "" EXIT
 }
