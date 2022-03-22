@@ -1044,7 +1044,7 @@ sign() {
 	openssl cms -sign -in "$file" -out "$file.sig.tmp" \
 		-signer "$PUBKEY" -inkey "$PRIVKEY" \
 		-outform DER -nosmimecap -binary \
-		${PRIVKEY_PASS:+-passin $PRIVKEY_PASS} \
+		${PRIVKEY_PASS:+-passin "$PRIVKEY_PASS"} \
 		|| error "Could not sign %s" "$file"
 
 	mv "$file.sig.tmp" "$file.sig"
