@@ -168,25 +168,25 @@ msgstr ""
 msgid "%s is not a known %s argument"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_boot [options] boot_file"
+msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_tar [options] file.tar"
+msgid "swdesc_tar requires an argument\\nUsage: swdesc_tar [options] file.tar"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_files [options] file [files...]"
+msgid "swdesc_files requires arguments\\nUsage: swdesc_files [options] file [files...]"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_command [options] cmd [cmd..]"
+msgid "swdesc_command requires arguments\\nUsage: swdesc_command [options] cmd [cmd..]"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_script [options] script [args]"
+msgid "swdesc_script requires arguments\\nUsage: swdesc_script [options] script [args]"
 msgstr ""
 #: mkswu
-msgid "Usage: swdesc_exec [options] file command"
+msgid "swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] file command"
 msgstr ""
 #: mkswu
-msgid "Usage: %s [options] image"
+msgid "%s requires an argument\\nUsage: %s [options] image"
 msgstr ""
 #: mkswu
 msgid "Unhandled command %s"
@@ -409,6 +409,9 @@ msgid "Use AES encryption? (N/y)"
 msgstr ""
 #: mkswu
 msgid "Generated %s"
+msgstr ""
+#: mkswu
+msgid "No command to hash password"
 msgstr ""
 #: mkswu
 msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"

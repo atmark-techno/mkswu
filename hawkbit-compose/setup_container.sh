@@ -4,6 +4,17 @@
 ## disable this check globally...
 # shellcheck disable=SC2034
 
+
+# TEXTDOMAIN / TEXTDOMAINDIR need to be set at toplevel or bash ignores them
+SCRIPT_DIR="$(realpath -P "$0")" || error $"Could not get script dir"
+SCRIPT_BASE="${0##*/}"
+[[ "$SCRIPT_DIR" = "/" ]] || SCRIPT_DIR="${SCRIPT_DIR%/*}"
+case "$SCRIPT_DIR" in
+/usr/share*) :;;
+*) TEXTDOMAINDIR="$SCRIPT_DIR/locale";;
+esac
+TEXTDOMAIN=hawkbit_setup_container
+
 error() {
 	printf -- "\nERROR: %s\n" "$@" >&2
 	exit 1
@@ -12,16 +23,16 @@ error() {
 usage() {
 	echo $"Usage: $0 [opts]"
 	echo
-	echo $"    Prompt questions if required and setup hawkbit docker-compose container"
+	echo $"    Prompt questions if required and setup hawkBit docker-compose container"
 	echo
 	echo $"Options:"
 	echo $"  --dir <dir>         directory to use for docker-compose root"
 	echo $"  --domain <domain>   domain name to use for https certificate"
 	echo $"  --letsencrypt       enable letsencrypt container"
 	echo $"  --reset-proxy       reset proxy-related settings"
-	echo $"  --reset-users       reset hawkbit users"
-	echo $"  --add-user <user>   add extra hawkbit admin user"
-	echo $"  --del-user <user>   delete hawkbit user with given name"
+	echo $"  --reset-users       reset hawkBit users"
+	echo $"  --add-user <user>   add extra hawkBit admin user"
+	echo $"  --del-user <user>   delete hawkBit user with given name"
 }
 
 ######################
@@ -114,7 +125,7 @@ prompt_pass() {
 			echo $"Empty passwords are not allowed"
 			continue
 		fi
-		read -r -s -p "Confirm password: " confirm
+		read -r -s -p $"Confirm password: " confirm
 		echo
 		if [[ "$pass" != "$confirm" ]]; then
 			echo $"Password mismatch"
@@ -414,7 +425,8 @@ EOF
 
 hawkbit_del_user() {
 	local user fragment
-	echo $"Removing users: $*"
+	echo $"Removing users:"
+	printf "%s\n" "$@"
 	for user; do
 		fragment="$FRAGMENTS/hawkbit_application.properties/users_$user"
 		if ! [[ -e "$fragment" ]]; then
@@ -454,7 +466,7 @@ fix_hawkbit_users_id() {
 			END {
 				print length(idx) >"/dev/stderr";
 			}' < "$file" 2>&1 > "$file.tmp") \
-				|| error $"Could not update user id in hawkbit application.properties"
+				|| error $"Could not update user id in hawkBit application.properties"
 		if cmp -s "$file" "$file.tmp"; then
 			rm -f "$file.tmp"
 		else
@@ -463,7 +475,7 @@ fix_hawkbit_users_id() {
 		index=$((index+i))
 	done
 
-	((index > 0)) || error $"hawkbit had no user defined, create one first"
+	((index > 0)) || error $"hawkBit had no user defined, create one first"
 }
 
 finalize_hawkbit() {
@@ -523,12 +535,12 @@ prompt_hawkbit_users() {
 	fi
 
 	if prompt_yesno HAWKBIT_USER_DEVICE \
-			$"Create hawkbit device user? (for autoregistration)"; then
+			$"Create hawkBit device user? (for autoregistration)"; then
 		hawkbit_add_user "device"
 	fi
 
 	if prompt_yesno HAWKBIT_USER_MKSWU \
-			$"Create hawkbit mkswu user? (for automated image upload)"; then
+			$"Create hawkBit mkswu user? (for automated image upload)"; then
 		hawkbit_add_user "mkswu"
 	fi
 }
@@ -566,7 +578,7 @@ prompt_reverse_proxy() {
 	update_template "hawkbit_application.properties/proxy" -e "s/CERT_DOMAIN/$REVERSE_PROXY_CERT_DOMAIN/"
 
 	prompt_reply REVERSE_PROXY_CLIENT_CERT \
-		$"CA file path (leave empty to disable client authentication)" \
+		$"CA file path (leave empty to disable client TLS authentication)" \
 		$"If you would like to setup client certificate authenication a ca is required."
 	if [[ -n "$REVERSE_PROXY_CLIENT_CERT" ]]; then
 		[[ -e "$REVERSE_PROXY_CLIENT_CERT" ]] \
@@ -599,7 +611,7 @@ prompt_reverse_proxy() {
 		base64 "$CERT"
 		echo
 		echo
-		echo $"Should you want to use a lets encrypt certificate, you can run setup_container.sh again with --letsencrypt"
+		echo $"Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"
 		REVERSE_PROXY_SELFCERT_SETUP_TEXT=y
 		save_prompt REVERSE_PROXY_SELFCERT_SETUP_TEXT
 	fi
@@ -634,15 +646,6 @@ main() {
 	local REVERSE_PROXY_CERT_DOMAIN=""
 	local CONFIG_DIR=""
 	local SUDO=""
-
-	local SCRIPT_DIR
-	SCRIPT_DIR="$(realpath -P "$0")" || error $"Could not get script dir"
-	SCRIPT_BASE="${0##*/}"
-	[[ "$SCRIPT_DIR" = "/" ]] || SCRIPT_DIR="${SCRIPT_DIR%/*}"
-	case "$SCRIPT_DIR" in
-	/usr/share*) :;;
-	*) TEXTDOMAINDIR="$SCRIPT_DIR/../locale";;
-	esac
 	local REVERSE_PROXY="" REVERSE_PROXY_DEFAULT=n
 	local REVERSE_PROXY_LETSENCRYPT="" REVERSE_PROXY_LETSENCRYPT_DEFAULT="n"
 	local DOCKER_NEEDS_SUDO=""
@@ -724,7 +727,7 @@ main() {
 		# if not already configured confirm location with user
 		if ! [[ -e "$CONFIG_DIR/setup_container.conf" ]]; then
 			NOSAVE=1 prompt_reply CONFIG_DIR \
-				$"Where should we store docker-compose configuration and hawkbit data?"
+				$"Where should we store docker-compose configuration and hawkBit data?"
 		fi
 	fi
 
@@ -781,8 +784,8 @@ main() {
 	if [[ -e "$CONFIG_DIR/docker-compose.yml" ]] \
 		&& echo $"Checking if container is running... ${SUDO:+(this requires sudo)}" \
 		&& [[ -n "$($SUDO docker-compose -f "$CONFIG_DIR/docker-compose.yml" ps -q 2>/dev/null)" ]] \
-		&& NOSAVE=1 prompt_yesno RUN_COMPOSE $"Stop hawkbit containers?" \
-			$"hawkbit containers seem to be running, updating config files" \
+		&& NOSAVE=1 prompt_yesno RUN_COMPOSE $"Stop hawkBit containers?" \
+			$"hawkBit containers seem to be running, updating config files" \
 			$"might not work as expected."; then
 		$SUDO docker-compose -f "$CONFIG_DIR/docker-compose.yml" down \
 			|| error $"Could not stop containers"
@@ -805,10 +808,10 @@ main() {
 
 	echo
 	echo $"Setup finished! Use docker-compose now to manage the containers"
-	echo $"or run $CONFIG_DIR/setup_container.sh again to change configuration."
+	echo $"or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
 
 	RUN_COMPOSE=""
-	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Start hawkbit containers?"; then
+	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Start hawkBit containers?"; then
 		$SUDO docker-compose up -d
 	fi
 }

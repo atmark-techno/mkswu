@@ -195,8 +195,8 @@ msgstr "%s バージョンの %s を %s 以下にしてください。"
 
 #: mkswu
 msgid ""
-"version check failed for %s: %s must not mix alpha and digits\\ne.g.\\n"
-"\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+"version check failed for %s: %s must not mix alpha and digits\\ne.g."
+"\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
 msgstr ""
 "%s バージョンの %s に数字とローマ字が混ざっています。\\n例:\\n\\t1.2.3-"
 "rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
@@ -250,32 +250,50 @@ msgid "%s is not a known %s argument"
 msgstr "%s は %s の引数ではありません。"
 
 #: mkswu
-msgid "Usage: swdesc_boot [options] boot_file"
+msgid ""
+"swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr ""
+"swdesc_boot に引数が必要です。\\nUsage: swdesc_boot [options] boot_file"
 
 #: mkswu
-msgid "Usage: swdesc_tar [options] file.tar"
-msgstr ""
+msgid "swdesc_tar requires an argument\\nUsage: swdesc_tar [options] file.tar"
+msgstr "swdesc_tar に引数が必要です。\\nUsage: swdesc_tar [options] file.tar"
 
 #: mkswu
-msgid "Usage: swdesc_files [options] file [files...]"
+msgid ""
+"swdesc_files requires arguments\\nUsage: swdesc_files [options] file "
+"[files...]"
 msgstr ""
+"swdesc_files に引数が必要です。\\nUsage: swdesc_files [options] file "
+"[files...]"
 
 #: mkswu
-msgid "Usage: swdesc_command [options] cmd [cmd..]"
+msgid ""
+"swdesc_command requires arguments\\nUsage: swdesc_command [options] cmd "
+"[cmd..]"
 msgstr ""
+"swdesc_command に引数が必要です。\\nUsage: swdesc_command [options] cmd "
+"[cmd...]"
 
 #: mkswu
-msgid "Usage: swdesc_script [options] script [args]"
+msgid ""
+"swdesc_script requires arguments\\nUsage: swdesc_script [options] script "
+"[args]"
 msgstr ""
+"swdesc_script に引数が必要です。\\nUsage: swdesc_script [options] script "
+"[args]"
 
 #: mkswu
-msgid "Usage: swdesc_exec [options] file command"
+msgid ""
+"swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] "
+"file command"
 msgstr ""
+"swdesc_exec に引数が最低二つ必要です。\\nUsage: swdesc_exec [options] file "
+"command"
 
 #: mkswu
-msgid "Usage: %s [options] image"
-msgstr ""
+msgid "%s requires an argument\\nUsage: %s [options] image"
+msgstr "%s に引数が必要です。\\nUsage: %s [options] image"
 
 #: mkswu
 msgid "Unhandled command %s"
@@ -445,7 +463,7 @@ msgstr "%s のディレクトリが見つかりませんでした。"
 
 #: mkswu
 msgid "--%s had extra arguments?"
-msgstr "%s に引数が必要です。"
+msgstr "%s に引数が多すぎました。"
 
 #: mkswu
 msgid "Config %s already exists, skipping import"
@@ -600,6 +618,10 @@ msgstr "アップデートイメージを暗号化しますか？ (N/y)"
 #: mkswu
 msgid "Generated %s"
 msgstr "%s を作成しました。"
+
+#: mkswu
+msgid "No command to hash password"
+msgstr "パスワードを作成できませんでした。"
 
 #: mkswu
 msgid ""

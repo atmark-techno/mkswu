@@ -35,6 +35,9 @@ po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc
 po/mkimage.pot: mkimage.sh
 	./po/update.sh $@ $^
 
+po/hawkbit_setup_container.pot: hawkbit-compose/setup_container.sh
+	./po/update.sh $@ $^
+
 po/$(l)/%.po: po/%.pot
 	msgmerge -o $@ $@ $<
 
@@ -89,4 +92,5 @@ install: all
 	install -d $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh
 	cp -t $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh examples/enable_sshd/root/.ssh/authorized_keys
 	install -d $(DESTDIR)$(SHARE)/hawkbit-compose
+	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES hawkbit-compose/locale/ja/LC_MESSAGES/hawkbit_setup_container.mo
 	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
