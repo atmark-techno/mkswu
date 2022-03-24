@@ -133,46 +133,46 @@ msgid "How long should the certificate be valid (days)?"
 msgstr "証明書の有効期間は何日間にしますか？"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"TLS certificate have a lifetime that must be set. If you plan to use let's "
-"encrypt"
-msgstr "証明書に有効期限があります。Let's encryptの証明書を使う場合に"
+msgid "TLS certificate have a lifetime that must be set. If you plan to use"
+msgstr ""
+"証明書の有効期限を指定する必要があります。Let's encryptを使用する場合、"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"this value will only be used until the new certificate is generated and can "
-"be left"
-msgstr "この値は仮の証明書の期限なので、デフォールトのままでいいです。"
+msgid "let's encrypt, this value will only be used until the new certificate"
+msgstr ""
+"この値は新しい証明書が生成されるまでしか使用されないので、デフォルトの値"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"to its default value. Best practice would require generating a new "
-"certificate every few years."
-msgstr "それ以外の場合に数年に一度交代することを推奨します。"
+msgid "is generated and can be left to its default value. Best practice would"
+msgstr "のままにしておくことができます。Let's encryptを使用しない場合、"
+
+#: hawkbit-compose/setup_container.sh
+msgid "require generating a new certificate every few years."
+msgstr "数年ごとに証明書を新しくすることが最も好ましです。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "certificate validity must be a number of days (only digits)"
-msgstr "証明書の有効期限は日数です（数字のみ）"
+msgstr "証明書の有効期限は日数にしてください（数字のみ）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Continue?"
-msgstr "そのまま実行しますか？"
+msgstr "このまま実行しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not verify that this host is suitable for let's encrypt"
-msgstr "このマシンがLet's encryptと使える確認が取れませんでした。"
+msgstr "このマシンでLet's encryptの利用確認が取れませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Please check the machine is reachable at $REVERSE_PROXY_CERT_DOMAIN"
-msgstr "$REVERSE_PROXY_CERT_DOMAIN でアクセスできることを確認してください。"
+msgstr "$REVERSE_PROXY_CERT_DOMAIN にアクセスできることを確認してください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid ""
 "Continuing without let's encrypt. Run again with --letsencrypt if you want "
 "to add it later."
 msgstr ""
-"Let's encryptなしで実行します。--letsencryptでまた実行すれば後で追加すること"
-"も可能です。"
+"Let's encryptなしで実行します。--letsencryptを付けて再度実行すると、後から追"
+"加することも可能です。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Email to use for let's encrypt registration"
@@ -183,8 +183,8 @@ msgid ""
 "letsencrypt setup requires running containers once for configuration, run "
 "now?"
 msgstr ""
-"Let's encryptの初期設定のため一回コンテナを起動する必要があります。今実行しま"
-"すか？"
+"Let's encryptの初期設定のため一度コンテナを起動する必要があります。すぐに実行"
+"しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "nginx container not coming up!"
@@ -196,11 +196,11 @@ msgstr "certbot の実行が失敗しました。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not remove old certificates"
-msgstr "前の証明書を消せませんでした。"
+msgstr "前の証明書を削除できませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not make symlink to new certificates"
-msgstr "新しい証明書のsymlinkを作りませんでした。"
+msgstr "新しい証明書のシンボリックリンクをを作れませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Start containers once and run the following commands:"
@@ -209,7 +209,7 @@ msgstr "コンテナを起動して以下のコマンドを実行してくださ
 #: hawkbit-compose/setup_container.sh
 msgid "Allow user to handle rollouts? (trigger installation requests)"
 msgstr ""
-"このユーザーに rollout の扱い許可を与えますか？（インストール依頼を出すこと）"
+"ユーザーにロールアウトの権限を与えますか？（インストール要求を出すこと）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Password for user $user"
@@ -227,7 +227,7 @@ msgstr ""
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not update user id in hawkBit application.properties"
-msgstr "hawkBit application.propertiesにユーザーのIDを更新できませんでした。"
+msgstr "hawkBit application.propertiesのユーザーのIDを更新できませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "hawkBit had no user defined, create one first"
@@ -235,12 +235,11 @@ msgstr "hawkBitにユーザーがありませんでした。ユーザーを追�
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not copy file"
-msgstr "ファイルのコピーが失敗しました。"
+msgstr "ファイルのコピーに失敗しました。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Extra admin user name (empty to stop): "
-msgstr ""
-"追加の管理人アカウントのユーザーネーム（空に入力することで追加しません）"
+msgstr "追加の管理人アカウントのユーザーネーム（空にすると追加しません）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "$user already exists!"
@@ -248,11 +247,11 @@ msgstr "$user はすでに登録されてます。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Create hawkBit device user? (for autoregistration)"
-msgstr "hawkBit の「device」ユーザーを登録しますか？（自動登録よう）"
+msgstr "hawkBit の「device」ユーザーを登録しますか？（自動登録用）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Create hawkBit mkswu user? (for automated image upload)"
-msgstr "hawkBit の「mkswu」ユーザーを登録しますか？（swuのアップロードよう）"
+msgstr "hawkBit の「mkswu」ユーザーを登録しますか？（swuのアップロード用）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Stop lighttpd service?"
@@ -260,15 +259,15 @@ msgstr "lighthttpd サービスを停止しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "lighttpd is running and conflicts with the reverse proxy setup."
-msgstr "lighttpd が起動中でリバースプロクシにと走れせません。"
+msgstr "lighttpd が起動中で、リバースプロキシ設定と競合しています。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Please stop lighttpd manually"
-msgstr "lighttpd を停止してください。"
+msgstr "lighttpd を手動で停止してください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not stop lighttpd service"
-msgstr "lighttpd を停止できませんでした。"
+msgstr "lighttpd サービスを停止できませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not disable lighttpd service"
@@ -288,12 +287,12 @@ msgid ""
 "ca file $REVERSE_PROXY_CLIENT_CERT does not exist. Reset proxy settings with "
 "--reset-proxy"
 msgstr ""
-"$REVERSE_PROXY_CLIENT_CERT CA ファイルが存在しません。プロクシの設定を　--"
-"reset-proxy でやり直してください。"
+"$REVERSE_PROXY_CLIENT_CERT CA ファイルが存在しません。プロキシの設定を　--"
+"reset-proxy で初期化してください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Also disallow token authentication?"
-msgstr "token認証を無効にしますか？"
+msgstr "トークン認証を無効にしますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Setup certbot container to obtain certificate?"
@@ -304,14 +303,13 @@ msgid ""
 "If the host is directly accessible over internet, it it possible to setup a "
 "let's"
 msgstr ""
-"サーバーが直接にインタネットでアクセス可能であれば、Let's Encryptの証明書"
+"サーバーが直接インタネットにアクセス可能であれば、Let's Encryptの証明書"
 
 #: hawkbit-compose/setup_container.sh
 msgid ""
 "encrypt certificate instead of the self-signed one. Accepting means you "
 "agree to the TOS:"
-msgstr ""
-"を設定することができます。ここで y にすると以下の諸条件にしたがいます。"
+msgstr "を設定することができます。TOSへの同意を意味します。"
 
 #: hawkbit-compose/setup_container.sh
 msgid ""
@@ -324,12 +322,12 @@ msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid ""
 "The recommended way of doing this is including this base64-encoded copy of"
-msgstr "以下のベース64の文字列をexamples/hawkbit_register.sh の"
+msgstr "このbase64でエンコードされたコピーをexamples/hawkbit_register.sh の"
 
 #: hawkbit-compose/setup_container.sh
 msgid ""
 "the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
-msgstr "SSL_CA_BASE64 にコピーしてくだされば登録の時に追加されます。"
+msgstr "SSL_CA_BASE64 に指定する手順が推奨されます。"
 
 #: hawkbit-compose/setup_container.sh
 msgid ""
@@ -372,7 +370,7 @@ msgstr ""
 
 #: hawkbit-compose/setup_container.sh
 msgid "htpasswd is required for password generation. Install it?"
-msgstr "パスワード作成のためにhtpasswdは必要です。インストールしますか？"
+msgstr "パスワード作成のためにhtpasswdが必要です。インストールしますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Please install htpasswd (apache2-utils)"
@@ -394,20 +392,19 @@ msgstr "不要な引数：$@"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Where should we store docker-compose configuration and hawkBit data?"
-msgstr ""
-"docker-compose のコンフィグファイルと hawkBit のデータをどこに保存しますか？"
+msgstr "docker-compose の設定ファイルと hawkBit のデータをどこに保存しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Creating link to $SCRIPT_BASE in $CONFIG_DIR"
-msgstr "$SCRIPT_BASE へのリンクを $CONFIG_DIR に作っておきます。"
+msgstr "$SCRIPT_BASE へのリンクを $CONFIG_DIR に作ります。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not create script link"
-msgstr "スクリプトの symlink を作成できませんでした。"
+msgstr "スクリプトの シンボリックリンク を作成できませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not enter config dir"
-msgstr "コンフィグディレクトリに入れませんでした。"
+msgstr "設定ディレクトリに入れませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not use docker, is the service running?"
@@ -415,7 +412,7 @@ msgstr "docker を実行できませんでした。サービスが起動して�
 
 #: hawkbit-compose/setup_container.sh
 msgid "Could not connect to docker daemon, trying with sudo... "
-msgstr "docker サービスを使えませんでした。sudo でもう一度試します。"
+msgstr "docker サービスに接続できませんでした。sudo でもう一度試します。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "ok!"
@@ -451,9 +448,7 @@ msgstr ""
 
 #: hawkbit-compose/setup_container.sh
 msgid "or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
-msgstr ""
-"$CONFIG_DIR/setup_container.sh を再び実行するとコンフィグレーションの変更は可"
-"能です。"
+msgstr "$CONFIG_DIR/setup_container.sh を再び実行すると設定の変更が可能です。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Start hawkBit containers?"

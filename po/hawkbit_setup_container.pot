@@ -96,13 +96,16 @@ msgstr ""
 msgid "How long should the certificate be valid (days)?"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "TLS certificate have a lifetime that must be set. If you plan to use let's encrypt"
+msgid "TLS certificate have a lifetime that must be set. If you plan to use"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "this value will only be used until the new certificate is generated and can be left"
+msgid "let's encrypt, this value will only be used until the new certificate"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "to its default value. Best practice would require generating a new certificate every few years."
+msgid "is generated and can be left to its default value. Best practice would"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "require generating a new certificate every few years."
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "certificate validity must be a number of days (only digits)"

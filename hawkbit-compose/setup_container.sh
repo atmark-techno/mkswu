@@ -263,9 +263,10 @@ generate_cert() {
 		|| error $"Could not create directory"
 
 	prompt_reply REVERSE_PROXY_CERT_DAYS $"How long should the certificate be valid (days)?" \
-		$"TLS certificate have a lifetime that must be set. If you plan to use let's encrypt" \
-		$"this value will only be used until the new certificate is generated and can be left" \
-		$"to its default value. Best practice would require generating a new certificate every few years."
+		$"TLS certificate have a lifetime that must be set. If you plan to use" \
+		$"let's encrypt, this value will only be used until the new certificate" \
+		$"is generated and can be left to its default value. Best practice would" \
+		$"require generating a new certificate every few years."
 	case "$REVERSE_PROXY_CERT_DAYS" in
 	*[!0-9]*)
 		REVERSE_PROXY_CERT_DAYS=""
