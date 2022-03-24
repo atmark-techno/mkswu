@@ -637,6 +637,7 @@ main() {
 
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(realpath -P "$0")" || error $"Could not get script dir"
+	SCRIPT_BASE="${0##*/}"
 	[[ "$SCRIPT_DIR" = "/" ]] || SCRIPT_DIR="${SCRIPT_DIR%/*}"
 	case "$SCRIPT_DIR" in
 	/usr/share*) :;;
@@ -739,10 +740,10 @@ main() {
 		touch "$PROMPT_FILE"
 	fi
 	if [[ -e "$CONFIG_DIR/setup_container.conf" ]]; then
-		local linkdest=$(realpath -P "$0")
-		if [[ "$(readlink "$CONFIG_DIR/${linkdest##*/}")" != "$linkdest" ]]; then
-			rm -f "$CONFIG_DIR/${linkdest##*/}"
-			ln -s "$(realpath -P "$0")" "$CONFIG_DIR"/ \
+		if [[ "$(stat -L -c %d:%i "$CONFIG_DIR/$SCRIPT_BASE" 2>/dev/null)" != "$(stat -L -c %d:%i "$0")" ]]; then
+			echo $"Creating link to $SCRIPT_BASE in $CONFIG_DIR"
+			rm -f "$CONFIG_DIR/$SCRIPT_BASE"
+			ln -s "$SCRIPT_DIR/$SCRIPT_BASE" "$CONFIG_DIR"/ \
 				|| error $"Could not create script link"
 		fi
 	fi
