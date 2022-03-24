@@ -1,5 +1,5 @@
-next
-====
+3.15-at.4
+=========
 breaking change:
  - component, version and install_if variables are reset before parsing each
 desc file. component is set to desc file name, the other two are emptied.
@@ -12,6 +12,11 @@ features:
  - allow trailing arguments for swdesc_script
  - set FW_UPDATE_IND after install unless no reboot is needed
  - add --extra-os swdesc_* switch that adds extra_os. to component
+ - hawkbit-compose japanese translation
+
+fixes:
+ - PRIVKEY_PASS wasn't escaped properly
+ - fix hawkbit service restart for POST=container updates with hawkbit
 
 3.15-at.3
 =========
