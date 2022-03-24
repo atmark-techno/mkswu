@@ -739,8 +739,12 @@ main() {
 		touch "$PROMPT_FILE"
 	fi
 	if [[ -e "$CONFIG_DIR/setup_container.conf" ]]; then
-		ln -s "$(realpath -P "$0")" "$CONFIG_DIR"/ \
-			|| error $"Could not create script link"
+		local linkdest=$(realpath -P "$0")
+		if [[ "$(readlink "$CONFIG_DIR/${linkdest##*/}")" != "$linkdest" ]]; then
+			rm -f "$CONFIG_DIR/${linkdest##*/}"
+			ln -s "$(realpath -P "$0")" "$CONFIG_DIR"/ \
+				|| error $"Could not create script link"
+		fi
 	fi
 	cd "$CONFIG_DIR" \
 		|| error $"Could not enter config dir"
