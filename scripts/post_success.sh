@@ -25,10 +25,9 @@ post_success_atlog() {
 	local old_versions="${old_versions:-/etc/sw-versions}"
 	local new_versions="${new_versions:-$SCRIPTSDIR/sw-versions.merged}"
 
-	# nothing to do if /var/at-log is not mounted (except print a warning)
+	# if /var/at-log isn't mounted fallback to /var/log/swupdate/atlog
 	if [ "$atlog" = "/var/at-log/atlog" ] && ! mountpoint -q /var/at-log; then
-		warning "/var/at-log is not mounted, cannot trace update"
-		return
+		atlog=/var/log/swupdate/atlog
 	fi
 
 	if needs_reboot; then
