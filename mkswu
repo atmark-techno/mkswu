@@ -176,6 +176,26 @@ encrypt_file() {
 		|| error "failed to encrypt %s" "$src"
 }
 
+decrypt_file() {
+	local src="$1"
+	local dest="${src%.enc}"
+	[ "$dest" != "$src" ] || error "File must end in .enc"
+	local iv tmp file=${src##*/}
+	ivs="${src%/*}/sw-description-ivs"
+
+	[ -e "$ivs" ] || error "ivs file $ivs does not exist"
+
+	while read -r iv tmp; do
+		[ "$tmp" != "$file" ] || break
+	done < "$ivs"
+	[ "$tmp" = "$file" ] || error "$file not found in $ivs"
+	setup_encryption
+	openssl enc -aes-256-cbc -d -in "$src" -out "$dest" \
+			-K "$ENCRYPT_KEY" -iv "$iv" \
+		|| error "failed to descrypt %s" "$src"
+
+}
+
 setup_encryption() {
 	[ -z "$ENCRYPT_KEYFILE" ] && return
 	[ -e "$ENCRYPT_KEYFILE" ] \
@@ -1318,6 +1338,13 @@ mkswu_internal() {
 			[ -e "$file" ] || error "%s does not exist" "$file"
 			[ -e "$file.sig" ] || error "%s does not exist" "$file.sig"
 			verify "$file"
+		done
+		;;
+	decrypt)
+		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
+		local file
+		for file; do
+			decrypt_file "$file"
 		done
 		;;
 	mkcpio)
