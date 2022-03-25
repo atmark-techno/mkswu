@@ -1,0 +1,12 @@
+component=firmware
+version=1
+
+# stop containers that might be using firmware
+swdesc_command_nochroot \
+	"podman kill -a" \
+	"podman ps --format '{{.ID}}' | timeout 30s xargs -r podman wait"
+
+# flash firmware image
+# note there is no copy if this fails!
+swdesc_exec_nochroot "imx_lib.img" \
+	'dd if=$1 of=/dev/mmcblk2p4 bs=1M conv=fdatasync status=none'
