@@ -354,7 +354,7 @@ write_entry_stdout() {
 			# different still goes through integer parsing, but is more relaxed
 			# as different ordering does not matter, and pure lexicographical
 			# is also allowed... Who said painful ?...
-			if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Z  a-z0-9.-]+)?$'; then
+			if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.-]+)?$'; then
 				# same max check as above without mixed alnum check
 				local max=2147483647
 				[ "${version%-*}" = "${version}" ] \
@@ -369,9 +369,16 @@ write_entry_stdout() {
 				1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
 				esac
 			else
-				# Oh, and semvers with + are also identical!...
-				printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Z  a-z0-9.-+]+)?$' \
-					&& error "metadata (+ part) in semver are ignored by swupdate, please use something else than %s"
+				# versions with 5+ components, semvers with 4+ leading digits,
+				# and the '+' part of semvers are completly ignored and will be
+				# considered identical so should be refused.
+				# Anything else should be string-compared and is ok.
+				printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$' \
+					&& error "versions with more than 4 digits, or semvers with more than 3 digits are ignored by swupdate, please use something other than %s" \
+						"$version"
+				printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$' \
+					&& error "metadata (+ part) in semver are ignored by swupdate, please use something other than %s" \
+						"$version"
 			fi
 	 ;;
 		*) error "install_if must be higher or different";;

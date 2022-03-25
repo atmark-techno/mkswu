@@ -36,6 +36,8 @@ build_fail version_alnum2_fail
 build_fail version_non_alnum_fail
 build_fail version_component_space_fail
 build_fail version_space_fail
+build_fail version_different_plus_fail
+build_fail version_different_long_fail
 
 rm -f zoo/hardlink zoo/hardlink2
 echo foo > zoo/hardlink
