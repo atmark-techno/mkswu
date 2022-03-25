@@ -620,23 +620,33 @@ prompt_reverse_proxy() {
 }
 
 check_requirements() {
-	local DO_INSTALL="" DO_STOP=""
+	local DO_INSTALL="" DO_STOP="" apt_update_done=""
 
 	if ! command -v docker > /dev/null; then
 		NOSAVE=1 prompt_yesno DO_INSTALL $"Docker is not installed. Install it?" \
 			|| error $"Please check https://docs.docker.com/get-docker/ and install docker"
+		sudo apt update
+		apt_update_done=1
 		sudo apt install docker.io \
 			|| error $"Install failed, please check https://docs.docker.com/get-docker/ and install manually"
 	fi
 	if ! command -v docker-compose > /dev/null; then
 		NOSAVE=1 prompt_yesno DO_INSTALL $"docker-compose is not installed. Install it?" \
 			|| error $"Please install docker-compose"
+		if [ -z "$apt_update_done" ]; then
+			sudo apt update
+			apt_update_done=1
+		fi
 		sudo apt install docker-compose \
 			|| error $"Install failed, please install docker-compose manually"
 	fi
 	if ! command -v htpasswd > /dev/null; then
 		NOSAVE=1 prompt_yesno DO_INSTALL $"htpasswd is required for password generation. Install it?" \
 			|| error $"Please install htpasswd (apache2-utils)"
+		if [ -z "$apt_update_done" ]; then
+			sudo apt update
+			apt_update_done=1
+		fi
 		sudo apt install apache2-utils \
 			|| error $"Install failed, please install apache2-utils manually"
 	fi
