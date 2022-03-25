@@ -17,7 +17,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=2
+	local preserve_version=0 max_version=3
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -96,7 +96,15 @@ EOF
 /boot/armadillo.dtb
 /usr/local/share/ca-certificates
 /etc/local.d
-/etc/runlevels/default/local
+EOF
+	fi
+	if [ "$preserve_version" -le 2 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v3 list: DTS overlay, LTE extension board support
+/boot/overlays.txt
+/etc/runlevels/default/modemmanager
+/etc/runlevels/default/connection-recover
 EOF
 	fi
 }
