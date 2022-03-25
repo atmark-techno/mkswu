@@ -30,6 +30,12 @@ post_success_atlog() {
 		atlog=/var/log/swupdate/atlog
 	fi
 
+	# rotate file if it got too big
+	if [ "$(stat -c %s "$atlog" 2>/dev/null || echo 0)" -gt $((3*1024*1024)) ]; then
+		mv -v "$atlog" "$atlog.1" \
+			|| warning "Could not rotate atlog"
+	fi
+
 	if needs_reboot; then
 		newstate="${partdev}$((ab+1))"
 	else
