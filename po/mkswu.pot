@@ -210,7 +210,7 @@ msgstr ""
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr ""
 #: mkswu
-msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes"
+msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes. Use --extra-os."
 msgstr ""
 #: mkswu
 msgid ".. is not allowed in destination path for volume update"
