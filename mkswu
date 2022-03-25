@@ -169,16 +169,11 @@ gen_iv() {
 encrypt_file() {
 	local src="$1"
 	local dest="$2"
-	local iv
+	local iv="$3"
 
-	iv=$(gen_iv) || return 1
 	openssl enc -aes-256-cbc -in "$src" -out "$dest" \
-		-K "$ENCRYPT_KEY" -iv "$iv" || return 1
-
-	# Note if anyone needs debugging, can be decrypted with:
-	# openssl enc -aes-256-cbc -d -in encrypted_file -out decrypted_file -K key -iv iv
-
-	printf %s "$iv"
+			-K "$ENCRYPT_KEY" -iv "$iv" \
+		|| error "failed to encrypt %s" "$src"
 }
 
 setup_encryption() {
@@ -231,7 +226,7 @@ write_entry_stdout() {
 	local compress="$compress"
 	local install_if="$install_if"
 	shift
-	local sha256 iv err
+	local sha256 iv="" err
 
 	trace "Processing $file"
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
@@ -278,8 +273,22 @@ write_entry_stdout() {
 	if [ -n "$ENCRYPT_KEY" ] && [ -s "$file_src" ]; then
 		file="$file.enc"
 		file_out="$file_out.enc"
-		iv=$(encrypt_file "$file_src" "$file_out") \
-			|| error "failed to encrypt %s" "$file_src"
+		# if we already had encrypted this file we must reuse the same iv
+		if [ -e "$OUTDIR/sw-description-ivs" ]; then
+			local tmp
+			while read -r iv tmp; do
+				[ "$tmp" != "$file" ] || break
+			done < "$OUTDIR/sw-description-ivs"
+			[ "$tmp" = "$file" ] || iv=""
+		fi
+		if [ -z "$iv" ]; then
+			iv=$(gen_iv)
+			# also write it out for scripts
+			printf "%s\n" "$iv $file" >> "$OUTDIR/sw-description-ivs"
+			track_used "$OUTDIR/sw-description-ivs"
+			encrypt_file "$file_src" "$file_out" "$iv"
+		fi
+		[ -n "$iv" ] || error "Could not generate an iv to encrypt %s" "$file_src"
 		file_src="$file_out"
 
 	fi
