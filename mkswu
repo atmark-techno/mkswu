@@ -374,10 +374,10 @@ write_entry_stdout() {
 				# considered identical so should be refused.
 				# Anything else should be string-compared and is ok.
 				printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$' \
-					&& error "versions with more than 4 digits, or semvers with more than 3 digits are ignored by swupdate, please use something other than %s" \
+					&& error "version %s has too many digit components, please use somthing else" \
 						"$version"
 				printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$' \
-					&& error "metadata (+ part) in semver are ignored by swupdate, please use something other than %s" \
+					&& error "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else" \
 						"$version"
 			fi
 	 ;;

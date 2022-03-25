@@ -154,8 +154,8 @@ msgid ""
 "AES encryption key %s was set but not found.\\nPlease create it with genkey."
 "sh --aes"
 msgstr ""
-"暗号化鍵が設定されてますが %s が存在しません。\\ngenkey.sh --aesで作成してく"
-"ださい。"
+"AES暗号化鍵が指定されてますが %s が存在しません。\\ngenkey.sh --aesで作成して"
+"ください。"
 
 #: mkswu
 msgid "failed to compress %s"
@@ -163,7 +163,7 @@ msgstr "%s を圧縮できませんでした。"
 
 #: mkswu
 msgid "Missing source file: %s"
-msgstr "%s のソースファイルが存在しません。"
+msgstr "ソースファイル %s が存在しません。"
 
 #: mkswu
 msgid "failed to encrypt %s"
@@ -175,55 +175,61 @@ msgstr "%s のチェックサムの生成ができませんでした。"
 
 #: mkswu
 msgid "version %s was set without associated component"
-msgstr "バージョン %s に component はありません！"
+msgstr "バージョン %s に 関連するコンポーネントがありません！"
 
 #: mkswu
 msgid ""
 "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers "
 "only)"
 msgstr ""
-"%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z 数字のみ）に"
-"してください。"
+"%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z は数字のみ）"
+"にしてください。"
 
 #: mkswu
 msgid "base_os version %s must be in x[.y[.z]]-t format"
-msgstr "base_os のバージョン %s はx[.y[.z]]-tにしてください。"
+msgstr "base_os のバージョン %s の書式はx[.y[.z]]-tにしてください。"
 
 #: mkswu
 msgid "version check failed for %s: %s must be <= %s"
-msgstr "%s バージョンの %s を %s 以下にしてください。"
+msgstr "バージョン %s は使えません: %s を %s 以下にしてください。"
 
 #: mkswu
 msgid ""
 "version check failed for %s: %s must not mix alpha and digits\\ne.g."
 "\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
 msgstr ""
-"%s バージョンの %s に数字とローマ字が混ざっています。\\n例:\\n\\t1.2.3-"
-"rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+"バージョン %s は使えません: %s に数字とアルファベットが混在しています。\\n例:"
+"\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+
+#: mkswu
+msgid "version %s has too many digit components, please use somthing else"
+msgstr ""
+" バージョン %s に数字の部分が多すぎてswupdateに無視されます。他を使ってくださ"
+"い。"
 
 #: mkswu
 msgid ""
-"metadata (+ part) in semver are ignored by swupdate, please use something "
-"else than %s"
+"metadata (+ part) in %s while valid semver are ignored by swupdate, please "
+"use something else"
 msgstr ""
-"%s バージョンに+が含まれていますが、swupdateがその部分を無視します。他を使っ"
-"てください。"
+" バージョン %s に含まれる+以降の部分はswupdateに無視されます。他を使ってくだ"
+"さい。"
 
 #: mkswu
 msgid "install_if must be higher or different"
-msgstr "install_ifは「higher」か「different」にしてください。"
+msgstr "install_if には「higher」か「different」を指定してください。"
 
 #: mkswu
 msgid "component must not contain spaces (%s)"
-msgstr "バージョンの component %s にスペースを入れないでください。"
+msgstr "コンポーネント %s にスペースを含めることはできません。"
 
 #: mkswu
 msgid "version must not contain spaces (%s = %s)"
-msgstr "バージョンの %s = %s にスペースを入れないでください。"
+msgstr "バージョン %s = %s にスペースを含めることはできません。"
 
 #: mkswu
 msgid "%s requires --version to be set"
-msgstr "%s に --version の設定が必要です。"
+msgstr "%s に --version の指定が必要です。"
 
 #: mkswu
 msgid "%s requires an argument"
@@ -231,11 +237,11 @@ msgstr "%s に引数が必要です。"
 
 #: mkswu
 msgid "%s requires <component> <version> arguments"
-msgstr "%s に <component> <version> の引数が必要です。"
+msgstr "%s は <component> <version> の引数が必要です。"
 
 #: mkswu
 msgid "--install-if must be higher or different"
-msgstr "--install-if は「higher」か「different」にしてください。"
+msgstr "--install-if には「higher」か「different」を指定してください。"
 
 #: mkswu
 msgid "%s only allowed for swdesc_files and swdesc_tar"
@@ -247,7 +253,7 @@ msgstr "%s は swdesc_files にしか使えません。"
 
 #: mkswu
 msgid "%s is not a known %s argument"
-msgstr "%s は %s の引数ではありません。"
+msgstr "%s は %s の有効な引数ではありません。"
 
 #: mkswu
 msgid ""
@@ -288,8 +294,8 @@ msgid ""
 "swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] "
 "file command"
 msgstr ""
-"swdesc_exec に引数が最低二つ必要です。\\nUsage: swdesc_exec [options] file "
-"command"
+"swdesc_exec には最低二つの引数が必要です。\\nUsage: swdesc_exec [options] "
+"file command"
 
 #: mkswu
 msgid "%s requires an argument\\nUsage: %s [options] image"
@@ -305,15 +311,15 @@ msgstr "%s ファイルにアクセスできません。"
 
 #: mkswu
 msgid "BOOT_SIZE set smaller than boot file actual size"
-msgstr "BOOT_SIZE変数はファイルサイズより小さいです。"
+msgstr "BOOT_SIZE変数がファイルサイズよりも小さいです。"
 
 #: mkswu
 msgid "Version component for swdesc_boot must be set to boot"
-msgstr "swdesc_bootのバージョンcomponentを「boot」にしてください。"
+msgstr "swdesc_bootのバージョンコンポーネントを「boot」にしてください。"
 
 #: mkswu
 msgid "Could not guess boot version in %s"
-msgstr "bootのバージョンを %s に読み取れませんでした。"
+msgstr "ブートバージョン %s を認識できませんでした。"
 
 #: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
@@ -328,7 +334,7 @@ msgstr ""
 
 #: mkswu
 msgid ".. is not allowed in destination path for volume update"
-msgstr ".. は展開先に使えません。"
+msgstr ".. は展開先として使えません。"
 
 #: mkswu
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
@@ -347,7 +353,7 @@ msgstr "%s が存在しません。"
 
 #: mkswu
 msgid "%s is not inside %s"
-msgstr "%s は %s の下ではありません。"
+msgstr "%s は %s の中にありません。"
 
 #: mkswu
 msgid "Could not create tar for %s"
@@ -383,7 +389,8 @@ msgstr "HW_COMPAT変数を設定してください。"
 msgid ""
 "above component used multiple times with different versions or install-if "
 "mode"
-msgstr "上記のcomponentが別のバージョンかinstall-ifで使われました。"
+msgstr ""
+"上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
 
 #: mkswu
 msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
@@ -446,8 +453,8 @@ msgid ""
 "Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already "
 "exists!"
 msgstr ""
-"mkimage.conf から mkswu.conf にコンバートしようとしてますが、mkswu.conf はす"
-"でに存在します。"
+"mkimage.conf から mkswu.conf に変換しようとしてますが、mkswu.conf はすでに存"
+"在します。"
 
 #: mkswu
 msgid "Could not update config %s"
@@ -455,40 +462,42 @@ msgstr "%s を更新できませんでした。"
 
 #: mkswu
 msgid "Updated config file %s"
-msgstr "コンフィグファイルを更新しました：%s"
+msgstr "設定ファイルを更新しました：%s"
 
 #: mkswu
 msgid "Could not resolve %s directory name"
-msgstr "%s のディレクトリが見つかりませんでした。"
+msgstr "%s ディレクトリが見つかりませんでした。"
 
 #: mkswu
 msgid "--%s had extra arguments?"
-msgstr "%s に引数が多すぎました。"
+msgstr "%s に引数が多すぎます。"
 
 #: mkswu
 msgid "Config %s already exists, skipping import"
-msgstr "%s のコンフィグファイルがすでに存在します。--importを中止します。"
+msgstr "%s の設定ファイルがすでに存在します。--importを中止します。"
 
 #: mkswu
 msgid "Importing config %s and associated keys to %s"
-msgstr "%s のコンフィグファイルとその鍵を %s にコピーします。"
+msgstr "%s の設定ファイルとその鍵を %s にコピーします。"
 
 #: mkswu
 msgid ""
 "Key file %s could not be found, try setting absolute path in config file and "
 "reimport"
 msgstr ""
-"%s の鍵ファイルを見つかりませんでした。コンフィグファイルに絶対パスを設定して"
-"みてください。"
+"%s の鍵ファイルを見つかりませんでした。設定ファイルに絶対パスを設定してみてく"
+"ださい。"
 
 #: mkswu
 msgid "Imported config %s to %s"
-msgstr "%s のコンフィグファイルを %s にコピーしました。"
+msgstr "%s の設定ファイルを %s にコピーしました。"
 
 #: mkswu
 msgid ""
 "You can know check mkswu works with new config and remove the old directory"
-msgstr "mkswu でイメージ作成を試してから前のディレクトリを消してください。"
+msgstr ""
+"mkswu が新しい構成で動作することを確認してから古いディレクトリを削除してくだ"
+"さい。"
 
 #: mkswu
 msgid "Info: using default aes key path"
@@ -504,7 +513,7 @@ msgstr "%s はすでに存在します。このファイルの作成を中止し
 
 #: mkswu
 msgid "Generating random number failed"
-msgstr "opensslコマンドが失敗しました。"
+msgstr "乱数生成に失敗しました。"
 
 #: mkswu
 msgid "Created encryption keyfile %s"
@@ -528,7 +537,7 @@ msgstr "PUBKEY変数を設定してください。"
 
 #: mkswu
 msgid "Certificate common name must be provided with --cn <name>"
-msgstr "--cn <name>で証明書のcommon nameを指定してください。"
+msgstr "--cn <name>で証明書のコモンネーム(一般名)を指定してください。"
 
 #: mkswu
 msgid "Creating signing key %s and its public counterpart %s"
@@ -565,7 +574,7 @@ msgstr ""
 
 #: mkswu
 msgid "Invalid variable name %s"
-msgstr "%s 変数は認識できません。"
+msgstr "%s 変数を認識できません。"
 
 #: mkswu
 msgid "Variable %s was not set"
@@ -589,7 +598,7 @@ msgstr "%s コマンドを認識できません"
 
 #: mkswu
 msgid "Enter certificate common name:"
-msgstr "証明書のCommon nameを入力してください:"
+msgstr "証明書のコモンネーム(一般名)を入力してください:"
 
 #: mkswu
 msgid "Enter private key password (4-1024 char)"
@@ -597,7 +606,8 @@ msgstr "証明書の鍵のパスワードを入力ください（4-1024文字）
 
 #: mkswu
 msgid "Empty key password is not recommended, re-enter empty to confirm"
-msgstr "空のパスワードは推奨しません。もう一度入力したら進みます。"
+msgstr ""
+"空のパスワードは推奨しません。もう一度空のパスワードを入力すると進みます。"
 
 #: mkswu
 msgid "Must be between 4 and 1024 characters long"
@@ -674,11 +684,13 @@ msgstr "%s を更新できませんでした。"
 
 #: mkswu
 msgid "Could not generate initial setup swu"
-msgstr "最初書き込みのinitial_setup.swuの作成が失敗しました。"
+msgstr "swuの初期設定の作成に失敗しました。"
 
 #: mkswu
 msgid "You can use \"%s\" as is or regenerate an image"
-msgstr "\"%s\" をそのまま使えますが、追加の desc を入れたい場合"
+msgstr ""
+"\"%s\" をそのまま使うことができますが、モジュールを追加してイメージを再構築す"
+"る場合は"
 
 #: mkswu
 msgid "with extra modules with: mkswu \"%s\" other_desc_files"
@@ -703,11 +715,11 @@ msgstr "スクリプトのディレクトリが読み取れませんでした。
 
 #: mkswu
 msgid "Only v can be repeated in -vvv..."
-msgstr "-v の後にvしか繰り返せません"
+msgstr "-vvv... のようにvしか繰り返し指定できません。"
 
 #: mkswu
 msgid "Only q can be repeated in -qqq..."
-msgstr "-q の後にqしか繰り返せません"
+msgstr "-qqq... のようにqしか繰り返し指定できません。"
 
 #: mkswu
 msgid "%s is incompatible with --%s"
@@ -732,17 +744,16 @@ msgstr "%s オプションを認識できません"
 #: mkswu
 msgid "Could not find config file to import, specify it with --config"
 msgstr ""
-"インポートするべきコンフィグファイルが見つかりませんでした。--config で指定し"
-"てください。"
+"インポートするべき設定ファイルが見つかりませんでした。--config で指定してくだ"
+"さい。"
 
 #: mkswu
 msgid "Please import current config with mkswu --import first"
-msgstr "コンフィグを mkswu --import で先にロードしてください。"
+msgstr "設定を mkswu --import で先にロードしてください。"
 
 #: mkswu
 msgid "Config file not found, create one with mkswu --init"
-msgstr ""
-"コンフィグファイルが見つかりませんでした。 mkswu --init で作成してください。"
+msgstr "設定ファイルが見つかりませんでした。 mkswu --init で作成してください。"
 
 #: mkswu
 msgid "cannot enter %s directory"
@@ -754,7 +765,7 @@ msgstr "Warning: %s は.descファイルではありません。"
 
 #: mkswu
 msgid "Cannot return to %s we were in before"
-msgstr "%s ディレクトリに戻れませんでした。"
+msgstr "%s ディレクトリに戻ることができませんでした。"
 
 #: mkswu
 msgid "Successfully included %s contents"
@@ -762,7 +773,7 @@ msgstr "%s を組み込みました。"
 
 #: mkswu
 msgid "No or empty desc given?"
-msgstr "descファイルを読み取れませんでした。"
+msgstr "descファイルを読み取ることができませんでした。"
 
 #: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
@@ -783,4 +794,4 @@ msgid ""
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
 
 #~ msgid "component %s was set with empty version"
-#~ msgstr "%s のバージョンcomponentにバージョンが足りません。"
+#~ msgstr "%s のバージョンコンポーネントにバージョンが足りません。"
