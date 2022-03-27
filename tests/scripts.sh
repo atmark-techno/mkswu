@@ -204,7 +204,7 @@ test_preserve_files_post() {
 	SRC=$(realpath -m "$SCRIPTSDIR/src")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
-	mkdir -p "$TARGET/etc" "$TARGET/home" "$SRC"
+	mkdir -p "$TARGET/etc" "$TARGET/$SRC" "$SRC"
 
 	echo grepme > "$SRC/copy space"
 	echo grepme > "$SRC/copy"
@@ -258,7 +258,7 @@ test_preserve_files_pre() {
 	SRC=$(realpath -m "$SCRIPTSDIR/src")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
-	mkdir -p "$TARGET/etc" "$TARGET/home" "$SRC"
+	mkdir -p "$TARGET/etc" "$TARGET/$SRC" "$SRC"
 	echo "preserve_files: no file is created"
 	update_preserve_list
 	grep -qE '/etc/atmark' "$FLIST" \
