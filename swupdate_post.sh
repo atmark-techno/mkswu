@@ -32,7 +32,8 @@ elif needs_reboot; then
 elif [ -n "$SWUPDATE_HAWKBIT" ]; then
 	unlock_update
 	echo "Restarting swupdate-hawkbit service" >&2
-	rc-service swupdate-hawkbit restart
+	# remove stdout/stderr to avoid sigpipe when parent is killed
+	rc-service swupdate-hawkbit restart >/dev/null 2>&1
 else
 	unlock_update
 fi
