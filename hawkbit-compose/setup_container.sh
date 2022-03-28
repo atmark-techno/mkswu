@@ -546,6 +546,26 @@ prompt_hawkbit_users() {
 	fi
 }
 
+check_disable_service() {
+	local service="$1"
+	local STOP_CONFLICT_SERVICE=""
+
+	if systemctl is-active --quiet "$service" 2>/dev/null; then
+		NOSAVE=1 prompt_yesno STOP_CONFLICT_SERVICE $"Stop $service service?" \
+				$"$service is running and conflicts with the reverse proxy setup." \
+			|| error $"Please stop $service manually"
+		sudo systemctl stop "$service" \
+			|| error $"Could not stop $service service"
+	fi
+	if systemctl is-enabled --quiet "$service" 2>/dev/null; then
+		NOSAVE=1 prompt_yesno STOP_CONFLICT_SERVICE $"Disable $service service?" \
+				$"$service is enabled and conflicts with the reverse proxy setup." \
+			|| error $"Please stop $service manually"
+		sudo systemctl disable "$service" \
+			|| error $"Could not disable $service service"
+	fi
+}
+
 prompt_reverse_proxy() {
 	local CERT="$CONFIG_DIR/data/nginx_certs/proxy.crt"
 	local PRIVKEY="$CONFIG_DIR/data/nginx_certs/proxy.key"
@@ -553,7 +573,6 @@ prompt_reverse_proxy() {
 	local REVERSE_PROXY_CLIENT_CERT_MANDATORY=""
 	local REVERSE_PROXY_SELFCERT_SETUP_TEXT=""
 	local REVERSE_PROXY_SELFCERT_SETUP_TEXT_DEFAULT=n
-	local STOP_CONFLICT_SERVICE=""
 	declare -a hawkbit_proxy_conf_fragments=( "*_base" "*_cert_domain" )
 
 
@@ -562,15 +581,9 @@ prompt_reverse_proxy() {
 		return 0
 	fi
 
-	if systemctl is-active --quiet lighttpd; then
-		NOSAVE=1 prompt_yesno STOP_CONFLICT_SERVICE $"Stop lighttpd service?" \
-				$"lighttpd is running and conflicts with the reverse proxy setup." \
-			|| error $"Please stop lighttpd manually"
-		sudo systemctl stop lighttpd \
-			|| error $"Could not stop lighttpd service"
-		sudo systemctl disable lighttpd \
-			|| error $"Could not disable lighttpd service"
-	fi
+	check_disable_service lighttpd
+	check_disable_service apache2
+	check_disable_service nginx
 
 	generate_cert
 	update_template "docker-compose.yml/20_hawkbit_ports" -e 's/#EXPOSE//'

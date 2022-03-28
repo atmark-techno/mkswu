@@ -254,24 +254,32 @@ msgid "Create hawkBit mkswu user? (for automated image upload)"
 msgstr "hawkBit の「mkswu」ユーザーを登録しますか？（swuのアップロード用）"
 
 #: hawkbit-compose/setup_container.sh
-msgid "Stop lighttpd service?"
-msgstr "lighthttpd サービスを停止しますか？"
+msgid "Stop $service service?"
+msgstr "$service サービスを停止しますか？"
 
 #: hawkbit-compose/setup_container.sh
-msgid "lighttpd is running and conflicts with the reverse proxy setup."
-msgstr "lighttpd が起動中で、リバースプロキシ設定と競合しています。"
+msgid "$service is running and conflicts with the reverse proxy setup."
+msgstr "$service が起動中で、リバースプロキシ設定と競合しています。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "Please stop lighttpd manually"
-msgstr "lighttpd を手動で停止してください。"
+msgid "Please stop $service manually"
+msgstr "$service を手動で停止してください。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "Could not stop lighttpd service"
-msgstr "lighttpd サービスを停止できませんでした。"
+msgid "Could not stop $service service"
+msgstr "$service サービスを停止できませんでした。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "Could not disable lighttpd service"
-msgstr "lighttpd サービスを無効にできませんでした。"
+msgid "Disable $service service?"
+msgstr "$service サービスを無効にしますか？"
+
+#: hawkbit-compose/setup_container.sh
+msgid "$service is enabled and conflicts with the reverse proxy setup."
+msgstr "$service が有効になっていて、リバースプロキシ設定と競合しています。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "Could not disable $service service"
+msgstr "$service サービスを無効にできませんでした。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "CA file path (leave empty to disable client TLS authentication)"

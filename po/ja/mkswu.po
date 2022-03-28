@@ -150,6 +150,26 @@ msgid "Could not link %s to %s"
 msgstr "%s を %s にリンクできませんでした。"
 
 #: mkswu
+msgid "failed to encrypt %s"
+msgstr "%s を暗号化できませんでした。"
+
+#: mkswu
+msgid "File must end in .enc"
+msgstr "%s は「.enc」で終わらせてください。"
+
+#: mkswu
+msgid "ivs file $ivs does not exist"
+msgstr ""
+
+#: mkswu
+msgid "$file not found in $ivs"
+msgstr ""
+
+#: mkswu
+msgid "failed to decrypt %s"
+msgstr ""
+
+#: mkswu
 msgid ""
 "AES encryption key %s was set but not found.\\nPlease create it with genkey."
 "sh --aes"
@@ -166,8 +186,8 @@ msgid "Missing source file: %s"
 msgstr "ソースファイル %s が存在しません。"
 
 #: mkswu
-msgid "failed to encrypt %s"
-msgstr "%s を暗号化できませんでした。"
+msgid "Could not generate an iv to encrypt %s"
+msgstr ""
 
 #: mkswu
 msgid "Checksumming %s failed"

@@ -105,6 +105,21 @@ msgstr ""
 msgid "Could not link %s to %s"
 msgstr ""
 #: mkswu
+msgid "failed to encrypt %s"
+msgstr ""
+#: mkswu
+msgid "File must end in .enc"
+msgstr ""
+#: mkswu
+msgid "ivs file $ivs does not exist"
+msgstr ""
+#: mkswu
+msgid "$file not found in $ivs"
+msgstr ""
+#: mkswu
+msgid "failed to descrypt %s"
+msgstr ""
+#: mkswu
 msgid "AES encryption key %s was set but not found.\\nPlease create it with genkey.sh --aes"
 msgstr ""
 #: mkswu
@@ -114,7 +129,7 @@ msgstr ""
 msgid "Missing source file: %s"
 msgstr ""
 #: mkswu
-msgid "failed to encrypt %s"
+msgid "Could not generate an iv to encrypt %s"
 msgstr ""
 #: mkswu
 msgid "Checksumming %s failed"

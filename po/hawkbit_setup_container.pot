@@ -177,19 +177,25 @@ msgstr ""
 msgid "Create hawkBit mkswu user? (for automated image upload)"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "Stop lighttpd service?"
+msgid "Stop $service service?"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "lighttpd is running and conflicts with the reverse proxy setup."
+msgid "$service is running and conflicts with the reverse proxy setup."
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "Please stop lighttpd manually"
+msgid "Please stop $service manually"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "Could not stop lighttpd service"
+msgid "Could not stop $service service"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "Could not disable lighttpd service"
+msgid "Disable $service service?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$service is enabled and conflicts with the reverse proxy setup."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not disable $service service"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "CA file path (leave empty to disable client TLS authentication)"
