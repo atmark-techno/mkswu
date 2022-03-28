@@ -13,7 +13,12 @@ CUSTOM_SWUPDATE_CFG=""
 SSL_NO_CHECK_CERT=
 # or set to cafile that must have been updated first
 SSL_CAFILE=
-# ... or paste here base64 encoded crt content
+# ... or paste here base64 encoded crt content, e.g.
+# SSL_CA_BASE64="
+# LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlekNDQVNHZ0F3SUJBZ0lVWnFzall5eFI0
+# ...
+# LS0tCg==
+# "
 SSL_CA_BASE64="
 "
 # ... or add your own options if required
@@ -48,7 +53,8 @@ init() {
 		# set default for swupdate
 		SSL_CAFILE="/etc/ssl/certs/ca-certificates.crt"
 	fi
-	if [ -n "$SSL_CA_BASE64" ]; then
+	# write CA and update cert if not empty
+	if echo "$SSL_CA_BASE64" | grep -q '[[:alnum:]]'; then
 		echo "$SSL_CA_BASE64" \
 			| base64 -d > /usr/local/share/ca-certificates/hawkbit.crt \
 			|| error "Could not write certificate"
