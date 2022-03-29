@@ -113,7 +113,7 @@ post_success_usb() {
 	if grep -q FORCE_VERSION "$SWDESC" \
 	    && ! grep -q POSTACT_POWEROFF "$SWDESC"; then
 		mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed" \
-			|| echo "Could not rename force version usb install image, might have a reinstall loop" >&2
+			|| warning "Could not rename force version usb install image, might have a reinstall loop"
 	fi
 }
 
@@ -123,9 +123,8 @@ set_fw_update_ind() {
 	[ -e "$led_dir/brightness" ] || return
 	needs_reboot || return
 
-	# It's too late to fail, but try to warn if we couldn't set led
 	cat "$led_dir/max_brightness" > "$led_dir/brightness" \
-		|| echo "Could not set FW_UPDATE_IND" >&2
+		|| warning "Could not set FW_UPDATE_IND"
 }
 
 post_success() {
