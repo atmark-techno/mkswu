@@ -21,37 +21,37 @@ usage() {
 	echo " --dry-run        Print what would be removed instead of removing"
 }
 
-get_pod_infra_container_tag() {
-	local infra_container
+get_pod_infra_image_tag() {
+	local infra_image
 
-	infra_container=$({ grep -E '^infra_container=' "$conf" && echo 'echo "$infra_container"'; } | sh)
+	infra_image=$({ grep -E '^infra_image=' "$conf" && echo 'echo "$infra_image"'; } | sh)
 
-	if [ -z "$infra_container" ]; then
+	if [ -z "$infra_image" ]; then
 		# get default name of the pod infra container... in the target rootfs!
 		# XXX find better than parsing help. We can't start a pod to inspect it...
 		# note: dry run uses running system instead for easy us
 		WRAP="podman run --net=none --rootfs /target"
 		[ -n "$DRY_RUN" ] && WRAP=""
-		infra_container=$($WRAP podman pod create --help | \
+		infra_image=$($WRAP podman pod create --help | \
 					sed -ne 's/.*infra-image.*default "\([^"]*\)".*/\1/p')
 	fi
 
-	if [ -z "$infra_container" ]; then
+	if [ -z "$infra_image" ]; then
 		printf "%s\n" "Warning: Could not guess podman pod infra container name, continuing without one"
 			      "podman_start will probably require an internet to start pods" >&2
 		return
 	fi
 
 	if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
-			image inspect --format '{{.Id}}' "$infra_container" 2>/dev/null; then
-		printf "%s\n" "Warning: pod configured but pod infra container $infra_container was not found!" \
+			image inspect --format '{{.Id}}' "$infra_image" 2>/dev/null; then
+		printf "%s\n" "Warning: pod configured but pod infra container $infra_image was not found!" \
 			      "Trying to get it now" >&2
 		[ -n "$DRY_RUN" ] && return
 		# pull command prints the id of the image it just fetched
 		if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
-				pull "$infra_container"; then
+				pull "$infra_image"; then
 			[ -n "$FAIL_MISSING" ] || return
-			error "Could not pull infra container $infra_container, failing update."
+			error "Could not pull infra container $infra_image, failing update."
 		fi
 	fi
 }
@@ -63,7 +63,7 @@ get_conf_image() {
 		type=$({ grep -E '^type=' "$conf" && echo 'echo "$type"'; } | sh)
 		case "$type" in
 		pod)
-			get_pod_infra_container_tag
+			get_pod_infra_image_tag
 			return
 			;;
 		container|"")
