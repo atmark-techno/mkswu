@@ -25,7 +25,6 @@ get_pod_infra_container_tag() {
 	local infra_container
 
 	infra_container=$({ grep -E '^infra_container=' "$conf" && echo 'echo "$infra_container"'; } | sh)
-	infra_container=$(. "$conf"; echo "$infra_container")
 
 	if [ -z "$infra_container" ]; then
 		# get default name of the pod infra container... in the target rootfs!
