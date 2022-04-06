@@ -24,7 +24,8 @@ usage() {
 get_pod_infra_image_tag() {
 	local infra_image
 
-	infra_image=$({ grep -E '^infra_image=' "$conf" && echo 'echo "$infra_image"'; } | sh)
+	infra_image=$({ echo 'set_infra_image() { infra_image=$1; }';
+			grep -E '^(set_)?infra_image' "$conf" && echo 'echo "$infra_image"'; } | sh)
 
 	if [ -z "$infra_image" ]; then
 		# get default name of the pod infra container... in the target rootfs!
@@ -58,9 +59,11 @@ get_pod_infra_image_tag() {
 
 get_conf_image() {
 	local tag type autostart pull
-	tag=$({ grep -E '^image=' "$conf" && echo 'echo "$image"'; } | sh)
+	tag=$({ echo 'set_image() { image=$1; }';
+		grep -E '^(set_)?image' "$conf" && echo 'echo "$image"'; } | sh)
 	if [ -z "$tag" ]; then
-		type=$({ grep -E '^type=' "$conf" && echo 'echo "$type"'; } | sh)
+		type=$({ echo 'set_type() { type=$1; }';
+			grep -E '^(set_)?type' "$conf" && echo 'echo "$type"'; } | sh)
 		case "$type" in
 		pod)
 			get_pod_infra_image_tag
@@ -89,13 +92,15 @@ get_conf_image() {
 			image inspect --format '{{.Id}}' \
 			"$tag" 2>/dev/null; then
 		[ -n "$FAIL_MISSING" ] || return
-		# don't fail if image is autostart: user can pull themselves
-		autostart=$({ grep -E '^autostart=' "$conf" && echo 'echo "$autostart"' || echo 'echo yes'; } | sh)
+		# don't fail if image is no autostart: user can pull themselves
+		autostart=$({ echo 'set_autostart() { autostart=$1; }';
+			grep -E '^(set_)?autostart' "$conf" && echo 'echo "$autostart"' || echo 'echo yes'; } | sh)
 		case "$autostart" in
 		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") return;;
 		esac
 		# also don't fail if it is set to pull automatically
-		pull=$({ grep -E '^pull=' "$conf" && echo 'echo "$pull"'; } | sh)
+		pull=$({ echo 'set_pull() { pull=$1; }';
+			grep -E '^(set_)?pull' "$conf" && echo 'echo "$pull"'; } | sh)
 		case "$pull" in
 		always|missing) return;;
 		esac
