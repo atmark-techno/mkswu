@@ -1,6 +1,7 @@
 probe_current() {
 	rootdev=$(swupdate -g)
 
+	[ "${rootdev#mmcblk}" = "$rootdev" ] || rootdev="/dev/$rootdev"
 	[ -e "$rootdev" ] || rootdev="$(findfs "$rootdev")"
 	[ -e "$rootdev" ] || error "Could not find what partition linux booted from to guess what to flash"
 
