@@ -1,3 +1,11 @@
+3.15-at.5
+=========
+fixes:
+ - fix install on very old swupdate where swupdate -g might not include /dev
+ - fix podman_cleanup corner cases with infra image
+ - fix sha256sum file not being updated properly sometimes (if zst archive
+   changed without changing base file)
+
 3.15-at.4
 =========
 breaking change:
