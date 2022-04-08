@@ -212,12 +212,12 @@ compress() {
 
 	track_used "$file_src"
 
-	# zstd copies timestamp and test -nt/-ot are strict,
+	# test -nt/-ot are strict,
 	# "! newer than" is equivalent to "older or equal than"
 	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
-	zstd -q "$file_src" -o "$file_out.tmp" \
+	zstd -q -c "$file_src" > "$file_out.tmp" \
 		|| error "failed to compress %s" "$file_src"
 	mv "$file_out.tmp" "$file_out"
 }
