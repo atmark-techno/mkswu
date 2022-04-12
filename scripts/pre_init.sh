@@ -86,6 +86,37 @@ fail_redundant_update() {
 	fi
 }
 
+init_really_starting() {
+	# if we got here we're really updating:
+	# - signal we're starting an update if instructed
+	# - handle a fail command if there is one
+	local action
+
+	rm -f "$TMPDIR/swupdate_post_fail_action"
+
+	action="$(sed -ne  's/.*NOTIFY_STARTING_CMD //p' "$SWDESC")"
+	eval "$action"
+
+	action="$(sed -ne  's/.*NOTIFY_FAIL_CMD //p' "$SWDESC")"
+	[ -z "$action" ] && return
+
+	echo "$action" > "$TMPDIR/swupdate_post_fail_action"
+	# swupdate does not provide any generic way of executing a command
+	# after swupdate failure, or when it is over. . . But we can
+	# rely on the fact that swupdate cleans up the scripts dir when
+	# done, and that we will have removed post_fail_action file on
+	# success, so we wait for that directory to disappear in a subprocess.
+	(
+		# inotifyd exits when it cannot watch anymore, but
+		# we need to chdir out of it first...
+		cd / || exit
+		inotifyd - "$TMPDIR/scripts":x >/dev/null || exit
+		[ -e "$TMPDIR/swupdate_post_fail_action" ] || exit 0
+		sh "$TMPDIR/swupdate_post_fail_action"
+		rm -f "$TMPDIR/swupdate_post_fail_action"
+	) &
+}
+
 init() {
 	lock_update
 	cleanup
@@ -97,6 +128,8 @@ init() {
 	fail_redundant_update
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
 		"$(needs_reboot || echo " not")"
+
+	init_really_starting
 
 	save_vars
 }

@@ -1,3 +1,8 @@
+next
+====
+features:
+ - add NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD handling
+
 3.15-at.5
 =========
 fixes:

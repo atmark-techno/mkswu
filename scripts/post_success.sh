@@ -127,6 +127,13 @@ set_fw_update_ind() {
 		|| warning "Could not set FW_UPDATE_IND"
 }
 
+post_success_custom() {
+	local action
+	rm -f "$TMPDIR/swupdate_post_fail_action"
+	action="$(sed -ne  's/.*NOTIFY_SUCCESS_CMD //p' "$SWDESC")"
+	eval "$action"
+}
+
 post_success() {
 	[ -d "/var/log/swupdate" ] || mkdir /var/log/swupdate \
 		|| warning "Could not mkdir /var/log/swupdate"
@@ -134,6 +141,7 @@ post_success() {
 	post_success_atlog
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
+	post_success_custom
 	set_fw_update_ind
 }
 

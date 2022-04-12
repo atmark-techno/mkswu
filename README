@@ -44,6 +44,14 @@ CONTAINER_CLEAR: if set, swupdate will kill running containers and
                  /etc/atmark/containers/*.conf before continuing install.
                  /!\ if install fails this will leave your system
                  with no application, usage is discouraged /!\
+NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD:
+    Commands to run when the update starts installing something,
+    finished on an error, or installed successfully (success is
+    mostly useful for POST_ACTION=wait)
+    Note none of these commands run if the signature was not verified
+    successfully (arbitrary execution of untrusted file is bad), nor
+    if the update is considered already installed or somehow fails before
+    the version check.
 NO_PRESERVE_FILES: if set, swupdate will not copy files listed in
                    /etc/swupdate_preserve_files when base_os is updated
 
