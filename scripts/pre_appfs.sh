@@ -119,7 +119,9 @@ prepare_appfs() {
 	# explicitely mounted by name, which can happen if fstab got setup
 	# incorrectly somehow).
 	# add an unreasonably long timeout just in case.
-	timeout 30m btrfs subvolume sync "$basemount"
+	# also, skip on test
+	grep -q "SKIP_BTRFS_SUBVOL_SYNC" "$SWDESC" \
+		|| timeout 30m btrfs subvolume sync "$basemount"
 	umount "$basemount"
 	rmdir "$basemount"
 }
