@@ -44,8 +44,11 @@ init_vars_update() {
 	    || grep -q "CONTAINER_CLEAR" "$SWDESC"; then
 		update_rootfs=1
 	fi
-	if update_rootfs || needs_update boot \
-	    || ! grep -q "POSTACT_CONTAINER" "$SWDESC"; then
+	if update_rootfs || needs_update boot; then
+		needs_reboot=1
+	fi
+	POST_ACTION=$(post_action)
+	if [ "$POST_ACTION" != "container" ]; then
 		needs_reboot=1
 	fi
 }

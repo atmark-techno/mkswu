@@ -16,24 +16,31 @@ SCRIPTSDIR="$TMPDIR/scripts"
 cleanup
 rm -rf "$SCRIPTSDIR"
 
-if grep -q POSTACT_POWEROFF "$SWDESC" 2>/dev/null; then
+POST_ACTION=$(post_action)
+
+case "$POST_ACTION" in
+poweroff)
 	echo "swupdate triggering poweroff!" >&2
 	poweroff
 	pkill -9 swupdate
 	sleep infinity
-elif grep -q POSTACT_WAIT "$SWDESC" 2>/dev/null; then
+	;;
+wait)
 	echo "swupdate waiting until external reboot" >&2
 	sleep infinity
-elif needs_reboot; then
+	;;
+container)
+	unlock_update
+	if [ -n "$SWUPDATE_HAWKBIT" ]; then
+		echo "Restarting swupdate-hawkbit service" >&2
+		# remove stdout/stderr to avoid sigpipe when parent is killed
+		rc-service swupdate-hawkbit restart >/dev/null 2>&1
+	fi
+	;;
+*)
 	echo "swupdate triggering reboot!" >&2
 	reboot
 	pkill -9 swupdate
 	sleep infinity
-elif [ -n "$SWUPDATE_HAWKBIT" ]; then
-	unlock_update
-	echo "Restarting swupdate-hawkbit service" >&2
-	# remove stdout/stderr to avoid sigpipe when parent is killed
-	rc-service swupdate-hawkbit restart >/dev/null 2>&1
-else
-	unlock_update
-fi
+	;;
+esac

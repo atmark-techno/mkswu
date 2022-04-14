@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 
 # custom script: no prereq
 build_check ../examples/custom_script "file custom_script_app.sh scripts.tar.zst" \
-	"swdesc scripts.tar.zst custom_script.app.sh POSTACT_CONTAINER"
+	"swdesc scripts.tar.zst custom_script.app.sh 'POST_ACTION container'"
 
 # sshd: build tar
 build_check ../examples/enable_sshd "version extra_os.sshd '[^ ]+ higher'" \

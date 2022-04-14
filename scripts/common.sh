@@ -158,6 +158,23 @@ update_baseos() {
 	[ "$update_rootfs" = "baseos" ]
 }
 
+post_action() {
+	if [ -n "$POST_ACTION" ]; then
+		echo "$POST_ACTION"
+		return
+	fi
+	POST_ACTION=$(awk '/ POST_ACTION / { print $NF; exit; }' "$SWDESC")
+	if [ -z "$POST_ACTION" ] && [ -e "/etc/atmark/baseos.conf" ]; then
+		POST_ACTION=$(. /etc/atmark/baseos.conf; echo "$MKSWU_POST_ACTION")
+	fi
+	# container only works if no reboot
+	if [ "$POST_ACTION" = "container" ] && needs_reboot; then
+		POST_ACTION=""
+	fi
+	echo "$POST_ACTION"
+}
+
+
 cleanup() {
 	remove_bootdev_link
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay

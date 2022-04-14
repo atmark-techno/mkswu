@@ -109,11 +109,16 @@ post_success_hawkbit() {
 
 post_success_usb() {
 	# if the image is a force install image, move it to avoid install loop
-	# we don't need to do this if the post action is poweroff
-	if grep -q FORCE_VERSION "$SWDESC" \
-	    && ! grep -q POSTACT_POWEROFF "$SWDESC"; then
-		mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed" \
+	# we don't need to do this if the post action is poweroff, wait or container
+	# as these have no risk of looping
+	if grep -q FORCE_VERSION "$SWDESC"; then
+		POST_ACTION=$(post_action)
+		case "$POST_ACTION" in
+		poweroff|container|wait) ;;
+		*) mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed" \
 			|| warning "Could not rename force version usb install image, might have a reinstall loop"
+			;;
+		esac
 	fi
 }
 

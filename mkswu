@@ -1029,9 +1029,7 @@ EOF
 	[ -n "$NOTIFY_SUCCESS_CMD" ] \
 		&& echo "$NOTIFY_SUCCESS_CMD" | sed -e 's/^/  #NOTIFY_SUCCESS_CMD /'
 	case "$POST_ACTION" in
-	poweroff) echo " #POSTACT_POWEROFF";;
-	wait) echo " #POSTACT_WAIT";;
-	container) echo " #POSTACT_CONTAINER";;
+	poweroff|wait|container) echo " # POST_ACTION $POST_ACTION";;
 	""|reboot) ;;
 	*) error "invalid POST_ACTION \"%s\", must be empty, poweroff or wait" "$POST_ACTION";;
 	esac
