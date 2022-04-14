@@ -167,7 +167,7 @@ msgstr ""
 
 #: mkswu
 msgid "failed to decrypt %s"
-msgstr ""
+msgstr "%s を暗号化できませんでした。"
 
 #: mkswu
 msgid ""
@@ -414,10 +414,9 @@ msgstr ""
 "上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
 
 #: mkswu
-msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
+msgid "No versions found: empty image?\\nSet version=1 to allow building"
 msgstr ""
-"バージョンが見つかりませんでした。--versionかFORCE_VERSION=1を使ってくださ"
-"い。"
+"バージョンが見つかりませんでした。--versionかversion=1を使ってください。"
 
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"

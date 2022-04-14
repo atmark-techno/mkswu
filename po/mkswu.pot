@@ -117,7 +117,7 @@ msgstr ""
 msgid "$file not found in $ivs"
 msgstr ""
 #: mkswu
-msgid "failed to descrypt %s"
+msgid "failed to decrypt %s"
 msgstr ""
 #: mkswu
 msgid "AES encryption key %s was set but not found.\\nPlease create it with genkey.sh --aes"
@@ -267,7 +267,7 @@ msgstr ""
 msgid "above component used multiple times with different versions or install-if mode"
 msgstr ""
 #: mkswu
-msgid "No versions found: empty image?\\nSet FORCE_VERSION=1 to allow building"
+msgid "No versions found: empty image?\\nSet version=1 to allow building"
 msgstr ""
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"

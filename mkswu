@@ -192,7 +192,7 @@ decrypt_file() {
 	setup_encryption
 	openssl enc -aes-256-cbc -d -in "$src" -out "$dest" \
 			-K "$ENCRYPT_KEY" -iv "$iv" \
-		|| error "failed to descrypt %s" "$src"
+		|| error "failed to decrypt %s" "$src"
 
 }
 
@@ -1017,7 +1017,7 @@ EOF
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
 	elif [ -z "$FORCE_VERSION" ]; then
-		error "No versions found: empty image?\nSet FORCE_VERSION=1 to allow building"
+		error "No versions found: empty image?\nSet version=1 to allow building"
 	fi
 	[ -n "$FORCE_VERSION" ] && echo "  #FORCE_VERSION"
 	[ -n "$CONTAINER_CLEAR" ] && echo "  #CONTAINER_CLEAR"
