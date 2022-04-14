@@ -21,7 +21,7 @@ update_preserve_list() {
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
-	grep -q "NO_PRESERVE_FILES" "$SWDESC" && return
+	grep -q "# MKSWU_NO_PRESERVE_FILES" "$SWDESC" && return
 
 	mkdir_p_target /etc
 
@@ -114,7 +114,7 @@ copy_preserve_files() {
 	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
-	grep -q "NO_PRESERVE_FILES" "$SWDESC" && return
+	grep -q "# MKSWU_NO_PRESERVE_FILES" "$SWDESC" && return
 
 	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_pre"
@@ -219,7 +219,7 @@ prepare_rootfs() {
 		date +%s.%N > /target/etc/.rootfs_update_timestamp \
 			|| error "Could not update rootfs timestamp"
 	fi
-	if grep -q "CONTAINER_CLEAR" "$SWDESC"; then
+	if grep -q "# MKSWU_CONTAINER_CLEAR" "$SWDESC"; then
 		rm -f /target/etc/atmark/containers/*.conf
 	fi
 }

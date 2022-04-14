@@ -158,15 +158,29 @@ update_baseos() {
 	[ "$update_rootfs" = "baseos" ]
 }
 
+mkswu_var() {
+	local var="$1"
+	local val
+	val=$(grep -m 1 -F "# $var " "$SWDESC")
+	if [ -n "$val" ]; then
+		echo "${val#*"$var" }"
+		return
+	fi
+	if [ -e "/etc/atmark/baseos.conf" ]; then
+		val=$(. /etc/atmark/baseos.conf; eval "echo \"$var\"")
+		echo "$val"
+	fi
+}
+
 post_action() {
+	# note this is in a subshell so caching only works if the caller
+	# assigns the variable
 	if [ -n "$POST_ACTION" ]; then
 		echo "$POST_ACTION"
 		return
 	fi
-	POST_ACTION=$(awk '/ POST_ACTION / { print $NF; exit; }' "$SWDESC")
-	if [ -z "$POST_ACTION" ] && [ -e "/etc/atmark/baseos.conf" ]; then
-		POST_ACTION=$(. /etc/atmark/baseos.conf; echo "$MKSWU_POST_ACTION")
-	fi
+
+	POST_ACTION=$(mkswu_var MKSWU_POST_ACTION)
 	# container only works if no reboot
 	if [ "$POST_ACTION" = "container" ] && needs_reboot; then
 		POST_ACTION=""

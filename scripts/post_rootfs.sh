@@ -166,7 +166,7 @@ post_copy_preserve_files() {
 	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
-	grep -q "NO_PRESERVE_FILES" "$SWDESC" && return
+	grep -q "# MKSWU_NO_PRESERVE_FILES" "$SWDESC" && return
 
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_post"

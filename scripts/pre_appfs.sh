@@ -72,7 +72,7 @@ prepare_appfs() {
 		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" "This is only for development, do not use this mode for production!" >&2
 	fi
 
-	if grep -q "CONTAINER_CLEAR" "$SWDESC"; then
+	if grep -q "# MKSWU_CONTAINER_CLEAR" "$SWDESC"; then
 		podman_killall "CONTAINER_CLEAR requested: stopping and destroying all container data first" >&2
 		btrfs_subvol_delete "boot_0/containers_storage"
 		btrfs_subvol_delete "boot_0/volumes"

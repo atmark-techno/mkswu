@@ -1019,17 +1019,17 @@ EOF
 	elif [ -z "$FORCE_VERSION" ]; then
 		error "No versions found: empty image?\nSet version=1 to allow building"
 	fi
-	[ -n "$FORCE_VERSION" ] && echo "  #FORCE_VERSION"
-	[ -n "$CONTAINER_CLEAR" ] && echo "  #CONTAINER_CLEAR"
-	[ -n "$NO_PRESERVE_FILES" ] && echo "  #NO_PRESERVE_FILES"
+	[ -n "$FORCE_VERSION" ] && echo "  # MKSWU_FORCE_VERSION"
+	[ -n "$CONTAINER_CLEAR" ] && echo "  # MKSWU_CONTAINER_CLEAR"
+	[ -n "$NO_PRESERVE_FILES" ] && echo "  # MKSWU_NO_PRESERVE_FILES"
 	[ -n "$NOTIFY_STARTING_CMD" ] \
-		&& echo "$NOTIFY_STARTING_CMD" | sed -e 's/^/  #NOTIFY_STARTING_CMD /'
+		&& echo "$NOTIFY_STARTING_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_STARTING_CMD /'
 	[ -n "$NOTIFY_FAIL_CMD" ] \
-		&& echo "$NOTIFY_FAIL_CMD" | sed -e 's/^/  #NOTIFY_FAIL_CMD /'
+		&& echo "$NOTIFY_FAIL_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_FAIL_CMD /'
 	[ -n "$NOTIFY_SUCCESS_CMD" ] \
-		&& echo "$NOTIFY_SUCCESS_CMD" | sed -e 's/^/  #NOTIFY_SUCCESS_CMD /'
+		&& echo "$NOTIFY_SUCCESS_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_SUCCESS_CMD /'
 	case "$POST_ACTION" in
-	poweroff|wait|container) echo " # POST_ACTION $POST_ACTION";;
+	poweroff|wait|container) echo " # MKSWU_POST_ACTION $POST_ACTION";;
 	""|reboot) ;;
 	*) error "invalid POST_ACTION \"%s\", must be empty, poweroff or wait" "$POST_ACTION";;
 	esac
