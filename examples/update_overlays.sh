@@ -1,25 +1,29 @@
 #!/bin/sh
 
+####
+#### This file is exactly update_preserve_files with minimal modifications:
+####  - help/default path
+####  - comment switch removed (code left intact as noop)
+####  - conversion helpers from overlay syntax to multiline file
+#### keep it in sync! (check enforced)
+####
+
 usage() {
 	echo "Usage: $0 [options]"
 	echo
-	echo "Add or remove lines from /etc/swupdate_preserve_files"
+	echo "Add or remove overlays from /boot/overlays.txt"
 	echo
 	echo "Each option acts on following arguments"
-	echo "Arguments not starting with - are assumed to be line to add or remove"
-	echo "Default is to add lines"
-	echo "Modifications are done at the end (or when selecting a new file)"
+	echo "Arguments not starting with - are assumed to be overlays to add or remove"
+	echo "Default is to add overlays"
+	echo "Modifications are done at the end"
 	echo
 	echo "Options:"
 	echo "   --dry-run: Do not modify anything, print modified content"
-	echo "   --file <file>: set alternate file"
 	echo "   --add: add lines from now on"
 	echo "   --del: delete lines from now on"
 	echo "   --del-regex: delete lines matching regex (egrep -x)"
-	echo "   --comment <comment>: add comment before the next addition or any deletion"
-	echo "                        This does not add anything if no line is added,"
-	echo "                        Deletions will comment the line being removed with this"
-	echo "                        instead of removing the line"
+	echo "   --file <file>: set alternate file"
 	echo "   --: new options are ignored from there on"
 }
 
@@ -36,21 +40,29 @@ shell_quote() {
 }
 
 init_tempfile() {
-	tempfile="$(mktemp /tmp/update_preserve_files.XXXXXX)" \
+	tempfile="$(mktemp /tmp/update_overlays.XXXXXX)" \
 		|| error "Could not create tempfile"
-	if [ -e "$file" ]; then
-		cp "$file" "$tempfile" \
+	if [ -s "$file" ]; then
+		local linecount=$(wc -l "$file")
+		[ "${linecount%% *}" = 1 ] \
+			|| error "$file is not empty but contains more than 1 line: aborting"
+		grep -qE "^fdt_overlays=" "$file" \
+			|| error "$file is not empty but doesn't start with 'fdt_overlays=': aborting"
+		sed -e 's/fdt_overlays=//' -e 's/ /\n/g' "$file" > "$tempfile" \
 			|| error "Could not write to tempfile"
 	fi
 }
 
 do_apply() {
 	if [ -n "$tempfile" ]; then
+		sed -i -e '1s/^/fdt_overlays=/' -e ':a;N;$!ba;s/\n/ /g' "$tempfile"
 		if [ -n "$dryrun" ]; then
 			cat "$tempfile"
 			rm -f "$tempfile"
-		else
+		elif ! cmp -s "$tempfile" "$file"; then
 			mv "$tempfile" "$file" || error "Could not replace $file"
+		else
+			rm -f "$tempfile"
 		fi
 		tempfile=""
 	fi
@@ -58,8 +70,8 @@ do_apply() {
 
 do_add() {
 	local line="$1"
-	grep -qsFx "$line" "${tempfile:-$file}" && return
 	[ -n "$tempfile" ] || init_tempfile
+	grep -qsFx "$line" "${tempfile:-$file}" && return
 	if [ -n "$comment" ]; then
 		echo "# $comment" >> "$tempfile" \
 			|| error "Could not write to tempfile"
@@ -71,8 +83,8 @@ do_add() {
 
 do_del() {
 	local line="$1" newtempfile
+	[ -n "$tempfile" ] || init_tempfile
 	grep -qsFx "$line" "${tempfile:-$file}" || return
-	[ -n "$tempfile" ] || tempfile="$file"
 	newtempfile="$(mktemp /tmp/update_preserve_files.XXXXXX)" \
 		|| error "Could not create tempfile"
 	if [ -n "$delcomment" ]; then
@@ -90,8 +102,8 @@ do_del() {
 
 do_del_regex() {
 	local line="$1" newtempfile
+	[ -n "$tempfile" ] || init_tempfile
 	grep -qsEx "$line" "${tempfile:-$file}" || return
-	[ -n "$tempfile" ] || tempfile="$file"
 	newtempfile="$(mktemp /tmp/update_preserve_files.XXXXXX)" \
 		|| error "Could not create tempfile"
 	if [ -n "$delcomment" ]; then
@@ -141,8 +153,6 @@ main() {
 			mode="del";;
 		"--del-regex")
 			mode="del_regex";;
-		"--comment")
-			next="comment";;
 		"--file")
 			next="file";;
 		"--dry-run")

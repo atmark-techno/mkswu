@@ -447,6 +447,34 @@ add2" ] || error "normal remove/append bad content: $(cat "$file")"
 	[ "$(cat "$file")" = "ok" ] || error "arg failure modified file"
 }
 
+test_update_overlays() {
+	file="$SCRIPTSDIR/swupdate_overlays"
+
+	echo "overlays files normal remove/append"
+	printf "fdt_overlays=test1.dtbo test2.dtbo\n" > "$file"
+	main --file "$file" "test3.dtbo" --del "test1.dtbo" --add "test4.dtbo" "test2.dtbo"
+	[ "$(cat "$file")" = "fdt_overlays=test2.dtbo test3.dtbo test4.dtbo" ] || error "normal remove/append bad content: $(cat "$file")"
+
+	echo "overlays file to empty file"
+	printf "fdt_overlays=test1.dtbo test2.dtbo\n" > "$file"
+	main --file "$file" --del "test1.dtbo" "test2.dtbo"
+	[ "$(cat "$file")" = "" ] || error "to empty file failed: $(cat "$file")"
+
+	echo "overlays file from empty file"
+	main --file "$file" "test1.dtbo" "test1.dtbo"
+	[ "$(cat "$file")" = "fdt_overlays=test1.dtbo" ] || error "from empty file failed: $(cat "$file")"
+
+	# check script was kept up to date and regen diff
+	diff -u ../examples/update_preserve_files.sh ../examples/update_overlays.sh \
+			| grep -vE '^@@' | tail -n +3 \
+		> "$SCRIPTSDIR/update_scripts_diff.diff"
+	FAIL=""
+	cmp -s "update_scripts_diff.diff" "$SCRIPTSDIR/update_scripts_diff.diff" \
+		|| FAIL=1
+	mv "$SCRIPTSDIR/update_scripts_diff.diff" "update_scripts_diff.diff"
+	[ -z "$FAIL" ] || error "update_preserve_files or overlays got modified without keeping in sync, check diff"
+}
+
 # run in subshell as we cannot source all at once
 (
 	set -e
@@ -488,4 +516,9 @@ add2" ] || error "normal remove/append bad content: $(cat "$file")"
 	test_update_preserve_files
 ) || error "update_preserve_files failed"
 
+(
+	# source it to try other shells
+	. ../examples/update_overlays.sh
+	test_update_overlays
+) || error "update_overlays failed"
 true
