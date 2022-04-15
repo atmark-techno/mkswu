@@ -214,7 +214,7 @@ compress() {
 
 	# test -nt/-ot are strict,
 	# "! newer than" is equivalent to "older or equal than"
-	[ -e "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
+	[ -s "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
 	zstd -q -c "$file_src" > "$file_out.tmp" \
