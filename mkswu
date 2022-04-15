@@ -936,6 +936,19 @@ embedded_postinstall_script() {
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
+swdesc_option() {
+	local opt
+	for opt; do
+		case "$opt" in
+		FORCE_VERSION) FORCE_VERSION=1;;
+		CONTAINER_CLEAR|NO_PRESERVE_FILES|ROOTFS_BTRFS|SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN) ;;
+		*) error "Unknown option for swdesc_option: $opt";;
+		esac
+		SWDESC_OPTS="$SWDESC_OPTS
+$opt"
+	done
+}
+
 write_sw_desc() {
 	local indent=4
 	local file line section board=""
@@ -1019,9 +1032,14 @@ EOF
 	elif [ -z "$FORCE_VERSION" ]; then
 		error "No versions found: empty image?\nSet version=1 to allow building"
 	fi
-	[ -n "$FORCE_VERSION" ] && echo "  # MKSWU_FORCE_VERSION"
-	[ -n "$CONTAINER_CLEAR" ] && echo "  # MKSWU_CONTAINER_CLEAR"
-	[ -n "$NO_PRESERVE_FILES" ] && echo "  # MKSWU_NO_PRESERVE_FILES"
+	SWDESC_OPTS="$SWDESC_OPTS
+${FORCE_VERSION:+FORCE_VERSION}
+${CONTAINER_CLEAR:+CONTAINER_CLEAR}
+${NO_PRESERVE_FILES:+NO_PRESERVE_FILES}"
+	local option
+	for option in $SWDESC_OPTS; do
+		echo "  # MKSWU_$option 1"
+	done
 	[ -n "${NOTIFY_STARTING_CMD+1}" ] \
 		&& echo "$NOTIFY_STARTING_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_STARTING_CMD /'
 	[ -n "${NOTIFY_FAIL_CMD+1}" ] \

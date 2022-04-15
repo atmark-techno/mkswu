@@ -72,7 +72,7 @@ prepare_appfs() {
 		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" "This is only for development, do not use this mode for production!" >&2
 	fi
 
-	if grep -q "# MKSWU_CONTAINER_CLEAR" "$SWDESC"; then
+	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		podman_killall "CONTAINER_CLEAR requested: stopping and destroying all container data first" >&2
 		btrfs_subvol_delete "boot_0/containers_storage"
 		btrfs_subvol_delete "boot_0/volumes"
@@ -120,7 +120,7 @@ prepare_appfs() {
 	# incorrectly somehow).
 	# add an unreasonably long timeout just in case.
 	# also, skip on test
-	grep -q "SKIP_BTRFS_SUBVOL_SYNC" "$SWDESC" \
+	[ -n "$(mkswu_var SKIP_APP_SUBVOL_SYNC)" ] \
 		|| timeout 30m btrfs subvolume sync "$basemount"
 	umount "$basemount"
 	rmdir "$basemount"

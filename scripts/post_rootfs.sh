@@ -76,7 +76,7 @@ update_shadow() {
 
 	# check there are no user with empty login
 	# unless the update explicitely allows it
-	grep -q "ALLOW_EMPTY_LOGIN" "$SWDESC" && return
+	[ -n "$(mkswu_var ALLOW_EMPTY_LOGIN)" ] && return
 	user=$(awk -F: '$2 == "" { print $1 } ' "$NSHADOW")
 	[ -z "$user" ] || error "the following users have an empty password, failing update: $user"
 
@@ -118,7 +118,7 @@ update_swupdate_certificate()  {
 		# fail if no user key has been provided
 		if [ -z "$external" ]; then
 			# just skip this step if flag is set
-			grep -q "ALLOW_PUBLIC_CERT" "$SWDESC" \
+			[ -n "$(mkswu_var ALLOW_PUBLIC_CERT)" ] \
 				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
 		else
 			cat "$certsdir"/* > "$SWUPDATE_PEM" \
@@ -166,7 +166,7 @@ post_copy_preserve_files() {
 	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
-	grep -q "# MKSWU_NO_PRESERVE_FILES" "$SWDESC" && return
+	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_post"

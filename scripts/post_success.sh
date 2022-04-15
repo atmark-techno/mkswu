@@ -111,7 +111,7 @@ post_success_usb() {
 	# if the image is a force install image, move it to avoid install loop
 	# we don't need to do this if the post action is poweroff, wait or container
 	# as these have no risk of looping
-	if grep -q "# MKSWU_FORCE_VERSION" "$SWDESC"; then
+	if [ -n "$(mkswu_var FORCE_VERSION)" ]; then
 		POST_ACTION=$(post_action)
 		case "$POST_ACTION" in
 		poweroff|container|wait) ;;
@@ -135,7 +135,7 @@ set_fw_update_ind() {
 post_success_custom() {
 	local action
 	rm -f "$TMPDIR/swupdate_post_fail_action"
-	action="$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)"
+	action="$(mkswu_var NOTIFY_SUCCESS_CMD)"
 	eval "$action"
 }
 

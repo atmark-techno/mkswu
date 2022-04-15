@@ -33,28 +33,28 @@ test_common() {
 	echo "mkswu_var: unset both ways"
 	: > "$SWDESC"
 	: > "$BASEOS_CONF"
-	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	var=$(mkswu_var NOTIFY_SUCCESS_CMD)
 	[ -z "$var" ] || error "var was set: $var"
 
 	echo "mkswu_var: set in baseos.conf"
 	echo " MKSWU_NOTIFY_SUCCESS_CMD=bos_test" > "$BASEOS_CONF"
-	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	var=$(mkswu_var NOTIFY_SUCCESS_CMD)
 	[ "$var" = "bos_test" ] || error "var was not correct: $var"
 
 	echo "mkswu_var: set in SWDESC"
 	echo " # MKSWU_NOTIFY_SUCCESS_CMD swd_test" > "$SWDESC"
-	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	var=$(mkswu_var NOTIFY_SUCCESS_CMD)
 	[ "$var" = "swd_test" ] || error "var was not correct: $var"
 
 	echo "mkswu_var: set in SWDESC, multiline"
 	echo " # MKSWU_NOTIFY_SUCCESS_CMD test2" >> "$SWDESC"
-	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	var=$(mkswu_var NOTIFY_SUCCESS_CMD)
 	[ "$var" = "swd_test
 test2" ] || error "var was not correct: $var"
 
 	echo "mkswu_var: set empty in SWDESC"
 	echo " # MKSWU_NOTIFY_SUCCESS_CMD " > "$SWDESC"
-	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	var=$(mkswu_var NOTIFY_SUCCESS_CMD)
 	[ "$var" = "" ] || error "var was not correct: $var"
 }
 
@@ -194,7 +194,7 @@ test_passwd_update() {
 		cp ./scripts/$f "$SCRIPTSDIR/$f-target"
 	done
 	SHADOW=./scripts/shadow
-	echo "ALLOW_EMPTY_LOGIN" > "$SCRIPTSDIR/swdesc"
+	echo "  # MKSWU_ALLOW_EMPTY_LOGIN 1" > "$SCRIPTSDIR/swdesc"
 	( SWDESC="$SCRIPTSDIR/swdesc" update_shadow; ) \
 		|| error "should be no failure with allow empty login"
 }
@@ -209,7 +209,7 @@ test_cert_update() {
 
 	echo "swupdate certificate: default setup with allow OK"
 	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
-	echo "ALLOW_PUBLIC_CERT" > "$SCRIPTSDIR/swdesc"
+	echo "  # MKSWU_ALLOW_PUBLIC_CERT 1" > "$SCRIPTSDIR/swdesc"
 	( SWDESC="$SCRIPTSDIR/swdesc" update_swupdate_certificate; ) \
 		|| error "should be ok with allow public cert"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \

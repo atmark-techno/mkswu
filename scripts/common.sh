@@ -163,12 +163,12 @@ mkswu_var() {
 	local var="$1"
 	local val
 
-	if val=$(grep -F "# $var " "$SWDESC"); then
-		echo "$val" | sed -e "s/ *# $var //"
+	if val=$(grep -F "# MKSWU_$var " "$SWDESC"); then
+		echo "$val" | sed -e "s/ *# MKSWU_$var //"
 		return
 	fi
 	if [ -e "$BASEOS_CONF" ]; then
-		val=$(. "$BASEOS_CONF"; eval "echo \"\$$var\"")
+		val=$(. "$BASEOS_CONF"; eval "echo \"\$MKSWU_$var\"")
 		echo "$val"
 	fi
 }
@@ -181,7 +181,7 @@ post_action() {
 		return
 	fi
 
-	POST_ACTION=$(mkswu_var MKSWU_POST_ACTION)
+	POST_ACTION=$(mkswu_var POST_ACTION)
 	# container only works if no reboot
 	if [ "$POST_ACTION" = "container" ] && needs_reboot; then
 		POST_ACTION=""

@@ -8,7 +8,8 @@ cd "$(dirname "$0")"
 
 build_check spaces "file test\ space.tar.zst"
 build_check install_files \
-	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar"
+	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar" \
+	"swdesc '# MKSWU_FORCE_VERSION 1'"
 
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
 "$MKSWU" --genkey --aes --config mkswu-aes.conf

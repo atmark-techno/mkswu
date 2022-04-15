@@ -1,14 +1,14 @@
 # CONTAINER_CLEAR will remove your applications before installing new ones
 # so could leave your device without any software on installation failures!
 # !! Do not use in production !!
-CONTAINER_CLEAR=1
+swdesc_option CONTAINER_CLEAR
 
 # force version here and do not specify any version below to always
 # install after removing other apps.
 # for USB installs like this, the image will be renamed to
 # xxx.swu.installed after install so it must be renamed back to xxx.swu
-# to install it again
-FORCE_VERSION=1
+# to install it again, unless POST_ACTION is set to wait or poweroff
+swdesc_option FORCE_VERSION
 
 # generated with the following:
 # $ podman pull docker.io/arm64v8/nginx:alpine

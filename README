@@ -24,12 +24,6 @@ ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
 DESCRIPTION: arbitrary description string. Displayed in verbose swupdate run.
 BOOT_SIZE: pad boot image with zeros up to this size (clear env)
            set to blank to keep original file size.
-FORCE_VERSION: allow building image with no explicit version set.
-               (components with no versions will always be installed)
-               Note that to avoid install loops with USB drive install,
-               updates with FORCE_VERSION set will be renamed to
-               <original_name>.swu.installed after successful install
-               unless POST_ACTION=poweroff
 POST_ACTION: control behaviour post install
   - not set, empty or "reboot": reboot into new system after updating
   - poweroff: shut system down after install (useful for provisioning)
@@ -39,11 +33,6 @@ POST_ACTION: control behaviour post install
   - wait: wait forever after update for an external reboot signal.
           Note further updates will not be installed in this mode:
           the system MUST reboot before installing the next update.
-CONTAINER_CLEAR: if set, swupdate will kill running containers and
-                 remove any running containers from appfs and
-                 /etc/atmark/containers/*.conf before continuing install.
-                 /!\ if install fails this will leave your system
-                 with no application, usage is discouraged /!\
 NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD:
     Commands to run when the update starts installing something,
     finished on an error, or installed successfully (success is
@@ -52,8 +41,36 @@ NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD:
     successfully (arbitrary execution of untrusted file is bad), nor
     if the update is considered already installed or somehow fails before
     the version check.
-NO_PRESERVE_FILES: if set, swupdate will not copy files listed in
-                   /etc/swupdate_preserve_files when base_os is updated
+
+More options can be set with swdesc_option.
+Multiple options can be passed in same command.
+
+swdesc_option FORCE_VERSION
+    allow building image with no explicit version set.
+    (components with no versions will always be installed)
+    Note that to avoid install loops with USB drive install,
+    updates with FORCE_VERSION set will be renamed to
+    <original_name>.swu.installed after successful install
+    unless POST_ACTION=poweroff
+swdesc_option CONTAINER_CLEAR
+    if set, swupdate will kill running containers and
+    remove any running containers from appfs and
+    /etc/atmark/containers/*.conf before continuing install.
+    /!\ if install fails this will leave your system
+        with no application, usage is discouraged /!\
+swdesc_option NO_PRESERVE_FILES
+    if set, swupdate will not copy files listed in
+    /etc/swupdate_preserve_files when base_os is updated
+swdesc_option ROOTFS_BTRFS
+    format / filesystem as btrfs instead of ext4
+swdesc_option SKIP_APP_SUBVOL_SYNC
+    (for test only) skip btrfs subvolume sync command that
+    slows down tests
+swdesc_option ALLOW_EMPTY_LOGIN
+    (for test only) allow update to install if user passwords have not been set
+swdesc_option ALLOW_PUBLIC_CERT
+    (for test only) allow update to install if no user certificate has been
+    installed, in which case public cert is left enabled
 
 
 Common options for all helpers:

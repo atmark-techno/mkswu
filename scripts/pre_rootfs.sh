@@ -21,7 +21,7 @@ update_preserve_list() {
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
-	grep -q "# MKSWU_NO_PRESERVE_FILES" "$SWDESC" && return
+	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	mkdir_p_target /etc
 
@@ -114,7 +114,7 @@ copy_preserve_files() {
 	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
-	grep -q "# MKSWU_NO_PRESERVE_FILES" "$SWDESC" && return
+	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$TMPDIR/preserve_files_pre"
@@ -177,7 +177,7 @@ mount_target_rootfs() {
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
 	[ -e "/boot/extlinux.conf" ] && extlinux=1
-	if grep -q "ROOTFS_BTRFS" "$SWDESC"; then
+	if [ -n "$(mkswu_var ROOTFS_BTRFS)" ]; then
 		mkfs.btrfs -q -L "rootfs_${ab}" -m dup -f "$dev" \
 			|| error "Could not reformat $dev"
 		mount "$dev" "/target" -o compress=zstd,discard=async
@@ -219,7 +219,7 @@ prepare_rootfs() {
 		date +%s.%N > /target/etc/.rootfs_update_timestamp \
 			|| error "Could not update rootfs timestamp"
 	fi
-	if grep -q "# MKSWU_CONTAINER_CLEAR" "$SWDESC"; then
+	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		rm -f /target/etc/atmark/containers/*.conf
 	fi
 }

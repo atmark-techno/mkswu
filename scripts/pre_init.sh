@@ -41,7 +41,7 @@ init_vars_update() {
 	if needs_update base_os; then
 		update_rootfs=baseos
 	elif needs_update_regex "extra_os.*" \
-	    || grep -q "# MKSWU_CONTAINER_CLEAR" "$SWDESC"; then
+	    || [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		update_rootfs=1
 	fi
 	if update_rootfs || needs_update boot; then
@@ -70,7 +70,7 @@ save_vars() {
 fail_redundant_update() {
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
-	if ! grep -q "# MKSWU_FORCE_VERSION" "$SWDESC"; then
+	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
 		if cmp -s /etc/sw-versions "$SCRIPTSDIR/sw-versions.merged"; then
 			rm -rf "$SCRIPTSDIR"
 			error "Nothing to do -- failing on purpose to save bandwidth"
@@ -97,10 +97,10 @@ init_really_starting() {
 
 	rm -f "$TMPDIR/swupdate_post_fail_action"
 
-	action="$(mkswu_var MKSWU_NOTIFY_STARTING_CMD)"
+	action="$(mkswu_var NOTIFY_STARTING_CMD)"
 	eval "$action"
 
-	action="$(mkswu_var MKSWU_NOTIFY_FAIL_CMD)"
+	action="$(mkswu_var NOTIFY_FAIL_CMD)"
 	[ -z "$action" ] && return
 
 	echo "$action" > "$TMPDIR/swupdate_post_fail_action"
