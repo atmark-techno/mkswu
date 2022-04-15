@@ -24,6 +24,40 @@ rm -rf "$SCRIPTSDIR"
 mkdir -p "$SCRIPTSDIR"
 touch "$TMPDIR/sw-description"
 
+
+test_common() {
+	SWDESC="$SCRIPTSDIR/swdesc"
+	BASEOS_CONF="$SCRIPTSDIR/baseos.conf"
+
+
+	echo "mkswu_var: unset both ways"
+	: > "$SWDESC"
+	: > "$BASEOS_CONF"
+	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	[ -z "$var" ] || error "var was set: $var"
+
+	echo "mkswu_var: set in baseos.conf"
+	echo " MKSWU_NOTIFY_SUCCESS_CMD=bos_test" > "$BASEOS_CONF"
+	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	[ "$var" = "bos_test" ] || error "var was not correct: $var"
+
+	echo "mkswu_var: set in SWDESC"
+	echo " # MKSWU_NOTIFY_SUCCESS_CMD swd_test" > "$SWDESC"
+	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	[ "$var" = "swd_test" ] || error "var was not correct: $var"
+
+	echo "mkswu_var: set in SWDESC, multiline"
+	echo " # MKSWU_NOTIFY_SUCCESS_CMD test2" >> "$SWDESC"
+	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	[ "$var" = "swd_test
+test2" ] || error "var was not correct: $var"
+
+	echo "mkswu_var: set empty in SWDESC"
+	echo " # MKSWU_NOTIFY_SUCCESS_CMD " > "$SWDESC"
+	var=$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)
+	[ "$var" = "" ] || error "var was not correct: $var"
+}
+
 test_version_update() {
 	SWDESC="$SCRIPTSDIR/swdesc"
 	system_versions="$SCRIPTSDIR/sw-versions"
@@ -480,6 +514,13 @@ test_update_overlays() {
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
+	test_common
+) || error "common tests failed"
+
+(
+	set -e
+	. "$SCRIPTS_SRC_DIR/common.sh"
+	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/versions.sh"
 	test_version_update
 ) || error "versions test failed"
@@ -506,6 +547,7 @@ test_update_overlays() {
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
 	needs_reboot() { return 0; }
+	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/post_success.sh"
 	test_post_success
 ) || error "post success failed"

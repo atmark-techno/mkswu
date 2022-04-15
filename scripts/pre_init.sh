@@ -97,16 +97,10 @@ init_really_starting() {
 
 	rm -f "$TMPDIR/swupdate_post_fail_action"
 
-	action="$(sed -ne  's/.*# MKSWU_NOTIFY_STARTING_CMD //p' "$SWDESC")"
-	if [ -z "$action" ] && [ -e "/etc/atmark/baseos.conf" ]; then
-		action=$(. /etc/atmark/baseos.conf; echo "$MKSWU_NOTIFY_STARTING_CMD")
-	fi
+	action="$(mkswu_var MKSWU_NOTIFY_STARTING_CMD)"
 	eval "$action"
 
-	action="$(sed -ne  's/.*# MKSWU_NOTIFY_FAIL_CMD //p' "$SWDESC")"
-	if [ -z "$action" ] && [ -e "/etc/atmark/baseos.conf" ]; then
-		action=$(. /etc/atmark/baseos.conf; echo "$MKSWU_NOTIFY_FAIL_CMD")
-	fi
+	action="$(mkswu_var MKSWU_NOTIFY_FAIL_CMD)"
 	[ -z "$action" ] && return
 
 	echo "$action" > "$TMPDIR/swupdate_post_fail_action"

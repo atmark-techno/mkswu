@@ -1022,11 +1022,11 @@ EOF
 	[ -n "$FORCE_VERSION" ] && echo "  # MKSWU_FORCE_VERSION"
 	[ -n "$CONTAINER_CLEAR" ] && echo "  # MKSWU_CONTAINER_CLEAR"
 	[ -n "$NO_PRESERVE_FILES" ] && echo "  # MKSWU_NO_PRESERVE_FILES"
-	[ -n "$NOTIFY_STARTING_CMD" ] \
+	[ -n "${NOTIFY_STARTING_CMD+1}" ] \
 		&& echo "$NOTIFY_STARTING_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_STARTING_CMD /'
-	[ -n "$NOTIFY_FAIL_CMD" ] \
+	[ -n "${NOTIFY_FAIL_CMD+1}" ] \
 		&& echo "$NOTIFY_FAIL_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_FAIL_CMD /'
-	[ -n "$NOTIFY_SUCCESS_CMD" ] \
+	[ -n "${NOTIFY_SUCCESS_CMD+1}" ] \
 		&& echo "$NOTIFY_SUCCESS_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_SUCCESS_CMD /'
 	case "$POST_ACTION" in
 	poweroff|wait|container) echo " # MKSWU_POST_ACTION $POST_ACTION";;

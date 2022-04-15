@@ -159,15 +159,16 @@ update_baseos() {
 }
 
 mkswu_var() {
+	local BASEOS_CONF="${BASEOS_CONF:-/etc/atmark/baseos.conf}"
 	local var="$1"
 	local val
-	val=$(grep -m 1 -F "# $var " "$SWDESC")
-	if [ -n "$val" ]; then
-		echo "${val#*"$var" }"
+
+	if val=$(grep -F "# $var " "$SWDESC"); then
+		echo "$val" | sed -e "s/ *# $var //"
 		return
 	fi
-	if [ -e "/etc/atmark/baseos.conf" ]; then
-		val=$(. /etc/atmark/baseos.conf; eval "echo \"$var\"")
+	if [ -e "$BASEOS_CONF" ]; then
+		val=$(. "$BASEOS_CONF"; eval "echo \"\$$var\"")
 		echo "$val"
 	fi
 }

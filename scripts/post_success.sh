@@ -135,10 +135,7 @@ set_fw_update_ind() {
 post_success_custom() {
 	local action
 	rm -f "$TMPDIR/swupdate_post_fail_action"
-	action="$(sed -ne  's/.*# MKSWU_NOTIFY_SUCCESS_CMD //p' "$SWDESC")"
-	if [ -z "$action" ] && [ -e "/etc/atmark/baseos.conf" ]; then
-		action=$(. /etc/atmark/baseos.conf; echo "$MKSWU_NOTIFY_SUCCESS_CMD")
-	fi
+	action="$(mkswu_var MKSWU_NOTIFY_SUCCESS_CMD)"
 	eval "$action"
 }
 
