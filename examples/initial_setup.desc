@@ -1,12 +1,11 @@
 # Initial update is done with the onetime public key and no encryption, override used keys
-PRIVKEY="$SCRIPT_DIR/swupdate-onetime-public.key"
+swdesc_option PRIVKEY="$SCRIPT_DIR/swupdate-onetime-public.key"
 ORIG_PUBKEY="$PUBKEY"
-PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
+swdesc_option PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
 ORIG_ENCRYPT_KEYFILE="$ENCRYPT_KEYFILE"
-ENCRYPT_KEYFILE=""
+swdesc_option ENCRYPT_KEYFILE=""
 
-component=extra_os.initial_setup
-version=1
+swdesc_option component=extra_os.initial_setup version=1
 
 # Set our own swupdate certificate.
 # change the '>>' to '>' if you do not want to keep the Armadillo

@@ -2,7 +2,7 @@
 # $ podman pull docker.io/arm64v8/nginx:alpine
 # $ podman_partial_image -R s@docker.io/arm64v8/nginx@docker.io/nginx@g -o examples/nginx_alpine.tar docker.io/arm64v8/nginx:alpine
 
-version=1
+swdesc_option version=1
 
 swdesc_embed_container "nginx_alpine.tar"
 swdesc_files --extra-os nginx_start

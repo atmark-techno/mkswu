@@ -5,12 +5,12 @@
 
 # apk versions with r3 are not liked by swupdate, so use
 # install-if different mode here
-install_if=different
+swdesc_option install_if=different
 
 # set version once for all below swdesc elements unless
 # forced with --version
-component=extra_os.kernel
-version=5.10.82-1
+swdesc_option component=extra_os.kernel
+swdesc_option version=5.10.82-1
 
 swdesc_exec "linux-at-5.10.9-r3.apk" 'apk add $1'
 

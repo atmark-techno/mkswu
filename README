@@ -13,27 +13,36 @@ Note that encryption does not use this key.
 
 Helper to generate swupdate image.
 
-Configurable options (shell format):
+Options can be set with swdesc_option.
+Multiple options can be passed in same command as separate arguments.
 
-PUBKEY: path to certificate for signing
-PRIVKEY: path to key for signing
-PRIVKEY_PASS: passphrase for private key, see openssl(1) "Pass Phrase
-              Options" for examples (e.g. file:pathname)
-ENCRYPT_KEYFILE: encrypt input files if set, generated if does not exist
-                 on first use
-DESCRIPTION: arbitrary description string. Displayed in verbose swupdate run.
-BOOT_SIZE: pad boot image with zeros up to this size (clear env)
-           set to blank to keep original file size.
-POST_ACTION: control behaviour post install
-  - not set, empty or "reboot": reboot into new system after updating
-  - poweroff: shut system down after install (useful for provisioning)
-  - container: if the update has no system component, restart only
-               containers without rebooting the system.
-               If system files were updated reboot normally.
-  - wait: wait forever after update for an external reboot signal.
-          Note further updates will not be installed in this mode:
-          the system MUST reboot before installing the next update.
-NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD:
+swdesc_option PUBKEY=<path>
+    path to certificate for signing
+swdesc_option PRIVKEY=<path>
+    path to key for signing
+swdesc_option PRIVKEY_PASS=<value>
+    passphrase for private key, see openssl(1) "Pass Phrase Options" for
+    examples (e.g. file:pathname)
+swdesc_option ENCRYPT_KEYFILE=<path>
+    encrypt input files if set, generated if does not exist on first use
+swdesc_option DESCRIPTION=<value>
+    arbitrary description string. Displayed in verbose swupdate run.
+swdesc_option BOOT_SIZE=<size>
+    pad boot image with zeros up to this size (clear env)
+    set to blank to keep original file size.
+swdesc_option POST_ACTION=<value>
+    control behaviour post install. <value> must be one of:
+    - empty or reboot (default): reboot into new system after updating
+    - poweroff: shut system down after install (useful for provisioning)
+    - container: if the update has no system component, restart only
+                 containers without rebooting the system.
+                 If system files were updated reboot normally.
+    - wait: wait forever after update for an external reboot signal.
+            Note further updates will not be installed in this mode:
+            the system MUST reboot before installing the next update.
+swdesc_option NOTIFY_STARTING_CMD=<cmd>
+swdesc_option NOTIFY_FAIL_CMD=<cmd>
+swdesc_option NOTIFY_SUCCESS_CMD=<cmd>
     Commands to run when the update starts installing something,
     finished on an error, or installed successfully (success is
     mostly useful for POST_ACTION=wait)
@@ -41,10 +50,6 @@ NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD:
     successfully (arbitrary execution of untrusted file is bad), nor
     if the update is considered already installed or somehow fails before
     the version check.
-
-More options can be set with swdesc_option.
-Multiple options can be passed in same command.
-
 swdesc_option FORCE_VERSION
     allow building image with no explicit version set.
     (components with no versions will always be installed)

@@ -1,4 +1,4 @@
-version=1
+swdesc_option version=1
 
 swdesc_pull_container "docker.io/nginx:alpine"
 swdesc_files --extra-os nginx_start

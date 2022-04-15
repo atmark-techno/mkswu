@@ -1,5 +1,4 @@
-component=firmware
-version=1
+swdesc_option component=firmware version=1
 
 # stop containers that might be using firmware
 swdesc_command_nochroot \

@@ -1,5 +1,4 @@
-component=extra_os.sshd
-version=1
+swdesc_option component=extra_os.sshd version=1
 
 # add your public key in enable_sshd/root/.ssh/authorized_keys
 if [ -z "$SWDESC_TEST" ]; then

@@ -941,11 +941,24 @@ swdesc_option() {
 	for opt; do
 		case "$opt" in
 		FORCE_VERSION) FORCE_VERSION=1;;
-		CONTAINER_CLEAR|NO_PRESERVE_FILES|ROOTFS_BTRFS|SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN) ;;
+		POST_ACTION=*) POST_ACTION=${opt#POST_ACTION=};;
+		NOTIFY_STARTING_CMD=*) NOTIFY_STARTING_CMD="${opt#NOTIFY_STARTING_CMD=}";;
+		NOTIFY_FAIL_CMD=*) NOTIFY_FAIL_CMD="${opt#NOTIFY_FAIL_CMD=}";;
+		NOTIFY_SUCCESS_CMD=*) NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
+		BOOT_SIZE=*) BOOT_SIZE="${opt#BOOT_SIZE=}";;
+		ENCRYPT_KEYFILE=*) ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}";;
+		PUBKEY=*) PUBKEY="${opt#PUBKEY=}";;
+		PRIVKEY=*) PRIVKEY="${opt#PRIVKEY=}";;
+		PRIVKEY_PASS=*) PRIVKEY_PASS="${opt#PRIVKEY_PASS=}";;
+		DESCRIPTION=*) DESCRIPTION="${opt#DESCRIPTION=}";;
+		component=*) component="${opt#component=}";;
+		version=*) version="${opt#version=}";;
+		install_if=*) install_if="${opt#install_if=}";;
+		CONTAINER_CLEAR|NO_PRESERVE_FILES|ROOTFS_BTRFS|SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
+			SWDESC_OPTS="$SWDESC_OPTS
+$opt";;
 		*) error "Unknown option for swdesc_option: $opt";;
 		esac
-		SWDESC_OPTS="$SWDESC_OPTS
-$opt"
 	done
 }
 
@@ -1030,7 +1043,7 @@ EOF
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
 	elif [ -z "$FORCE_VERSION" ]; then
-		error "No versions found: empty image?\nSet version=1 to allow building"
+		error "No versions found: empty image or version not set?"
 	fi
 	SWDESC_OPTS="$SWDESC_OPTS
 ${FORCE_VERSION:+FORCE_VERSION}

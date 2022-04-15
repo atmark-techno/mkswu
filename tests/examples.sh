@@ -34,7 +34,6 @@ touch ../examples/Image ../examples/imx8mp-yakushima-eva.dtb
 mkdir -p ../examples/inst/lib/modules/5.10.82
 build_check ../examples/kernel_update_plain \
 	"file-tar *boot_Image*dtb*.tar.zst Image imx8mp-yakushima-eva.dtb" \
-	"version extra_os.kernel '[^ ]+ different'" \
 	"swdesc boot.*tar.zst"
 
 # kernel apk: likewise we don't actually test install here,

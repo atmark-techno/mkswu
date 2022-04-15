@@ -1,4 +1,4 @@
-version=1
+swdesc_option version=1
 
 # generated with the following:
 # $ podman pull docker.io/arm64v8/nginx:alpine
