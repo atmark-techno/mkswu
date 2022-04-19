@@ -210,16 +210,18 @@ compress() {
 	local file_src="$1"
 	local file_out="$2"
 
-	track_used "$file_src"
+	track_used "$file_src" "$file_out" "$file_out.validity"
 
-	# test -nt/-ot are strict,
-	# "! newer than" is equivalent to "older or equal than"
-	[ -s "$file_out" ] && ! [ "$file_src" -nt "$file_out" ] && return
+	# check validity with mtime/size
+	local stat=$(stat -c %Y-%s "$file_src")
+	[ "$(cat "$file_out.validity" 2>/dev/null)" = "$stat"  ] \
+		&& [ -e "$file_out" ] && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
-	zstd -q -c "$file_src" > "$file_out.tmp" \
+	rm -f "$file_out"
+	zstd -q "$file_src" -o "$file_out" \
 		|| error "failed to compress %s" "$file_src"
-	mv "$file_out.tmp" "$file_out"
+	echo "$stat" > "$file_out.validity"
 }
 
 append_file() {
