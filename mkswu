@@ -246,7 +246,7 @@ write_entry_stdout() {
 	local compress="$compress"
 	local install_if="$install_if"
 	shift
-	local sha256 iv="" err
+	local sha256="" iv="" err
 
 	trace "Processing $file"
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
@@ -320,13 +320,19 @@ write_entry_stdout() {
 
 	track_used "$file_out.sha256sum"
 
-	if [ -e "$file_out.sha256sum" ] && [ "$file_out.sha256sum" -nt "$file_out" ]; then
+	if [ -e "$file_out.sha256sum" ]; then
 		sha256=$(cat "$file_out.sha256sum")
-	else
+		# check validity with mtime + size
+		[ "${sha256#* }" = "$(stat -c %Y-%s "$file_out")" ] \
+			|| sha256=""
+		sha256="${sha256% *}"
+	fi
+
+	if [ -z "$sha256" ]; then
 		sha256=$(sha256sum < "$file_out") \
 			|| error "Checksumming %s failed" "$file_out"
 		sha256=${sha256%% *}
-		printf "%s\n" "$sha256" > "$file_out.sha256sum"
+		printf "%s\n" "$sha256 $(stat -c %Y-%s "$file_out")" > "$file_out.sha256sum"
 	fi
 
 
