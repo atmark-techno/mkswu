@@ -699,47 +699,58 @@ set_file_from_content() {
 	file="$OUTDIR/${file}"
 }
 
-swdesc_files() {
-	local file="$file" dest="$dest" basedir="$basedir"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
-	local preserve_attributes="$preserve_attributes"
-	local tarfile tarfile_raw tarfiles_src="$tarfiles_src"
-	local mtime=0
-	local IFS="
-"
-	parse_swdesc files "$@"
-
-	# shellcheck disable=SC2086 # we want word splitting here...
-	set -- $tarfiles_src
-	# XXX temporary warning -- until when?
-	[ -e "$1" ] || error "%s does not exist\nplease note swdesc_files syntax changed and no longer requires setting a name" "$1"
-	if [ -z "$basedir" ]; then
-		[ -d "$1" ] && basedir="$1" || basedir=$(dirname "$1")
-	fi
+create_archive() {
+	# updates '$file' with new filename
+	# basedir, tarfiles_src must be set
+	local tarfile_raw tarfile
 
 	set --
+	: > "$OUTDIR/tar.validity.tmp"
 	for tarfile_raw in $tarfiles_src; do
+		if [ -z "$basedir" ]; then
+			[ -d "$tarfile_raw" ] \
+				&& basedir="$tarfile_raw" \
+				|| basedir=$(dirname "$tarfile_raw")
+		fi
 		tarfile=$(realpath -e -s --relative-to="$basedir" "$tarfile_raw") \
 			|| error "%s does not exist" "$tarfile_raw"
 		[ "${tarfile#../}" = "$tarfile" ] \
 			|| error "%s is not inside %s" "$tarfile_raw" "$basedir"
 
-		mtime=$({ printf "%s\n" "$mtime"; find "$tarfile_raw" -exec stat -c "%Y" {} +; } \
-				| awk '$1 > max { max=$1 } END { print max }')
+		find "$tarfile_raw" -exec stat -c "%n-%Y-%s" {} + \
+				| sort >> "$OUTDIR/tar.validity.tmp" \
+			|| error "Could not create tar for %s" "$tarfile_raw"
 		set -- "$@" "$tarfile"
 		track_used "$tarfile"
 	done
 
-	set_file_from_content "$basedir" "$dest" "$@"
-	file="$file.tar"
+	if [ -z "$file" ]; then
+		set_file_from_content "$basedir" "$dest" "$@"
+		file="$file.tar"
+	fi
 
-	if ! [ -e "$file" ] \
-	    || [ "$mtime" -gt "$(stat -c "%Y" "$file")" ]; then
+	track_used "$file.validity"
+	if ! cmp -s "$file.validity" "$OUTDIR/tar.validity.tmp"; then
 		tar -cf "$file" -C "$basedir" "$@" \
 			|| error "Could not create tar for %s" "$file"
+		mv "$OUTDIR/tar.validity.tmp" "$file.validity"
+	else
+		rm "$OUTDIR/tar.validity.tmp"
 	fi
+}
+
+swdesc_files() {
+	local file="" dest="$dest" basedir="$basedir"
+	local component="$component" version="$version"
+	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
+	local preserve_attributes="$preserve_attributes"
+	local tarfiles_src="$tarfiles_src"
+	local IFS="
+"
+	parse_swdesc files "$@"
+
+	create_archive
 
 	swdesc_tar "$file"
 }
@@ -915,25 +926,15 @@ swdesc_usb_container() {
 }
 
 embedded_preinstall_script() {
-	local f update=""
 	local component="" version="" board="" main_version="" install_if=""
 	local install_first=1
 
-	[ -e "$OUTDIR/scripts.tar" ] || update=1
-	for f in "$EMBEDDED_SCRIPTS_DIR"/*; do
-		if [ "$f" -nt "$OUTDIR/scripts.tar" ]; then
-			update=1
-			break
-		fi
-	done
-	if [ -n "$update" ]; then
-		tar -cf "$OUTDIR/scripts.tar" -C "$EMBEDDED_SCRIPTS_DIR" . \
-			|| error "Could not create script.tar"
-	fi
-
+	local file="scripts.tar" basedir=""
+	local tarfiles_src="$EMBEDDED_SCRIPTS_DIR"
+	create_archive
 
 	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
-	swdesc_exec_nochroot "$OUTDIR/scripts.tar" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
+	swdesc_exec_nochroot "$file" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
 			'mkdir ${TMPDIR:-/var/tmp}/scripts' \
 			'cd ${TMPDIR:-/var/tmp}/scripts' \
 			'tar x -vf $1' "./$PRE_SCRIPT"
