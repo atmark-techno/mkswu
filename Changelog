@@ -7,6 +7,11 @@ setting environment variables directly is still supported.
 Some of these options can also be set in /etc/atmark/baseos.conf with
 MKSWU_ prefix when it makes sense to do so (e.g. NOTIFY_*_CMD or POST_ACTION)
 
+fixes:
+ - check for all files size/mtime instead of just checking 'is newer' for
+swdesc_files, compression and hash. This avoids hash mismatch errors
+
+
 3.15-at.5
 =========
 fixes:
