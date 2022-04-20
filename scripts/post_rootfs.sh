@@ -231,10 +231,11 @@ check_update_log_encryption() {
 	# note we do not "decrypt" a fs if the var is not set
 	[ -z "$(mkswu_var ENCRYPT_FS)" ] && return
 
-	local dev="${partdev}3"
+	local dev="$(findmnt -n -o SOURCE /var/log)"
+	[ -z "$dev" ] && return
 
 	# already encrypted ?
-	lsblk -n -o type "$dev" | grep -qFx crypt && return
+	[ "$(lsblk -n -o type "$dev")" = "crypt" ] && return
 
 	if mountpoint -q /var/log; then
 		# umount if used

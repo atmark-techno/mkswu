@@ -57,7 +57,7 @@ check_update_disk_encryption() {
 	[ -z "$(mkswu_var ENCRYPT_FS)" ] && return
 
 	# already encrypted ?
-	lsblk -n -o type "$dev" | grep -qFx crypt && return
+	[ "$(lsblk -n -o type "$dev")" = "crypt" ]  && return
 
 	# if swupdate runs in /var/tmp, we cannot reencrypt it
 	[ "${SCRIPTSDIR#/var/tmp}" = "$SCRIPTSDIR" ] \

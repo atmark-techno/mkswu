@@ -30,7 +30,8 @@ post_success_atlog() {
 		atlog=/var/log/swupdate/atlog
 	fi
 	# if /var/log is encrypted also prefer /var/log
-	if [ -n "$(mkswu_var ENCRYPT_FS)" ]; then
+	local dev=$(findmnt -n -o SOURCE /var/log)
+	if [ -n "$dev" ] && [ "$(lsblk -n -o type "$dev")" = "crypt" ]; then
 		atlog=/var/log/swupdate/atlog
 	fi
 

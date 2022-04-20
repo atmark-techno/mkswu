@@ -157,6 +157,9 @@ luks_unlock() {
 	command -v cryptsetup > /dev/null \
 		|| apk add cryptsetup \
 		|| error "cryptsetup must be installed in current rootfs"
+	command -v caam-decrypt > /dev/null \
+		|| apk add caam-decrypt \
+		|| error "caam-decrypt must be installed in current rootfs"
 
 	local index offset
 	case "$dev" in
@@ -177,10 +180,18 @@ luks_unlock() {
 	mkdir -p /run/caam
 	local KEYFILE=/run/caam/lukskey
 	# use unshared tmpfs to not leak key too much
+	# key is:
+	# - 112 bytes of caam black key
+	# - 16 bytes of iv followed by rest of key
 	unshare -m sh -c "mount -t tmpfs tmpfs /run/caam \
-		&& dd if=$rootdev of=$KEYFILE bs=4k count=1 status=none \
+		&& dd if=$rootdev of=$KEYFILE.mmc bs=4k count=1 status=none \
 			iflag=skip_bytes skip=$offset \
-		&& cryptsetup luksOpen --key-file $KEYFILE \
+		&& dd if=$KEYFILE.mmc of=$KEYFILE.bb bs=112 count=1 status=none \
+		&& dd if=$KEYFILE.mmc of=$KEYFILE.enc bs=4k status=none \
+			iflag=skip_bytes skip=112 \
+		&& caam-decrypt $KEYFILE.bb AES-256-CBC $KEYFILE.enc \
+			$KEYFILE.luks >/dev/null 2>&1 \
+		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
 			$dev $target >/dev/null 2>&1" \
 		|| return
 
@@ -206,16 +217,25 @@ luks_format() {
 	local KEYFILE=/run/caam/lukskey
 	# lower iter-time to speed PBKDF phase up,
 	# since our key is random PBKDF does not help
+	# key size is 112
 	unshare -m sh -c "mount -t tmpfs tmpfs /run/caam \
-		&& dd if=/dev/random of=$KEYFILE bs=4k count=1 status=none \
-		&& cryptsetup luksFormat -q --key-file $KEYFILE \
+		&& caam-keygen create ${KEYFILE##*/} ccm -s 32 \
+		&& dd if=/dev/random of=$KEYFILE.luks bs=$((4096-112-16)) count=1 status=none \
+		&& dd if=/dev/random of=$KEYFILE.iv bs=16 count=1 status=none \
+		&& cat $KEYFILE.iv $KEYFILE.luks > $KEYFILE.toenc \
+		&& caam-encrypt $KEYFILE.bb AES-256-CBC $KEYFILE.toenc $KEYFILE.enc \
+		&& cat $KEYFILE.bb $KEYFILE.iv $KEYFILE.enc > $KEYFILE.mmc \
+		&& { if ! [ \$(stat -c %s $KEYFILE.mmc) = 4096 ]; then \
+			echo \"Bad key size \$(stat -c %s $KEYFILE.mmc)\"; false; \
+		fi; } \
+		&& cryptsetup luksFormat -q --key-file $KEYFILE.luks \
 			--pbkdf pbkdf2 --iter-time 1 \
 			$dev \
-		&& cryptsetup luksOpen --key-file $KEYFILE \
+		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
 			$dev $target \
-		&& dd if=$KEYFILE of=$rootdev bs=4k count=1 status=none \
+		&& dd if=$KEYFILE.mmc of=$rootdev bs=4k count=1 status=none \
 			oflag=seek_bytes seek=$offset" \
-		|| error "Could not format $dev"
+		|| error "Could not create luks partition on $dev"
 
 	dev="/dev/mapper/$target"
 }
