@@ -51,8 +51,50 @@ podman_killall() {
 	podman rm -a -f
 }
 
+check_update_disk_encryption() {
+	# reencrypt partition if required
+	# note we do not reformat as plain if var is not set
+	[ -z "$(mkswu_var ENCRYPT_FS)" ] && return
+
+	# already encrypted ?
+	lsblk -n -o type "$dev" | grep -qFx crypt && return
+
+	# if swupdate runs in /var/tmp, we cannot reencrypt it
+	[ "${SCRIPTSDIR#/var/tmp}" = "$SCRIPTSDIR" ] \
+		|| error "Disk reencryption was requested, but swupdate runs in /var/tmp so we cannot do it" \
+			 "Re-run with TMPDIR=/tmp swupdate ... to force installation"
+
+	findmnt -n -o target "$dev" \
+		| while read -r mntpoint; do
+			# umount if used
+			podman_killall "Stopping all containers to dismount fs for disk encryption setup"
+			fuser -k "$mntpoint"
+			sleep 1
+			umount "$mntpoint" \
+				|| error "encryption was requested for appfs but could not umount $mntpoint: aborting. Manually dismount it first"
+		done \
+		|| exit 1
+
+	warning "Reformatting appfs with encryption, current container images and volumes" \
+		"Also, in case of update failure or rollback current system will not be able to mount it"
+
+	luks_format "${partdev##*/}5"
+	mkfs.btrfs -L app -m DUP -R free-space-tree "$dev" \
+		|| error "Could not format btrfs onto $dev after encryption setup"
+	mount "$dev" "$basemount" \
+		|| error "Could not mount freshly created encrypted appfs"
+	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
+	umount "$basemount" \
+		|| error "Could not umount appfs"
+	mount "$dev" /var/tmp -o "$mountopt=tmp" \
+		|| error "Could not remount /var/tmp on host. Further swu install will fail unless manually fixed"
+
+	sed -i -e "s:[^ \t]*p5\t:$dev\t:" /target/etc/fstab \
+		|| error "Could not update fstab for encrypted /var/log"
+}
+
 prepare_appfs() {
-	local dev="${partdev}5"
+	local dev
 	local mountopt="compress=zstd:3,space_cache=v2,subvol"
 	local basemount
 
@@ -62,11 +104,13 @@ prepare_appfs() {
 	mkdir -p /target/var/app/rollback/volumes
 	mkdir -p /target/var/app/volumes /target/var/tmp
 
-	if ! mount "$dev" "$basemount" >/dev/null 2>&1; then
-		echo "Reformating $dev (app)"
-		mkfs.btrfs "$dev" || error "$dev already contains another filesystem (or other mkfs error)"
-		mount "$dev" "$basemount" || error "Could not mount $dev"
-	fi
+	dev=$(findmnt -n -o SOURCE /var/tmp)
+	[ -n "$dev" ] || error "Could not find appfs source device"
+	dev="${dev%[*}"
+	check_update_disk_encryption
+
+	mount "$dev" "$basemount" -o "${mountopt%,subvol}" \
+		|| error "Could not mount appfs"
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" "This is only for development, do not use this mode for production!" >&2
@@ -100,7 +144,6 @@ prepare_appfs() {
 		|| error "Could not create rollback/volumes subvol"
 	btrfs_subvol_create "volumes" \
 		|| error "Could not create volumes subvol"
-	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
 
 	mount -t btrfs -o "$mountopt=boot_${ab}/containers_storage" \
 			"$dev" /target/var/lib/containers/storage_readonly \

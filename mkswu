@@ -958,7 +958,9 @@ swdesc_option() {
 		component=*) component="${opt#component=}";;
 		version=*) version="${opt#version=}";;
 		install_if=*) install_if="${opt#install_if=}";;
-		CONTAINER_CLEAR|NO_PRESERVE_FILES|ROOTFS_BTRFS|SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
+		CONTAINER_CLEAR|NO_PRESERVE_FILES|ROOTFS_BTRFS|\
+		ENCRYPT_ROOTFS|ENCRYPT_FS|\
+		SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
 			SWDESC_OPTS="$SWDESC_OPTS
 $opt";;
 		*) error "Unknown option for swdesc_option: $opt";;

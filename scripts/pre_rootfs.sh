@@ -130,6 +130,8 @@ mount_target_rootfs() {
 	local dev="${partdev}$((ab+1))"
 	local uptodate basemount
 	local tmp fail extlinux
+	local encrypted=""
+	[ -n "$(mkswu_var ENCRYPT_ROOTFS)" ] && encrypted=1
 
 	# We need /target to exist for update, try hard to create it
 	# Note:
@@ -159,6 +161,7 @@ mount_target_rootfs() {
 	# Check if the current copy is up to date.
 	# If there is no base_os update we can use it.
 	if ! needs_update "base_os" \
+	    && luks_unlock "rootfs_$ab" \
 	    && mount "$dev" /target 2>/dev/null; then
 		if [ ! -e /target/.created ] \
 		    && [ -s /etc/.rootfs_update_timestamp ] \
@@ -170,9 +173,11 @@ mount_target_rootfs() {
 		umount "/target"
 	fi
 
-	# check if partitions exist and create them if not:
-	# - XXX boot partitions (always exist?)
-	# - XXX gpp partitions
+	if [ -n "$encrypted" ]; then
+		dev="${partdev}$((ab+1))"
+		luks_close_target
+		luks_format "rootfs_$ab"
+	fi
 
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard

@@ -146,6 +146,86 @@ remove_bootdev_link() {
 	rm -f /dev/swupdate_bootdev
 }
 
+# helpers for disk encryption
+
+luks_unlock() {
+	# modifies dev if unlocked
+	local target="$1"
+	[ -z "$encrypted" ] && return
+	[ -n "$dev" ] || error "\$dev must be set"
+
+	command -v cryptsetup > /dev/null \
+		|| apk add cryptsetup \
+		|| error "cryptsetup must be installed in current rootfs"
+
+	local index offset
+	case "$dev" in
+	*mmcblk*p*)
+		# keys are stored in $rootdev as follow
+		# 0MB        <GPT header and partition table>
+		# 9MB        key for part 1
+		# 9MB+4k     key for part 2
+		# 9MB+(n*4k) key for part n+1
+		# 10MB       first partition
+		index=${dev##*p}
+		index=$((index-1))
+		offset="$(((9*1024 + index*4)*1024))"
+		;;
+        *) error "LUKS only supported on mmcblk*p* partitions" ;;
+        esac
+
+	mkdir -p /run/caam
+	local KEYFILE=/run/caam/lukskey
+	# use unshared tmpfs to not leak key too much
+	unshare -m sh -c "mount -t tmpfs tmpfs /run/caam \
+		&& dd if=$rootdev of=$KEYFILE bs=4k count=1 status=none \
+			iflag=skip_bytes skip=$offset \
+		&& cryptsetup luksOpen --key-file $KEYFILE \
+			$dev $target >/dev/null 2>&1" \
+		|| return
+
+	dev="/dev/mapper/$target"
+}
+
+luks_format() {
+	# modifies dev with new target
+	local target="$1"
+	[ -n "$dev" ] || error "\$dev must be set"
+
+	local index offset
+	case "$dev" in
+	*mmcblk*p*)
+		index=${dev##*p}
+		index=$((index-1))
+		offset="$(((9*1024 + index*4)*1024))"
+		;;
+        *) error "LUKS only supported on mmcblk*p* partitions" ;;
+        esac
+
+	mkdir -p /run/caam
+	local KEYFILE=/run/caam/lukskey
+	# lower iter-time to speed PBKDF phase up,
+	# since our key is random PBKDF does not help
+	unshare -m sh -c "mount -t tmpfs tmpfs /run/caam \
+		&& dd if=/dev/random of=$KEYFILE bs=4k count=1 status=none \
+		&& cryptsetup luksFormat -q --key-file $KEYFILE \
+			--pbkdf pbkdf2 --iter-time 1 \
+			$dev \
+		&& cryptsetup luksOpen --key-file $KEYFILE \
+			$dev $target \
+		&& dd if=$KEYFILE of=$rootdev bs=4k count=1 status=none \
+			oflag=seek_bytes seek=$offset" \
+		|| error "Could not format $dev"
+
+	dev="/dev/mapper/$target"
+}
+
+luks_close_target() {
+	[ -n "$ab" ] || return
+	cryptsetup luksClose "rootfs_$ab" >/dev/null 2>&1
+}
+
+
 needs_reboot() {
 	[ -n "$needs_reboot" ]
 }
@@ -198,6 +278,7 @@ cleanup() {
 	umount_if_mountpoint /target/var/app/volumes
 	umount_if_mountpoint /target/var/tmp
 	umount_if_mountpoint /target
+	luks_close_target
 }
 
 init_common() {

@@ -226,6 +226,38 @@ EOF
 	fi
 }
 
+check_update_log_encryption() {
+	# encrypt /var if we were requested to
+	# note we do not "decrypt" a fs if the var is not set
+	[ -z "$(mkswu_var ENCRYPT_FS)" ] && return
+
+	local dev="${partdev}3"
+
+	# already encrypted ?
+	lsblk -n -o type "$dev" | grep -qFx crypt && return
+
+	if mountpoint -q /var/log; then
+		# umount if used
+		rc-service syslog stop
+		fuser -k /var/log
+		# wait a bit as kill is async
+		sleep 1
+		umount /var/log \
+			|| error "encryption was requested for /var/log but could not umount: aborting. Manually dismount it first"
+	fi
+
+	warning "Reformatting /var/log with encryption, current logs will be lost" \
+		"Also, in case of update failure or rollback current system will not be able to mount it"
+
+	luks_format "${partdev##*/}3"
+	mkfs.ext4 -L logs "$dev" \
+		|| error "Could not format ext4 onto $dev after encryption setup"
+	mount "$dev" /var/log \
+		|| error "Could not re-mount encrypted /var/log"
+
+	sed -i -e "s:[^ \t]*\(\t/var/log\t\):$dev\1:" /target/etc/fstab \
+		|| error "Could not update fstab for encrypted /var/log"
+}
 
 post_rootfs() {
 	# Sanity check: refuse to continue if someone tries to write a
@@ -251,6 +283,7 @@ EOF
 		# adjust ab_boot
 		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab \
 			|| error "Could not update fstab"
+		check_update_log_encryption
 
 		# use appfs storage for podman if used previously
 		if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then

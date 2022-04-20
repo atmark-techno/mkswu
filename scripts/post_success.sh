@@ -29,6 +29,10 @@ post_success_atlog() {
 	if [ "$atlog" = "/var/at-log/atlog" ] && ! mountpoint -q /var/at-log; then
 		atlog=/var/log/swupdate/atlog
 	fi
+	# if /var/log is encrypted also prefer /var/log
+	if [ -n "$(mkswu_var ENCRYPT_FS)" ]; then
+		atlog=/var/log/swupdate/atlog
+	fi
 
 	# rotate file if it got too big
 	if [ "$(stat -c %s "$atlog" 2>/dev/null || echo 0)" -gt $((3*1024*1024)) ]; then
@@ -73,38 +77,9 @@ post_success_atlog() {
 
 post_success_hawkbit() {
 	# hawkbit service requires transmitting install status on next restart
-	local dev="${partdev}5"
-	local basemount newstate
-
 	# /var/log is shared and not mounted on target
 	touch /var/log/swupdate/hawkbit_install_done \
 		|| warning "Could not create hawkbit install marker file"
-
-	# The following is no longer required from atmark-x2-base 1.4 onwards
-	# We should theorically check apk version, but that is slow,
-	# so check abos-ctrl command exitance instead.
-	# Note we check on current OS, not updated one: this is because
-	# we need this to work in case of failed update.
-	# XXX add cleanup of subvolume in post root fixup when we remove this
-	[ -e /usr/sbin/abos-ctrl ] && return
-
-	basemount=$(mktemp -d -t btrfs-swupdate.XXXXXX) || warning "Could not create temp dir"
-	if ! mount -t btrfs -o subvol=/swupdate "$dev" "$basemount" 2>/dev/null; then
-		mount -o subvol=/ "$dev" "$basemount" || warning "Could not mount app root"
-		btrfs subvolume create "$basemount/swupdate" || warning "Could not create swupdate subvolume"
-		umount "$basemount" || warning "Could not umount app root"
-		mount -o subvol=/swupdate "$dev" "$basemount" || warning "Could not mount swupdate subvolume"
-	fi
-
-	if needs_reboot; then
-		newstate="${partdev}$((ab+1))"
-	else
-		newstate="${partdev}$((!ab+1))"
-	fi
-
-	echo "$newstate" > "$basemount/updated-rootfs" || warning "Could not write success file"
-	umount "$basemount" || warning "Could not umount swupdate subvolume"
-	rmdir "$basemount"
 }
 
 post_success_usb() {
