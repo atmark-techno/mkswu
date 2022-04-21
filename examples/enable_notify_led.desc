@@ -1,0 +1,9 @@
+swdesc_option version=1
+
+# This example configuration
+swdesc_script --extra-os update_preserve_files.sh -- \
+	--file /etc/atmark/baseos.conf \
+	--comment "Make leds blinking on swu install" \
+	'MKSWU_NOTIFY_STARTING_CMD="echo heartbeat > /sys/class/leds/led1/trigger"' \
+	'MKSWU_NOTIFY_FAIL_CMD="cd /sys/class/leds/led1 && echo none > trigger && cat max_brightness > brightness"' \
+	'MKSWU_NOTIFY_SUCCESS_CMD="echo timer > /sys/class/leds/led1/trigger"'
