@@ -1,0 +1,16 @@
+swdesc_option version=1
+swdesc_option ENCRYPT_ROOTFS ENCRYPT_FS
+
+# This example configuration enables both rootfs and appfs encryption
+# - install from non-encrypted appfs only works by manually installing with
+# TMPDIR=/tmp swupdate -i enable_disk_encryption.swu
+# - install from already encrypted appfs does not require ENCRYPT_ROOTFS to be set
+# - install for ROOTFS requires linux fit image with initrd installed
+# in /boot/mmcblk2boot* at 5MB offset
+# - install for ROOTFS requires setting the option even if current rootfs is
+# already encrypted (this might change)
+swdesc_script --extra-os update_preserve_files.sh -- \
+	--file /etc/atmark/baseos.conf \
+	--comment "Enable disk encryption" \
+	"MKSWU_ENCRYPT_ROOTFS=1" \
+	"MKSWU_ENCRYPT_FS=1"
