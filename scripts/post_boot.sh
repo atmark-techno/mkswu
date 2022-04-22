@@ -6,8 +6,12 @@ cleanup_boot() {
 	fi
 
 	if [ "$rootdev" = "/dev/mmcblk2" ]; then
-		mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
-			|| error "Could not flip mmc boot flag"
+		if fw_printenv encrypted_update_available | grep -q '=1'; then
+			echo "writing encrypted uboot update, rollback will be done by current uboot on reboot"
+		else
+			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
+				|| error "Could not flip mmc boot flag"
+		fi
 	elif [ -s /etc/fw_env.config ]; then
 		# if uboot env is supported, use it (e.g. sd card)
 		fw_setenv mmcpart $((ab+1)) \

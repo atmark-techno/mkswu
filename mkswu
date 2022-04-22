@@ -542,6 +542,12 @@ parse_swdesc() {
 		[ $# -eq 1 ] || error "swdesc_boot requires an argument\nUsage: swdesc_boot [options] boot_file"
 		BOOT="$1"
 		;;
+	boot_enc)
+		[ $# -eq 0 ] && [ -n "$BOOT" ] && [ -n "$DEK_OFFSETS" ] && return
+		[ $# -eq 2 ] || error "swdesc_boot_enc requires two arguments\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
+		BOOT="$1"
+		DEK_OFFSETS="$2"
+		;;
 	boot_linux)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot_linux requires an argument\nUsage: swdesc_boot_linux [options] boot_linux_file"
@@ -640,6 +646,35 @@ swdesc_boot() {
 	write_entry images "$BOOT" "type = \"raw\";" \
 		"device = \"/dev/swupdate_bootdev\";"
 }
+
+swdesc_boot_enc() {
+	local BOOT="$BOOT" DEK_OFFSETS="$DEK_OFFSETS" offsets
+	local component=boot version="$version"
+	local board="$board" main_version="$main_version"
+	local install_if="$install_if"
+
+	parse_swdesc boot_enc "$@"
+
+	[ -n "$BOOT_SIZE" ] && pad_boot
+
+	[ "$component" = "boot" ] \
+		|| error "Version component for swdesc_boot must be set to boot"
+	[ -n "$version" ] \
+		|| error "Version must be set for swdesc_boot_encrypted"
+
+	offsets=$(cat "$DEK_OFFSETS")
+	[ -n "$offsets" ] \
+		|| error "dek offset file %s was not readable or empty" "$DEK_OFFSETS"
+
+	swdesc_exec_nochroot "$BOOT" \
+		'[ -e /dev/swupdate_bootdev ]' \
+		"fw_setenv $offsets" \
+		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
+		'dd if=$1 of=/dev/swupdate_bootdev bs=1M conv=fdatasync status=none' \
+		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
+		'fw_setenv encrypted_update_available 1'
+}
+
 
 swdesc_boot_linux() {
 	local component=boot_linux version="$version"

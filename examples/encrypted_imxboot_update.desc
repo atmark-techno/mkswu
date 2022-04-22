@@ -1,0 +1,9 @@
+# This example is intended for users with an ecrypted boot image.
+# Ignore it if not using encrypted imxboot.
+
+# version must be updated everytime.
+swdesc_option version=2
+
+# boot image and dek_offsets file built from
+# imx-boot/secureboot.sh imxboot_enc
+swdesc_boot_enc "imx-boot_armadillo_x2.enc" "armadillo_x2.dek_offsets"
