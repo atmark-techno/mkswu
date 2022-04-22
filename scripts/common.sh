@@ -154,6 +154,12 @@ luks_unlock() {
 	[ -z "$encrypted" ] && return
 	[ -n "$dev" ] || error "\$dev must be set"
 
+	if [ -e "/dev/mapper/$target" ]; then
+		# already unlocked, use it
+		dev="/dev/mapper/$target"
+		return
+	fi
+
 	command -v cryptsetup > /dev/null \
 		|| apk add cryptsetup \
 		|| error "cryptsetup must be installed in current rootfs"

@@ -76,8 +76,10 @@ fail_redundant_update() {
 			error "Nothing to do -- failing on purpose to save bandwidth"
 		fi
 		# also check B-side unless SW_ALLOW_ROLLBACK is set
+		local dev="${partdev}$((ab+1))"
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
-		    && mount "${partdev}$((ab+1))" /target 2>/dev/null; then
+		    && luks_unlock "rootfs_$ab" \
+		    && mount "$dev" /target 2>/dev/null; then
 			if cmp -s /target/etc/sw-versions \
 					"$SCRIPTSDIR/sw-versions.merged"; then
 				rm -rf "$SCRIPTSDIR"
