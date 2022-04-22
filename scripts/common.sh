@@ -134,7 +134,7 @@ umount_if_mountpoint() {
 	# nothing to do if not a mountpoint
 	is_mountpoint "$dir" || return
 
-	umount "$dir" || error "Could not umount $dir"
+	umount -R "$dir" || error "Could not umount $dir"
 }
 
 remove_bootdev_link() {
@@ -306,11 +306,6 @@ post_action() {
 
 cleanup() {
 	remove_bootdev_link
-	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
-	umount_if_mountpoint /target/var/lib/containers/storage_readonly
-	umount_if_mountpoint /target/var/app/rollback/volumes
-	umount_if_mountpoint /target/var/app/volumes
-	umount_if_mountpoint /target/var/tmp
 	umount_if_mountpoint /target
 	luks_close_target
 }
