@@ -163,6 +163,11 @@ luks_unlock() {
 	command -v cryptsetup > /dev/null \
 		|| apk add cryptsetup \
 		|| error "cryptsetup must be installed in current rootfs"
+
+	# not luks? nothing to do!
+	cryptsetup isLuks "$dev" \
+		|| return 0
+
 	command -v caam-decrypt > /dev/null \
 		|| apk add caam-decrypt \
 		|| error "caam-decrypt must be installed in current rootfs"
