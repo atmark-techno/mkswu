@@ -228,6 +228,8 @@ luks_format() {
 	local KEYFILE=/run/caam/lukskey
 	# lower iter-time to speed PBKDF phase up,
 	# since our key is random PBKDF does not help
+	# also, we don't need a 16MB header so make it as small as possible (1MB)
+	# by limiting the maximum number of luks keys (3 here, same size with less)
 	# key size is 112
 	unshare -m sh -c "mount -t tmpfs tmpfs /run/caam \
 		&& caam-keygen create ${KEYFILE##*/} ccm -s 32 \
@@ -241,6 +243,7 @@ luks_format() {
 		fi; } \
 		&& cryptsetup luksFormat -q --key-file $KEYFILE.luks \
 			--pbkdf pbkdf2 --iter-time 1 \
+			--luks2-keyslots-size=768k \
 			$dev \
 		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
 			$dev $target \
