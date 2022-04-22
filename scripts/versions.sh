@@ -114,6 +114,8 @@ gen_newversion() {
 			case "$component" in
 			other_boot) continue;;
 			boot) printf "%s\n" "other_boot $oldvers";;
+			other_boot_linux) continue;;
+			boot_linux) printf "%s\n" "other_boot_linux $oldvers";;
 			esac
 			newvers=$(get_version --install-if "$component")
 			install_if=${newvers##* }
