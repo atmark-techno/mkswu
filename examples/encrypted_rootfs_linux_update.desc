@@ -1,0 +1,9 @@
+# This example is intended for users with ENCRYPTED_ROOTFS.
+# Ignore it if not using encryped rootfs.
+
+# version must be updated everytime like normal updates
+swdesc_option version=2
+
+# Image.signed is an a linux image with initrd built using
+# imx-boot/secureboot.sh linux
+swdesc_boot_linux "Image.signed"

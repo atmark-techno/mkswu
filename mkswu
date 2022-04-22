@@ -542,6 +542,11 @@ parse_swdesc() {
 		[ $# -eq 1 ] || error "swdesc_boot requires an argument\nUsage: swdesc_boot [options] boot_file"
 		BOOT="$1"
 		;;
+	boot_linux)
+		[ $# -eq 0 ] && [ -n "$file" ] && return
+		[ $# -eq 1 ] || error "swdesc_boot_linux requires an argument\nUsage: swdesc_boot_linux [options] boot_linux_file"
+		file="$1"
+		;;
 	tar)
 		[ $# -eq 0 ] && [ -n "$source" ] && return
 		[ $# -eq 1 ] || error "swdesc_tar requires an argument\nUsage: swdesc_tar [options] file.tar"
@@ -634,6 +639,27 @@ swdesc_boot() {
 
 	write_entry images "$BOOT" "type = \"raw\";" \
 		"device = \"/dev/swupdate_bootdev\";"
+}
+
+swdesc_boot_linux() {
+	local component=boot_linux version="$version"
+	local board="$board" main_version="$main_version"
+	local install_if="$install_if" file=""
+
+	parse_swdesc boot_linux "$@"
+
+	[ "$component" = "boot_linux" ] \
+		|| error "Version component for swdesc_boot_linux must be set to boot_linux"
+	[ -n "$version" ] \
+		|| error "Version must be set for swdesc_boot_linux"
+	[ "$(stat -c %s "$file")" -lt "$((27 * 1024 * 1024))" ] \
+		|| error "swdesc_boot_linux image must be at most 27MB big"
+
+	swdesc_exec_nochroot "$file" \
+		'[ -e /dev/swupdate_bootdev ]' \
+		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
+		'dd if=$1 of=/dev/swupdate_bootdev bs=1M seek=5 conv=fdatasync status=none' \
+		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro'
 }
 
 swdesc_tar() {
