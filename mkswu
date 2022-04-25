@@ -788,6 +788,8 @@ create_archive() {
 	if [ -z "$file" ]; then
 		set_file_from_content "$basedir" "$dest" "$@"
 		file="$file.tar"
+	elif [ "${file#/}" = "$file" ]; then
+		file="$OUTDIR/$file"
 	fi
 
 	track_used "$file.validity"
