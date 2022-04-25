@@ -96,6 +96,14 @@
  	newtempfile="$(mktemp /tmp/update_preserve_files.XXXXXX)" \
  		|| error "Could not create tempfile"
  	if [ -n "$delcomment" ]; then
+ }
+ 
+ main() {
+-	local mode="add" comment="" delcomment="" file="/etc/swupdate_preserve_files"
++	local mode="add" comment="" delcomment="" file="/boot/overlays.txt"
+ 	local arg nomorearg="" tempfile="" dryrun=""
+ 
+ 	for arg; do
  			mode="del";;
  		"--del-regex")
  			mode="del_regex";;

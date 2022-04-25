@@ -120,7 +120,7 @@ do_del_regex() {
 }
 
 main() {
-	local mode="add" comment="" delcomment="" file="/etc/swupdate_preserve_files"
+	local mode="add" comment="" delcomment="" file="/boot/overlays.txt"
 	local arg nomorearg="" tempfile="" dryrun=""
 
 	for arg; do
