@@ -1,11 +1,16 @@
 swdesc_option component=firmware version=1
 
 # stop containers that might be using firmware
+# Note they won't be restarted if install fails
 swdesc_command_nochroot \
 	"podman kill -a" \
 	"podman ps --format '{{.ID}}' | timeout 30s xargs -r podman wait"
 
 # flash firmware image
 # note there is no copy if this fails!
+# /dev/mapper/mmcblk2p4 is encrypted firmware, used if it is setup.
+# It is safe to ignore if not using encryption
 swdesc_exec_nochroot "imx_lib.img" \
-	'dd if=$1 of=/dev/mmcblk2p4 bs=1M conv=fdatasync status=none'
+	'dest=/dev/mmcblk2p4' \
+	'if [ -e /dev/mapper/mmcblk2p4 ]; then dest=/dev/mapper/mmcblk2p4; fi' \
+	'dd if=$1 of=$dest bs=1M conv=fdatasync status=none'
