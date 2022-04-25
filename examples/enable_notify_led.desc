@@ -1,9 +1,26 @@
 swdesc_option version=1
 
-# This example configuration
+
+# example commands: blink while updating, leave off on error, on on success.
+# these variables are only used to avoid repeating below
+starting_cmd="cd /sys/class/leds/led1 && echo timer > trigger && echo 111 | tee delay_on > delay_off"
+success_cmd="cd /sys/class/leds/led1 && echo none > trigger && cat max_brightness > brightness"
+fail_cmd="cd /sys/class/leds/led1 && echo none > trigger && echo 0 > brightness"
+
+
+# This can be set for any update and overrides settings in baseos.conf
+swdesc_option NOTIFY_STARTING_CMD="$starting_cmd"
+swdesc_option NOTIFY_SUCCESS_CMD="$success_cmd"
+swdesc_option NOTIFY_FAIL_CMD="$fail_cmd"
+
+# This sets setting in /etc/atmark/baseos.conf
+# the delete option removes previous settings if any, then
+# defines commands that will be respected for any update which does not
+# explicitly set these settings
 swdesc_script --extra-os update_preserve_files.sh -- \
 	--file /etc/atmark/baseos.conf \
-	--comment "Make leds blinking on swu install" \
-	'MKSWU_NOTIFY_STARTING_CMD="echo heartbeat > /sys/class/leds/led1/trigger"' \
-	'MKSWU_NOTIFY_FAIL_CMD="cd /sys/class/leds/led1 && echo none > trigger && cat max_brightness > brightness"' \
-	'MKSWU_NOTIFY_SUCCESS_CMD="echo timer > /sys/class/leds/led1/trigger"'
+	--del-regex "MKSWU_NOTIFY_.*|# Make leds blinking.*" \
+	--add --comment "Make leds blinking on swu install" \
+	"MKSWU_NOTIFY_STARTING_CMD='$starting_cmd'" \
+	"MKSWU_NOTIFY_SUCCESS_CMD='$success_cmd'" \
+	"MKSWU_NOTIFY_FAIL_CMD='$fail_cmd'"

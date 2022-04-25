@@ -48,3 +48,6 @@ build_check ../examples/volumes_assets \
 
 # no content but force version
 build_check ../examples/container_clear "swdesc CONTAINER_CLEAR"
+
+# notify
+build_check ../examples/enable_notify_led "swdesc MKSWU_NOTIFY_STARTING_CMD"
