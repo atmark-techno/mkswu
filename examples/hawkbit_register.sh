@@ -32,9 +32,19 @@ error() {
 wait_network() {
 	local HAWKBIT_HOST=${HAWKBIT_URL#http*://}
 	HAWKBIT_HOST=${HAWKBIT_HOST%%/*}
+	local PORT=80
+	case "$HAWKBIT_URL" in
+	https://*) PORT=443;;
+	esac
+	case "$HAWKBIT_HOST" in
+	*:*) PORT=${HAWKBIT_HOST##*:}; HAWKBIT_HOST=${HAWKBIT_HOST%:*};;
+	esac
 
 	# wait up to 30 seconds for network
-	timeout 30s sh -c "while ! ping -q -c 1 $HAWKBIT_HOST >/dev/null 2>&1; do sleep 1; done"
+	timeout 30s sh -c "
+		while ! nc -w 5 $HAWKBIT_HOST $PORT </dev/null >/dev/null 2>&1; do
+			sleep 1;
+		done"
 }
 
 init() {
