@@ -24,10 +24,12 @@ copy_boot() {
 }
 
 copy_boot_imxboot() {
-	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=3 \
+	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=4 \
 			conv=fdatasync status=none \
 		|| return
-	dd if=/dev/zero of="/dev/$flash_dev" bs=1M seek=3 count=1 \
+	# ... but we don't want env
+	dd if=/dev/zero of="/dev/$flash_dev" bs=8k count=3 \
+			seek=$((0x3fa000)) oflag=seek_bytes \
 			conv=fdatasync status=none \
 		|| return
 }
