@@ -1,16 +1,25 @@
-next
-====
+3.15-at.6
+=========
 features:
  - add NOTIFY_STARTING_CMD, NOTIFY_FAIL_CMD, NOTIFY_SUCCESS_CMD handling
  - add swdesc_option for settings in sw-description (FORCE_VERSION and co)
 setting environment variables directly is still supported.
 Some of these options can also be set in /etc/atmark/baseos.conf with
 MKSWU_ prefix when it makes sense to do so (e.g. NOTIFY_*_CMD or POST_ACTION)
+ - do not reinstall "useless" updates when boot image needs updating as that
+would wipe previous OS to rollback to.
+
+experimental:
+- add swdesc_boot_enc and swdesc_boot_linux for encrypted linux update.
+These are still susceptible to change.
 
 fixes:
  - check for all files size/mtime instead of just checking 'is newer' for
 swdesc_files, compression and hash. This avoids hash mismatch errors
-
+ - network connectivity check for hawkbit_register failed as script did not
+have net_raw permission to ping. use nc instead.
+ - fix copying boot image over to other partition, the image was not always
+copied until the end
 
 3.15-at.5
 =========
