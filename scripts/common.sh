@@ -160,17 +160,16 @@ luks_unlock() {
 		return
 	fi
 
+	# skip if no cryptsetup
 	command -v cryptsetup > /dev/null \
-		|| apk add cryptsetup \
-		|| error "cryptsetup must be installed in current rootfs"
+		|| return 0
 
 	# not luks? nothing to do!
 	cryptsetup isLuks "$dev" \
 		|| return 0
 
 	command -v caam-decrypt > /dev/null \
-		|| apk add caam-decrypt \
-		|| error "caam-decrypt must be installed in current rootfs"
+		|| return 0
 
 	local index offset
 	case "$dev" in
@@ -204,7 +203,7 @@ luks_unlock() {
 			$KEYFILE.luks >/dev/null 2>&1 \
 		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
 			$dev $target >/dev/null 2>&1" \
-		|| return
+		|| return 0
 
 	dev="/dev/mapper/$target"
 }
@@ -213,6 +212,11 @@ luks_format() {
 	# modifies dev with new target
 	local target="$1"
 	[ -n "$dev" ] || error "\$dev must be set"
+
+	command -v cryptsetup > /dev/null \
+		|| error "cryptsetup must be installed in current rootfs"
+	command -v caam-decrypt > /dev/null \
+		|| error "caam-decrypt must be installed in current rootfs"
 
 	local index offset
 	case "$dev" in
