@@ -217,12 +217,17 @@ baseos_upgrade_fixes() {
 EOF
 	fi
 
-	# add noatime to fstab
-	if version_greater_than "$baseos_version" "3.15.0-at.2" \
-	    && ! grep -q noatime /target/etc/fstab; then
+	# add noatime to fstab (added in 3.15.0-at.2)
+	if ! grep -q noatime /target/etc/fstab; then
 		sed -i -e '/squashfs/ ! s/defaults/&,noatime/' \
 				-e 's/,subvol=/,noatime&/' /target/etc/fstab \
 			|| error "Could not update fstab"
+	fi
+
+	# Remove /var/log/rc.log we no longer write to
+	# (removed in 3.15.4-at.6)
+	if [ -e /var/log/rc.log ]; then
+		rm -f /var/log/rc.log
 	fi
 }
 
