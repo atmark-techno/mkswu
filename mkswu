@@ -147,7 +147,7 @@ link() {
 		[ "$src" = "$existing" ] && return
 		rm -f "$dest" || error "Could not remove previous link at %s" "$dest"
 	elif [ -e "$dest" ]; then
-		cmp "$src" "$dest" > /dev/null && return
+		[ "$(stat -L -c %Y-%s "$src")" = "$(stat -L -c %Y-%s "$dest")" ] && return
 		rm -f "$dest" || error "Could not remove previous file at %s" "$dest"
 	fi
 
@@ -155,8 +155,8 @@ link() {
 	# and thus change the order in which components are installed
 	# (e.g. rootfs after post script...)
 	# workaround by copying file (reflinks are ok) instead if required
-	if [ "$(stat -c %h "$src")" != 1 ]; then
-		cp --reflink=auto "$src" "$dest" || error "Could not copy %s to %s" "$src" "$dest"
+	if [ "$(stat -L -c %h "$src")" != 1 ]; then
+		cp --reflink=auto -a "$src" "$dest" || error "Could not copy %s to %s" "$src" "$dest"
 	else
 		ln -s "$(readlink -e "$src")" "$dest" || error "Could not link %s to %s" "$dest" "$src"
 	fi
@@ -213,13 +213,13 @@ compress() {
 	track_used "$file_src" "$file_out" "$file_out.validity"
 
 	# check validity with mtime/size
-	local stat=$(stat -c %Y-%s "$file_src")
+	local stat=$(stat -L -c %Y-%s "$file_src")
 	[ "$(cat "$file_out.validity" 2>/dev/null)" = "$stat"  ] \
 		&& [ -e "$file_out" ] && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
 	rm -f "$file_out"
-	zstd -q "$file_src" -o "$file_out" \
+	zstd -q -o "$file_out" < "$file_src" \
 		|| error "failed to compress %s" "$file_src"
 	echo "$stat" > "$file_out.validity"
 }
@@ -325,7 +325,7 @@ write_entry_stdout() {
 	if [ -e "$file_out.sha256sum" ]; then
 		sha256=$(cat "$file_out.sha256sum")
 		# check validity with mtime + size
-		[ "${sha256#* }" = "$(stat -c %Y-%s "$file_out")" ] \
+		[ "${sha256#* }" = "$(stat -L -c %Y-%s "$file_out")" ] \
 			|| sha256=""
 		sha256="${sha256% *}"
 	fi
@@ -334,7 +334,7 @@ write_entry_stdout() {
 		sha256=$(sha256sum < "$file_out") \
 			|| error "Checksumming %s failed" "$file_out"
 		sha256=${sha256%% *}
-		printf "%s\n" "$sha256 $(stat -c %Y-%s "$file_out")" > "$file_out.sha256sum"
+		printf "%s\n" "$sha256 $(stat -L -c %Y-%s "$file_out")" > "$file_out.sha256sum"
 	fi
 
 
@@ -610,14 +610,14 @@ pad_boot() {
 	BOOT="$OUTDIR/$file"
 
 	if [ "$src" -ot "$BOOT" ]; then
-		size=$(stat -c "%s" "$BOOT")
+		size=$(stat -L -c "%s" "$BOOT")
 		if [ "$size" -eq "$BOOT_SIZE" ]; then
 			# already up to date
 			return
 		fi
 	fi
 
-	size=$(stat -c "%s" "$src") || error "Cannot stat boot file: %s" "$src"
+	size=$(stat -L -c "%s" "$src") || error "Cannot stat boot file: %s" "$src"
 	if [ "$size" -gt "$BOOT_SIZE" ]; then
 		error "BOOT_SIZE set smaller than boot file actual size"
 	fi
@@ -687,7 +687,7 @@ swdesc_boot_linux() {
 		|| error "Version component for swdesc_boot_linux must be set to boot_linux"
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_linux"
-	[ "$(stat -c %s "$file")" -lt "$((27 * 1024 * 1024))" ] \
+	[ "$(stat -L -c %s "$file")" -lt "$((27 * 1024 * 1024))" ] \
 		|| error "swdesc_boot_linux image must be at most 27MB big"
 
 	swdesc_exec_nochroot "$file" \
