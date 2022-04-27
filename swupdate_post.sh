@@ -13,11 +13,9 @@ SCRIPTSDIR="$TMPDIR/scripts"
 
 # note we do not unlock after cleanup unless another update
 # is expected to run after this one, a fresh boot is needed.
-cleanup
 rm -rf "$SCRIPTSDIR"
 
 POST_ACTION=$(post_action)
-
 case "$POST_ACTION" in
 poweroff)
 	echo "swupdate triggering poweroff!" >&2
