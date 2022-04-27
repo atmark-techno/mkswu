@@ -97,6 +97,13 @@ post_success_usb() {
 	fi
 }
 
+post_success_custom() {
+	local action
+	rm -f "$TMPDIR/swupdate_post_fail_action"
+	action="$(mkswu_var NOTIFY_SUCCESS_CMD)"
+	eval "$action"
+}
+
 set_fw_update_ind() {
 	local led_dir=/sys/class/leds/FW_UPDATE_IND
 
@@ -105,13 +112,6 @@ set_fw_update_ind() {
 
 	cat "$led_dir/max_brightness" > "$led_dir/brightness" \
 		|| warning "Could not set FW_UPDATE_IND"
-}
-
-post_success_custom() {
-	local action
-	rm -f "$TMPDIR/swupdate_post_fail_action"
-	action="$(mkswu_var NOTIFY_SUCCESS_CMD)"
-	eval "$action"
 }
 
 post_success() {
