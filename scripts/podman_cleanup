@@ -86,6 +86,8 @@ get_conf_image() {
 	# if tag starts with a / it's likely a rootfs,
 	# and anyway it's an "invalid reference format" so skip.
 	[ "${tag#/}" != "$tag" ] && return
+	# also skip explicit --rootfs
+	[ "$tag" = "--rootfs" ] && return
 
 	if ! podman --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore="" \
