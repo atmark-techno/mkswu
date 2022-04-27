@@ -1,3 +1,16 @@
+4.0
+===
+This release changes numbering system to unlink mkswu from baseos:
+mkswu and baseos do not share a lifecycle and sharing version was
+needless work.
+
+fixes:
+ - fix size/mtime check to consider real file and not symlink in case of
+no encryption and already compressed files
+ - sync and dismount installed system before flipping boot switch:
+this ensures the system should not be broken if power is cut immediately
+after boot switch/notification.
+
 3.15-at.6
 =========
 features:
