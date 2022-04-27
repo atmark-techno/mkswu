@@ -671,8 +671,7 @@ swdesc_boot_enc() {
 		"fw_setenv $offsets" \
 		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
 		'dd if=$1 of=/dev/swupdate_bootdev bs=1M conv=fdatasync status=none' \
-		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
-		'fw_setenv encrypted_update_available 1'
+		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro'
 }
 
 

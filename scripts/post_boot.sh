@@ -6,8 +6,9 @@ cleanup_boot() {
 	fi
 
 	if [ "$rootdev" = "/dev/mmcblk2" ]; then
-		if fw_printenv encrypted_update_available | grep -q '=1'; then
+		if fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
 			echo "writing encrypted uboot update, rollback will be done by current uboot on reboot"
+			fw_setenv encrypted_update_available 1
 		else
 			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
 				|| error "Could not flip mmc boot flag"
