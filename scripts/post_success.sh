@@ -22,7 +22,7 @@ post_success_atlog() {
 	local versions
 	# variables for tests
 	local atlog="${atlog:-/var/at-log/atlog}"
-	local old_versions="${old_versions:-/etc/sw-versions}"
+	local old_versions="${old_versions:-$SCRIPTSDIR/sw-versions.old}"
 	local new_versions="${new_versions:-$SCRIPTSDIR/sw-versions.merged}"
 
 	# if /var/at-log isn't mounted fallback to /var/log/swupdate/atlog
@@ -45,7 +45,6 @@ post_success_atlog() {
 		newstate="${partdev}$((ab+1))"
 	else
 		newstate="${partdev}$((!ab+1))"
-		old_versions="/target/$old_versions"
 	fi
 
 	[ -e "$old_versions" ] || old_versions=/dev/null

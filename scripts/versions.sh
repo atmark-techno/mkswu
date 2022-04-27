@@ -104,7 +104,13 @@ gen_newversion() {
 	local system_versions="${system_versions:-/etc/sw-versions}"
 	[ -e "$system_versions" ] || system_versions=/dev/null
 
-	extract_swdesc_versions < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present"
+	if [ -e "$system_versions" ]; then
+		cp "$system_versions" "$SCRIPTSDIR/sw-versions.old" \
+			|| error "Could not copy existing versions"
+	fi
+
+	extract_swdesc_versions < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present" \
+		|| error "Could not extract versions present in swdesc"
 
 	# Merge files, keeping order of original sw-versions,
 	# then appending other lines from new one in order as well.
