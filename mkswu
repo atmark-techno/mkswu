@@ -1888,7 +1888,6 @@ sw-description.sig"
 	mkdir -p "$OUTDIR"
 	OUTDIR=$(realpath -- "$OUTDIR")
 	rm -f "$OUTDIR/sw-description-"* "$OUTDIR/used_files"
-	track_used "$OUTDIR"
 
 	main_cwd="$PWD"
 	absolutize_file_paths
