@@ -53,7 +53,7 @@ locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 check:
 	./tests/run.sh
 
-TAG ?= $(subst -,.,$(shell git describe --tags))
+TAG ?= $(subst -,.,$(shell git describe --tags 2>/dev/null || cat .version))
 
 TARNAME = mkswu_$(TAG)
 
@@ -67,7 +67,8 @@ dist:
 		echo "git index is not clean: please run make clean and check submodules"; \
 		false; \
 	fi
-	git ls-files --recurse-submodules | \
+	echo $(TAG) > .version
+	{ git ls-files --recurse-submodules; echo ".version"; } | \
 		tar -caJf $(TARNAME).orig.tar.xz --xform "s:^:$(TARNAME)/:S" --verbatim-files-from -T-
 	git ls-files hawkbit-compose | \
 		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
