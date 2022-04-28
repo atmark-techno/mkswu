@@ -1042,6 +1042,7 @@ write_sw_desc() {
 	[ -n "$DESCRIPTION" ] || error "DESCRIPTION must be set"
 	cat <<EOF
 software = {
+  # Built with mkswu $MKSWU_VERSION
   version = "0.1.0";
   description = "$DESCRIPTION";
 EOF
@@ -1720,6 +1721,16 @@ sw-description.sig"
 	[ "${CONFIG#/}" != "$CONFIG" ] \
 		|| CONFIG="$CONFIG_DIR/mkswu.conf"
 
+	if [ -z "$MKSWU_VERSION" ]; then
+		if [ -e "$SCRIPT_DIR/.git" ]; then
+			MKSWU_VERSION="$(git --git-dir "$SCRIPT_DIR/.git" describe)"
+		elif [ -e "$SCRIPT_DIR/.version" ]; then
+			MKSWU_VERSION=$(cat "$SCRIPT_DIR/.version")
+		else
+			error "mkswu not installed and could not guess mkswu version from git"
+		fi
+	fi
+
 	local ARG SKIP=0
 	for ARG; do
 		# skip previously used argument
@@ -1824,11 +1835,6 @@ sw-description.sig"
 			SKIP=1
 			;;
 		"--version")
-			if [ -z "$MKSWU_VERSION" ]; then
-				[ -e "$SCRIPT_DIR/.git" ] \
-					|| error "mkswu not installed and could not guess mkswu version from git"
-				MKSWU_VERSION="$(git --git-dir "$SCRIPT_DIR/.git" describe)"
-			fi
 			info "mkswu version %s" "$MKSWU_VERSION"
 			exit 0
 			;;
