@@ -1025,7 +1025,7 @@ swdesc_option() {
 		SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
 			SWDESC_OPTS="$SWDESC_OPTS
 $opt";;
-		*) error "Unknown option for swdesc_option: $opt";;
+		*) error "Unknown option for swdesc_option: %s" "$opt";;
 		esac
 	done
 }

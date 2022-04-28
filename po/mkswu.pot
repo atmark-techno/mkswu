@@ -189,6 +189,12 @@ msgstr ""
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr ""
 #: mkswu
+msgid "swdesc_boot_enc requires two arguments\\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
+msgstr ""
+#: mkswu
+msgid "swdesc_boot_linux requires an argument\\nUsage: swdesc_boot_linux [options] boot_linux_file"
+msgstr ""
+#: mkswu
 msgid "swdesc_tar requires an argument\\nUsage: swdesc_tar [options] file.tar"
 msgstr ""
 #: mkswu
@@ -222,6 +228,21 @@ msgstr ""
 msgid "Could not guess boot version in %s"
 msgstr ""
 #: mkswu
+msgid "Version must be set for swdesc_boot_encrypted"
+msgstr ""
+#: mkswu
+msgid "dek offset file %s was not readable or empty"
+msgstr ""
+#: mkswu
+msgid "Version component for swdesc_boot_linux must be set to boot_linux"
+msgstr ""
+#: mkswu
+msgid "Version must be set for swdesc_boot_linux"
+msgstr ""
+#: mkswu
+msgid "swdesc_boot_linux image must be at most 27MB big"
+msgstr ""
+#: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr ""
 #: mkswu
@@ -232,9 +253,6 @@ msgid ".. is not allowed in destination path for volume update"
 msgstr ""
 #: mkswu
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
-msgstr ""
-#: mkswu
-msgid "%s does not exist\\nplease note swdesc_files syntax changed and no longer requires setting a name"
 msgstr ""
 #: mkswu
 msgid "%s does not exist"
@@ -252,7 +270,7 @@ msgstr ""
 msgid "you might want to keep the archive as simple .tar"
 msgstr ""
 #: mkswu
-msgid "Could not create script.tar"
+msgid "Unknown option for swdesc_option: %s"
 msgstr ""
 #: mkswu
 msgid "DESCRIPTION must be set"
@@ -267,7 +285,7 @@ msgstr ""
 msgid "above component used multiple times with different versions or install-if mode"
 msgstr ""
 #: mkswu
-msgid "No versions found: empty image?\\nSet version=1 to allow building"
+msgid "No versions found: empty image or version not set?"
 msgstr ""
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
@@ -486,6 +504,9 @@ msgstr ""
 msgid "Could not get script dir"
 msgstr ""
 #: mkswu
+msgid "mkswu not installed and could not guess mkswu version from git"
+msgstr ""
+#: mkswu
 msgid "Only v can be repeated in -vvv..."
 msgstr ""
 #: mkswu
@@ -496,9 +517,6 @@ msgid "%s is incompatible with --%s"
 msgstr ""
 #: mkswu
 msgid "%s must be passed after --genkey"
-msgstr ""
-#: mkswu
-msgid "mkswu not installed and could not guess mkswu version from git"
 msgstr ""
 #: mkswu
 msgid "mkswu version %s"

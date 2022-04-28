@@ -282,6 +282,22 @@ msgstr ""
 "swdesc_boot に引数が必要です。\\nUsage: swdesc_boot [options] boot_file"
 
 #: mkswu
+msgid ""
+"swdesc_boot_enc requires two arguments\\nUsage: swdesc_boot_enc [options] "
+"boot_enc_file dek_offets_file"
+msgstr ""
+"swdesc_boot_enc に引数が必要です。\\nUsage: swdesc_boot_enc [options] "
+"boot_enc_file dek_offsets_file"
+
+#: mkswu
+msgid ""
+"swdesc_boot_linux requires an argument\\nUsage: swdesc_boot_linux [options] "
+"boot_linux_file"
+msgstr ""
+"swdesc_boot_linux に引数が必要です。\\nUsage: swdesc_boot_linux [options] "
+"boot_linux_file"
+
+#: mkswu
 msgid "swdesc_tar requires an argument\\nUsage: swdesc_tar [options] file.tar"
 msgstr "swdesc_tar に引数が必要です。\\nUsage: swdesc_tar [options] file.tar"
 
@@ -342,6 +358,31 @@ msgid "Could not guess boot version in %s"
 msgstr "ブートバージョン %s を認識できませんでした。"
 
 #: mkswu
+msgid "Version must be set for swdesc_boot_encrypted"
+msgstr ""
+"swdesc_boot_encrypted にバージョンが必要です。swdesc_option version=X で指定"
+"してください"
+
+#: mkswu
+msgid "dek offset file %s was not readable or empty"
+msgstr ""
+
+#: mkswu
+msgid "Version component for swdesc_boot_linux must be set to boot_linux"
+msgstr ""
+"swdesc_boot_linuxのバージョンコンポーネントを「boot_linux」にしてください。"
+
+#: mkswu
+msgid "Version must be set for swdesc_boot_linux"
+msgstr ""
+"swdesc_boot_linux にバージョンが必要です。swdesc_option version=X で指定して"
+"ください"
+
+#: mkswu
+msgid "swdesc_boot_linux image must be at most 27MB big"
+msgstr ""
+
+#: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr "OS アップデートの場合は絶対パスを使ってください (%s)"
 
@@ -361,12 +402,6 @@ msgstr ".. は展開先として使えません。"
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
 msgstr ""
 "Warning: base_osアップデートで--preserve-attributesを自動的に設定しました。"
-
-#: mkswu
-msgid ""
-"%s does not exist\\nplease note swdesc_files syntax changed and no longer "
-"requires setting a name"
-msgstr "%s が存在しません。"
 
 #: mkswu
 msgid "%s does not exist"
@@ -391,8 +426,8 @@ msgid "you might want to keep the archive as simple .tar"
 msgstr "普通のtarアーカイブにした方が効率的です。"
 
 #: mkswu
-msgid "Could not create script.tar"
-msgstr "script.tarを作成できませんでした。"
+msgid "Unknown option for swdesc_option: %s"
+msgstr "swdesc_option の %s オプションを認識できません。"
 
 #: mkswu
 msgid "DESCRIPTION must be set"
@@ -414,9 +449,10 @@ msgstr ""
 "上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
 
 #: mkswu
-msgid "No versions found: empty image?\\nSet version=1 to allow building"
+msgid "No versions found: empty image or version not set?"
 msgstr ""
-"バージョンが見つかりませんでした。--versionかversion=1を使ってください。"
+"バージョンが見つかりませんでした。--versionかswdesc_option version=1を使って"
+"ください。"
 
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
@@ -734,6 +770,10 @@ msgid "Could not get script dir"
 msgstr "スクリプトのディレクトリが読み取れませんでした。"
 
 #: mkswu
+msgid "mkswu not installed and could not guess mkswu version from git"
+msgstr "mkswu のバージョンが分かりませんでした。"
+
+#: mkswu
 msgid "Only v can be repeated in -vvv..."
 msgstr "-vvv... のようにvしか繰り返し指定できません。"
 
@@ -748,10 +788,6 @@ msgstr "%s と --%s は同時に使えません。"
 #: mkswu
 msgid "%s must be passed after --genkey"
 msgstr "%s は --genkey の後にしか使えません。"
-
-#: mkswu
-msgid "mkswu not installed and could not guess mkswu version from git"
-msgstr "mkswu のバージョンが分かりませんでした。"
 
 #: mkswu
 msgid "mkswu version %s"
@@ -812,6 +848,3 @@ msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
-
-#~ msgid "component %s was set with empty version"
-#~ msgstr "%s のバージョンコンポーネントにバージョンが足りません。"
