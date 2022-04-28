@@ -57,7 +57,7 @@ TAG ?= $(subst -,.,$(shell git describe --tags 2>/dev/null || cat .version))
 
 TARNAME = mkswu_$(TAG)
 
-dist:
+dist: all
 	@if ! [ -e .git ]; then \
 		echo "make dist can only run within git directory"; \
 		false; \
