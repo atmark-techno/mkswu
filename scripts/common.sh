@@ -281,10 +281,18 @@ mkswu_var() {
 	local var="$1"
 	local val
 
+	# env var > desc file > baseos.conf
+	val=$(eval "echo \"\$$var\"")
+	if [ -n "$val" ]; then
+		echo "$val"
+		return
+	fi
+
 	if val=$(grep -F "# MKSWU_$var " "$SWDESC"); then
 		echo "$val" | sed -e "s/ *# MKSWU_$var //"
 		return
 	fi
+
 	if [ -e "$BASEOS_CONF" ]; then
 		val=$(. "$BASEOS_CONF"; eval "echo \"\$MKSWU_$var\"")
 		echo "$val"
