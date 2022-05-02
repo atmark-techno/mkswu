@@ -131,6 +131,8 @@ mount_target_rootfs() {
 	local uptodate basemount
 	local tmp fail extlinux
 	local encrypted=""
+
+	cryptsetup isLuks "$dev" >/dev/null 2>&1 && encrypted=1
 	[ -n "$(mkswu_var ENCRYPT_ROOTFS)" ] && encrypted=1
 
 	# We need /target to exist for update, try hard to create it
