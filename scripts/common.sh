@@ -202,7 +202,7 @@ luks_unlock() {
 		&& caam-decrypt $KEYFILE.bb AES-256-CBC $KEYFILE.enc \
 			$KEYFILE.luks >/dev/null 2>&1 \
 		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
-			$dev $target >/dev/null 2>&1" \
+			--allow-discards $dev $target >/dev/null 2>&1" \
 		|| return 0
 
 	dev="/dev/mapper/$target"
@@ -250,7 +250,7 @@ luks_format() {
 			--luks2-keyslots-size=768k \
 			$dev \
 		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
-			$dev $target \
+			--allow-discards $dev $target \
 		&& dd if=$KEYFILE.mmc of=$rootdev bs=4k count=1 status=none \
 			oflag=seek_bytes seek=$offset" \
 		|| error "Could not create luks partition on $dev"
