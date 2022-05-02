@@ -332,6 +332,9 @@ EOF
 			|| error "Could not set sw-versions"
 	fi
 
+	# free unused blocks at mmc level
+	fstrim /target
+
 	rm -f "$SCRIPTSDIR/sw-versions.present"
 }
 
