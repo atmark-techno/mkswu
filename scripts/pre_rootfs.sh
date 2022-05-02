@@ -133,7 +133,12 @@ mount_target_rootfs() {
 	local encrypted=""
 
 	cryptsetup isLuks "$dev" >/dev/null 2>&1 && encrypted=1
-	[ -n "$(mkswu_var ENCRYPT_ROOTFS)" ] && encrypted=1
+
+	if [ -n "$(mkswu_var ENCRYPT_ROOTFS)" ]; then
+		[ -n "$(get_version "boot_linux")" ] \
+			|| error "encrypting rootfs requires having swdesc_boot_linux installed"
+		encrypted=1
+	fi
 
 	# We need /target to exist for update, try hard to create it
 	# Note:
