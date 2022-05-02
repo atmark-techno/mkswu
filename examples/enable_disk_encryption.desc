@@ -1,16 +1,26 @@
+swdesc_option component=extra_os.disk_encryption
 swdesc_option version=1
-swdesc_option ENCRYPT_ROOTFS ENCRYPT_FS
 
-# This example configuration enables both rootfs and appfs encryption
-# - install from non-encrypted appfs only works by manually installing with
-# TMPDIR=/tmp swupdate -i enable_disk_encryption.swu
-# - install from already encrypted appfs does not require ENCRYPT_ROOTFS to be set
-# - install for ROOTFS requires linux fit image with initrd installed
-# in /boot/mmcblk2boot* at 5MB offset
-# - install for ROOTFS requires setting the option even if current rootfs is
-# already encrypted (this might change)
-swdesc_script --extra-os update_preserve_files.sh -- \
-	--file /etc/atmark/baseos.conf \
-	--comment "Enable disk encryption" \
-	"MKSWU_ENCRYPT_ROOTFS=1" \
-	"MKSWU_ENCRYPT_FS=1"
+
+# WARNING: If using secure boot, the hardware master key used by CAAM
+# changes when the device is closed, so partitions encrypted before
+# "closing" will be unreadable after closing.
+# Either do this after securing your device or reinstall when you do.
+
+
+# This option enables rootfs encryption
+# after install, further rootfs will automatically also be encrypted,
+# so it is only required once
+# this requires to install a linux image in boot disk with
+# swdesc_boot_linux in order to boot into the encrypted image
+swdesc_option ENCRYPT_ROOTFS
+
+# convert /var/log and appfs (containers storage) to encrypted storage
+# since swupdate normally uses /var/tmp, which is in appfs, you need
+# to run with TMPDIR=/tmp swupdate -i enable_disk_encryption.swu
+# if this is set.
+swdesc_option ENCRYPT_FS
+
+
+# dummy command to avoid having an empty update
+swdesc_command true
