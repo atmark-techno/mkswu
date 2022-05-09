@@ -686,8 +686,8 @@ swdesc_boot_linux() {
 		|| error "Version component for swdesc_boot_linux must be set to boot_linux"
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_linux"
-	[ "$(stat -L -c %s "$file")" -lt "$((27 * 1024 * 1024))" ] \
-		|| error "swdesc_boot_linux image must be at most 27MB big"
+	[ "$(stat -L -c %s "$file")" -lt "$((26 * 1024 * 1024))" ] \
+		|| error "swdesc_boot_linux image must be at most 26MB big"
 
 	swdesc_exec_nochroot "$file" \
 		'[ -e /dev/swupdate_bootdev ]' \
