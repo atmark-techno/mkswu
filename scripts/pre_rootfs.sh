@@ -3,11 +3,12 @@ copy_to_target() {
 	local dir
 
 	for file; do
-		# source file must exist...
-		[ -e "$file" ] || continue
+		# source file must exist... being careful of symlinks
+		[ -L "$file" ] || [ -e "$file" ] || continue
 		# and destination file not (probably already copied)
 		# except directories which we'll copy into with no-cobbler
 		[ -e "$TARGET/$file" ] && [ ! -d "$TARGET/$file" ] && continue
+		[ -L "$TARGET/$file" ] && continue
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
