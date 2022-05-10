@@ -1,14 +1,3 @@
-link_exists() {
-	local base="$1"
-	local target="$2"
-
-	if [ "${target:0:1}" = "/" ]; then
-		[ -e "/target/$target" ]
-	else
-		[ -e "/target/$base/$target" ]
-	fi
-}
-
 update_shadow_user() {
 	local user="$1"
 	local oldpass
