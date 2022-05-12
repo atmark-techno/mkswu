@@ -1011,6 +1011,7 @@ swdesc_option() {
 		NOTIFY_STARTING_CMD=*) NOTIFY_STARTING_CMD="${opt#NOTIFY_STARTING_CMD=}";;
 		NOTIFY_FAIL_CMD=*) NOTIFY_FAIL_CMD="${opt#NOTIFY_FAIL_CMD=}";;
 		NOTIFY_SUCCESS_CMD=*) NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
+		ROOTFS_FSTYPE=*) ROOTFS_FSTYPE="${opt#ROOTFS_FSTYPE=}";;
 		BOOT_SIZE=*) BOOT_SIZE="${opt#BOOT_SIZE=}";;
 		ENCRYPT_KEYFILE=*) ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}";;
 		PUBKEY=*) PUBKEY="${opt#PUBKEY=}";;
@@ -1020,7 +1021,7 @@ swdesc_option() {
 		component=*) component="${opt#component=}";;
 		version=*) version="${opt#version=}";;
 		install_if=*) install_if="${opt#install_if=}";;
-		CONTAINER_CLEAR|NO_PRESERVE_FILES|ROOTFS_BTRFS|\
+		CONTAINER_CLEAR|NO_PRESERVE_FILES|\
 		ENCRYPT_ROOTFS|ENCRYPT_FS|\
 		SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
 			SWDESC_OPTS="$SWDESC_OPTS
@@ -1128,6 +1129,11 @@ ${NO_PRESERVE_FILES:+NO_PRESERVE_FILES}"
 		&& echo "$NOTIFY_FAIL_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_FAIL_CMD /'
 	[ -n "${NOTIFY_SUCCESS_CMD+1}" ] \
 		&& echo "$NOTIFY_SUCCESS_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_SUCCESS_CMD /'
+	case "$ROOTFS_FSTYPE" in
+	ext4|btrfs) echo "# MKSWU_ROOTFS_FSTYPE $ROOTFS_FSTYPE";;
+	"") ;;
+	*) error "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs" "$ROOTFS_FSTYPE";;
+	esac
 	case "$POST_ACTION" in
 	poweroff|wait|container) echo " # MKSWU_POST_ACTION $POST_ACTION";;
 	""|reboot) ;;
@@ -1515,8 +1521,8 @@ mkinit_genkey() {
 	while true; do
 		prompt AES "Use AES encryption? (N/y)"
 		case "$AES" in
-	        [Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1) AES=1; break;;
-	        [Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") AES=""; break;;
+		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1) AES=1; break;;
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") AES=""; break;;
 		esac
 	done
 	if [ -n "$AES" ]; then
@@ -1573,9 +1579,9 @@ mkinit_geninitdesc() {
 	while true; do
 		prompt KEEPATMARKPEM "Allow updates signed by Atmark Techno? (Y/n)"
 		case "$KEEPATMARKPEM" in
-	        [Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1|"")
+		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1|"")
 			KEEPATMARKPEM=1; break;;
-	        [Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0)
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0)
 			KEEPATMARKPEM=""; break;;
 		esac
 	done

@@ -132,6 +132,7 @@ mount_target_rootfs() {
 	local uptodate basemount
 	local tmp fail extlinux
 	local encrypted=""
+	local fstype=""
 
 	cryptsetup isLuks "$dev" >/dev/null 2>&1 && encrypted=1
 
@@ -190,15 +191,23 @@ mount_target_rootfs() {
 	# note mkfs.ext4 fails even with -F if the filesystem is mounted
 	# somewhere, so this doubles as failguard
 	[ -e "/boot/extlinux.conf" ] && extlinux=1
-	if [ -n "$(mkswu_var ROOTFS_BTRFS)" ]; then
+	fstype=$(mkswu_var ROOTFS_FSTYPE)
+	[ -n "$fstype" ] || fstype=$(findmnt -n -o fstype /live/rootfs 2>/dev/null)
+	[ -n "$fstype" ] || fstype=ext4
+	case "$fstype" in
+	btrfs)
 		mkfs.btrfs -q -L "rootfs_${ab}" -m dup -f "$dev" \
 			|| error "Could not reformat $dev"
 		mount "$dev" "/target" -o compress=zstd,discard=async
-	else
+		;;
+	ext4)
 		mkfs.ext4 -q ${extlinux:+-O "^64bit"} -L "rootfs_${ab}" -F "$dev" \
 			|| error "Could not reformat $dev"
 		mount "$dev" "/target" || error "Could not mount $dev"
-	fi
+		;;
+	*)
+		error "Unexpected fstype for rootfs: $fstype. Must be ext4 or btrfs"
+	esac
 
 	mkdir -p /target/boot /target/mnt /target/target
 	touch /target/.created

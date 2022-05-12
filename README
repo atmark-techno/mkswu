@@ -66,8 +66,9 @@ swdesc_option CONTAINER_CLEAR
 swdesc_option NO_PRESERVE_FILES
     if set, swupdate will not copy files listed in
     /etc/swupdate_preserve_files when base_os is updated
-swdesc_option ROOTFS_BTRFS
-    format / filesystem as btrfs instead of ext4
+swdesc_option ROOTFS_FSTYPE={ext4,btrfs}
+    filesystem to use for /
+    By default the same as current fs is reused.
 swdesc_option SKIP_APP_SUBVOL_SYNC
     (for test only) skip btrfs subvolume sync command that
     slows down tests
