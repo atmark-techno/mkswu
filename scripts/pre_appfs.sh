@@ -64,7 +64,7 @@ check_update_disk_encryption() {
 		|| error "Disk reencryption was requested, but swupdate runs in /var/tmp so we cannot do it" \
 			 "Re-run with TMPDIR=/tmp swupdate ... to force installation"
 
-	findmnt -n -o target "$dev" \
+	findmnt -n -o TARGET "$dev" \
 		| while read -r mntpoint; do
 			# umount if used
 			podman_killall "Stopping all containers to dismount fs for disk encryption setup"
@@ -104,9 +104,8 @@ prepare_appfs() {
 	mkdir -p /target/var/app/rollback/volumes
 	mkdir -p /target/var/app/volumes /target/var/tmp
 
-	dev=$(findmnt -n -o SOURCE /var/tmp)
+	dev=$(findmnt -nv -o SOURCE /var/tmp)
 	[ -n "$dev" ] || error "Could not find appfs source device"
-	dev="${dev%[*}"
 	check_update_disk_encryption
 
 	mount "$dev" "$basemount" -o "${mountopt%,subvol}" \

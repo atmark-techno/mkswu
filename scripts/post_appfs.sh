@@ -71,9 +71,8 @@ cleanup_appfs() {
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 
 	if ! needs_reboot; then
-		dev=$(findmnt -n -o SOURCE /var/tmp)
+		dev=$(findmnt -nv -o SOURCE /var/tmp)
 		[ -n "$dev" ] || error "Could not find appfs source device"
-		dev="${dev%[*}"
 		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
 		mount "$dev" "$basemount" || error "Could not mount app root"
 

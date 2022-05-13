@@ -192,7 +192,7 @@ mount_target_rootfs() {
 	# somewhere, so this doubles as failguard
 	[ -e "/boot/extlinux.conf" ] && extlinux=1
 	fstype=$(mkswu_var ROOTFS_FSTYPE)
-	[ -n "$fstype" ] || fstype=$(findmnt -n -o fstype /live/rootfs 2>/dev/null)
+	[ -n "$fstype" ] || fstype=$(findmnt -n -o FSTYPE /live/rootfs 2>/dev/null)
 	[ -n "$fstype" ] || fstype=ext4
 	case "$fstype" in
 	btrfs)
