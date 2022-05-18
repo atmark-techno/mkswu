@@ -63,77 +63,75 @@ test_version_update() {
 	system_versions="$SCRIPTSDIR/sw-versions"
 	merged="$SCRIPTSDIR/sw-versions.merged"
 	board="iot-g4-es1"
-	cp "scripts/sw-versions" "$SCRIPTSDIR/" \
+	cp "scripts/sw-versions" "$system_versions" \
 		|| error "Source versions not found?"
-
-	echo "Test getting version from existing file (different format)"
-	version=$(get_version extra_os.kernel "$system_versions")
-	[ "$version" = "5.10.90-1" ] || error "Could not get system version"
 
 	echo "Testing version merging works"
 	echo "  #VERSION extra_os.kernel 5.10.82-1 different *" > "$SWDESC"
 	gen_newversion
-	version=$(get_version extra_os.kernel)
+	version=$(get_version extra_os.kernel old)
+	[ "$version" = "5.10.90-1" ] || error "Could not get system version"
+	version=$(get_version extra_os.kernel present)
 	[ "$version" = "5.10.82-1" ] || error "Could not get version"
-	version=$(get_version --install-if extra_os.kernel)
+	version=$(get_version --install-if extra_os.kernel present)
 	[ "$version" = "5.10.82-1 different" ] || error "Could not get install-if"
-	version=$(get_version extra_os.kernel "$merged")
+	version=$(get_version extra_os.kernel)
 	[ "$version" = "5.10.82-1" ] || error "Did not merge in new kernel version (different)"
 
 	echo "  #VERSION extra_os.kernel 5.10.82-1 higher *" > "$SWDESC"
 	gen_newversion
-	version=$(get_version extra_os.kernel "$merged")
+	version=$(get_version extra_os.kernel merged)
 	[ "$version" = "5.10.90-1" ] || error "Merged new kernel version when it shouldn't have"
 
 	echo "  #VERSION extra_os.kernel 5.10.99-1 higher *" > "$SWDESC"
 	gen_newversion
-	version=$(get_version extra_os.kernel "$merged")
+	version=$(get_version extra_os.kernel)
 	[ "$version" = "5.10.99-1" ] || error "Did not merge in new kernel version (higher)"
 
 	echo "  #VERSION boot 2020.04-at2 different *" > "$SWDESC"
 	gen_newversion
-	version=$(get_version boot "$merged")
+	version=$(get_version boot)
 	[ "$version" = "2020.04-at2" ] || error "Did not merge new boot version"
-	version=$(get_version other_boot "$merged")
+	version=$(get_version other_boot)
 	[ "$version" = "2020.04-at0" ] || error "other_boot should stay at old boot"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
-	version=$(get_version boot "$merged")
+	version=$(get_version boot)
 	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
-	version=$(get_version other_boot "$merged")
+	version=$(get_version other_boot)
 	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
 
 	sed -i -e '/boot/d' "$system_versions"
 	gen_newversion
-	version=$(get_version boot "$merged")
+	version=$(get_version boot)
 	[ "$version" = "2020.04-at2" ] || error "boot was not added"
-	version=$(get_version other_boot "$merged")
+	version=$(get_version other_boot)
 	[ "$version" = "" ] || error "other_boot somehow got made up?"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
-	version=$(get_version boot "$merged")
+	version=$(get_version boot)
 	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
-	version=$(get_version other_boot "$merged")
+	version=$(get_version other_boot)
 	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
 
 	cp "$merged" "$system_versions"
 	echo "  #VERSION boot 2020.04-at3 different $board" > "$SWDESC"
 	echo "  #VERSION boot 2020.04-at4 different not-$board" >> "$SWDESC"
 	gen_newversion
-	version=$(get_version boot "$merged")
+	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
 	[ "$version" = "2020.04-at3" ] || error "Did not merge correct new boot version"
-	version=$(get_version other_boot "$merged")
+	version=$(get_version other_boot)
 	[ "$version" = "2020.04-at2" ] || error "other_boot should not stay at previous boot value"
 
 	: > "$system_versions"
 	gen_newversion
-	version=$(get_version boot "$merged")
+	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
 	[ "$version" = "2020.04-at3" ] || error "Did not merge correct new boot version"
-	version=$(get_version other_boot "$merged")
+	version=$(get_version other_boot)
 	[ -z "$version" ] || error "other_boot should not be set"
 }
 

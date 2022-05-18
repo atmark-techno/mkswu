@@ -48,7 +48,7 @@ check() {
 		## from scripts/version.sh gen_newversion:
 		extract_swdesc_versions < "$dir/sw-description" \
 			> "$dir/sw-versions.present"
-		real_version=$(get_version --install-if "$component" "$dir/sw-versions.present")
+		real_version=$(SCRIPTSDIR="$dir" get_version --install-if "$component" present)
 
 		[[ "$real_version" =~ ^$version$ ]] ||
 			error "Version $component expected $version got $real_version"

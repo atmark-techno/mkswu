@@ -3,8 +3,8 @@ copy_boot() {
 	local other_vers cur_vers
 	local flash_dev cur_dev
 
-	other_vers=$(get_version "other_$version" /etc/sw-versions)
-	cur_vers=$(get_version "$version" /etc/sw-versions)
+	other_vers=$(get_version "other_$version" old)
+	cur_vers=$(get_version "$version" old)
 
 	[ "$other_vers" = "$cur_vers" ] && return
 

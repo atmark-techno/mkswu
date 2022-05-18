@@ -5,7 +5,7 @@ get_version() {
 		shift
 	fi
 	local component="$1"
-	local source="${2:-$SCRIPTSDIR/sw-versions.present}"
+	local source="$SCRIPTSDIR/sw-versions.${2:-merged}"
 
 	[ -e "$source" ] || return
 
@@ -74,12 +74,12 @@ needs_update() {
 	local newvers oldvers install_if
 	local system_versions="${system_versions:-/etc/sw-versions}"
 
-	newvers=$(get_version --install-if "$component")
+	newvers=$(get_version --install-if "$component" present)
 	[ -n "$newvers" ] || return 1
 	install_if=${newvers##* }
 	newvers=${newvers% *}
 
-	oldvers=$(get_version "$component" "$system_versions")
+	oldvers=$(get_version "$component" old)
 	version_update "$install_if" "$oldvers" "$newvers"
 }
 
@@ -123,7 +123,7 @@ gen_newversion() {
 			other_boot_linux) continue;;
 			boot_linux) printf "%s\n" "other_boot_linux $oldvers";;
 			esac
-			newvers=$(get_version --install-if "$component")
+			newvers=$(get_version --install-if "$component" present)
 			install_if=${newvers##* }
 			newvers=${newvers% *}
 			version_update "$install_if" "$oldvers" "$newvers" \
@@ -136,7 +136,7 @@ gen_newversion() {
 		"*"|"$board") ;;
 		*) continue;;
 		esac
-		oldvers=$(get_version "$component" "$system_versions")
+		oldvers=$(get_version "$component" old)
 		[ -n "$oldvers" ] || printf "%s\n" "$component $newvers"
 	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged" \
 		|| error "Version generation from new versions in swu failed"
