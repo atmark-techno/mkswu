@@ -70,6 +70,8 @@ post_success_atlog() {
 
 	[ -n "$versions" ] || versions="(no new version)"
 
+	# HOSTNAME not posix sh
+	[ -n "$HOSTNAME" ] || local HOSTNAME="$(hostname -s)"
 	echo "$(date +"%b %_d %H:%M:%S") $HOSTNAME NOTICE swupdate: Installed update to $newstate: $versions" \
 		>> "$atlog" \
 		|| warning "Could not record update to atlog"

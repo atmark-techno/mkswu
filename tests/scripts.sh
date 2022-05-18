@@ -403,6 +403,7 @@ test_post_success() {
 		|| error "unset missing comp3: $(cat "$atlog")"
 	grep -qF "update to ${partdev}1" "$atlog" \
 		|| error "Wrong partition used: $(cat "$atlog")"
+	[ -n "$HOSTNAME" ] || local HOSTNAME="$(hostname -s)"
 	grep -qE "^[A-Z][a-z][a-z] [0-9 ][0-9] [0-2][0-9]:[0-5][0-9]:[0-6][0-9] $HOSTNAME NOTICE swupdate: Installed" "$atlog" \
 		|| error "Date or header is wrong: $(cat "$atlog")"
 	rm -f "$atlog"
