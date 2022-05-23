@@ -340,6 +340,7 @@ write_entry_stdout() {
 
 	write_line "{"
 	indent=$((indent+2))
+	printf "%s\n" "$show_cmd" | sed -e "s/^/$(printf "%*s" "$indent" "")# /"
 	write_line "filename = \"$file\";"
 	if [ -n "$version" ]; then
 		[ -n "$component" ] || error "version %s was set without associated component" "$version"
@@ -541,37 +542,43 @@ parse_swdesc() {
 		[ $# -eq 0 ] && [ -n "$BOOT" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot requires an argument\nUsage: swdesc_boot [options] boot_file"
 		BOOT="$1"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $BOOT"
 		;;
 	boot_enc)
 		[ $# -eq 0 ] && [ -n "$BOOT" ] && [ -n "$DEK_OFFSETS" ] && return
 		[ $# -eq 2 ] || error "swdesc_boot_enc requires two arguments\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
 		BOOT="$1"
 		DEK_OFFSETS="$2"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $BOOT"
 		;;
 	boot_linux)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot_linux requires an argument\nUsage: swdesc_boot_linux [options] boot_linux_file"
 		file="$1"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file"
 		;;
 	tar)
 		[ $# -eq 0 ] && [ -n "$source" ] && return
 		[ $# -eq 1 ] || error "swdesc_tar requires an argument\nUsage: swdesc_tar [options] file.tar"
 		source="$1"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD${dest:+ --dest $dest}${preserve_attributes:+ --preserve-attributes} $source"
 		;;
 	files)
 		[ $# -eq 0 ] && [ -n "$file" ] && [ -n "$tarfiles_src" ] && return
 		[ $# -ge 1 ] || error "swdesc_files requires arguments\nUsage: swdesc_files [options] file [files...]"
 		tarfiles_src="$(printf "%s\n" "$@")"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD${dest:+ --dest $dest}${preserve_attributes:+ --preserve-attributes} $(printf "%s " "$@")"
 		;;
-	command)
+	command*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && return
 		[ $# -ge 1 ] || error "swdesc_command requires arguments\nUsage: swdesc_command [options] cmd [cmd..]"
 		cmd=""
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $cmd"
 		;;
-	script)
+	script*)
 		[ $# -eq 0 ] && [ -n "$script" ] && return
 		[ $# -ge 1 ] || error "swdesc_script requires arguments\nUsage: swdesc_script [options] script [args]"
 		script="$1"
@@ -579,8 +586,9 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd }$(shell_quote "$ARG")"
 		done
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $script $cmd"
 		;;
-	exec)
+	exec*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
 		[ $# -ge 2 ] || error "swdesc_exec requires at least two arguments\nUsage: swdesc_exec [options] file command"
 		file="$1"
@@ -589,11 +597,13 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $cmd"
 		;;
 	*container)
 		[ $# -eq 0 ] && [ -n "$image" ] && return
 		[ $# -eq 1 ] || error "%s requires an argument\nUsage: %s [options] image" "swdesc_$CMD" "swdesc_$CMD"
 		image="$1"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $image"
 		;;
 	*)
 		error "Unhandled command %s" "$CMD"
@@ -629,7 +639,7 @@ pad_boot() {
 swdesc_boot() {
 	local BOOT="$BOOT" component=boot version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc boot "$@"
 
@@ -651,7 +661,7 @@ swdesc_boot_enc() {
 	local BOOT="$BOOT" DEK_OFFSETS="$DEK_OFFSETS" offsets
 	local component=boot version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc boot_enc "$@"
 
@@ -678,7 +688,8 @@ swdesc_boot_enc() {
 swdesc_boot_linux() {
 	local component=boot_linux version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if" file=""
+	local install_if="$install_if" show_cmd="$show_cmd"
+	local file=""
 
 	parse_swdesc boot_linux "$@"
 
@@ -700,7 +711,7 @@ swdesc_tar() {
 	local source="$source" dest="$dest"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 	local preserve_attributes="$preserve_attributes"
 	local target="/target"
 
@@ -805,7 +816,7 @@ swdesc_files() {
 	local file="" dest="$dest" basedir="$basedir"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd
 	local preserve_attributes="$preserve_attributes"
 	local tarfiles_src="$tarfiles_src"
 	local IFS="
@@ -832,9 +843,9 @@ swdesc_exec_nochroot() {
 	local file="$file" cmd="$cmd"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
-	parse_swdesc exec "$@"
+	parse_swdesc exec_nochroot "$@"
 
 	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
@@ -851,7 +862,7 @@ swdesc_exec() {
 	local file="$file" cmd="$cmd" chroot_cmd
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc exec "$@"
 
@@ -885,7 +896,7 @@ swdesc_command() {
 	local cmd="$cmd" file
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc command "$@"
 
@@ -900,9 +911,9 @@ swdesc_command_nochroot() {
 	local cmd="$cmd" file
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
-	parse_swdesc command "$@"
+	parse_swdesc command_nochroot "$@"
 
 	set_file_from_content "$cmd"
 	[ -e "$file" ] || : > "$file"
@@ -915,7 +926,8 @@ swdesc_script() {
 	local script="$script"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if" cmd="$cmd"
+	local install_if="$install_if" show_cmd="$show_cmd"
+	local cmd="$cmd"
 
 	parse_swdesc script "$@"
 
@@ -927,9 +939,10 @@ swdesc_script_nochroot() {
 	local script="$script"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if" cmd="$cmd"
+	local install_if="$install_if" show_cmd="$show_cmd"
+	local cmd="$cmd"
 
-	parse_swdesc script "$@"
+	parse_swdesc script_nochroot "$@"
 
 	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	swdesc_exec_nochroot "$script" 'sh $1'" $cmd"
@@ -940,7 +953,7 @@ swdesc_embed_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc embed_container "$@"
 
@@ -952,7 +965,7 @@ swdesc_pull_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc pull_container "$@"
 
@@ -964,7 +977,7 @@ swdesc_usb_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if"
+	local install_if="$install_if" show_cmd="$show_cmd"
 
 	parse_swdesc usb_container "$@"
 
@@ -983,7 +996,8 @@ swdesc_usb_container() {
 }
 
 embedded_preinstall_script() {
-	local component="" version="" board="" main_version="" install_if=""
+	local component="" version="" board="" main_version=""
+	local install_if="" show_cmd="pre_script"
 	local install_first=1
 
 	local file="scripts.tar" basedir=""
@@ -998,7 +1012,8 @@ embedded_preinstall_script() {
 }
 
 embedded_postinstall_script() {
-	local component="" version="" board="" main_version="" install_if=""
+	local component="" version="" board="" main_version=""
+	local install_if="" show_cmd="post_script"
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
@@ -1671,6 +1686,83 @@ mkswu_init() {
 	mkinit_mkimageinitswu
 }
 
+mkswu_show() {
+	local swu desc
+	for swu; do
+		[ "$swu" != "${swu%.swu}" ] \
+			|| error "File does not end in .swu: %s" "$swu"
+
+		printf "%s\n\n" "$swu"
+
+		desc=$(cpio -i --quiet --to-stdout sw-description < "$swu")
+		[ -n "$desc" ] || error "Could not get swu sw-description content from %s" "$swu"
+
+		# default to raw for old swu generated before command hints
+		if ! printf "%s\n" "$desc" | grep -q '# swdesc'; then
+			info "SWU was build with an old version of mkswu or was empty,"
+			info "falling back to --raw"
+			echo
+			SHOW_RAW=1
+		fi
+		if [ -n "$SHOW_RAW" ]; then
+			printf "%s\n" "$desc"
+			continue
+		fi
+
+		printf "%s\n" "$desc" | awk '
+			/^ *# Built with mkswu/ {
+				print "# built with mkswu", $NF
+			}
+			/^ *# swdesc_/ {
+				gsub(/ *# /, "")
+				cmd=$0
+				if (seen[cmd]) {
+					cmd=""
+				} else {
+					seen[cmd]=1
+				}
+			}
+			/^ *version =/ && cmd {
+				gsub(/.*= "|";/, "")
+				version[cmd]=$0
+			}
+			/^ *name =/ && cmd {
+				gsub(/.*= "|";/, "")
+				component[cmd]=$0
+			}
+			/^ *encrypted = true/ && cmd {
+				encrypted[cmd]="1"
+			}
+			/^ *install-if-different/ {
+				install_if[cmd]="different"
+			}
+			/^ *}/ && cmd {
+				cmd=""
+			}
+			/^ *# MKSWU_/ {
+				gsub(/ *# MKSWU_/, "swdesc_option ")
+				gsub(/ 1$/, "")
+				print
+			}
+			END {
+				for (cmd in seen) {
+				print ""
+				print cmd
+				if (component[cmd] && version[cmd]) {
+					print "  --version", component[cmd], version[cmd]
+					if (install_if[cmd]) {
+						print "  --install-if", install_if[cmd]
+					}
+				}
+				if (encrypted[cmd]) {
+					print "  (encrypted)"
+				}
+			}
+			}
+			'
+	done
+}
+
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
@@ -1695,15 +1787,16 @@ sw-description.sig"
 	local PRIVKEY PUBKEY PRIVKEY_PASS
 	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
 
-	# genkey options
+	# mode options
 	local GENKEY_PLAIN="" GENKEY_CN=""
+	local SHOW_RAW=""
 
 	# default default values
 	local BOOT_SIZE="4M"
 	local compress=1
 	local main_cwd desc
 	local component version board="" dest=""
-	local install_first="" main_version=""
+	local install_first="" main_version="" show_cmd=""
 
 	set -e
 
@@ -1822,20 +1915,28 @@ sw-description.sig"
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
 			MODE=internal
 			;;
+		"--show")
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			MODE=show
+			;;
+		"--raw")
+			[ "$MODE" = "show" ] || error "%s must be passed after %s" "$ARG" "--show"
+			SHOW_RAW=1
+			;;
 		"--genkey")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
 			MODE=genkey_sign
 			;;
 		"--aes")
-			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after --genkey" "$ARG"
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after %s" "$ARG" "--genkey"
 			MODE=genkey_aes
 			;;
 		"--plain")
-			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after --genkey" "$ARG"
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after %s" "$ARG" "--genkey"
 			GENKEY_PLAIN=1
 			;;
 		"--cn")
-			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after --genkey" "$ARG"
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after %s" "$ARG" "--genkey"
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			GENKEY_CN="$1"
 			SKIP=1

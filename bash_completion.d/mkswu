@@ -19,6 +19,7 @@ _mkswu()
 		--aes) mode=genkey_aes;;
 		--init) mode=init;;
 		--import) mode=import;;
+		--show) mode=show;;
 		esac
 	done
 
@@ -26,8 +27,12 @@ _mkswu()
 	case "$mode" in
 	genkey) options+=" --aes --cn --plain";;
 	genkey_aes|init|import) :;;
-	"") options+=" -o --out --init --import --genkey";;
+	show) options+=" --raw";;
+	"") options+=" -o --out --init --import --genkey --show";;
 	esac
 	COMPREPLY=($(compgen -W "$options" -- "$cur"))
-	[ -z "$mode" ] && _filedir 'desc'
+	case "$mode" in
+	show) _filedir 'swu';;
+	"") _filedir 'desc';;
+	esac
 } && complete -F _mkswu mkswu
