@@ -19,7 +19,7 @@ swdesc_option ENCRYPT_ROOTFS
 # since swupdate normally uses /var/tmp, which is in appfs, you need
 # to run with TMPDIR=/tmp swupdate -i enable_disk_encryption.swu
 # if this is set.
-swdesc_option ENCRYPT_FS
+swdesc_option ENCRYPT_USERFS
 
 
 # dummy command to avoid having an empty update

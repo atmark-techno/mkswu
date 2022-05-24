@@ -1038,7 +1038,7 @@ swdesc_option() {
 		version=*) version="${opt#version=}";;
 		install_if=*) install_if="${opt#install_if=}";;
 		CONTAINER_CLEAR|NO_PRESERVE_FILES|\
-		ENCRYPT_ROOTFS|ENCRYPT_FS|\
+		ENCRYPT_ROOTFS|ENCRYPT_USERFS|\
 		SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
 			SWDESC_OPTS="$SWDESC_OPTS
 $opt";;

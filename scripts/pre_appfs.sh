@@ -54,7 +54,7 @@ podman_killall() {
 check_update_disk_encryption() {
 	# reencrypt partition if required
 	# note we do not reformat as plain if var is not set
-	[ -z "$(mkswu_var ENCRYPT_FS)" ] && return
+	[ -z "$(mkswu_var ENCRYPT_USERFS)" ] && return
 
 	# already encrypted ?
 	[ "$(lsblk -n -o type "$dev")" = "crypt" ]  && return

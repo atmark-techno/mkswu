@@ -224,7 +224,7 @@ EOF
 check_update_log_encryption() {
 	# encrypt /var if we were requested to
 	# note we do not "decrypt" a fs if the var is not set
-	[ -z "$(mkswu_var ENCRYPT_FS)" ] && return
+	[ -z "$(mkswu_var ENCRYPT_USERFS)" ] && return
 
 	local dev="$(findmnt -n -o SOURCE /var/log)"
 	[ -z "$dev" ] && return
