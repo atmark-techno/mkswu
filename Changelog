@@ -1,3 +1,32 @@
+4.1
+===
+breaking changes:
+ - rename ENCRYPT_FS to ENCRYPT_USERFS. This option was never documented
+but one example used it; using swdesc_option ensures an error happens if
+it is used.
+ - default atmark password for --init is now locked instead of root
+password
+
+fixes:
+ - mkswu --init would generate an invalid 'atmark' user password
+since version 3.15-at.2, fix it and make --init again correct it as well
+ - forbid installing another update while reboot is in progress.
+This would sometimes cause a new partial rootfs copy and reboot into
+a broken system
+
+features:
+ - include mkswu version in a comment in sw-description, so version used
+to generate swu can be checked later
+ - add mkswu --show to display swu content
+ - ROOTFS_FSTYPE will default to whatever current system is currently in
+use, so does not need to be set in all updates.
+ - similarly, disk encryption is now automatically replicated if rootfs
+is currently encrypted
+ - run fstrim on rootfs after install. This helps MMC performance a
+little bit.
+
+ -- 2022-05-26
+
 4.0
 ===
 This release changes numbering system to unlink mkswu from baseos:
@@ -11,6 +40,8 @@ no encryption and already compressed files
 this ensures the system should not be broken if power is cut immediately
 after boot switch/notification.
  - fix temporary cleanup of unused files
+
+ -- 2022-04-27
 
 3.15-at.6
 =========
@@ -35,6 +66,8 @@ have net_raw permission to ping. use nc instead.
  - fix copying boot image over to other partition, the image was not always
 copied until the end
 
+ -- 2022-04-25
+
 3.15-at.5
 =========
 fixes:
@@ -42,6 +75,8 @@ fixes:
  - fix podman_cleanup corner cases with infra image
  - fix sha256sum file not being updated properly sometimes (if zst archive
    changed without changing base file)
+
+ -- 2022-04-08
 
 3.15-at.4
 =========
@@ -62,6 +97,8 @@ features:
 fixes:
  - PRIVKEY_PASS wasn't escaped properly
  - fix hawkbit service restart for POST=container updates with hawkbit
+
+ -- 2022-03-24
 
 3.15-at.3
 =========
@@ -84,6 +121,8 @@ also now be removed.
  - install base_os first if present in the image. This allows running
 swdesc_exec or similar even if a base_os update is coming that would
 previously fail because /target is empty
+
+ -- 2022-02-18
 
 3.15-at.2
 =========
@@ -125,6 +164,7 @@ to do it with plenty of failure messages
  - podman_cleanup: relax failure conditions when image is missing
 but container does not autostart or autopulls the image
 
+ -- 2022-01-21
 
 3.15-at.1
 =========
@@ -144,7 +184,10 @@ reboot case, leading to double-swap
  - version managements: do not remove extra_os versions on base_os update
  - examples/initial_setup.desc: fix using wrong public key for /etc/swupdate.pem update
 
+ -- 2021-12-21
 
 3.14-at.2
 =========
  - first public release
+
+-- 2021-12-03
