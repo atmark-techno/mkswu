@@ -88,6 +88,7 @@ usage() {
 	info "  --init                  walk through initial key and first image generation"
 	info "  --import                import current directory's config and keys into config dir"
 	info "  --genkey                toggle key generation mode (see below for suboptions)"
+	info "  --show [--raw] <in.swu> print details about input swu"
 	info "  --version               print version and exit"
 	info "  desc                    image description file(s), if multiple are given"
 	info "                          then the generated image will merge all the contents"
