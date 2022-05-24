@@ -42,6 +42,10 @@ msgid ""
 msgstr ""
 
 #: mkswu
+msgid "  --show [--raw] <in.swu> print details about input swu"
+msgstr ""
+
+#: mkswu
 msgid "  --version               print version and exit"
 msgstr ""
 
@@ -158,12 +162,12 @@ msgid "File must end in .enc"
 msgstr "%s は「.enc」で終わらせてください。"
 
 #: mkswu
-msgid "ivs file $ivs does not exist"
-msgstr ""
+msgid "ivs file %s does not exist"
+msgstr "%s が存在しません。"
 
 #: mkswu
-msgid "$file not found in $ivs"
-msgstr ""
+msgid "%s not found in %s"
+msgstr "%s は %s の中にありません。"
 
 #: mkswu
 msgid "failed to decrypt %s"
@@ -187,7 +191,7 @@ msgstr "ソースファイル %s が存在しません。"
 
 #: mkswu
 msgid "Could not generate an iv to encrypt %s"
-msgstr ""
+msgstr "%s の暗号化の iv を生成できませんでした。"
 
 #: mkswu
 msgid "Checksumming %s failed"
@@ -379,8 +383,8 @@ msgstr ""
 "ください"
 
 #: mkswu
-msgid "swdesc_boot_linux image must be at most 27MB big"
-msgstr ""
+msgid "swdesc_boot_linux image must be at most 26MB big"
+msgstr "swdesc_boot_linux は 26MB までです。"
 
 #: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
@@ -453,6 +457,10 @@ msgid "No versions found: empty image or version not set?"
 msgstr ""
 "バージョンが見つかりませんでした。--versionかswdesc_option version=1を使って"
 "ください。"
+
+#: mkswu
+msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"
+msgstr "ROOTFS_FSTYPE %s が間違ってます。（ext4, btrfs か空にしてください）"
 
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
@@ -690,6 +698,22 @@ msgid "No command to hash password"
 msgstr "パスワードを作成できませんでした。"
 
 #: mkswu
+msgid "%s user password:"
+msgstr "%sパスワード:"
+
+#: mkswu
+msgid "A root password is required"
+msgstr "rootパスワードが必要です。"
+
+#: mkswu
+msgid "%s user password (empty = locks account):"
+msgstr "%sユーザのパスワード（空の場合はアカウントをロックします）:"
+
+#: mkswu
+msgid "Could not generate password"
+msgstr "パスワードを作成できませんでした。"
+
+#: mkswu
 msgid ""
 "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? "
 "(y/N)"
@@ -702,41 +726,34 @@ msgid "Select update frequency ([weekly]/daily)"
 msgstr "アップデートの頻度を指定してください ([weekly]/daily)"
 
 #: mkswu
+msgid "Could not rename %s"
+msgstr "%s をリネームできませんでした。"
+
+#: mkswu
+msgid "atmark password was incorrectly generated, regenerating it"
+msgstr ""
+"atmark ユーザーパスワードが正しく設定されてませんでした、再作成します。"
+
+#: mkswu
+msgid "if initial_setup was already installed please adjust password"
+msgstr "initial_setup をすでにインストールされている場合に"
+
+#: mkswu
+msgid "with %s if necessary"
+msgstr "%s を使ってパスワードを更新してください。"
+
+#: mkswu
+msgid "Could not update %s"
+msgstr "%s を更新できませんでした。"
+
+#: mkswu
 msgid "Allow updates signed by Atmark Techno? (Y/n)"
 msgstr ""
 "アットマークテクノが作成したイメージをインストール可能にしますか？ (Y/n)"
 
 #: mkswu
-msgid "root password:"
-msgstr "rootパスワード:"
-
-#: mkswu
-msgid "A root password is required"
-msgstr "rootパスワードが必要です。"
-
-#: mkswu
-msgid "root password (confirm):"
-msgstr "rootパスワード（確認）:"
-
-#: mkswu
-msgid "Could not hash password"
-msgstr "パスワードを作成できませんでした。"
-
-#: mkswu
-msgid "atmark user password (empty = same as root):"
-msgstr "atmarkユーザのパスワード（空の場合はrootパスワードを使います）:"
-
-#: mkswu
-msgid "atmark user password (confirm):"
-msgstr "atmarkユーザのパスワード（確認）:"
-
-#: mkswu
 msgid "Could not copy initial_setup.desc from example dir"
 msgstr "initial_setup.descをコピーできませんでした。"
-
-#: mkswu
-msgid "Could not update %s"
-msgstr "%s を更新できませんでした。"
 
 #: mkswu
 msgid "Could not generate initial setup swu"
@@ -766,6 +783,22 @@ msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr "を修正しないとインストールできなくなります。"
 
 #: mkswu
+msgid "File does not end in .swu: %s"
+msgstr "%s は「.swu」で終わらせてください。"
+
+#: mkswu
+msgid "Could not get swu sw-description content from %s"
+msgstr "sw-description の内容を %s から読み取れませんでした。"
+
+#: mkswu
+msgid "SWU was build with an old version of mkswu or was empty,"
+msgstr "この SWU ファイルは古い mkswu で作成されました。"
+
+#: mkswu
+msgid "falling back to --raw"
+msgstr "--raw の出力を表示します。"
+
+#: mkswu
 msgid "Could not get script dir"
 msgstr "スクリプトのディレクトリが読み取れませんでした。"
 
@@ -786,8 +819,8 @@ msgid "%s is incompatible with --%s"
 msgstr "%s と --%s は同時に使えません。"
 
 #: mkswu
-msgid "%s must be passed after --genkey"
-msgstr "%s は --genkey の後にしか使えません。"
+msgid "%s must be passed after %s"
+msgstr "%s は %s の後にしか使えません。"
 
 #: mkswu
 msgid "mkswu version %s"
@@ -848,3 +881,9 @@ msgid ""
 "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
 "hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
+
+#~ msgid "root password (confirm):"
+#~ msgstr "rootパスワード（確認）:"
+
+#~ msgid "atmark user password (confirm):"
+#~ msgstr "atmarkユーザのパスワード（確認）:"

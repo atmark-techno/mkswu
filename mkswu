@@ -184,12 +184,12 @@ decrypt_file() {
 	local iv tmp file=${src##*/}
 	ivs="${src%/*}/sw-description-ivs"
 
-	[ -e "$ivs" ] || error "ivs file $ivs does not exist"
+	[ -e "$ivs" ] || error "ivs file %s does not exist" "$ivs"
 
 	while read -r iv tmp; do
 		[ "$tmp" != "$file" ] || break
 	done < "$ivs"
-	[ "$tmp" = "$file" ] || error "$file not found in $ivs"
+	[ "$tmp" = "$file" ] || error "%s not found in %s" "$file" "$ivs"
 	setup_encryption
 	openssl enc -aes-256-cbc -d -in "$src" -out "$dest" \
 			-K "$ENCRYPT_KEY" -iv "$iv" \

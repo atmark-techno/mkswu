@@ -27,6 +27,9 @@ msgstr ""
 msgid "  --genkey                toggle key generation mode (see below for suboptions)"
 msgstr ""
 #: mkswu
+msgid "  --show [--raw] <in.swu> print details about input swu"
+msgstr ""
+#: mkswu
 msgid "  --version               print version and exit"
 msgstr ""
 #: mkswu
@@ -111,10 +114,10 @@ msgstr ""
 msgid "File must end in .enc"
 msgstr ""
 #: mkswu
-msgid "ivs file $ivs does not exist"
+msgid "ivs file %s does not exist"
 msgstr ""
 #: mkswu
-msgid "$file not found in $ivs"
+msgid "%s not found in %s"
 msgstr ""
 #: mkswu
 msgid "failed to decrypt %s"
@@ -240,7 +243,7 @@ msgstr ""
 msgid "Version must be set for swdesc_boot_linux"
 msgstr ""
 #: mkswu
-msgid "swdesc_boot_linux image must be at most 27MB big"
+msgid "swdesc_boot_linux image must be at most 26MB big"
 msgstr ""
 #: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
@@ -286,6 +289,9 @@ msgid "above component used multiple times with different versions or install-if
 msgstr ""
 #: mkswu
 msgid "No versions found: empty image or version not set?"
+msgstr ""
+#: mkswu
+msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"
 msgstr ""
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
@@ -450,37 +456,43 @@ msgstr ""
 msgid "No command to hash password"
 msgstr ""
 #: mkswu
+msgid "%s user password:"
+msgstr ""
+#: mkswu
+msgid "A root password is required"
+msgstr ""
+#: mkswu
+msgid "%s user password (empty = locks account):"
+msgstr ""
+#: mkswu
+msgid "Could not generate password"
+msgstr ""
+#: mkswu
 msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
 msgstr ""
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"
 msgstr ""
 #: mkswu
-msgid "Allow updates signed by Atmark Techno? (Y/n)"
+msgid "Could not rename %s"
 msgstr ""
 #: mkswu
-msgid "root password:"
+msgid "atmark password was incorrectly generated, regenerating it"
 msgstr ""
 #: mkswu
-msgid "A root password is required"
+msgid "if initial_setup was already installed please adjust password"
 msgstr ""
 #: mkswu
-msgid "root password (confirm):"
-msgstr ""
-#: mkswu
-msgid "Could not hash password"
-msgstr ""
-#: mkswu
-msgid "atmark user password (empty = same as root):"
-msgstr ""
-#: mkswu
-msgid "atmark user password (confirm):"
-msgstr ""
-#: mkswu
-msgid "Could not copy initial_setup.desc from example dir"
+msgid "with %s if necessary"
 msgstr ""
 #: mkswu
 msgid "Could not update %s"
+msgstr ""
+#: mkswu
+msgid "Allow updates signed by Atmark Techno? (Y/n)"
+msgstr ""
+#: mkswu
+msgid "Could not copy initial_setup.desc from example dir"
 msgstr ""
 #: mkswu
 msgid "Could not generate initial setup swu"
@@ -501,6 +513,18 @@ msgstr ""
 msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr ""
 #: mkswu
+msgid "File does not end in .swu: %s"
+msgstr ""
+#: mkswu
+msgid "Could not get swu sw-description content from %s"
+msgstr ""
+#: mkswu
+msgid "SWU was build with an old version of mkswu or was empty,"
+msgstr ""
+#: mkswu
+msgid "falling back to --raw"
+msgstr ""
+#: mkswu
 msgid "Could not get script dir"
 msgstr ""
 #: mkswu
@@ -516,7 +540,7 @@ msgstr ""
 msgid "%s is incompatible with --%s"
 msgstr ""
 #: mkswu
-msgid "%s must be passed after --genkey"
+msgid "%s must be passed after %s"
 msgstr ""
 #: mkswu
 msgid "mkswu version %s"
