@@ -1,0 +1,10 @@
+swdesc_option version=1
+
+# You can generate your own hash with the following command:
+#   python3 -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.METHOD_SHA512))'
+# and set it like this, replacing from '$6$' to '/3.':
+#       "usermod -p '"'$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.'"' atmark"
+
+# the default version locks atmark account:
+swdesc_command --extra-os \
+	"usermod -L atmark"
