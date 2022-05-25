@@ -1628,7 +1628,7 @@ mkinit_geninitdesc() {
 		if [ -z "$ATMARKPW" ]; then
 			ATMARKPW="$ROOTPW_CONFIRM"
 		fi
-		ATMARKPW=$(echo "$ROOTPW" | sed -e "s/\"/\"'\"'r/")
+		ATMARKPW=$(echo "$ATMARKPW" | sed -e "s/\"/\"'\"'r/")
 		ATMARKPW=$(geninitdesc_hashpw "$ATMARKPW")
 		[ -n "$ATMARKPW" ] || error "Could not hash password"
 		break
