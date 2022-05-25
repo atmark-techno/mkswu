@@ -76,8 +76,17 @@ checkpass() {
 	local desc
 	local check
 	desc=$(sed -ne "s/^[ \t].*'\"'\(.*\)'\"'.*$user.*/\1/p" "$TESTS_DIR/out/init/initial_setup.desc")
-	check=$(python3 -c "import crypt; print(crypt.crypt('$pass', '$desc'))") \
-		|| error "python3 crypt call failed"
+	if command -v python3 >/dev/null; then
+		check=$(python3 -c "import crypt; print(crypt.crypt('$pass', '$desc'))") \
+			|| error "python3 crypt call failed"
+	elif command -v mkpasswd > /dev/null; then
+		check="${desc#\$*\$}"
+		check="${check%%\$*\$}"
+		check=$(mkpasswd "$pass" "$check") \
+			|| error "mkpasswd call failed"
+	else
+		error "install either python3 or mkpasswd"
+	fi
 	[ "$desc" = "$check" ] || error "Error: $pass was invalid (got $desc expected $check)"
 }
 checkpass atmark atmark
