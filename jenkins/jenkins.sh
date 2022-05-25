@@ -46,6 +46,7 @@ deb)
 
 	rm -rf /tmp/mkswu && mkdir /tmp/mkswu
 	GIT_WORK_TREE=/tmp/mkswu git reset --hard HEAD
+	cp .version /tmp/mkswu/
 	mv "mkswu_$VERSION.orig.tar.xz" /tmp
 	cd /tmp/mkswu
 
