@@ -1559,6 +1559,39 @@ geninitdesc_hashpw() {
 	fi
 }
 
+geninitdesc_promptpass() {
+	local user="$1"
+	local password
+	local confirm
+
+	while true; do
+		if [ "$user" = "root" ]; then
+			PASS=1 prompt password "%s user password:" "$user"
+			if [ -z "$password" ]; then
+				info "A root password is required"
+				continue
+			fi
+		else
+			PASS=1 prompt password "%s user password (empty = locks account):" "$user"
+		fi
+		PASS=1 prompt confirm  "%s user password (confirm):" "$user"
+		if [ "$password" != "$confirm" ]; then
+			info "Passwords do not match"
+			continue
+		fi
+		if [ -z "$password" ]; then
+			password="-L"
+		else
+			password=$(echo "$password" | sed -e "s/\"/\"'\"'r/")
+			password=$(geninitdesc_hashpw "$password")
+			[ -n "$password" ] || error "Could not generate password"
+			password="-p '\"'$password'\"'"
+		fi
+		break
+	done
+	PASSWD="$password"
+}
+
 geninitdesc_prompt_autoupdate() {
 	while true; do
 		prompt AUTOUPDATE "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
@@ -1581,16 +1614,40 @@ geninitdesc_prompt_autoupdate() {
 	done
 }
 
+geninitdesc_fixinitdesc() {
+	local version
+	version=$(sed -ne 's/.*version=\([0-9]*\).*/\1/p' "$desc")
+	if [ -z "$version" ]; then
+		echo "initial_setup.desc is too old, regenerating it"
+		echo "old initial_setup.desc is kept in %s" "$desc.old"
+		mv "$desc" "$desc.old" || error "Could not rename %s" "$desc"
+		return 1
+	fi
+
+	if [ "$version" -le 1 ]; then
+		info "atmark password was incorrectly generated, regenerating it"
+		info "if initial_setup was already installed please adjust password"
+		info "with %s if necessary" "$SCRIPT_DIR/examples/reset_atmark_pass.desc"
+		
+		local PASSWD
+		geninitdesc_promptpass atmark
+
+		sed -i -e 's:\(^[ \t]*"usermod\).*atmark:\1 '"$PASSWD"' atmark:' \
+				-e 's/version=[0-9]*/version=2/' \
+				"$desc" \
+			|| error "Could not update %s" "$desc"
+	fi
+}
+
 mkinit_geninitdesc() {
 	local KEEPATMARKPEM
 	local AUTOUPDATE=""
+	local PASSWD
 	local ROOTPW
-	local ROOTPW_CONFIRM
 	local ATMARKPW
-	local ATMARKPW_CONFIRM
 	local desc="$CONFIG_DIR/initial_setup.desc"
 
-	[ -e "$desc" ] && return
+	[ -e "$desc" ] && geninitdesc_fixinitdesc && return
 
 	while true; do
 		prompt KEEPATMARKPEM "Allow updates signed by Atmark Techno? (Y/n)"
@@ -1601,38 +1658,11 @@ mkinit_geninitdesc() {
 			KEEPATMARKPEM=""; break;;
 		esac
 	done
-	while true; do
-		PASS=1 prompt ROOTPW "root password:"
-		if [ -z "$ROOTPW" ]; then
-			info "A root password is required"
-			continue
-		fi
-		PASS=1 prompt ROOTPW_CONFIRM "root password (confirm):"
-		if [ "$ROOTPW" != "$ROOTPW_CONFIRM" ]; then
-			info "Passwords do not match"
-			continue
-		fi
-		ROOTPW=$(echo "$ROOTPW" | sed -e "s/\"/\"'\"'r/")
-		ROOTPW=$(geninitdesc_hashpw "$ROOTPW")
-		[ -n "$ROOTPW" ] || error "Could not hash password"
-		break
-	done
 
-	while true; do
-		PASS=1 prompt ATMARKPW "atmark user password (empty = same as root):"
-		PASS=1 prompt ATMARKPW_CONFIRM "atmark user password (confirm):"
-		if [ "$ATMARKPW" != "$ATMARKPW_CONFIRM" ]; then
-			info "Passwords do not match"
-			continue
-		fi
-		if [ -z "$ATMARKPW" ]; then
-			ATMARKPW="$ROOTPW_CONFIRM"
-		fi
-		ATMARKPW=$(echo "$ATMARKPW" | sed -e "s/\"/\"'\"'r/")
-		ATMARKPW=$(geninitdesc_hashpw "$ATMARKPW")
-		[ -n "$ATMARKPW" ] || error "Could not hash password"
-		break
-	done
+	geninitdesc_promptpass "root"
+	ROOTPW="$PASSWD"
+	geninitdesc_promptpass "atmark"
+	ATMARKPW="$PASSWD"
 
 	if [ -n "$KEEPATMARKPEM" ]; then
 		geninitdesc_prompt_autoupdate
@@ -1640,21 +1670,22 @@ mkinit_geninitdesc() {
 
 
 	# cleanup if we fail here
-	trap "rm -f $desc" EXIT
+	trap "rm -f $desc.tmp" EXIT
 
-	cp "$SCRIPT_DIR/examples/initial_setup.desc" "$desc" \
+	cp "$SCRIPT_DIR/examples/initial_setup.desc" "$desc.tmp" \
 		|| error "Could not copy initial_setup.desc from example dir"
 	if [ -z "$KEEPATMARKPEM" ]; then
-		sed -i -e 's@>> /etc/swupdate.pem@> /etc/swupdate.pem@' "$desc" \
-			|| error "Could not update %s" "$desc"
+		sed -i -e 's@>> /etc/swupdate.pem@> /etc/swupdate.pem@' "$desc.tmp" \
+			|| error "Could not update %s" "$desc.tmp"
 	fi
 
-	sed -i -e 's:\(^[ \t]*"usermod\).*atmark:\1 -p '\'\""'$ATMARKPW'"\"\'' atmark:' \
-			-e 's:\(^[ \t]*"usermod\).*root:\1 -p '\'\""'$ROOTPW'"\"\'' root:' "$desc" \
-		|| error "Could not update %s" "$desc"
+	sed -i -e 's:\(^[ \t]*"usermod\).*atmark:\1 '"$ATMARKPW"' atmark:' \
+			-e 's:\(^[ \t]*"usermod\).*root:\1 '"$ROOTPW"' root:' "$desc.tmp" \
+		|| error "Could not update %s" "$desc.tmp"
 
 	if [ -n "$AUTOUPDATE" ]; then
-		cat >> "$desc" <<EOF
+		cat >> "$desc.tmp" <<EOF \
+			|| error "Could not update %s" "$desc.tmp"
 
 # autoupdate
 swdesc_command 'rc-update add swupdate-url default' \
@@ -1663,6 +1694,8 @@ swdesc_command 'rc-update add swupdate-url default' \
 EOF
 	fi
 
+	mv "$desc.tmp" "$desc" \
+		|| error "Could not rename %s" "$desc"
 	trap "" EXIT
 }
 

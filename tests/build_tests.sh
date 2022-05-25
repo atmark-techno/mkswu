@@ -69,5 +69,31 @@ EOF
 # certif common name, private key pass x2, aes encryption (default=n), allow atmark updates (default=y),
 # root pass x2, atmark pass x2, autoupdate (force y) + frequency (default weekly)
 
+# validate generated passwords match
+checkpass() {
+	local user="$1"
+	local pass="$2"
+	local desc
+	local check
+	desc=$(sed -ne "s/^[ \t].*'\"'\(.*\)'\"'.*$user.*/\1/p" "$TESTS_DIR/out/init/initial_setup.desc")
+	check=$(python3 -c "import crypt; print(crypt.crypt('$pass', '$desc'))") \
+		|| error "python3 crypt call failed"
+	[ "$desc" = "$check" ] || error "Error: $pass was invalid (got $desc expected $check)"
+}
+checkpass atmark atmark
+checkpass root root
+
+# test atmark pass is regenerated on old version
+sed -i -e 's/version=[0-9]/version=1/' "$TESTS_DIR/out/init/initial_setup.desc"
+"$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
+	|| error "mkswu --init on old version failed"
+
+
+EOF
+# atmark pass and confirm; empty = lock
+grep -q "usermod -L atmark" "$TESTS_DIR/out/init/initial_setup.desc" \
+	|| error "atmark account not locked after second init"
+
+
 dir="$TESTS_DIR/out/init/.initial_setup" check swdesc usermod
 dir="$TESTS_DIR/out/init/.initial_setup" check swdesc swupdate-url
