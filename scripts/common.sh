@@ -62,6 +62,9 @@ try_lock() {
 }
 
 lock_update() {
+	# If we've flagged this as rebooting, abort immediately
+	[ -e "/tmp/.swupdate_rebooting" ] && error "reboot in progress!!"
+
 	# lock handling necessary for hawkbit/usb/manual install locking
 	# we cannot just use flock here as this shell script will exit before
 	# the end of the install, and we cannot use a simple 'mkdir lock'

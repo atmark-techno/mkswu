@@ -19,12 +19,16 @@ POST_ACTION=$(post_action)
 case "$POST_ACTION" in
 poweroff)
 	echo "swupdate triggering poweroff!" >&2
+	touch /tmp/.swupdate_rebooting
 	poweroff
 	pkill -9 swupdate
 	sleep infinity
 	;;
 wait)
 	echo "swupdate waiting until external reboot" >&2
+	# we rely on normal lock for this case:
+	# if a user wants to kill swupdate and reinstall a new install
+	# it is somewhat valid, although previous update will be lost
 	sleep infinity
 	;;
 container)
@@ -37,6 +41,7 @@ container)
 	;;
 *)
 	echo "swupdate triggering reboot!" >&2
+	touch /tmp/.swupdate_rebooting
 	reboot
 	pkill -9 swupdate
 	sleep infinity
