@@ -19,26 +19,19 @@ msgid "  -c, --config <conf>     path to config (default ~/mkswu/mkswu.conf)"
 msgstr ""
 
 #: mkswu
-msgid ""
-"  -o, --out <out.swu>     path to output file (default from first desc's "
-"name)"
+msgid "  -o, --out <out.swu>     path to output file (default from first desc's name)"
 msgstr ""
 
 #: mkswu
-msgid ""
-"  --init                  walk through initial key and first image generation"
+msgid "  --init                  walk through initial key and first image generation"
 msgstr ""
 
 #: mkswu
-msgid ""
-"  --import                import current directory's config and keys into "
-"config dir"
+msgid "  --import                import current directory's config and keys into config dir"
 msgstr ""
 
 #: mkswu
-msgid ""
-"  --genkey                toggle key generation mode (see below for "
-"suboptions)"
+msgid "  --genkey                toggle key generation mode (see below for suboptions)"
 msgstr ""
 
 #: mkswu
@@ -50,14 +43,11 @@ msgid "  --version               print version and exit"
 msgstr ""
 
 #: mkswu
-msgid ""
-"  desc                    image description file(s), if multiple are given"
+msgid "  desc                    image description file(s), if multiple are given"
 msgstr ""
 
 #: mkswu
-msgid ""
-"                          then the generated image will merge all the "
-"contents"
+msgid "                          then the generated image will merge all the contents"
 msgstr ""
 
 #: mkswu
@@ -65,8 +55,7 @@ msgid "desc file syntax:"
 msgstr ""
 
 #: mkswu
-msgid ""
-"  descriptions are imperative declarations building an image, the following"
+msgid "  descriptions are imperative declarations building an image, the following"
 msgstr ""
 
 #: mkswu
@@ -174,12 +163,8 @@ msgid "failed to decrypt %s"
 msgstr "%s を暗号化できませんでした。"
 
 #: mkswu
-msgid ""
-"AES encryption key %s was set but not found.\\nPlease create it with genkey."
-"sh --aes"
-msgstr ""
-"AES暗号化鍵が指定されてますが %s が存在しません。\\ngenkey.sh --aesで作成して"
-"ください。"
+msgid "AES encryption key %s was set but not found.\\nPlease create it with genkey.sh --aes"
+msgstr "AES暗号化鍵が指定されてますが %s が存在しません。\\ngenkey.sh --aesで作成してください。"
 
 #: mkswu
 msgid "failed to compress %s"
@@ -202,12 +187,8 @@ msgid "version %s was set without associated component"
 msgstr "バージョン %s に 関連するコンポーネントがありません！"
 
 #: mkswu
-msgid ""
-"Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers "
-"only)"
-msgstr ""
-"%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z は数字のみ）"
-"にしてください。"
+msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
+msgstr "%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z は数字のみ）にしてください。"
 
 #: mkswu
 msgid "base_os version %s must be in x[.y[.z]]-t format"
@@ -218,26 +199,16 @@ msgid "version check failed for %s: %s must be <= %s"
 msgstr "バージョン %s は使えません: %s を %s 以下にしてください。"
 
 #: mkswu
-msgid ""
-"version check failed for %s: %s must not mix alpha and digits\\ne.g."
-"\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
-msgstr ""
-"バージョン %s は使えません: %s に数字とアルファベットが混在しています。\\n例:"
-"\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+msgid "version check failed for %s: %s must not mix alpha and digits, e.g.:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+msgstr "バージョン %s は使えません: %s に数字とアルファベットが混在しています。\\n例:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
 
 #: mkswu
 msgid "version %s has too many digit components, please use somthing else"
-msgstr ""
-" バージョン %s に数字の部分が多すぎてswupdateに無視されます。他を使ってくださ"
-"い。"
+msgstr " バージョン %s に数字の部分が多すぎてswupdateに無視されます。他を使ってください。"
 
 #: mkswu
-msgid ""
-"metadata (+ part) in %s while valid semver are ignored by swupdate, please "
-"use something else"
-msgstr ""
-" バージョン %s に含まれる+以降の部分はswupdateに無視されます。他を使ってくだ"
-"さい。"
+msgid "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else"
+msgstr " バージョン %s に含まれる+以降の部分はswupdateに無視されます。他を使ってください。"
 
 #: mkswu
 msgid "install_if must be higher or different"
@@ -280,62 +251,36 @@ msgid "%s is not a known %s argument"
 msgstr "%s は %s の有効な引数ではありません。"
 
 #: mkswu
-msgid ""
-"swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
-msgstr ""
-"swdesc_boot に引数が必要です。\\nUsage: swdesc_boot [options] boot_file"
+msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
+msgstr "swdesc_boot に引数が必要です。\\nUsage: swdesc_boot [options] boot_file"
 
 #: mkswu
-msgid ""
-"swdesc_boot_enc requires two arguments\\nUsage: swdesc_boot_enc [options] "
-"boot_enc_file dek_offets_file"
-msgstr ""
-"swdesc_boot_enc に引数が必要です。\\nUsage: swdesc_boot_enc [options] "
-"boot_enc_file dek_offsets_file"
+msgid "swdesc_boot_enc requires two arguments\\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
+msgstr "swdesc_boot_enc に引数が必要です。\\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offsets_file"
 
 #: mkswu
-msgid ""
-"swdesc_boot_linux requires an argument\\nUsage: swdesc_boot_linux [options] "
-"boot_linux_file"
-msgstr ""
-"swdesc_boot_linux に引数が必要です。\\nUsage: swdesc_boot_linux [options] "
-"boot_linux_file"
+msgid "swdesc_boot_linux requires an argument\\nUsage: swdesc_boot_linux [options] boot_linux_file"
+msgstr "swdesc_boot_linux に引数が必要です。\\nUsage: swdesc_boot_linux [options] boot_linux_file"
 
 #: mkswu
 msgid "swdesc_tar requires an argument\\nUsage: swdesc_tar [options] file.tar"
 msgstr "swdesc_tar に引数が必要です。\\nUsage: swdesc_tar [options] file.tar"
 
 #: mkswu
-msgid ""
-"swdesc_files requires arguments\\nUsage: swdesc_files [options] file "
-"[files...]"
-msgstr ""
-"swdesc_files に引数が必要です。\\nUsage: swdesc_files [options] file "
-"[files...]"
+msgid "swdesc_files requires arguments\\nUsage: swdesc_files [options] file [files...]"
+msgstr "swdesc_files に引数が必要です。\\nUsage: swdesc_files [options] file [files...]"
 
 #: mkswu
-msgid ""
-"swdesc_command requires arguments\\nUsage: swdesc_command [options] cmd "
-"[cmd..]"
-msgstr ""
-"swdesc_command に引数が必要です。\\nUsage: swdesc_command [options] cmd "
-"[cmd...]"
+msgid "swdesc_command requires arguments\\nUsage: swdesc_command [options] cmd [cmd..]"
+msgstr "swdesc_command に引数が必要です。\\nUsage: swdesc_command [options] cmd [cmd...]"
 
 #: mkswu
-msgid ""
-"swdesc_script requires arguments\\nUsage: swdesc_script [options] script "
-"[args]"
-msgstr ""
-"swdesc_script に引数が必要です。\\nUsage: swdesc_script [options] script "
-"[args]"
+msgid "swdesc_script requires arguments\\nUsage: swdesc_script [options] script [args]"
+msgstr "swdesc_script に引数が必要です。\\nUsage: swdesc_script [options] script [args]"
 
 #: mkswu
-msgid ""
-"swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] "
-"file command"
-msgstr ""
-"swdesc_exec には最低二つの引数が必要です。\\nUsage: swdesc_exec [options] "
-"file command"
+msgid "swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] file command"
+msgstr "swdesc_exec には最低二つの引数が必要です。\\nUsage: swdesc_exec [options] file command"
 
 #: mkswu
 msgid "%s requires an argument\\nUsage: %s [options] image"
@@ -363,9 +308,7 @@ msgstr "ブートバージョン %s を認識できませんでした。"
 
 #: mkswu
 msgid "Version must be set for swdesc_boot_encrypted"
-msgstr ""
-"swdesc_boot_encrypted にバージョンが必要です。swdesc_option version=X で指定"
-"してください"
+msgstr "swdesc_boot_encrypted にバージョンが必要です。swdesc_option version=X で指定してください"
 
 #: mkswu
 msgid "dek offset file %s was not readable or empty"
@@ -373,14 +316,11 @@ msgstr ""
 
 #: mkswu
 msgid "Version component for swdesc_boot_linux must be set to boot_linux"
-msgstr ""
-"swdesc_boot_linuxのバージョンコンポーネントを「boot_linux」にしてください。"
+msgstr "swdesc_boot_linuxのバージョンコンポーネントを「boot_linux」にしてください。"
 
 #: mkswu
 msgid "Version must be set for swdesc_boot_linux"
-msgstr ""
-"swdesc_boot_linux にバージョンが必要です。swdesc_option version=X で指定して"
-"ください"
+msgstr "swdesc_boot_linux にバージョンが必要です。swdesc_option version=X で指定してください"
 
 #: mkswu
 msgid "swdesc_boot_linux image must be at most 26MB big"
@@ -391,12 +331,8 @@ msgid "OS update must have an absolute dest (was: %s)"
 msgstr "OS アップデートの場合は絶対パスを使ってください (%s)"
 
 #: mkswu
-msgid ""
-"OS is only writable for base/extra_os updates and dest (%s) is not within "
-"volumes. Use --extra-os."
-msgstr ""
-"%s はボリューム以外に書き込もうとしますが、base/extra_os のアップデート以外に"
-"できません。--extra-osを指定してください。"
+msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes. Use --extra-os."
+msgstr "%s はボリューム以外に書き込もうとしますが、base/extra_os のアップデート以外にできません。--extra-osを指定してください。"
 
 #: mkswu
 msgid ".. is not allowed in destination path for volume update"
@@ -404,8 +340,7 @@ msgstr ".. は展開先として使えません。"
 
 #: mkswu
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
-msgstr ""
-"Warning: base_osアップデートで--preserve-attributesを自動的に設定しました。"
+msgstr "Warning: base_osアップデートで--preserve-attributesを自動的に設定しました。"
 
 #: mkswu
 msgid "%s does not exist"
@@ -420,9 +355,7 @@ msgid "Could not create tar for %s"
 msgstr "%s のtarを作成できませんでした。"
 
 #: mkswu
-msgid ""
-"Warning: podman does not handle compressed container images without an extra "
-"uncompressed copy"
+msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
 msgstr "Warning: podmanでは、圧縮するとコピーの回数が増えます。"
 
 #: mkswu
@@ -446,17 +379,12 @@ msgid "HW_COMPAT must be set"
 msgstr "HW_COMPAT変数を設定してください。"
 
 #: mkswu
-msgid ""
-"above component used multiple times with different versions or install-if "
-"mode"
-msgstr ""
-"上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
+msgid "above component used multiple times with different versions or install-if mode"
+msgstr "上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
 
 #: mkswu
 msgid "No versions found: empty image or version not set?"
-msgstr ""
-"バージョンが見つかりませんでした。--versionかswdesc_option version=1を使って"
-"ください。"
+msgstr "バージョンが見つかりませんでした。--versionかswdesc_option version=1を使ってください。"
 
 #: mkswu
 msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"
@@ -464,18 +392,14 @@ msgstr "ROOTFS_FSTYPE %s が間違ってます。（ext4, btrfs か空にして�
 
 #: mkswu
 msgid "invalid POST_ACTION \"%s\", must be empty, poweroff or wait"
-msgstr ""
-"POST_ACTION %s が間違ってます。（empty, poweroff, waitのどれかにしてくださ"
-"い）"
+msgstr "POST_ACTION %s が間違ってます。（empty, poweroff, waitのどれかにしてください）"
 
 #: mkswu
 msgid "Please set user passwords (usermod command in .desc)"
-msgstr ""
-"ユーザーのパスワードを指定してください（.descファイルのusermodコマンド）"
+msgstr "ユーザーのパスワードを指定してください（.descファイルのusermodコマンド）"
 
 #: mkswu
-msgid ""
-"Duplicate files detected in sw-description: duplicate swdesc_* commands?\\n%s"
+msgid "Duplicate files detected in sw-description: duplicate swdesc_* commands?\\n%s"
 msgstr ""
 
 #: mkswu
@@ -507,18 +431,12 @@ msgid "Could not enter %s"
 msgstr "%s ディレクトリに入れませんでした。"
 
 #: mkswu
-msgid ""
-"cpio does not contain files we requested (in the order we requested): check "
-"%s"
+msgid "cpio does not contain files we requested (in the order we requested): check %s"
 msgstr "%s ファイルに設定した中身を確認できませんでした。"
 
 #: mkswu
-msgid ""
-"Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already "
-"exists!"
-msgstr ""
-"mkimage.conf から mkswu.conf に変換しようとしてますが、mkswu.conf はすでに存"
-"在します。"
+msgid "Trying to convert from mkimage.conf to mkswu.conf, but mkswu.conf already exists!"
+msgstr "mkimage.conf から mkswu.conf に変換しようとしてますが、mkswu.conf はすでに存在します。"
 
 #: mkswu
 msgid "Could not update config %s"
@@ -545,23 +463,16 @@ msgid "Importing config %s and associated keys to %s"
 msgstr "%s の設定ファイルとその鍵を %s にコピーします。"
 
 #: mkswu
-msgid ""
-"Key file %s could not be found, try setting absolute path in config file and "
-"reimport"
-msgstr ""
-"%s の鍵ファイルを見つかりませんでした。設定ファイルに絶対パスを設定してみてく"
-"ださい。"
+msgid "Key file %s could not be found, try setting absolute path in config file and reimport"
+msgstr "%s の鍵ファイルを見つかりませんでした。設定ファイルに絶対パスを設定してみてください。"
 
 #: mkswu
 msgid "Imported config %s to %s"
 msgstr "%s の設定ファイルを %s にコピーしました。"
 
 #: mkswu
-msgid ""
-"You can know check mkswu works with new config and remove the old directory"
-msgstr ""
-"mkswu が新しい構成で動作することを確認してから古いディレクトリを削除してくだ"
-"さい。"
+msgid "You can know check mkswu works with new config and remove the old directory"
+msgstr "mkswu が新しい構成で動作することを確認してから古いディレクトリを削除してください。"
 
 #: mkswu
 msgid "Info: using default aes key path"
@@ -628,8 +539,7 @@ msgid "Please set user passwords in initial_setup.desc and generate the image."
 msgstr "ファイルのパスワードを設定してからイメージを作成してください。"
 
 #: mkswu
-msgid ""
-"If you would like to encrypt your updates, generate your aes key now with:"
+msgid "If you would like to encrypt your updates, generate your aes key now with:"
 msgstr "イメージを暗号化したい場合、AES鍵を先に作成してください："
 
 #: mkswu
@@ -670,8 +580,7 @@ msgstr "証明書の鍵のパスワードを入力ください（4-1024文字）
 
 #: mkswu
 msgid "Empty key password is not recommended, re-enter empty to confirm"
-msgstr ""
-"空のパスワードは推奨しません。もう一度空のパスワードを入力すると進みます。"
+msgstr "空のパスワードは推奨しません。もう一度空のパスワードを入力すると進みます。"
 
 #: mkswu
 msgid "Must be between 4 and 1024 characters long"
@@ -714,12 +623,8 @@ msgid "Could not generate password"
 msgstr "パスワードを作成できませんでした。"
 
 #: mkswu
-msgid ""
-"Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? "
-"(y/N)"
-msgstr ""
-"BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行"
-"いますか？ (y/N)"
+msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
+msgstr "BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行いますか？ (y/N)"
 
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"
@@ -731,8 +636,7 @@ msgstr "%s をリネームできませんでした。"
 
 #: mkswu
 msgid "atmark password was incorrectly generated, regenerating it"
-msgstr ""
-"atmark ユーザーパスワードが正しく設定されてませんでした、再作成します。"
+msgstr "atmark ユーザーパスワードが正しく設定されてませんでした、再作成します。"
 
 #: mkswu
 msgid "if initial_setup was already installed please adjust password"
@@ -748,8 +652,7 @@ msgstr "%s を更新できませんでした。"
 
 #: mkswu
 msgid "Allow updates signed by Atmark Techno? (Y/n)"
-msgstr ""
-"アットマークテクノが作成したイメージをインストール可能にしますか？ (Y/n)"
+msgstr "アットマークテクノが作成したイメージをインストール可能にしますか？ (Y/n)"
 
 #: mkswu
 msgid "Could not copy initial_setup.desc from example dir"
@@ -761,9 +664,7 @@ msgstr "swuの初期設定の作成に失敗しました。"
 
 #: mkswu
 msgid "You can use \"%s\" as is or regenerate an image"
-msgstr ""
-"\"%s\" をそのまま使うことができますが、モジュールを追加してイメージを再構築す"
-"る場合は"
+msgstr "\"%s\" をそのまま使うことができますが、モジュールを追加してイメージを再構築する場合は"
 
 #: mkswu
 msgid "with extra modules with: mkswu \"%s\" other_desc_files"
@@ -774,8 +675,7 @@ msgid "Note that once installed, you must preserve this directory as losing"
 msgstr "インストール後は、このディレクトリを削除しないように注意してください。"
 
 #: mkswu
-msgid ""
-"key files means you will no longer be able to install new updates without"
+msgid "key files means you will no longer be able to install new updates without"
 msgstr "鍵を失うと新たなアップデートはデバイスの /etc/swupdate.pem"
 
 #: mkswu
@@ -832,9 +732,7 @@ msgstr "%s オプションを認識できません"
 
 #: mkswu
 msgid "Could not find config file to import, specify it with --config"
-msgstr ""
-"インポートするべき設定ファイルが見つかりませんでした。--config で指定してくだ"
-"さい。"
+msgstr "インポートするべき設定ファイルが見つかりませんでした。--config で指定してください。"
 
 #: mkswu
 msgid "Please import current config with mkswu --import first"
@@ -877,9 +775,7 @@ msgid "Add your keys in enable_sshd/root/.ssh/authorized_keys"
 msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてください。"
 
 #: examples/hawkbit_register.desc
-msgid ""
-"You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/"
-"hawkbit_register.sh"
+msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
 
 #~ msgid "root password (confirm):"

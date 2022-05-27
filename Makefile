@@ -39,11 +39,11 @@ po/hawkbit_setup_container.pot: hawkbit-compose/setup_container.sh
 	./po/update.sh $@ $^
 
 po/$(l)/%.po: po/%.pot
-	msgmerge -o $@ $@ $<
+	msgmerge --no-wrap -o $@ $@ $<
 
 locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 	@# restandardize po file formatting
-	msgmerge -o $< $< $<
+	msgmerge --no-wrap -o $< $< $<
 	@if grep -qx "#, fuzzy" $<; then \
 		echo "$< has had fuzzy updates, please fix before updating!"; \
 		false; \

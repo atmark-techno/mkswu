@@ -11,8 +11,7 @@ msgid "Please install the atmark mkswu debian package and run mkswu instead"
 msgstr "mkswu パッケージをインストールしてから mkswu を使ってください。"
 
 #: mkimage.sh
-msgid ""
-"If you already had generated keys and/or images, you can use mkswu --import"
+msgid "If you already had generated keys and/or images, you can use mkswu --import"
 msgstr "すでに鍵等を作成済みの場合は、このディレクトリから"
 
 #: mkimage.sh

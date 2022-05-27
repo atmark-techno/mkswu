@@ -11,8 +11,7 @@ msgid "Usage: $0 [opts]"
 msgstr ""
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"    Prompt questions if required and setup hawkBit docker-compose container"
+msgid "    Prompt questions if required and setup hawkBit docker-compose container"
 msgstr ""
 
 #: hawkbit-compose/setup_container.sh
@@ -113,20 +112,15 @@ msgstr "この domain はこのままデバイスからアクセスできる名�
 
 #: hawkbit-compose/setup_container.sh
 msgid "url will be https://hawkbit.domain.tld it should be hawkbit.domain.tld"
-msgstr ""
-"例えば、https://hawkbit.domain.tld でアクセスしたら hawkbit.domain.tld、"
+msgstr "例えば、https://hawkbit.domain.tld でアクセスしたら hawkbit.domain.tld、"
 
 #: hawkbit-compose/setup_container.sh
 msgid "and if your url is https://10.1.1.1 then it should be 10.1.1.1"
 msgstr "https://10.1.1.1 でしたら 10.1.1.1 にしてください。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"Certificate domain name changed (found $current_domain, expected "
-"$REVERSE_PROXY_CERT_DOMAIN), regenerating"
-msgstr ""
-"証明書の domain nameがかわりました。再作成します。（$current_domain でしたが "
-"$REVERSE_PROXY_CERT_DOMAIN にします）"
+msgid "Certificate domain name changed (found $current_domain, expected $REVERSE_PROXY_CERT_DOMAIN), regenerating"
+msgstr "証明書の domain nameがかわりました。再作成します。（$current_domain でしたが $REVERSE_PROXY_CERT_DOMAIN にします）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "How long should the certificate be valid (days)?"
@@ -134,13 +128,11 @@ msgstr "証明書の有効期間は何日間にしますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "TLS certificate have a lifetime that must be set. If you plan to use"
-msgstr ""
-"証明書の有効期限を指定する必要があります。Let's encryptを使用する場合、"
+msgstr "証明書の有効期限を指定する必要があります。Let's encryptを使用する場合、"
 
 #: hawkbit-compose/setup_container.sh
 msgid "let's encrypt, this value will only be used until the new certificate"
-msgstr ""
-"この値は新しい証明書が生成されるまでしか使用されないので、デフォルトの値"
+msgstr "この値は新しい証明書が生成されるまでしか使用されないので、デフォルトの値"
 
 #: hawkbit-compose/setup_container.sh
 msgid "is generated and can be left to its default value. Best practice would"
@@ -167,24 +159,16 @@ msgid "Please check the machine is reachable at $REVERSE_PROXY_CERT_DOMAIN"
 msgstr "$REVERSE_PROXY_CERT_DOMAIN にアクセスできることを確認してください。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"Continuing without let's encrypt. Run again with --letsencrypt if you want "
-"to add it later."
-msgstr ""
-"Let's encryptなしで実行します。--letsencryptを付けて再度実行すると、後から追"
-"加することも可能です。"
+msgid "Continuing without let's encrypt. Run again with --letsencrypt if you want to add it later."
+msgstr "Let's encryptなしで実行します。--letsencryptを付けて再度実行すると、後から追加することも可能です。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Email to use for let's encrypt registration"
 msgstr "Let's encrypt 登録のメールアドレス"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"letsencrypt setup requires running containers once for configuration, run "
-"now?"
-msgstr ""
-"Let's encryptの初期設定のため一度コンテナを起動する必要があります。すぐに実行"
-"しますか？"
+msgid "letsencrypt setup requires running containers once for configuration, run now?"
+msgstr "Let's encryptの初期設定のため一度コンテナを起動する必要があります。すぐに実行しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "nginx container not coming up!"
@@ -208,8 +192,7 @@ msgstr "コンテナを起動して以下のコマンドを実行してくださ
 
 #: hawkbit-compose/setup_container.sh
 msgid "Allow user to handle rollouts? (trigger installation requests)"
-msgstr ""
-"ユーザーにロールアウトの権限を与えますか？（インストール要求を出すこと）"
+msgstr "ユーザーにロールアウトの権限を与えますか？（インストール要求を出すこと）"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Password for user $user"
@@ -286,17 +269,12 @@ msgid "CA file path (leave empty to disable client TLS authentication)"
 msgstr "署名CAのファイルパス（空にするとクライアントTLS認証を無効になります）"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"If you would like to setup client certificate authenication a ca is required."
+msgid "If you would like to setup client certificate authenication a ca is required."
 msgstr "クライアントのTLS認証を設定するためにCAが必要です。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"ca file $REVERSE_PROXY_CLIENT_CERT does not exist. Reset proxy settings with "
-"--reset-proxy"
-msgstr ""
-"$REVERSE_PROXY_CLIENT_CERT CA ファイルが存在しません。プロキシの設定を　--"
-"reset-proxy で初期化してください。"
+msgid "ca file $REVERSE_PROXY_CLIENT_CERT does not exist. Reset proxy settings with --reset-proxy"
+msgstr "$REVERSE_PROXY_CLIENT_CERT CA ファイルが存在しません。プロキシの設定を　--reset-proxy で初期化してください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Also disallow token authentication?"
@@ -307,43 +285,28 @@ msgid "Setup certbot container to obtain certificate?"
 msgstr "certbotコンテナを設定しますか？"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"If the host is directly accessible over internet, it it possible to setup a "
-"let's"
-msgstr ""
-"サーバーが直接インタネットにアクセス可能であれば、Let's Encryptの証明書"
+msgid "If the host is directly accessible over internet, it it possible to setup a let's"
+msgstr "サーバーが直接インタネットにアクセス可能であれば、Let's Encryptの証明書"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"encrypt certificate instead of the self-signed one. Accepting means you "
-"agree to the TOS:"
+msgid "encrypt certificate instead of the self-signed one. Accepting means you agree to the TOS:"
 msgstr "を設定することができます。TOSへの同意を意味します。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"You need to copy $CERT to /usr/local/share/ca-certificates/ and run update-"
-"ca-certificates."
-msgstr ""
-"$CERT を /usr/local/share/ca-certificates/ にコピーして、 update-ca-"
-"certificates を実行する必要があります。"
+msgid "You need to copy $CERT to /usr/local/share/ca-certificates/ and run update-ca-certificates."
+msgstr "$CERT を /usr/local/share/ca-certificates/ にコピーして、 update-ca-certificates を実行する必要があります。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"The recommended way of doing this is including this base64-encoded copy of"
+msgid "The recommended way of doing this is including this base64-encoded copy of"
 msgstr "このbase64でエンコードされたコピーをexamples/hawkbit_register.sh の"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
+msgid "the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
 msgstr "SSL_CA_BASE64 に指定する手順が推奨されます。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE "
-"again with --letsencrypt"
-msgstr ""
-"Let's encryptの設定は後で足したい場合にsetup_container.shを--letsencryptで実"
-"行してください。"
+msgid "Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"
+msgstr "Let's encryptの設定は後で足したい場合にsetup_container.shを--letsencryptで実行してください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Docker is not installed. Install it?"
@@ -351,17 +314,11 @@ msgstr "Docker はインストールされてません。インストールし�
 
 #: hawkbit-compose/setup_container.sh
 msgid "Please check https://docs.docker.com/get-docker/ and install docker"
-msgstr ""
-"https://docs.docker.com/get-docker/ を参考にしてdockerをインストールしてくだ"
-"さい。"
+msgstr "https://docs.docker.com/get-docker/ を参考にしてdockerをインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
-msgid ""
-"Install failed, please check https://docs.docker.com/get-docker/ and install "
-"manually"
-msgstr ""
-"Docker のインストールが失敗しました。 https://docs.docker.com/get-docker/ を"
-"参考にしてインストールしてください。"
+msgid "Install failed, please check https://docs.docker.com/get-docker/ and install manually"
+msgstr "Docker のインストールが失敗しました。 https://docs.docker.com/get-docker/ を参考にしてインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "docker-compose is not installed. Install it?"
@@ -373,8 +330,7 @@ msgstr "docker-compose をインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Install failed, please install docker-compose manually"
-msgstr ""
-"docker-compose のインストールが失敗しました。手動でインストールしてください。"
+msgstr "docker-compose のインストールが失敗しました。手動でインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "htpasswd is required for password generation. Install it?"
@@ -386,9 +342,7 @@ msgstr "htpasswd (apache2-utils) をインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Install failed, please install apache2-utils manually"
-msgstr ""
-"apache2-utils (htpasswd) をインストールできませんでした。手動でインストールし"
-"てください。"
+msgstr "apache2-utils (htpasswd) をインストールできませんでした。手動でインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "$arg requires an argument"
@@ -428,9 +382,7 @@ msgstr "OK!"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Checking if container is running... ${SUDO:+(this requires sudo)}"
-msgstr ""
-"コンテナが起動されてるかどうかを確認します... ${SUDO:+(sudoパスワードが必要で"
-"す)}"
+msgstr "コンテナが起動されてるかどうかを確認します... ${SUDO:+(sudoパスワードが必要です)}"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Stop hawkBit containers?"
@@ -450,9 +402,7 @@ msgstr "コンテナを停止できませんでした"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Setup finished! Use docker-compose now to manage the containers"
-msgstr ""
-"コンテナの設定が完了しました。docker-compose コマンドでコンテナの管理が可能で"
-"す。"
+msgstr "コンテナの設定が完了しました。docker-compose コマンドでコンテナの管理が可能です。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."

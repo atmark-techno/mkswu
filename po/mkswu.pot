@@ -150,7 +150,7 @@ msgstr ""
 msgid "version check failed for %s: %s must be <= %s"
 msgstr ""
 #: mkswu
-msgid "version check failed for %s: %s must not mix alpha and digits\\ne.g.\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+msgid "version check failed for %s: %s must not mix alpha and digits, e.g.:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
 msgstr ""
 #: mkswu
 msgid "version %s has too many digit components, please use somthing else"
