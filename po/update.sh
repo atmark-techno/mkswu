@@ -8,7 +8,7 @@ dump_po_strings() {
 		bash --dump-po-strings "$script" \
 			| sed -e 's@^\(#.*\):[0-9]*@\1@'
 	else
-		sed -e 's/\(info\|error\|warning\|prompt [^ ]*\) "/$"/' < "$script" \
+		sed -e 's/\(info\|error\|warning\|prompt [^ ]*\) \+"/$"/' < "$script" \
 			| bash --dump-po-strings \
 			| sed -e 's@bash:[0-9]*@'"$script"'@' \
 			      -e 's/\\\\\\"/\\"/g'

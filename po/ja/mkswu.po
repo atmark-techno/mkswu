@@ -619,6 +619,10 @@ msgid "%s user password (empty = locks account):"
 msgstr "%sユーザのパスワード（空の場合はアカウントをロックします）:"
 
 #: mkswu
+msgid "%s user password (confirm):"
+msgstr "%s ユーザのパスワード（確認）:"
+
+#: mkswu
 msgid "Could not generate password"
 msgstr "パスワードを作成できませんでした。"
 
@@ -777,9 +781,3 @@ msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてくださ�
 #: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
-
-#~ msgid "root password (confirm):"
-#~ msgstr "rootパスワード（確認）:"
-
-#~ msgid "atmark user password (confirm):"
-#~ msgstr "atmarkユーザのパスワード（確認）:"

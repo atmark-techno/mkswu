@@ -1574,7 +1574,7 @@ geninitdesc_promptpass() {
 		else
 			PASS=1 prompt password "%s user password (empty = locks account):" "$user"
 		fi
-		PASS=1 prompt confirm  "%s user password (confirm):" "$user"
+		PASS=1 prompt confirm "%s user password (confirm):" "$user"
 		if [ "$password" != "$confirm" ]; then
 			info "Passwords do not match"
 			continue

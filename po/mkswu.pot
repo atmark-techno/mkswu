@@ -465,6 +465,9 @@ msgstr ""
 msgid "%s user password (empty = locks account):"
 msgstr ""
 #: mkswu
+msgid "%s user password (confirm):"
+msgstr ""
+#: mkswu
 msgid "Could not generate password"
 msgstr ""
 #: mkswu
