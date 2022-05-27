@@ -73,6 +73,8 @@ fail_redundant_update() {
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
 		# exclude other_boot and other_boot_linux from comparison,
 		# otherwise update with nothing to do will trigger another update for these.
+		# create sw-versions if it didn't exist so diff doesn't complain
+		[ -e /etc/sw-versions ] || touch /etc/sw-versions
 		if ! diff -U0 /etc/sw-versions "$SCRIPTSDIR/sw-versions.merged" \
 				| tail -n +3 | grep -E "^[+-]" \
 				| grep -qvE "^[+-]other_boot |^[+-]other_boot_linux "; then
