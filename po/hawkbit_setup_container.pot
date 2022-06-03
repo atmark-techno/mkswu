@@ -165,6 +165,9 @@ msgstr ""
 msgid "Could not copy file"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
+msgid "HawkBit admin user name"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
 msgid "Extra admin user name (empty to stop): "
 msgstr ""
 #: hawkbit-compose/setup_container.sh
@@ -198,6 +201,9 @@ msgstr ""
 msgid "Could not disable $service service"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
+msgid "Setup TLS reverse proxy?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
 msgid "CA file path (leave empty to disable client TLS authentication)"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
@@ -219,7 +225,10 @@ msgstr ""
 msgid "encrypt certificate instead of the self-signed one. Accepting means you agree to the TOS:"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "You need to copy $CERT to /usr/local/share/ca-certificates/ and run update-ca-certificates."
+msgid "You need to copy $CERT to device's /usr/local/share/ca-certificates/"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "and run the following commands on device:"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "The recommended way of doing this is including this base64-encoded copy of"

@@ -525,7 +525,7 @@ prompt_hawkbit_users() {
 	local HAWKBIT_USER_DEVICE="" HAWKBIT_USER_MKSWU=""
 	local HAWKBIT_USER_MKSWU_ROLLOUT=""
 
-	prompt_reply HAWKBIT_USER_ADMIN "Hawkbit admin user name"
+	prompt_reply HAWKBIT_USER_ADMIN $"HawkBit admin user name"
 	if hawkbit_add_user "$HAWKBIT_USER_ADMIN"; then
 		# skip if admin user was already created
 		while true; do
@@ -576,7 +576,7 @@ prompt_reverse_proxy() {
 	declare -a hawkbit_proxy_conf_fragments=( "*_base" "*_cert_domain" )
 
 
-	if ! prompt_yesno REVERSE_PROXY "Setup TLS reverse proxy?"; then
+	if ! prompt_yesno REVERSE_PROXY $"Setup TLS reverse proxy?"; then
 		update_template "docker-compose.yml/20_hawkbit_ports" -e 's/#LISTEN//'
 		return 0
 	fi
@@ -618,7 +618,11 @@ prompt_reverse_proxy() {
 		hawkbit_proxy_conf_fragments+=( "*_letsencrypt" )
 	elif ! prompt_yesno REVERSE_PROXY_SELFCERT_SETUP_TEXT; then
 		echo
-		echo $"You need to copy $CERT to /usr/local/share/ca-certificates/ and run update-ca-certificates."
+		echo $"You need to copy $CERT to device's /usr/local/share/ca-certificates/"
+		echo $"and run the following commands on device:"
+		echo "update-ca-certificates"
+		echo "persist_file -r /etc/ssl /usr/local/share/ca-certificates"
+		echo
 		echo $"The recommended way of doing this is including this base64-encoded copy of"
 		echo $"the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
 		echo

@@ -221,6 +221,10 @@ msgid "Could not copy file"
 msgstr "ファイルのコピーに失敗しました。"
 
 #: hawkbit-compose/setup_container.sh
+msgid "HawkBit admin user name"
+msgstr "HawkBit の管理人アカウント名"
+
+#: hawkbit-compose/setup_container.sh
 msgid "Extra admin user name (empty to stop): "
 msgstr "追加の管理人アカウントのユーザーネーム（空にすると追加しません）"
 
@@ -265,6 +269,10 @@ msgid "Could not disable $service service"
 msgstr "$service サービスを無効にできませんでした。"
 
 #: hawkbit-compose/setup_container.sh
+msgid "Setup TLS reverse proxy?"
+msgstr "TLS リバースプロキシを設定しますか？"
+
+#: hawkbit-compose/setup_container.sh
 msgid "CA file path (leave empty to disable client TLS authentication)"
 msgstr "署名CAのファイルパス（空にするとクライアントTLS認証を無効になります）"
 
@@ -293,8 +301,12 @@ msgid "encrypt certificate instead of the self-signed one. Accepting means you a
 msgstr "を設定することができます。TOSへの同意を意味します。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "You need to copy $CERT to /usr/local/share/ca-certificates/ and run update-ca-certificates."
-msgstr "$CERT を /usr/local/share/ca-certificates/ にコピーして、 update-ca-certificates を実行する必要があります。"
+msgid "You need to copy $CERT to device's /usr/local/share/ca-certificates/"
+msgstr "$CERT をデバイスの /usr/local/share/ca-certificates/ にコピーして、"
+
+#: hawkbit-compose/setup_container.sh
+msgid "and run the following commands on device:"
+msgstr "デバイスに以下のコマンドを実行する必要はあります。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "The recommended way of doing this is including this base64-encoded copy of"
