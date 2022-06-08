@@ -301,20 +301,28 @@ msgid "encrypt certificate instead of the self-signed one. Accepting means you a
 msgstr "を設定することができます。TOSへの同意を意味します。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "You need to copy $CERT to device's /usr/local/share/ca-certificates/"
-msgstr "$CERT をデバイスの /usr/local/share/ca-certificates/ にコピーして、"
+msgid "The generated certificate needs to be registered on device."
+msgstr "作成した証明書をデバイスにコピーする必要があります。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "and run the following commands on device:"
-msgstr "デバイスに以下のコマンドを実行する必要はあります。"
+msgid "The recommended way of doing this is to include the certificate content"
+msgstr "以下の 証明書を BEGIN CERTIFICATE から END CERTIFICATE までコピーして、"
 
 #: hawkbit-compose/setup_container.sh
-msgid "The recommended way of doing this is including this base64-encoded copy of"
-msgstr "このbase64でエンコードされたコピーをexamples/hawkbit_register.sh の"
+msgid "below (including from BEGIN CERTIFICATE up to END CERTIFICATE lines) in"
+msgstr "/usr/share/mkswu/examples/hawkbit_register.sh の SSL_CA_CONTENT に"
 
 #: hawkbit-compose/setup_container.sh
-msgid "the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
-msgstr "SSL_CA_BASE64 に指定する手順が推奨されます。"
+msgid "SSL_CA_CONTENT of /usr/share/mkswu/examples/hawkbit_register.sh, generate"
+msgstr "ペーストして下さい。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "its swu (mkswu hawkbit_register.desc), and install hawkbit_register.swu on"
+msgstr "次に、mkswu hawkbit_register.desc を実行し、hawkbit_register.swu を作成して、"
+
+#: hawkbit-compose/setup_container.sh
+msgid "the device"
+msgstr "hawkbit_register.swuをデバイスにインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"

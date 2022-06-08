@@ -618,15 +618,19 @@ prompt_reverse_proxy() {
 		hawkbit_proxy_conf_fragments+=( "*_letsencrypt" )
 	elif ! prompt_yesno REVERSE_PROXY_SELFCERT_SETUP_TEXT; then
 		echo
-		echo $"You need to copy $CERT to device's /usr/local/share/ca-certificates/"
-		echo $"and run the following commands on device:"
-		echo "update-ca-certificates"
-		echo "persist_file -r /etc/ssl /usr/local/share/ca-certificates"
+		echo $"The generated certificate needs to be registered on device."
+		# manual intructions:
+		# copy to /usr/local/share/ca-certificates/
+		# run update-ca-certificates
+		# persist_file -rv /etc/ssl /usr/local/share/ca-certificates
 		echo
-		echo $"The recommended way of doing this is including this base64-encoded copy of"
-		echo $"the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
+		echo $"The recommended way of doing this is to include the certificate content"
+		echo $"below (including from BEGIN CERTIFICATE up to END CERTIFICATE lines) in"
+		echo $"SSL_CA_CONTENT of /usr/share/mkswu/examples/hawkbit_register.sh, generate"
+		echo $"its swu (mkswu hawkbit_register.desc), and install hawkbit_register.swu on"
+		echo $"the device"
 		echo
-		base64 "$CERT"
+		cat "$CERT"
 		echo
 		echo
 		echo $"Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"

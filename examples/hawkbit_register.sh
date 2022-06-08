@@ -14,12 +14,15 @@ SSL_NO_CHECK_CERT=
 # or set to cafile that must have been updated first
 SSL_CAFILE=
 # ... or paste here base64 encoded crt content, e.g.
-# SSL_CA_BASE64="
-# LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlekNDQVNHZ0F3SUJBZ0lVWnFzall5eFI0
+# SSL_CA_CONTENT="
+# -----BEGIN CERTIFICATE-----
+# MIIBejCCASGgAwIBAgIUb5eWXmv2Cwvbf0IoW6PDUBF3HmkwCgYIKoZIzj0EAwIw
 # ...
-# LS0tCg==
+# Af8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQCIAlxsxPaRVriLlxLHWk9eYXgqtws
+# NGdeI3cn+cafbzdrAiAQoDboWCq1tyAjJqJ4vFyOUcdBD8nY+GESXCIFQNaEWw==
+# -----END CERTIFICATE-----
 # "
-SSL_CA_BASE64="
+SSL_CA_CONTENT="
 "
 # ... or add your own options if required
 CURLOPT=-s
@@ -64,9 +67,9 @@ init() {
 		SSL_CAFILE="/etc/ssl/certs/ca-certificates.crt"
 	fi
 	# write CA and update cert if not empty
-	if echo "$SSL_CA_BASE64" | grep -q '[[:alnum:]]'; then
-		echo "$SSL_CA_BASE64" \
-			| base64 -d > /usr/local/share/ca-certificates/hawkbit.crt \
+	if echo "$SSL_CA_CONTENT" | grep -q '[[:alnum:]]'; then
+		echo "$SSL_CA_CONTENT" \
+			| sed -e '/^[ \t]*$/d' > /usr/local/share/ca-certificates/hawkbit.crt \
 			|| error "Could not write certificate"
 		update-ca-certificates \
 			|| error "Could not update-ca-certificates"

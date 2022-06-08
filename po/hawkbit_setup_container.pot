@@ -225,16 +225,22 @@ msgstr ""
 msgid "encrypt certificate instead of the self-signed one. Accepting means you agree to the TOS:"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "You need to copy $CERT to device's /usr/local/share/ca-certificates/"
+msgid "The generated certificate needs to be registered on device."
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "and run the following commands on device:"
+msgid "The recommended way of doing this is to include the certificate content"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "The recommended way of doing this is including this base64-encoded copy of"
+msgid "below (including from BEGIN CERTIFICATE up to END CERTIFICATE lines) in"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "the certificate into the example's hawkbit_register.sh script SSL_CA_BASE64:"
+msgid "SSL_CA_CONTENT of /usr/share/mkswu/examples/hawkbit_register.sh, generate"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "its swu (mkswu hawkbit_register.desc), and install hawkbit_register.swu on"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "the device"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"
