@@ -33,7 +33,8 @@ umount_or_reboot() {
 	is_mountpoint "$dir" || return
 
 	if ! umount "$dir"; then
-		echo "Could not unmount $dir but we really want the space back: reboot and hope swupdate will run again. Note containers will not be able to run after reboot." >&2
+		echo "Could not unmount $dir but we really want the space back: reboot and hope swupdate will run again." >&2
+		echo "Note containers will not be able to run after reboot." >&2
 		reboot
 		# reboot returns immediately but takes time: wait for it.
 		sleep infinity
@@ -112,11 +113,12 @@ prepare_appfs() {
 		|| error "Could not mount appfs"
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
-		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" "This is only for development, do not use this mode for production!" >&2
+		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" \
+			       "This is only for development, do not use this mode for production!"
 	fi
 
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
-		podman_killall "CONTAINER_CLEAR requested: stopping and destroying all container data first" >&2
+		podman_killall "CONTAINER_CLEAR requested: stopping and destroying all container data first"
 		btrfs_subvol_delete "boot_0/containers_storage"
 		btrfs_subvol_delete "boot_0/volumes"
 		btrfs_subvol_delete "boot_1/containers_storage"
@@ -162,8 +164,10 @@ prepare_appfs() {
 	# incorrectly somehow).
 	# add an unreasonably long timeout just in case.
 	# also, skip on test
-	[ -n "$(mkswu_var SKIP_APP_SUBVOL_SYNC)" ] \
-		|| timeout 30m btrfs subvolume sync "$basemount"
+	if [ -z "$(mkswu_var SKIP_APP_SUBVOL_SYNC)" ]; then
+		stdout_info echo "Waiting for btrfs to flush deleted subvolumes"
+		timeout 30m btrfs subvolume sync "$basemount"
+	fi
 	umount "$basemount"
 	rmdir "$basemount"
 }

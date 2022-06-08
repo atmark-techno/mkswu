@@ -61,7 +61,8 @@ cleanup_appfs() {
 		cleanup_fail=""
 	fi
 
-	"$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
+	stdout_info echo "Removing unused containers"
+	stdout_info "$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
 		--confdir /target/etc/atmark/containers $cleanup_fail \
 		|| error "cleanup of old images failed: mismatching configuration/container update?"
 
@@ -80,7 +81,7 @@ cleanup_appfs() {
 		# to do and want to use updated apps on currenet os (old apps
 		# now being backup for fallback)
 		if ! swap_btrfs_snapshots; then
-			echo "Could not swap btrfs subvolumes, forcing reboot" >&2
+			stdout_warn echo "Could not swap btrfs subvolumes, forcing reboot"
 			umount "$basemount"
 			rmdir "$basemount"
 			needs_reboot=1

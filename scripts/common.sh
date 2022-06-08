@@ -17,9 +17,57 @@ error() {
 }
 
 warning() {
-	printf -- "----------------------------------------------\n" >&2
-	printf -- "WARNING: %s\n" "$@" >&2
-	printf -- "----------------------------------------------\n" >&2
+	stdout_warn printf -- "----------------------------------------------\n"
+	stdout_warn printf -- "WARNING: %s\n" "$@"
+	stdout_warn printf -- "----------------------------------------------\n"
+}
+
+# adjust podman outputs: podman sometimes lists containers ids
+# and it's not clear what they correspond to without a wrapper
+podman() {
+	info_if_not_empty command podman "$@"
+}
+
+info_if_not_empty() {
+	local output="$TMPDIR/cmd_output"
+	"$@" > "$output" 2>&1
+	if [ -s "$output" ]; then
+		stdout_info echo "Command '$*' output:"
+		stdout_info cat "$output"
+	fi
+	rm -f "$output"
+}
+
+stdout_warn() {
+	# we hardcode fd values here to avoid eval of message,
+	# which brings in painful quoting problems.
+	# Just keep using stderr on unexpected value.
+	case "$SWUPDATE_WARN_FD" in
+	4) "$@" >&4;;
+	*) "$@" >&2;;
+	esac
+}
+
+stderr_warn() {
+	case "$SWUPDATE_WARN_FD" in
+	4) "$@" 2>&4;;
+	*) "$@";;
+	esac
+}
+
+stdout_info() {
+	# this one keeps stdout if unset
+	case "$SWUPDATE_INFO_FD" in
+	3) "$@" >&3;;
+	*) "$@";;
+	esac
+}
+
+stderr_info() {
+	case "$SWUPDATE_INFO_FD" in
+	3) "$@" 2>&3;;
+	*) "$@";;
+	esac
 }
 
 try_lock() {
@@ -87,7 +135,7 @@ lock_update() {
 	# very rare deadlocks when mixing e.g. USB and hawkbit updates after
 	# failures.
 	try_lock && return
-	echo "/tmp/.swupdate_lock exists: another update in progress? Waiting until it disappears" >&2
+	stdout_warn echo "/tmp/.swupdate_lock exists: another update in progress? Waiting until it disappears"
 
 	while ! try_lock; do
 		sleep 5;

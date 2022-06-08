@@ -38,15 +38,15 @@ get_pod_infra_image_tag() {
 	fi
 
 	if [ -z "$infra_image" ]; then
-		printf "%s\n" "Warning: Could not guess podman pod infra container name, continuing without one"
-			      "podman_start will probably require an internet to start pods" >&2
+		warning "Warning: Could not guess podman pod infra container name, continuing without one"
+			"podman_start will probably require an internet to start pods"
 		return
 	fi
 
 	if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
 			image inspect --format '{{.Id}}' "$infra_image" 2>/dev/null; then
-		printf "%s\n" "Warning: pod configured but pod infra container $infra_image was not found!" \
-			      "Trying to get it now" >&2
+		warning "pod configured but pod infra container $infra_image was not found!" \
+			"Trying to get it now"
 		[ -n "$DRY_RUN" ] && return
 		# pull command prints the id of the image it just fetched
 		if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \

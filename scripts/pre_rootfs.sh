@@ -176,7 +176,7 @@ mount_target_rootfs() {
 		    && [ -s /etc/.rootfs_update_timestamp ] \
 		    && [ "$(cat /etc/.rootfs_update_timestamp 2>/dev/null)" \
 		    = "$(cat /target/etc/.rootfs_update_timestamp 2>/dev/null)" ]; then
-			echo "Other fs up to date, skipping copy"
+			stdout_info echo "Other fs up to date, skipping copy"
 			return
 		fi
 		umount "/target"
@@ -214,12 +214,13 @@ mount_target_rootfs() {
 
 	update_preserve_list
 	if needs_update "base_os"; then
+		stdout_info echo "Updating base os: copying swupdate_preserve_files"
 		copy_preserve_files
 		return
 	fi
 
 	# if no update is required copy current fs over
-	echo "No base os update: copying current os over"
+	stdout_info echo "No base os update: copying current os over"
 
 	if [ -e "/live/rootfs" ]; then
 		cp -ax /live/rootfs/. /target/ || error "Could not copy existing fs over"
