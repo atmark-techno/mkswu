@@ -603,7 +603,7 @@ prompt_reverse_proxy() {
 		hawkbit_proxy_conf_fragments+=( "*_tlsauth*" )
 		if prompt_yesno REVERSE_PROXY_CLIENT_CERT_MANDATORY \
 				$"Also disallow token authentication?"; then
-			update_template "hawkbit_proxy.conf/40_tlsauth_ca" \
+			update_template "hawkbit_proxy.conf/30_tlsauth_ca" \
 				-e 's/optional/on/'
 			update_template "hawkbit_application.properties/auth_token" \
 				-e 's/=true/=false/'
