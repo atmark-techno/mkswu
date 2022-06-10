@@ -30,7 +30,13 @@ podman() {
 
 info_if_not_empty() {
 	local output="$TMPDIR/cmd_output"
-	"$@" > "$output" 2>&1
+
+	if [ -n "$FILTER" ]; then
+		"$@" 2>&1 | grep -vE "$FILTER" > "$output"
+	else
+		"$@" > "$output" 2>&1
+	fi
+
 	if [ -s "$output" ]; then
 		stdout_info echo "Command '$*' output:"
 		stdout_info cat "$output"

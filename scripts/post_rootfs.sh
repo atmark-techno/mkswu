@@ -182,8 +182,9 @@ baseos_upgrade_fixes() {
 
 	# if user has local certificates we should regenerate the bundle
 	if stat /target/usr/local/share/ca-certificates/* >/dev/null 2>&1; then
-		podman run --net=none --rootfs /target update-ca-certificates 2>/dev/null \
-			|| error "update-ca-certificates failed"
+		FILTER="WARNING: ca-certificates.crt does not contain exactly one certificate or CRL: skipping" \
+			podman run --net=none --rootfs /target update-ca-certificates 2>/dev/null \
+				|| error "update-ca-certificates failed"
 	fi
 
 	### workaround section, these can be removed once we consider we no longer
