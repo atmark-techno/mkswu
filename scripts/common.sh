@@ -242,8 +242,8 @@ luks_unlock() {
 		index=$((index-1))
 		offset="$(((9*1024 + index*4)*1024))"
 		;;
-        *) error "LUKS only supported on mmcblk*p* partitions" ;;
-        esac
+	*) error "LUKS only supported on mmcblk*p* partitions" ;;
+	esac
 
 	mkdir -p /run/caam
 	local KEYFILE=/run/caam/lukskey
@@ -283,8 +283,8 @@ luks_format() {
 		index=$((index-1))
 		offset="$(((9*1024 + index*4)*1024))"
 		;;
-        *) error "LUKS only supported on mmcblk*p* partitions" ;;
-        esac
+	*) error "LUKS only supported on mmcblk*p* partitions" ;;
+	esac
 
 	mkdir -p /run/caam
 	local KEYFILE=/run/caam/lukskey

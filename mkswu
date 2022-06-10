@@ -1628,7 +1628,7 @@ geninitdesc_fixinitdesc() {
 		info "atmark password was incorrectly generated, regenerating it"
 		info "if initial_setup was already installed please adjust password"
 		info "with %s if necessary" "$SCRIPT_DIR/examples/reset_atmark_pass.desc"
-		
+
 		local PASSWD
 		geninitdesc_promptpass atmark
 

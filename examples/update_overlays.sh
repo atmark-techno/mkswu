@@ -35,8 +35,8 @@ error() {
 }
 
 shell_quote() {
-        # sh-compliant quote function from http://www.etalabs.net/sh_tricks.html
-        printf %s "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+	# sh-compliant quote function from http://www.etalabs.net/sh_tricks.html
+	printf %s "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
 }
 
 init_tempfile() {
