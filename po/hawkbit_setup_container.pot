@@ -228,19 +228,22 @@ msgstr ""
 msgid "The generated certificate needs to be registered on device."
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "The recommended way of doing this is to include the certificate content"
+msgid "The recommended way of doing this is to use the examples' hawkbit_register swu:"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "below (including from BEGIN CERTIFICATE up to END CERTIFICATE lines) in"
+msgid "Copy /usr/share/mkswu/examples/hawkbit_register.* and fill in required variables"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "SSL_CA_CONTENT of /usr/share/mkswu/examples/hawkbit_register.sh, generate"
+msgid "(HAWKBIT_URL with server URL, HAWKBIT_PASSWORD with device user password,"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "its swu (mkswu hawkbit_register.desc), and install hawkbit_register.swu on"
+msgid "and copy-paste the certificate from BEGIN CERTIFICATE and up to END CERTIFICATE"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
-msgid "the device"
+msgid "into SSL_CA_CONTENT), then generate its swu (mkswu hawkbit_register.desc),"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "and install hawkbit_register.swu on the device"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"

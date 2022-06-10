@@ -140,7 +140,7 @@ msgstr "のままにしておくことができます。Let's encryptを使用�
 
 #: hawkbit-compose/setup_container.sh
 msgid "require generating a new certificate every few years."
-msgstr "数年ごとに証明書を新しくすることが最も好ましです。"
+msgstr "数年ごとに証明書を新しくすることを推奨します。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "certificate validity must be a number of days (only digits)"
@@ -305,24 +305,28 @@ msgid "The generated certificate needs to be registered on device."
 msgstr "作成した証明書をデバイスにコピーする必要があります。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "The recommended way of doing this is to include the certificate content"
-msgstr "以下の 証明書を BEGIN CERTIFICATE から END CERTIFICATE までコピーして、"
+msgid "The recommended way of doing this is to use the examples' hawkbit_register swu:"
+msgstr "/usr/share/mkswu/examples/hawkbit_register.* をコピーして、"
 
 #: hawkbit-compose/setup_container.sh
-msgid "below (including from BEGIN CERTIFICATE up to END CERTIFICATE lines) in"
-msgstr "/usr/share/mkswu/examples/hawkbit_register.sh の SSL_CA_CONTENT に"
+msgid "Copy /usr/share/mkswu/examples/hawkbit_register.* and fill in required variables"
+msgstr "変数を入力する必要があります。 HAWKBIT_URL は hawkbit サーバーの URL 、"
 
 #: hawkbit-compose/setup_container.sh
-msgid "SSL_CA_CONTENT of /usr/share/mkswu/examples/hawkbit_register.sh, generate"
-msgstr "ペーストして下さい。"
+msgid "(HAWKBIT_URL with server URL, HAWKBIT_PASSWORD with device user password,"
+msgstr "HAWKBIT_PASSWORD は device のパスワードを入力し、 SSL_CA_CONTENT は下記証明書を"
 
 #: hawkbit-compose/setup_container.sh
-msgid "its swu (mkswu hawkbit_register.desc), and install hawkbit_register.swu on"
-msgstr "次に、mkswu hawkbit_register.desc を実行し、hawkbit_register.swu を作成して、"
+msgid "and copy-paste the certificate from BEGIN CERTIFICATE and up to END CERTIFICATE"
+msgstr "BEGIN CERTIFICATE から END CERTIFICATE までをコピーして、ペーストして下さい。"
 
 #: hawkbit-compose/setup_container.sh
-msgid "the device"
-msgstr "hawkbit_register.swuをデバイスにインストールしてください。"
+msgid "into SSL_CA_CONTENT), then generate its swu (mkswu hawkbit_register.desc),"
+msgstr "次に、mkswu hawkbit_register.desc で作られた、"
+
+#: hawkbit-compose/setup_container.sh
+msgid "and install hawkbit_register.swu on the device"
+msgstr "hawkbit_register.swu をデバイスにインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"

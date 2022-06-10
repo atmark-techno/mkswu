@@ -624,11 +624,12 @@ prompt_reverse_proxy() {
 		# run update-ca-certificates
 		# persist_file -rv /etc/ssl /usr/local/share/ca-certificates
 		echo
-		echo $"The recommended way of doing this is to include the certificate content"
-		echo $"below (including from BEGIN CERTIFICATE up to END CERTIFICATE lines) in"
-		echo $"SSL_CA_CONTENT of /usr/share/mkswu/examples/hawkbit_register.sh, generate"
-		echo $"its swu (mkswu hawkbit_register.desc), and install hawkbit_register.swu on"
-		echo $"the device"
+		echo $"The recommended way of doing this is to use the examples' hawkbit_register swu:"
+		echo $"Copy /usr/share/mkswu/examples/hawkbit_register.* and fill in required variables"
+		echo $"(HAWKBIT_URL with server URL, HAWKBIT_PASSWORD with device user password,"
+		echo $"and copy-paste the certificate from BEGIN CERTIFICATE and up to END CERTIFICATE"
+		echo $"into SSL_CA_CONTENT), then generate its swu (mkswu hawkbit_register.desc),"
+		echo $"and install hawkbit_register.swu on the device"
 		echo
 		cat "$CERT"
 		echo
