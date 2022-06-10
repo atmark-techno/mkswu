@@ -63,6 +63,13 @@ stdout_info() {
 	esac
 }
 
+stdout_info_or_error() {
+	case "$SWUPDATE_INFO_FD" in
+	3) "$@" >&3;;
+	*) "$@" >&2;;
+	esac
+}
+
 stderr_info() {
 	case "$SWUPDATE_INFO_FD" in
 	3) "$@" 2>&3;;

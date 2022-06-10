@@ -18,14 +18,14 @@ rm -rf "$SCRIPTSDIR"
 POST_ACTION=$(post_action)
 case "$POST_ACTION" in
 poweroff)
-	echo "swupdate triggering poweroff!" >&2
+	stdout_info_or_error echo "swupdate triggering poweroff!"
 	touch /tmp/.swupdate_rebooting
 	poweroff
 	pkill -9 swupdate
 	sleep infinity
 	;;
 wait)
-	echo "swupdate waiting until external reboot" >&2
+	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# we rely on normal lock for this case:
 	# if a user wants to kill swupdate and reinstall a new install
 	# it is somewhat valid, although previous update will be lost
@@ -34,13 +34,13 @@ wait)
 container)
 	unlock_update
 	if [ -n "$SWUPDATE_HAWKBIT" ]; then
-		echo "Restarting swupdate-hawkbit service" >&2
+		stdout_info_or_error echo "Restarting swupdate-hawkbit service"
 		# remove stdout/stderr to avoid sigpipe when parent is killed
 		rc-service swupdate-hawkbit restart >/dev/null 2>&1
 	fi
 	;;
 *)
-	echo "swupdate triggering reboot!" >&2
+	stdout_info_or_error echo "swupdate triggering reboot!"
 	touch /tmp/.swupdate_rebooting
 	reboot
 	pkill -9 swupdate
