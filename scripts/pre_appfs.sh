@@ -96,7 +96,7 @@ check_update_disk_encryption() {
 
 prepare_appfs() {
 	local dev
-	local mountopt="compress=zstd:3,space_cache=v2,subvol"
+	local mountopt="compress=zstd:3,subvol"
 	local basemount
 
 	basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
