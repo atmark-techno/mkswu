@@ -215,9 +215,8 @@ baseos_upgrade_fixes() {
 	# not a baseos install? skip fixes...
 	[ -n "$baseos_version" ] || return
 
-	# add /var/at-log to fstab
-	if version_greater_than "$baseos_version" "3.15.0-at.1" \
-	    && grep -q /dev/mmcblk2 /proc/cmdline \
+	# add /var/at-log to fstab (added in 3.15.0-at.1)
+	if grep -q /dev/mmcblk2 /proc/cmdline \
 	    && [ -e /dev/mmcblk2gp1 ] \
 	    && ! grep -q /dev/mmcblk2gp1 /target/etc/fstab; then
 		cat >> /target/etc/fstab <<'EOF' \
@@ -238,6 +237,14 @@ EOF
 	if [ -e /var/log/rc.log ]; then
 		rm -f /var/log/rc.log
 	fi
+
+	# Lock atmark account if it has no password
+	# (locked by default in 3.16.0-at.1)
+	if grep -q 'atmark::' /target/etc/shadow; then
+		sed -i -e 's/atmark::/atmark:!:/' /target/etc/shadow \
+			|| error "Could not lock atmark user"
+	fi
+
 }
 
 check_update_log_encryption() {
