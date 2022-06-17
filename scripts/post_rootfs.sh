@@ -76,6 +76,7 @@ SWUPDATE_PEM=/target/etc/swupdate.pem
 
 update_swupdate_certificate()  {
 	local certsdir cert pubkey external="" update=""
+	local atmark_old="" atmark_new=""
 
 	# split swupdate.pem into something we can handle, then match
 	# with known keys and update as appropriate
@@ -88,13 +89,21 @@ update_swupdate_certificate()  {
 	for cert in "$certsdir"/*; do
 		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
 		case "$pubkey" in
+		# Armadillo public one-time key
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEYTN7NghmISesYQ1dnby5YkocLAe2/EJ8OTXkx/xGhBVlJ57eGOovtPORd/JMkA6lWI0N/pD5p6eUGcwrQvRtsw==")
-			# Armadillo public one-time key, remove it.
+			# Remove these keys
 			rm -f "$cert"
 			update=1
 			;;
+		# Certificates for atmark certificates are rotated in
+		# two steps, if only one is present add the other
+		# Currently used key
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA==")
-			# Armadillo internal key, leave it if present.
+			atmark_old=1
+			;;
+		# New certificate to prepare for key rotation
+		"PLACE HOLDER FOR NEW PUBKEY -- this won't match anything")
+			atmark_new=1
 			;;
 		*)
 			# Any other key
@@ -102,6 +111,15 @@ update_swupdate_certificate()  {
 			;;
 		esac
 	done
+
+	if [ -n "$atmark_old" ] && [ -z "$atmark_new" ]; then
+		# New certificate was not found, add it
+		# cat > "$certsdir/atmark_new.crt" <<EOF
+		# XXX
+		# EOF
+		# update=1
+		:
+	fi
 
 	if [ -n "$update" ]; then
 		# fail if no user key has been provided
