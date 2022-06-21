@@ -102,7 +102,7 @@ update_swupdate_certificate()  {
 			atmark_old=1
 			;;
 		# New certificate to prepare for key rotation
-		"PLACE HOLDER FOR NEW PUBKEY -- this won't match anything")
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAERkRP5eTXBTG760gEmBfCBz4fWyYfUx3a+sYyHe4uc1sQN2bavxfaBlJmyGI4MY/Pkjh5FDVcddZfil552WUoWQ==")
 			atmark_new=1
 			;;
 		*)
@@ -114,22 +114,37 @@ update_swupdate_certificate()  {
 
 	if [ -n "$atmark_old" ] && [ -z "$atmark_new" ]; then
 		# New certificate was not found, add it
-		# cat > "$certsdir/atmark_new.crt" <<EOF
-		# XXX
-		# EOF
-		# update=1
-		:
+		cat > "$certsdir/atmark_new.crt" <<EOF
+-----BEGIN CERTIFICATE-----
+MIIBvzCCAWagAwIBAgIUfagaF9RAjO2+x54PMqIlZkain9MwCgYIKoZIzj0EAwIw
+NzERMA8GA1UECgwIU1dVcGRhdGUxIjAgBgNVBAMMGUFybWFkaWxsbyBzd3VwZGF0
+ZSBrZXkgIzIwHhcNMjIwNjIxMDA1MDA3WhcNMjcwNjIwMDA1MDA3WjA3MREwDwYD
+VQQKDAhTV1VwZGF0ZTEiMCAGA1UEAwwZQXJtYWRpbGxvIHN3dXBkYXRlIGtleSAj
+MjBWMBAGByqGSM49AgEGBSuBBAAKA0IABEZET+Xk1wUxu+tIBJgXwgc+H1smH1Md
+2vrGMh3uLnNbEDdm2r8X2gZSZshiODGPz5I4eRQ1XHXWX4peedllKFmjUzBRMB0G
+A1UdDgQWBBRWljU9dLvWsc0/vl+uoF9l4NxhqjAfBgNVHSMEGDAWgBRWljU9dLvW
+sc0/vl+uoF9l4NxhqjAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQC
+IB5TR4mquAJVwcugTL/4pzc06Gfci/a6Fkg77PvyfrKmAiBLB51kBrxi07alCofM
+LAzCERFEjT1UH1NutbSZr5IFdQ==
+-----END CERTIFICATE-----
+EOF
+		update=1
 	fi
 
 	if [ -n "$update" ]; then
-		# fail if no user key has been provided
 		if [ -z "$external" ]; then
-			# just skip this step if flag is set
+			# don't remove one-time key if no external key provided
+			# fail unless explicitely allowed
+			# but add new atmark key if required
 			[ -n "$(mkswu_var ALLOW_PUBLIC_CERT)" ] \
 				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
+			if [ -e "$certsdir/atmark_new.crt" ]; then
+				cat "$certsdir/atmark_new.crt" >> "$SWUPDATE_PEM" \
+					|| error "Could not update swupdate.pem certificates"
+			fi
 		else
 			cat "$certsdir"/* > "$SWUPDATE_PEM" \
-				|| error "Could not recreate swupdate.pem certificate"
+				|| error "Could not recreate swupdate.pem certificates"
 		fi
 	fi
 
