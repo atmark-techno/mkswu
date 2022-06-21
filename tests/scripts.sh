@@ -217,18 +217,51 @@ test_cert_update() {
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp256k1 \
 		-keyout "$SCRIPTSDIR/key" -out "$SCRIPTSDIR/pub" -subj "/O=SWUpdate/CN=test" \
 		-nodes || error "Could not generate new key"
-	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
-	cat "$SCRIPTSDIR/pub" >> "$SWUPDATE_PEM"
+	{
+		echo "# onetime key";
+		cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem"
+		echo "# own key"
+		cat "$SCRIPTSDIR/pub"
+	} > "$SWUPDATE_PEM"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok with new key"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
 		|| error "should have removed public key"
+	grep -q "# own key" "$SWUPDATE_PEM" \
+		|| error "should have kept own key comment"
+	grep -q "# onetime key" "$SWUPDATE_PEM" \
+		&& error "should have removed onetime key comment"
 
 	echo "swupdate certificate: test with other key, again"
 	( update_swupdate_certificate; ) \
-		|| error "certificate update should be ok with new key"
+		|| error "certificate update should be ok to do nothing"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
-		|| error "should have removed public key"
+		|| error "should have not changed anything"
+
+	echo "swupdate certificate: test using old atmark key adds the new one"
+	cat >> "$SWUPDATE_PEM" <<EOF
+# atmark-1
+-----BEGIN CERTIFICATE-----
+MIIBuzCCAWCgAwIBAgIUbbibr2AEmw3ohnmkXeGPPf0glgcwCgYIKoZIzj0EAwIw
+NDERMA8GA1UECgwIU1dVcGRhdGUxHzAdBgNVBAMMFkFybWFkaWxsbyBzd3VwZGF0
+ZSBrZXkwHhcNMjExMDA4MDA0MDM4WhcNMjYxMDA3MDA0MDM4WjA0MREwDwYDVQQK
+DAhTV1VwZGF0ZTEfMB0GA1UEAwwWQXJtYWRpbGxvIHN3dXBkYXRlIGtleTBWMBAG
+ByqGSM49AgEGBSuBBAAKA0IABI4G3d0iPPoqH90yy/akxjZUDfOFapBEj2d00lJG
+FIE4hC9wYtUKGMxlhqn3Zqy4jbICV+EAN4KWgtfUPn1jpBCjUzBRMB0GA1UdDgQW
+BBTUqX0Oic83+JlYI5d+c7Fo6smajDAfBgNVHSMEGDAWgBTUqX0Oic83+JlYI5d+
+c7Fo6smajDAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0kAMEYCIQCVKqFW
+tOo2d4UOIf+IWkCxA1mptbdEtrgXeagVFGr6+AIhAP3xkD4M9mj8LYZeFgA9uKaO
+Ym7VNTvJTNMU82ZTiXk8
+-----END CERTIFICATE-----
+EOF
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok to add extra atmark cert"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
+		|| error "should have added new key"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok to do nothing"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
+		|| error "should have not changed anything"
 }
 
 test_preserve_files_post() {
