@@ -83,7 +83,7 @@ update_swupdate_certificate()  {
 
 	certsdir=$(mktemp -d "$SCRIPTSDIR/certs.XXXXXX") \
 		|| error "Could not create temp dir"
-	awk '/BEGIN CERTIFICATE/ { idx++; outfile="'"$certsdir"'/cert." idx }
+	awk '! outfile { idx++; outfile="'"$certsdir"'/cert." idx }
 	     outfile { print > outfile }
 	     /END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
 	for cert in "$certsdir"/*; do
