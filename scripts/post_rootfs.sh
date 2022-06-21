@@ -97,11 +97,11 @@ update_swupdate_certificate()  {
 			;;
 		# Certificates for atmark certificates are rotated in
 		# two steps, if only one is present add the other
-		# Currently used key
+		# Currently used key, atmark-1
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA==")
 			atmark_old=1
 			;;
-		# New certificate to prepare for key rotation
+		# New certificate to prepare for key rotation, atmark-2
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAERkRP5eTXBTG760gEmBfCBz4fWyYfUx3a+sYyHe4uc1sQN2bavxfaBlJmyGI4MY/Pkjh5FDVcddZfil552WUoWQ==")
 			atmark_new=1
 			;;
@@ -115,6 +115,7 @@ update_swupdate_certificate()  {
 	if [ -n "$atmark_old" ] && [ -z "$atmark_new" ]; then
 		# New certificate was not found, add it
 		cat > "$certsdir/atmark_new.crt" <<EOF
+# atmark-2
 -----BEGIN CERTIFICATE-----
 MIIBvzCCAWagAwIBAgIUfagaF9RAjO2+x54PMqIlZkain9MwCgYIKoZIzj0EAwIw
 NzERMA8GA1UECgwIU1dVcGRhdGUxIjAgBgNVBAMMGUFybWFkaWxsbyBzd3VwZGF0
