@@ -114,7 +114,8 @@ update_swupdate_certificate()  {
 
 	if [ -n "$atmark_old" ] && [ -z "$atmark_new" ]; then
 		# New certificate was not found, add it
-		cat > "$certsdir/atmark_new.crt" <<EOF
+		# name in z_ to append last
+		cat > "$certsdir/z_atmark_new.crt" <<EOF
 # atmark-2
 -----BEGIN CERTIFICATE-----
 MIIBvzCCAWagAwIBAgIUfagaF9RAjO2+x54PMqIlZkain9MwCgYIKoZIzj0EAwIw
@@ -139,8 +140,8 @@ EOF
 			# but add new atmark key if required
 			[ -n "$(mkswu_var ALLOW_PUBLIC_CERT)" ] \
 				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
-			if [ -e "$certsdir/atmark_new.crt" ]; then
-				cat "$certsdir/atmark_new.crt" >> "$SWUPDATE_PEM" \
+			if [ -e "$certsdir/z_atmark_new.crt" ]; then
+				cat "$certsdir/z_atmark_new.crt" >> "$SWUPDATE_PEM" \
 					|| error "Could not update swupdate.pem certificates"
 			fi
 		else
