@@ -226,9 +226,9 @@ mount_target_rootfs() {
 	mkdir -p /target/boot /target/mnt /target/target
 	touch /target/.created
 
-	update_preserve_list
 	if needs_update "base_os"; then
 		stdout_info echo "Updating base os: copying swupdate_preserve_files"
+		update_preserve_list
 		copy_preserve_files
 		return
 	fi
