@@ -1,3 +1,23 @@
+4.2
+===
+breaking changes:
+ - the atmark user will automatically be locked if it has no password
+set. This reflects an update to rootfs for alpine 3.16.0-at.1
+ - update swupdate.cfg loglevel to 3 (info) if it was previously set to 2
+(warn). Running with warn would show no message at all with new version.
+
+features:
+ - improve log messages: new swupdate version allows us to be more expressive
+with info and warning messages, so make use of these if available.
+ - add second atmark public certificate to /etc/swupdate.pem if and only
+if the first one was present
+ - update swupdate_preserve_files to v4. This adds /etc/dnsmasq.d,
+/etc/sysctl.d, /etc/hostapd/hostapd.conf, /etc/runlevels/default/hostapd,
+/etc/iptables/rules{,6}-save, /etc/runlevels/default/ip{,6}tables
+ - improve guidance messages for hawkbit-compose setup_container.sh
+
+ -- 2022-06-24
+
 4.1
 ===
 breaking changes:
