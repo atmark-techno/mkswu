@@ -1748,7 +1748,7 @@ mkswu_show() {
 				print "# built with mkswu", $NF
 			}
 			/^ *# swdesc_/ {
-				gsub(/ *# /, "")
+				sub(/ *# /, "")
 				cmd=$0
 				if (seen[cmd]) {
 					cmd=""
@@ -1774,8 +1774,8 @@ mkswu_show() {
 				cmd=""
 			}
 			/^ *# MKSWU_/ {
-				gsub(/ *# MKSWU_/, "swdesc_option ")
-				gsub(/ 1$/, "")
+				sub(/ *# MKSWU_/, "swdesc_option ")
+				sub(/ 1$/, "")
 				print
 			}
 			END {
