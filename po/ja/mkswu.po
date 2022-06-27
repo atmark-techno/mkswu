@@ -627,8 +627,8 @@ msgid "Could not generate password"
 msgstr "パスワードを作成できませんでした。"
 
 #: mkswu
-msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
-msgstr "BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行いますか？ (y/N)"
+msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
+msgstr "BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行いますか？ (N/y)"
 
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"

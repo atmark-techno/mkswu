@@ -471,7 +471,7 @@ msgstr ""
 msgid "Could not generate password"
 msgstr ""
 #: mkswu
-msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
+msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
 msgstr ""
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"

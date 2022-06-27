@@ -215,7 +215,7 @@ prompt_yesno() {
 
 	case "$default" in
 	[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1) yesno="[Y/n] ";;
-	[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0) yesno="[y/N] ";;
+	[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0) yesno="[N/y] ";;
 	"") yesno="";;
 	*) error $"Invalid default $default for $prompt";;
 	esac

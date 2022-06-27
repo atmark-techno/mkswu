@@ -1594,7 +1594,7 @@ geninitdesc_promptpass() {
 
 geninitdesc_prompt_autoupdate() {
 	while true; do
-		prompt AUTOUPDATE "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (y/N)"
+		prompt AUTOUPDATE "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
 		case "$AUTOUPDATE" in
 		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
 			break;;
