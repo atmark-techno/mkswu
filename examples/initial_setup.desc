@@ -20,10 +20,6 @@ if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then
 		"sed -i -e 's/# aes-key-file/aes-key-file/' /etc/swupdate.cfg"
 fi
 
-# remove default not installed yet message from motd
-swdesc_command \
-	"sed -i -e '/initial_setup.swu has not been installed yet/ {N;N;d}' /etc/motd"
-
 # Set your own passwords for root and atmark users.
 # /!\ The install will fail if either passwords are left unset
 # You can generate your own hash with the following command:
