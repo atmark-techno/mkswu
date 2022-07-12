@@ -19,6 +19,51 @@ error() {
 	exit 1
 }
 
+# info commands duplicated from scripts/common
+stdout_info() {
+	# this one keeps stdout if unset
+	case "$SWUPDATE_INFO_FD" in
+	3) "$@" >&3;;
+	*) "$@";;
+	esac
+}
+
+# options:
+# FILTER: run grep -vE on filter and only print non-matches
+# NOSTDOUT: drop stdout and only consider stderr (for openssl cms-verify)
+info_if_not_empty() {
+	local output="$TMPDIR/cmd_output"
+	local ret
+
+	if [ -n "$NOSTDOUT" ]; then
+		"$@" 2> "$output" >/dev/null
+	else
+		"$@" > "$output" 2>&1
+	fi
+	ret=$?
+
+	if [ -n "$FILTER" ]; then
+		# can't check for grep error redirecting file as it returns
+		# non-zero if no match... hopefully mv will fail then?
+		grep -vE "$FILTER" < "$output" > "$output.filter"
+		if ! mv "$output.filter" "$output"; then
+			echo "Could not filter '$*' output" >&2
+			ret=1
+		fi
+	fi
+
+	if [ -s "$output" ]; then
+		stdout_info echo "Command '$*' output:"
+		stdout_info cat "$output"
+	fi
+	rm -f "$output"
+	return "$ret"
+}
+
+podman() {
+	info_if_not_empty command podman "$@"
+}
+
 usage() {
 	echo "Usage: $0 [options] [-l [archive...]|uri...]"
 	echo
@@ -57,9 +102,11 @@ podman_pull() {
 check_sig() {
 	local file="$1"
 
-	openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
-		    -nosmimecap -no_check_time -binary -CAfile "$PUB_KEY" > /dev/null ||
-		error "Signature verification failed"
+	FILTER="Verification successful" NOSTDOUT=1 info_if_not_empty \
+		openssl cms -verify -inform DER -in "$file.sig" \
+				-content "$file" -nosmimecap -no_check_time \
+				-binary -CAfile "$PUB_KEY" ||
+			error "Signature verification failed"
 }
 
 podman_load() {
