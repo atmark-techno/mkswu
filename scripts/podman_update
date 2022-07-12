@@ -58,7 +58,7 @@ check_sig() {
 	local file="$1"
 
 	openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
-		    -nosmimecap -binary -CAfile "$PUB_KEY" > /dev/null ||
+		    -nosmimecap -no_check_time -binary -CAfile "$PUB_KEY" > /dev/null ||
 		error "Signature verification failed"
 }
 
