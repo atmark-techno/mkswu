@@ -33,13 +33,28 @@ fw_setenv_defaults() {
 		info_if_not_empty command fw_setenv "$@"
 }
 
+# options:
+# FILTER: run grep -vE on filter and only print non-matches
+# NOSTDOUT: drop stdout and only consider stderr (for openssl cms-verify)
 info_if_not_empty() {
 	local output="$TMPDIR/cmd_output"
+	local ret
 
-	if [ -n "$FILTER" ]; then
-		"$@" 2>&1 | grep -vE "$FILTER" > "$output"
+	if [ -n "$NOSTDOUT" ]; then
+		"$@" 2> "$output" >/dev/null
 	else
 		"$@" > "$output" 2>&1
+	fi
+	ret=$?
+
+	if [ -n "$FILTER" ]; then
+		# can't check for grep error redirecting file as it returns
+		# non-zero if no match... hopefully mv will fail then?
+		grep -vE "$FILTER" < "$output" > "$output.filter"
+		if ! mv "$output.filter" "$output"; then
+			echo "Could not filter '$*' output" >&2
+			ret=1
+		fi
 	fi
 
 	if [ -s "$output" ]; then
@@ -47,6 +62,7 @@ info_if_not_empty() {
 		stdout_info cat "$output"
 	fi
 	rm -f "$output"
+	return "$ret"
 }
 
 stdout_warn() {
