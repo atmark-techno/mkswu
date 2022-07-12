@@ -28,6 +28,11 @@ podman() {
 	info_if_not_empty command podman "$@"
 }
 
+fw_setenv_defaults() {
+	FILTER="Cannot read environment, using default|Environment WRONG" \
+		info_if_not_empty command fw_setenv "$@"
+}
+
 info_if_not_empty() {
 	local output="$TMPDIR/cmd_output"
 

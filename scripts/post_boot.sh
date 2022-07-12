@@ -11,6 +11,17 @@ cleanup_boot() {
 		return
 	fi
 
+	# restore user env if uboot got updated & env present
+	if [ -e "/dev/swupdate_bootdev" ] \
+	    && stat /target/boot/uboot_env.d/* > /dev/null 2>&1; then
+		cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/default_env" \
+			|| error "uboot env files existed but could not merge them"
+		fw_setenv_defaults --config "/target/etc/fw_env.config" \
+				--defenv "$SCRIPTSDIR/default_env" \
+			|| error "Could not restore default env"
+		rm -f "$SCRIPTSDIR/default_env"
+	fi
+
 	if [ "$rootdev" = "/dev/mmcblk2" ]; then
 		cleanup_target
 		if fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
