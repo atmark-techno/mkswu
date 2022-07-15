@@ -14,7 +14,7 @@ build_check install_files \
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
 "$MKSWU" --genkey --aes --config mkswu-aes.conf
 MKSWU_ENCRYPT_KEYFILE=$PWD/swupdate.aes-key build_check aes \
-	"swdesc 'ivt ='" "file scripts.tar.zst.enc"
+	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
 
 build_check board "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
@@ -46,9 +46,9 @@ ln zoo/hardlink zoo/hardlink2
 build_check hardlink_order
 [ "$(cpio --quiet -t < out/hardlink_order.swu)" = "sw-description
 sw-description.sig
-scripts.tar.zst
+scripts_pre.sh.zst
 hardlink
-swupdate_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
+scripts_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
 
 rm -rf "$TESTS_DIR/out/init"
 "$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \

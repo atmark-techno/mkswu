@@ -1017,25 +1017,41 @@ swdesc_usb_container() {
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
 }
 
+create_prescript() {
+	# prescript is a self-extracting tar archive
+	track_used "$tar"
+
+	check_validity "$file" "$PRE_SCRIPT" "$tar" && return
+
+	cat "$PRE_SCRIPT" "$tar" > "$file.tmp" \
+		&& mv "$file.tmp" "$file" \
+		|| error "Could not create pre script"
+}
+
 embedded_preinstall_script() {
 	local component="" version="" board="" main_version=""
 	local install_if="" show_cmd="pre_script"
 	local install_first=1
+	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+	local PRE_SCRIPT="$SCRIPT_DIR/scripts_pre.sh"
 
-	local file="scripts.tar" basedir=""
+	local file="$OUTDIR/scripts.tar" basedir=""
 	local tarfiles_src="$EMBEDDED_SCRIPTS_DIR"
 	create_archive
 
+	local tar="$file"
+	file="$OUTDIR/scripts_pre.sh"
+	create_prescript
+
 	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
-	swdesc_exec_nochroot "$file" 'rm -rf ${TMPDIR:-/var/tmp}/scripts' \
-			'mkdir ${TMPDIR:-/var/tmp}/scripts' \
-			'cd ${TMPDIR:-/var/tmp}/scripts' \
-			'tar x -vf $1' "./$PRE_SCRIPT"
+	swdesc_script_nochroot "$file"
 }
 
 embedded_postinstall_script() {
 	local component="" version="" board="" main_version=""
 	local install_if="" show_cmd="post_script"
+	local POST_SCRIPT="$SCRIPT_DIR/scripts_post.sh"
+
 	swdesc_script_nochroot "$POST_SCRIPT"
 }
 
@@ -1826,9 +1842,6 @@ mkimage() {
 	local OUTDIR=""
 	local CONFIG_DIR
 	local CONFIG
-	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
-	local PRE_SCRIPT="swupdate_pre.sh"
-	local POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 	local FILES_FIRST="sw-description
 sw-description.sig"
 	local FILES=""
@@ -1859,8 +1872,6 @@ sw-description.sig"
 	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then
 		SCRIPT_DIR=${SCRIPT_DIR%/bin}/share/mkswu
 		TEXTDOMAINDIR="${SCRIPT_DIR%/mkswu}/locale"
-		EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
-		POST_SCRIPT="$SCRIPT_DIR/swupdate_post.sh"
 	fi
 
 	for CONFIG_DIR in "$SCRIPT_DIR" "$HOME/mkswu"; do
