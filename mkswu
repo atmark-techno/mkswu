@@ -79,6 +79,23 @@ prompt() {
 	fi
 }
 
+prompt_yesno() {
+	local default="$1"
+	shift 1
+	local yesno
+
+	while true; do
+		prompt yesno "$@"
+		[ -n "$yesno" ] || yesno="$default"
+		case "$yesno" in
+		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
+			return 0;;
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0)
+			return 1;;
+		esac
+	done
+}
+
 usage() {
 	info "Usage: %s [opts] desc [desc...]" "$0"
 	info
@@ -1562,9 +1579,9 @@ mkinit_genkey() {
 
 	if [ -n "$KEYPASS" ]; then
 		echo "$KEYPASS" | PRIVKEY_PASS="stdin" \
-			VERBOSE=1 mkswu_genkey_sign
+			VERBOSE=1 NOPROMPT=1 mkswu_genkey_sign
 	else
-		GENKEY_PLAIN=1 VERBOSE=1 mkswu_genkey_sign
+		GENKEY_PLAIN=1 VERBOSE=1 NOPROMPT=1 mkswu_genkey_sign
 	fi || exit 1
 
 	# Also prompt for encryption
@@ -1572,14 +1589,7 @@ mkinit_genkey() {
 
 	[ -n "$ENCRYPT_KEYFILE" ] && [ -e "$ENCRYPT_KEYFILE" ] && return
 
-	while true; do
-		prompt AES "Use AES encryption? (N/y)"
-		case "$AES" in
-		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1) AES=1; break;;
-		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") AES=""; break;;
-		esac
-	done
-	if [ -n "$AES" ]; then
+	if prompt_yesno n "Use AES encryption? (N/y)"; then
 		VERBOSE=1 mkswu_genkey_aes
 		info "Generated %s" "$ENCRYPT_KEYFILE"
 	fi
@@ -1630,28 +1640,6 @@ geninitdesc_promptpass() {
 	PASSWD="$password"
 }
 
-geninitdesc_prompt_autoupdate() {
-	while true; do
-		prompt AUTOUPDATE "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
-		case "$AUTOUPDATE" in
-		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
-			break;;
-		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
-			AUTOUPDATE=""; return;;
-		esac
-	done
-
-	while true; do
-		prompt AUTOUPDATE "Select update frequency ([weekly]/daily)"
-		case "$AUTOUPDATE" in
-		weekly|"")
-			AUTOUPDATE="next week"; break;;
-		daily)
-			AUTOUPDATE="tomorrow"; break;;
-		esac
-	done
-}
-
 geninitdesc_fixinitdesc() {
 	local version
 	version=$(sed -ne 's/.*version=\([0-9]*\).*/\1/p' "$desc")
@@ -1687,25 +1675,12 @@ mkinit_geninitdesc() {
 
 	[ -e "$desc" ] && geninitdesc_fixinitdesc && return
 
-	while true; do
-		prompt KEEPATMARKPEM "Allow updates signed by Atmark Techno? (Y/n)"
-		case "$KEEPATMARKPEM" in
-		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1|"")
-			KEEPATMARKPEM=1; break;;
-		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0)
-			KEEPATMARKPEM=""; break;;
-		esac
-	done
+	prompt_yesno y "Allow updates signed by Atmark Techno? (Y/n)" && KEEPATMARKPEM=1
 
 	geninitdesc_promptpass "root"
 	ROOTPW="$PASSWD"
 	geninitdesc_promptpass "atmark"
 	ATMARKPW="$PASSWD"
-
-	if [ -n "$KEEPATMARKPEM" ]; then
-		geninitdesc_prompt_autoupdate
-	fi
-
 
 	# cleanup if we fail here
 	trap "rm -f $desc.tmp" EXIT
@@ -1721,7 +1696,18 @@ mkinit_geninitdesc() {
 			-e 's:\(^[ \t]*"usermod\).*root:\1 '"$ROOTPW"' root:' "$desc.tmp" \
 		|| error "Could not update %s" "$desc.tmp"
 
-	if [ -n "$AUTOUPDATE" ]; then
+	if [ -n "$KEEPATMARKPEM" ] && \
+	    prompt n "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"; then
+
+		while true; do
+			prompt AUTOUPDATE "Select update frequency ([weekly]/daily)"
+			case "$AUTOUPDATE" in
+			weekly|"")
+				AUTOUPDATE="next week"; break;;
+			daily)
+				AUTOUPDATE="tomorrow"; break;;
+			esac
+		done
 		cat >> "$desc.tmp" <<EOF \
 			|| error "Could not update %s" "$desc.tmp"
 
@@ -1859,6 +1845,7 @@ sw-description.sig"
 	# mode options
 	local GENKEY_PLAIN="" GENKEY_CN=""
 	local SHOW_RAW=""
+	local NOPROMPT=""
 
 	# default default values
 	local BOOT_SIZE="4M"
@@ -2007,6 +1994,10 @@ sw-description.sig"
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			GENKEY_CN="$1"
 			SKIP=1
+			;;
+		"--noprompt")
+			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after %s" "$ARG" "--genkey"
+			NOPROMPT=1
 			;;
 		"--version")
 			info "mkswu version %s" "$MKSWU_VERSION"
