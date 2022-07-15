@@ -840,7 +840,7 @@ create_archive() {
 		file="$OUTDIR/$file"
 	fi
 
-	track_used "$file.validity"
+	track_used "$file" "$file.validity"
 	if ! [ -e "$file" ] || ! cmp -s "$file.validity" "$OUTDIR/tar.validity.tmp"; then
 		tar -cf "$file" -C "$basedir" "$@" \
 			|| error "Could not create tar for %s" "$file"
