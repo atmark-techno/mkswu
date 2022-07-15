@@ -1,7 +1,7 @@
 #!/bin/sh
 
 usage() {
-	echo "Usage: $0 [options]"
+	echo "Usage: $0 [options] text [text...]"
 	echo
 	echo "Add or remove lines from /etc/swupdate_preserve_files"
 	echo
