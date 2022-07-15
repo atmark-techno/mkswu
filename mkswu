@@ -218,7 +218,8 @@ check_validity() {
 	# check validity with mtime/size for all source files
 	for file_src; do
 		stat="${stat:+$stat
-}$(stat -L -c %n-%Y-%s "$file_src")"
+}$(stat -L -c %n-%Y-%s "$file_src")" \
+			|| error "Source file %s for %s does not exist" "$file_src" "$file_out"
 	done
 
 	[ "$(cat "$file_out.validity" 2>/dev/null)" = "$stat"  ] \
@@ -1213,9 +1214,9 @@ check_duplicate_files() {
 sign() {
 	local file="$OUTDIR/$1"
 
-	track_used "$file.sig"
+	track_used "$file.sig" "$file.sig.validity"
 
-	[ -e "$file.sig" ] && [ "$file.sig" -nt "$file" ] && return
+	check_validity "$file.sig" "$file" && return
 	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
 	[ -n "$PUBKEY" ] || error "PUBKEY must be set"
 	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: %s" "$PRIVKEY"
