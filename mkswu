@@ -241,7 +241,8 @@ compress() {
 	zstd -q -o "$file_out.tmp" < "$file_src" \
 		|| error "failed to compress %s" "$file_src"
 
-	mv "$file_out.tmp" "$file_out"
+	mv "$file_out.tmp" "$file_out" \
+		|| error "Could not rename %s" "$file_out"
 }
 
 append_file() {
@@ -826,7 +827,8 @@ create_archive() {
 	if ! cmp -s "$file.validity" "$OUTDIR/tar.validity.tmp"; then
 		tar -cf "$file" -C "$basedir" "$@" \
 			|| error "Could not create tar for %s" "$file"
-		mv "$OUTDIR/tar.validity.tmp" "$file.validity"
+		mv "$OUTDIR/tar.validity.tmp" "$file.validity" \
+			|| error "Could not rename %s" "$file.validity"
 	else
 		rm "$OUTDIR/tar.validity.tmp"
 	fi
@@ -1228,7 +1230,8 @@ sign() {
 		${PRIVKEY_PASS:+-passin "$PRIVKEY_PASS"} \
 		|| error "Could not sign %s" "$file"
 
-	mv "$file.sig.tmp" "$file.sig"
+	mv "$file.sig.tmp" "$file.sig" \
+		|| error "Could not rename %s" "$file.sig"
 }
 
 verify() {
