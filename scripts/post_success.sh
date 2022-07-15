@@ -103,7 +103,7 @@ post_success_custom() {
 	local action
 	rm -f "$TMPDIR/swupdate_post_fail_action"
 	action="$(mkswu_var NOTIFY_SUCCESS_CMD)"
-	eval "$action"
+	( eval "$action"; ) || error "NOTIFY_SUCCESS_CMD failed"
 }
 
 set_fw_update_ind() {

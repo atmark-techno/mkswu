@@ -106,7 +106,7 @@ init_really_starting() {
 	rm -f "$TMPDIR/swupdate_post_fail_action"
 
 	action="$(mkswu_var NOTIFY_STARTING_CMD)"
-	eval "$action"
+	( eval "$action"; ) || error "NOTIFY_STARTING_CMD failed"
 
 	action="$(mkswu_var NOTIFY_FAIL_CMD)"
 	[ -z "$action" ] && return
