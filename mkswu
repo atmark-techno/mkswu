@@ -165,8 +165,7 @@ link() {
 		[ "$src" = "$existing" ] && return
 		rm -f "$dest" || error "Could not remove previous link at %s" "$dest"
 	elif [ -e "$dest" ]; then
-		[ "$(stat -L -c %Y-%s "$src")" = "$(stat -L -c %Y-%s "$dest")" ] && return
-		rm -f "$dest" || error "Could not remove previous file at %s" "$dest"
+		check_validity "$dest" "$src" && return
 	fi
 
 	# files with hardlinks will mess up the order within the cpio,
