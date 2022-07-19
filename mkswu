@@ -1033,9 +1033,66 @@ swdesc_usb_container() {
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
 }
 
+append_certificates() {
+	# EXTRA_PUBKEYS is comma-separated unlike other tar sources
+	local IFS="," cert user_certs
+	local source="$file"
+	file="$OUTDIR/scripts_extras.tar"
+
+	# we handle certificates separately for user certs and
+	# atmark updates.
+	# We will add here:
+	# - atmark certificates if any to certs_atmark/
+	# - if UPDATE_CERTS is set any certs that was in PUBKEY
+	# (so by now PUBKEY,EXTRA_PUBKEYS)... except if PUBKEY is
+	# the known onetime public keys that we don't want to add.
+	# We need such a gating flag to avoid breaking users that
+	# already added their own keys with another mechanism.
+
+	case "$UPDATE_CERTS" in
+	[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
+		user_certs="$EXTRA_PUBKEYS"
+		# compare current cert's pubkey with known onetime-public key
+		if [ "$(openssl x509 -noout -in "$PUBKEY" -pubkey | sed -e '/-----/d' | tr -d '\n')" \
+		    != "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEYTN7NghmISesYQ1dnby5YkocLAe2/EJ8OTXkx/xGhBVlJ57eGOovtPORd/JMkA6lWI0N/pD5p6eUGcwrQvRtsw==" ]; then
+			user_certs="$PUBKEY${user_certs:+,$user_certs}"
+		fi
+		;;
+	[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"") ;;
+	*) error "Invalid value for %s: %s" UPDATE_CERTS "$UPDATE_CERTS";;
+	esac
+
+	if [ -z "$user_certs$ATMARK_CERTS" ]; then
+		# no key to add
+		link "$source" "$file"
+		return
+	fi
+
+	track_used "$file" "$file.validity"
+
+	check_validity "$file" "$source" $ATMARK_CERTS $user_certs && return
+
+	cp -a --reflink=auto "$source" "$file.tmp" \
+		|| error "Could not copy %s to %s" "$source" "$file"
+
+	for cert in $user_certs; do
+		# prefix ./ if no other / in filename...
+		[ "${cert%/*}" != "$cert" ] || cert="./$cert"
+		tar -C "${cert%/*}" --append --transform 's:^:certs_user/:' -f "$file.tmp" "${cert##*/}" \
+			|| error "Could not append %s to %s" "$cert" "$file.tmp"
+	done
+	for cert in $ATMARK_CERTS; do
+		[ "${cert%/*}" != "$cert" ] || cert="./$cert"
+		tar -C "${cert%/*}" --append --transform 's:^:certs_atmark/:' -f "$file.tmp" "${cert##*/}" \
+			|| error "Could not append %s to %s" "$cert" "$file.tmp"
+	done
+	mv "$file.tmp" "$file" \
+		|| error "Could not rename %s" "$file"
+}
+
 create_prescript() {
 	# prescript is a self-extracting tar archive
-	track_used "$tar"
+	track_used "$file"
 
 	check_validity "$file" "$PRE_SCRIPT" "$tar" && return
 
@@ -1054,6 +1111,8 @@ embedded_preinstall_script() {
 	local file="$OUTDIR/scripts.tar" basedir=""
 	local tarfiles_src="$EMBEDDED_SCRIPTS_DIR"
 	create_archive
+
+	append_certificates
 
 	local tar="$file"
 	file="$OUTDIR/scripts_pre.sh"
@@ -1084,6 +1143,7 @@ swdesc_option() {
 		BOOT_SIZE=*) BOOT_SIZE="${opt#BOOT_SIZE=}";;
 		ENCRYPT_KEYFILE=*) ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}";;
 		PUBKEY=*) PUBKEY="${opt#PUBKEY=}";;
+		UPDATE_CERTS=*) UPDATE_CERTS="${opt#UPDATE_CERTS=}";;
 		PRIVKEY=*) PRIVKEY="${opt#PRIVKEY=}";;
 		PRIVKEY_PASS=*) PRIVKEY_PASS="${opt#PRIVKEY_PASS=}";;
 		DESCRIPTION=*) DESCRIPTION="${opt#DESCRIPTION=}";;
@@ -1368,7 +1428,8 @@ DEFAULTS_MKSWU_CONF_SHA256="$sha"
 ## auto section: you can make changes here but comments will be lost
 EOF
 		fi
-		sed -e 's/^[^#$]/#&/' "$SCRIPT_DIR/mkswu.conf.defaults" >> "$NEW_CONFIG.new" \
+
+		sed -e 's/^[^#]/#&/' "$SCRIPT_DIR/mkswu.conf.defaults" >> "$NEW_CONFIG.new" \
 			&& mv "$NEW_CONFIG.new" "$NEW_CONFIG" \
 			|| error "Could not update config %s" "$CONFIG"
 
@@ -1454,18 +1515,45 @@ mkswu_genkey_aes() {
 }
 
 mkswu_genkey_sign() {
-	local oldumask
+	local oldumask extrakey=""
 	local CURVE="${GENKEY_CURVE:-secp256k1}"
 	local DAYS="${GENKEY_DAYS:-$((5*365))}"
+	local NEWCERT ORIGCERT="$PUBKEY"
 
 	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
 	[ -n "$PUBKEY" ] || error "PUBKEY is not set in config file"
-	if [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; then
-		warning "%s already exists, skipping" "$PRIVKEY"
-		return
-	fi
-	[ -n "$GENKEY_CN" ] || error "Certificate common name must be provided with --cn <name>"
+	[ -z "$NOPROMPT" ] || [ -n "$GENKEY_CN" ] \
+		|| error "--cn must be set if using --noprompt"
+
+	while [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; do
+		if [ -n "$NOPROMPT" ]; then
+			warning "%s already exists, skipping" "$PRIVKEY"
+			return
+		fi
+		prompt_yesno y "%s already exists, generate new key pair? [Y/n]" "$PRIVKEY" \
+			|| return
+		# increment index, update config at the end
+		local idx
+		PRIVKEY="${PRIVKEY%.key}"
+		PUBKEY="${PUBKEY%.pem}"
+		idx="${PRIVKEY##*-}"
+		case "$idx" in
+		""|*[a-zA-Z/]*) idx=1;;
+		*)
+			PRIVKEY="${PRIVKEY%-"$idx"}"
+			PUBKEY="${PUBKEY%-"$idx"}"
+			;;
+		esac
+		idx=$((idx+1))
+		PRIVKEY="${PRIVKEY}-$idx.key"
+		PUBKEY="${PUBKEY}-$idx.pem"
+		extrakey=1
+	done
+
+	while [ -z "$GENKEY_CN" ]; do
+		prompt GENKEY_CN "Enter certificate common name:"
+	done
 
 	info "Creating signing key %s and its public counterpart %s" "$PRIVKEY" "${PUBKEY##*/}"
 
@@ -1474,12 +1562,30 @@ mkswu_genkey_sign() {
 		${GENKEY_PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
 		-days "$DAYS" || error "Generating certificate/key pair failed"
 
-	info "%s must be copied over to /etc/swupdate.pem on devices." "$PUBKEY"
-	info "The suggested way is using swupdate:"
-	info "    mkswu initial_setup.desc"
-	info "Please set user passwords in initial_setup.desc and generate the image."
-	info "If you would like to encrypt your updates, generate your aes key now with:"
-	info "    mkswu --genkey --aes"
+	if [ -n "$extrakey" ]; then
+		info "Info: Adding %s to config" "$PUBKEY"
+		NEWCERT="${PUBKEY#"$CONFIG_DIR"}"
+		if [ "$NEWCERT" != "$PUBKEY" ]; then
+			NEWCERT="\$CONFIG_DIR/${NEWCERT#/}"
+		fi
+		printf "%s\n" '' '# extra swupdate certificate. Remove the old one and use new' \
+				'# PRIVKEY after having installed an update with this first' \
+				"PUBKEY=\"\$PUBKEY,$NEWCERT\"" \
+				'# remove "NEW_" to use' \
+				"NEW_PRIVKEY=\"${NEWCERT%.pem}.key\"" >> "$CONFIG" \
+			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
+		case "$UPDATE_CERTS" in
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
+			printf "%s\n" "# This controls if we should update certificates on device," \
+					"# and can be removed once all devices have been updated to only allow new key" \
+					"UPDATE_CERTS=yes" >> "$CONFIG" \
+				|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
+			;;
+		esac
+	fi
+
+	info "%s will be copied over to /etc/swupdate.pem when installing newly generated swu" "$PUBKEY"
+	info "You will then be able to remove the previous key by editing %s" "$CONFIG"
 }
 
 mkswu_internal() {
@@ -1839,6 +1945,7 @@ sw-description.sig"
 
 	# config file variables
 	local PRIVKEY PUBKEY PRIVKEY_PASS
+	local EXTRA_PUBKEYS="" ATMARK_CERTS="" UPDATE_CERTS=""
 	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
 
 	# mode options
@@ -2042,6 +2149,12 @@ sw-description.sig"
 	[ -n "${MKSWU_ENCRYPT_KEYFILE+1}" ] && ENCRYPT_KEYFILE="$MKSWU_ENCRYPT_KEYFILE"
 	[ -n "${MKSWU_HW_COMPAT+1}" ] && HW_COMPAT="$MKSWU_HW_COMPAT"
 	[ -n "${MKSWU_DESCRIPTION+1}" ] && DESCRIPTION="$MKSWU_DESCRIPTION"
+
+	# split PUBKEY into actually used certificate and extra ones
+	if [ "${PUBKEY#*,}" != "$PUBKEY" ]; then
+		EXTRA_PUBKEYS="${PUBKEY#*,}"
+		PUBKEY="${PUBKEY%%,*}"
+	fi
 
 	if [ -n "$MODE" ]; then
 		[ -n "$OUT" ] && error "%s is incompatible with --%s" "out" "$MODE"

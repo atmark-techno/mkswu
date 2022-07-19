@@ -200,6 +200,7 @@ test_passwd_update() {
 
 test_cert_update() {
 	SWUPDATE_PEM="$SCRIPTSDIR/swupdate.pem"
+	rm -rf "$SCRIPTSDIR/certs*"
 
 	echo "swupdate certificate: default setup fails"
 	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
@@ -238,22 +239,16 @@ test_cert_update() {
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
 		|| error "should have not changed anything"
 
+	mkdir "$SCRIPTSDIR/certs_atmark"
+	cp ../certs/atmark-[12].pem "$SCRIPTSDIR/certs_atmark"
+	echo "swupdate certificate: test atmark certs not added if not present"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok and do nothing"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
+		|| error "should have added new key"
+
 	echo "swupdate certificate: test using old atmark key adds the new one"
-	cat >> "$SWUPDATE_PEM" <<EOF
-# atmark-1
------BEGIN CERTIFICATE-----
-MIIBuzCCAWCgAwIBAgIUbbibr2AEmw3ohnmkXeGPPf0glgcwCgYIKoZIzj0EAwIw
-NDERMA8GA1UECgwIU1dVcGRhdGUxHzAdBgNVBAMMFkFybWFkaWxsbyBzd3VwZGF0
-ZSBrZXkwHhcNMjExMDA4MDA0MDM4WhcNMjYxMDA3MDA0MDM4WjA0MREwDwYDVQQK
-DAhTV1VwZGF0ZTEfMB0GA1UEAwwWQXJtYWRpbGxvIHN3dXBkYXRlIGtleTBWMBAG
-ByqGSM49AgEGBSuBBAAKA0IABI4G3d0iPPoqH90yy/akxjZUDfOFapBEj2d00lJG
-FIE4hC9wYtUKGMxlhqn3Zqy4jbICV+EAN4KWgtfUPn1jpBCjUzBRMB0GA1UdDgQW
-BBTUqX0Oic83+JlYI5d+c7Fo6smajDAfBgNVHSMEGDAWgBTUqX0Oic83+JlYI5d+
-c7Fo6smajDAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0kAMEYCIQCVKqFW
-tOo2d4UOIf+IWkCxA1mptbdEtrgXeagVFGr6+AIhAP3xkD4M9mj8LYZeFgA9uKaO
-Ym7VNTvJTNMU82ZTiXk8
------END CERTIFICATE-----
-EOF
+	cat ../certs/atmark-1.pem >> "$SWUPDATE_PEM"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok to add extra atmark cert"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
@@ -262,6 +257,40 @@ EOF
 		|| error "certificate update should be ok to do nothing"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
 		|| error "should have not changed anything"
+	rm "$SCRIPTSDIR/certs_atmark/atmark-1.pem"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok and remove older atmark pem"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
+		|| error "should have removed one atmark pem"
+
+	mkdir "$SCRIPTSDIR/certs_user"
+	cp "$SCRIPTSDIR/pub" "$SCRIPTSDIR/certs_user"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok and do nothing"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
+		|| error "should have done nothing"
+
+	cp ../swupdate-onetime-public.pem "$SCRIPTSDIR/certs_user"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok and add onetime key"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
+		|| error "should have added onetime key back"
+
+	rm "$SCRIPTSDIR/certs_user/pub"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok and remove old pub"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
+		|| error "should have removed old pub"
+
+	rm -f "$SCRIPTSDIR/certs_user/swupdate-onetime-public.pem"
+	( update_swupdate_certificate; ) \
+		&& error "certificate update should fail (no extra key)"
+
+	cp "$SCRIPTSDIR/pub" "$SCRIPTSDIR/certs_user"
+	( update_swupdate_certificate; ) \
+		|| error "certificate update should be ok and update user pub"
+	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
+		|| error "should have replaced user pub"
 }
 
 test_preserve_files_post() {

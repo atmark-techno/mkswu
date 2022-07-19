@@ -37,7 +37,7 @@ check() {
 		[ $# -gt 1 ] || error "file-tar needs tar and content args"
 		tar="$1"
 		shift
-		tar tf "$dir/"$tar "$@" > /dev/null || error "Missing files in $tar"
+		tar -t --wildcards -f "$dir/"$tar "$@" > /dev/null || error "Missing files in $tar"
 		;;
 	version)
 		[ $# -ge 2 ] && [ $1 = "--board" ] && board=$2 && shift 2

@@ -75,11 +75,23 @@ update_shadow() {
 SWUPDATE_PEM=/target/etc/swupdate.pem
 
 update_swupdate_certificate()  {
-	local certsdir cert pubkey external="" update=""
-	local atmark_old="" atmark_new=""
+	local certsdir cert pubkey
+	local public_onetime_path=""
+	local atmark_present="" atmark_seen=""
+	local user_present="" user_seen=""
+
+	# what certificates were embedded into swu, if any?
+	for cert in "$SCRIPTSDIR/certs_atmark/"*; do
+		[ -e "$cert" ] && atmark_present=1
+		break
+	done
+	for cert in "$SCRIPTSDIR/certs_user/"*; do
+		[ -e "$cert" ] && user_present=1
+		break
+	done
 
 	# split swupdate.pem into something we can handle, then match
-	# with known keys and update as appropriate
+	# with known certificates and update as appropriate
 
 	certsdir=$(mktemp -d "$SCRIPTSDIR/certs.XXXXXX") \
 		|| error "Could not create temp dir"
@@ -87,68 +99,62 @@ update_swupdate_certificate()  {
 	     outfile { print > outfile }
 	     /END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
 	for cert in "$certsdir"/*; do
+		[ -e "$cert" ] || continue
 		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
 		case "$pubkey" in
-		# Armadillo public one-time key
+		# Armadillo public one-time cert
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEYTN7NghmISesYQ1dnby5YkocLAe2/EJ8OTXkx/xGhBVlJ57eGOovtPORd/JMkA6lWI0N/pD5p6eUGcwrQvRtsw==")
-			# Remove these keys
-			rm -f "$cert"
-			update=1
+			# remove duplicates if it was already set
+			[ -n "$public_onetime_path" ] && rm -f "$public_onetime_path"
+			# we don't remove it immediately because we allow updates from atmark
+			# updates to leave it
+			public_onetime_path="$cert"
 			;;
-		# Certificates for atmark certificates are rotated in
-		# two steps, if only one is present add the other
-		# Currently used key, atmark-1
-		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA==")
-			atmark_old=1
-			;;
-		# New certificate to prepare for key rotation, atmark-2
+		# certificate for atmark are handled separately
+		# atmark-1|atmark-2
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA=="| \
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAERkRP5eTXBTG760gEmBfCBz4fWyYfUx3a+sYyHe4uc1sQN2bavxfaBlJmyGI4MY/Pkjh5FDVcddZfil552WUoWQ==")
-			atmark_new=1
+			# atmark certificates: delete if we have new ones, or just keep.
+			[ -n "$atmark_present" ] && rm -f "$cert"
+			atmark_seen=1
 			;;
 		*)
-			# Any other key
-			external=1
+			# user certificates: delete if we have new ones,
+			# otherwise keep whatever we have here.
+			[ -n "$user_present" ] && rm -f "$cert"
+			user_seen=1
 			;;
 		esac
 	done
 
-	if [ -n "$atmark_old" ] && [ -z "$atmark_new" ]; then
-		# New certificate was not found, add it
-		# name in z_ to append last
-		cat > "$certsdir/z_atmark_new.crt" <<EOF
-# atmark-2
------BEGIN CERTIFICATE-----
-MIIBvzCCAWagAwIBAgIUfagaF9RAjO2+x54PMqIlZkain9MwCgYIKoZIzj0EAwIw
-NzERMA8GA1UECgwIU1dVcGRhdGUxIjAgBgNVBAMMGUFybWFkaWxsbyBzd3VwZGF0
-ZSBrZXkgIzIwHhcNMjIwNjIxMDA1MDA3WhcNMjcwNjIwMDA1MDA3WjA3MREwDwYD
-VQQKDAhTV1VwZGF0ZTEiMCAGA1UEAwwZQXJtYWRpbGxvIHN3dXBkYXRlIGtleSAj
-MjBWMBAGByqGSM49AgEGBSuBBAAKA0IABEZET+Xk1wUxu+tIBJgXwgc+H1smH1Md
-2vrGMh3uLnNbEDdm2r8X2gZSZshiODGPz5I4eRQ1XHXWX4peedllKFmjUzBRMB0G
-A1UdDgQWBBRWljU9dLvWsc0/vl+uoF9l4NxhqjAfBgNVHSMEGDAWgBRWljU9dLvW
-sc0/vl+uoF9l4NxhqjAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQC
-IB5TR4mquAJVwcugTL/4pzc06Gfci/a6Fkg77PvyfrKmAiBLB51kBrxi07alCofM
-LAzCERFEjT1UH1NutbSZr5IFdQ==
------END CERTIFICATE-----
-EOF
-		update=1
-	fi
-
-	if [ -n "$update" ]; then
-		if [ -z "$external" ]; then
-			# don't remove one-time key if no external key provided
+	if [ -n "$public_onetime_path" ]; then
+		if [ -z "$user_seen$user_present" ]; then
+			# don't remove one-time cert if no external cert provided
 			# fail unless explicitely allowed
-			# but add new atmark key if required
 			[ -n "$(mkswu_var ALLOW_PUBLIC_CERT)" ] \
 				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
-			if [ -e "$certsdir/z_atmark_new.crt" ]; then
-				cat "$certsdir/z_atmark_new.crt" >> "$SWUPDATE_PEM" \
-					|| error "Could not update swupdate.pem certificates"
-			fi
 		else
-			cat "$certsdir"/* > "$SWUPDATE_PEM" \
-				|| error "Could not recreate swupdate.pem certificates"
+			rm -f "$public_onetime_path"
 		fi
 	fi
+	(
+		# ignore errors, might not be any cert left here
+		cat "$certsdir"/* 2>/dev/null
+		if [ -n "$atmark_seen" ]; then
+			# only add atmark certs if they're currently installed
+			for cert in "$SCRIPTSDIR/certs_atmark/"*; do
+				[ -e "$cert" ] || continue
+				echo "# ${cert##*/}"
+				cat "$cert" || exit 1
+			done
+		fi
+		for cert in "$SCRIPTSDIR/certs_user/"*; do
+			[ -e "$cert" ] || continue
+			echo "# ${cert##*/}"
+			cat "$cert" || exit 1
+		done
+	) > "$SWUPDATE_PEM" \
+		|| error "Could not recreate swupdate.pem certificates"
 
 	rm -rf "$certsdir"
 }

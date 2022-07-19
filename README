@@ -17,7 +17,11 @@ Options can be set with swdesc_option.
 Multiple options can be passed in same command as separate arguments.
 
 swdesc_option PUBKEY=<path>
-    path to certificate for signing
+    path to certificate for signing, if multiple are given the later
+    are added to device's /etc/swupdate.pem if UPDATE_CERTS is set.
+swdesc_option UPDATE_CERTS=<value>
+    whether to update swupdate.pem on device with certificates defined in
+    PUBKEY. Unset is no.
 swdesc_option PRIVKEY=<path>
     path to key for signing
 swdesc_option PRIVKEY_PASS=<value>

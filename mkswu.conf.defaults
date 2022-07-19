@@ -1,4 +1,10 @@
 # public and private key locations for signing purpose.
+# There can be multiple PUBKEY, comma separated, in which case
+# the first one is used for signing but other keys will be added to
+# device allow list for future updates.
+# After installing an update with extra keys once, the old key can be
+# removed from PUBKEY, and PRIVKEY adjusted to use the correct one to
+# complete the key rotation
 PRIVKEY="$CONFIG_DIR/swupdate.key"
 PUBKEY="$CONFIG_DIR/swupdate.pem"
 
@@ -21,6 +27,10 @@ HW_COMPAT="#RE:^at1(-.*)?$"
 # You probably want to override this in your image descriptions
 DESCRIPTION="Atmark firmware image"
 
+# atmark public keys to be allowed on device.
+# This variable is only used for vendor updates and while it can be set
+# manually this is not recommended
+ATMARK_PUBKEYS=""
 
 
 # Settings below are for hawkbit_push_update

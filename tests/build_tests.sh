@@ -27,6 +27,14 @@ build_check exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
 build_check swdesc_script
 build_check swdesc_script_nochroot
 
+build_check update_certs_atmark \
+	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem"
+
+build_check update_certs_user \
+	"file-tar scripts_extras.tar certs_user/swupdate*.pem certs_user/atmark-1.pem"
+build_check update_certs_user \
+	"file-tar scripts_extras.tar certs_user/swupdate*.pem"
+
 build_fail ../examples/initial_setup
 build_fail files_os_nonabs_fail
 build_fail files_dotdot_fail
@@ -106,3 +114,15 @@ grep -q "usermod -L atmark" "$TESTS_DIR/out/init/initial_setup.desc" \
 
 dir="$TESTS_DIR/out/init/.initial_setup" check swdesc usermod
 dir="$TESTS_DIR/out/init/.initial_setup" check swdesc swupdate-url
+
+rm -rf "$TESTS_DIR/out/genkey"
+"$MKSWU" --config-dir "$TESTS_DIR/out/genkey" --genkey --cn test --plain
+echo y | "$MKSWU" --config-dir "$TESTS_DIR/out/genkey" --genkey --cn test --plain
+(
+	CONFIG_DIR="$TESTS_DIR/out/genkey"
+	. ../mkswu.conf.defaults
+	. "$CONFIG_DIR/mkswu.conf"
+	[ "$UPDATE_CERTS" = yes ] || error "bad UPDATE_CERTS: $UPDATE_CERTS"
+	[ "$PUBKEY" = "$TESTS_DIR/out/genkey/swupdate.pem,$TESTS_DIR/out/genkey/swupdate-2.pem" ] || error "bad PUBKEY: $PUBKEY"
+	[ "$NEW_PRIVKEY" = "$TESTS_DIR/out/genkey/swupdate-2.key" ] || error "bad PRIVKEY: $PRIVKEY"
+) || error "genkey test failed"
