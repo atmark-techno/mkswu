@@ -39,7 +39,7 @@ swap_btrfs_snapshots() {
 	# so stop all countainers and restart them
 	podman_killall "Stopping containers to swap storage"
 
-	if ! umount /var/lib/containers/storage_readonly \
+	if ! umount -R /var/lib/containers/storage_readonly \
 	    || ! mount /var/lib/containers/storage_readonly \
 	    || ! umount /var/app/rollback/volumes \
 	    || ! mount /var/app/rollback/volumes \
