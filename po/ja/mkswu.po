@@ -7,6 +7,10 @@ msgid "Error called without format string!"
 msgstr "不明なエラーが発生しました。"
 
 #: mkswu
+msgid "$@"
+msgstr ""
+
+#: mkswu
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
 
@@ -131,10 +135,6 @@ msgid "Could not remove previous link at %s"
 msgstr "以前存在していた %s を削除できませんでした。"
 
 #: mkswu
-msgid "Could not remove previous file at %s"
-msgstr "以前存在していたファイル %s を削除できませんでした。"
-
-#: mkswu
 msgid "Could not copy %s to %s"
 msgstr "%s を %s にコピーできませんでした。"
 
@@ -167,8 +167,16 @@ msgid "AES encryption key %s was set but not found.\\nPlease create it with genk
 msgstr "AES暗号化鍵が指定されてますが %s が存在しません。\\ngenkey.sh --aesで作成してください。"
 
 #: mkswu
+msgid "Source file %s for %s does not exist"
+msgstr "%s が存在しません、%s を作成できません。"
+
+#: mkswu
 msgid "failed to compress %s"
 msgstr "%s を圧縮できませんでした。"
+
+#: mkswu
+msgid "Could not rename %s"
+msgstr "%s をリネームできませんでした。"
 
 #: mkswu
 msgid "Missing source file: %s"
@@ -312,7 +320,7 @@ msgstr "swdesc_boot_encrypted にバージョンが必要です。swdesc_option 
 
 #: mkswu
 msgid "dek offset file %s was not readable or empty"
-msgstr ""
+msgstr "DEK オフセット %s を読み取りできませんでした。"
 
 #: mkswu
 msgid "Version component for swdesc_boot_linux must be set to boot_linux"
@@ -363,6 +371,18 @@ msgid "you might want to keep the archive as simple .tar"
 msgstr "普通のtarアーカイブにした方が効率的です。"
 
 #: mkswu
+msgid "Invalid value for %s: %s"
+msgstr "%s 変数を認識できません: %s"
+
+#: mkswu
+msgid "Could not append %s to %s"
+msgstr "%s を %s にコピーできませんでした。"
+
+#: mkswu
+msgid "Could not create pre script"
+msgstr "実行前スクリプトの作成が失敗しました。"
+
+#: mkswu
 msgid "Unknown option for swdesc_option: %s"
 msgstr "swdesc_option の %s オプションを認識できません。"
 
@@ -400,7 +420,7 @@ msgstr "ユーザーのパスワードを指定してください（.descファ�
 
 #: mkswu
 msgid "Duplicate files detected in sw-description: duplicate swdesc_* commands?\\n%s"
-msgstr ""
+msgstr "ファイル名がすでに使われています。swdesc_*コマンドが複製されましたか？\\n%s"
 
 #: mkswu
 msgid "PRIVKEY must be set"
@@ -511,8 +531,16 @@ msgid "PUBKEY is not set in config file"
 msgstr "PUBKEY変数を設定してください。"
 
 #: mkswu
-msgid "Certificate common name must be provided with --cn <name>"
-msgstr "--cn <name>で証明書のコモンネーム(一般名)を指定してください。"
+msgid "%s must be set if using %s"
+msgstr "%s の場合に %s も指定してください。"
+
+#: mkswu
+msgid "%s already exists, generate new key pair? [Y/n]"
+msgstr "%s はすでに存在します。新しい鍵を作成しますか？ [Y/n]"
+
+#: mkswu
+msgid "Enter certificate common name:"
+msgstr "証明書のコモンネーム(一般名)を入力してください:"
 
 #: mkswu
 msgid "Creating signing key %s and its public counterpart %s"
@@ -523,28 +551,16 @@ msgid "Generating certificate/key pair failed"
 msgstr "署名鍵の作成に失敗しました。"
 
 #: mkswu
-msgid "%s must be copied over to /etc/swupdate.pem on devices."
-msgstr "%s をデバイスの /etc/swupdate.pem にコピーしてください。"
+msgid "Info: Adding %s to config"
+msgstr "%s をコンフィグファイルに追加します。"
 
 #: mkswu
-msgid "The suggested way is using swupdate:"
-msgstr "initial_setup イメージを以下のコマンドで作成できます："
+msgid "%s will be copied over to /etc/swupdate.pem when installing newly generated swu"
+msgstr "%s が次のアップデートをインストールするときに転送されます。"
 
 #: mkswu
-msgid "    mkswu initial_setup.desc"
-msgstr "「mkswu initial_setup.desc」で暗号化を有効にしてください。"
-
-#: mkswu
-msgid "Please set user passwords in initial_setup.desc and generate the image."
-msgstr "ファイルのパスワードを設定してからイメージを作成してください。"
-
-#: mkswu
-msgid "If you would like to encrypt your updates, generate your aes key now with:"
-msgstr "イメージを暗号化したい場合、AES鍵を先に作成してください："
-
-#: mkswu
-msgid "    mkswu --genkey --aes"
-msgstr ""
+msgid "You will then be able to remove the previous key by editing %s"
+msgstr "インストールされてから現在の鍵を %s から外してください。"
 
 #: mkswu
 msgid "Invalid variable name %s"
@@ -569,10 +585,6 @@ msgstr "%s を作成しました。"
 #: mkswu
 msgid "Unrecognized internal command %s"
 msgstr "%s コマンドを認識できません"
-
-#: mkswu
-msgid "Enter certificate common name:"
-msgstr "証明書のコモンネーム(一般名)を入力してください:"
 
 #: mkswu
 msgid "Enter private key password (4-1024 char)"
@@ -627,18 +639,6 @@ msgid "Could not generate password"
 msgstr "パスワードを作成できませんでした。"
 
 #: mkswu
-msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
-msgstr "BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行いますか？ (N/y)"
-
-#: mkswu
-msgid "Select update frequency ([weekly]/daily)"
-msgstr "アップデートの頻度を指定してください ([weekly]/daily)"
-
-#: mkswu
-msgid "Could not rename %s"
-msgstr "%s をリネームできませんでした。"
-
-#: mkswu
 msgid "atmark password was incorrectly generated, regenerating it"
 msgstr "atmark ユーザーパスワードが正しく設定されてませんでした、再作成します。"
 
@@ -661,6 +661,14 @@ msgstr "アットマークテクノが作成したイメージをインストー
 #: mkswu
 msgid "Could not copy initial_setup.desc from example dir"
 msgstr "initial_setup.descをコピーできませんでした。"
+
+#: mkswu
+msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
+msgstr "BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行いますか？ (N/y)"
+
+#: mkswu
+msgid "Select update frequency ([weekly]/daily)"
+msgstr "アップデートの頻度を指定してください ([weekly]/daily)"
 
 #: mkswu
 msgid "Could not generate initial setup swu"
@@ -772,7 +780,7 @@ msgstr "以下のファイルをUSBメモリにコピーしてください："
 
 #: mkswu
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: examples/enable_sshd.desc
 msgid "Add your keys in enable_sshd/root/.ssh/authorized_keys"

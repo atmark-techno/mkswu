@@ -1524,7 +1524,7 @@ mkswu_genkey_sign() {
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
 	[ -n "$PUBKEY" ] || error "PUBKEY is not set in config file"
 	[ -z "$NOPROMPT" ] || [ -n "$GENKEY_CN" ] \
-		|| error "--cn must be set if using --noprompt"
+		|| error "%s must be set if using %s" "--cn" "--noprompt"
 
 	while [ -s "$PRIVKEY" ] && [ -s "$PUBKEY" ]; do
 		if [ -n "$NOPROMPT" ]; then
