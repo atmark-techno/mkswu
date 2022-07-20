@@ -41,7 +41,7 @@ copy_boot_imxboot() {
 		sed -e "s:${rootdev}boot[0-1]:/dev/$flash_dev:" \
 				/etc/fw_env.config > "$SCRIPTSDIR/fw_env.config" \
 			|| error "Could not generate copy fw_env.config"
-		fw_setenv_defaults --config "$SCRIPTSDIR/fw_env.config" \
+		fw_setenv_quiet --config "$SCRIPTSDIR/fw_env.config" \
 				--defenv "$SCRIPTSDIR/default_env" \
 			|| error "Could not restore default env"
 		rm -f "$SCRIPTSDIR/fw_env.config" "$SCRIPTSDIR/default_env"

@@ -16,7 +16,7 @@ cleanup_boot() {
 	    && stat /target/boot/uboot_env.d/* > /dev/null 2>&1; then
 		cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/default_env" \
 			|| error "uboot env files existed but could not merge them"
-		fw_setenv_defaults --config "/target/etc/fw_env.config" \
+		fw_setenv_quiet --config "/target/etc/fw_env.config" \
 				--defenv "$SCRIPTSDIR/default_env" \
 			|| error "Could not restore default env"
 		rm -f "$SCRIPTSDIR/default_env"

@@ -28,7 +28,7 @@ podman() {
 	info_if_not_empty command podman "$@"
 }
 
-fw_setenv_defaults() {
+fw_setenv_quiet() {
 	FILTER="Cannot read environment, using default|Environment WRONG" \
 		info_if_not_empty command fw_setenv "$@"
 }
