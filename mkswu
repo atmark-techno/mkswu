@@ -1104,6 +1104,7 @@ create_prescript() {
 embedded_preinstall_script() {
 	local component="" version="" board="" main_version=""
 	local install_if="" show_cmd="pre_script"
+	local script="" cmd=""
 	local install_first=1
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="$SCRIPT_DIR/scripts_pre.sh"
@@ -1125,6 +1126,7 @@ embedded_preinstall_script() {
 embedded_postinstall_script() {
 	local component="" version="" board="" main_version=""
 	local install_if="" show_cmd="post_script"
+	local script="" cmd=""
 	local POST_SCRIPT="$SCRIPT_DIR/scripts_post.sh"
 
 	swdesc_script_nochroot "$POST_SCRIPT"
