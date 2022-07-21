@@ -42,7 +42,7 @@ umount_or_reboot() {
 }
 
 podman_killall() {
-	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
+	if [ -n "$(command podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
 		podman kill -a
 		podman ps --format '{{.ID}}' \
