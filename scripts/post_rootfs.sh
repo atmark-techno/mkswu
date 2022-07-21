@@ -12,7 +12,7 @@ update_shadow_user() {
 	if grep -qE "^$user:" "$NSHADOW"; then
 		sed -i -e 's:^'"$user"'\:.*:'"$oldpass"':' "$NSHADOW"
 	else
-		printf "%s\n" "$oldpass" >> "$NSHADOW"
+		echo "$oldpass" | sed 's/\\:/:/g' >> "$NSHADOW"
 	fi || error "Could not update shadow for $user"
 }
 

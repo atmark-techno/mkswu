@@ -174,15 +174,19 @@ test_passwd_update() {
 	done
 	cp ./scripts/shadow-set "$SCRIPTSDIR/shadow-extrauser"
 	echo 'newuser:x:1001:' >> "$SCRIPTSDIR/group-extrauser"
+	echo 'newtest:x:1002:newuser' >> "$SCRIPTSDIR/group-extrauser"
 	echo 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' >> "$SCRIPTSDIR/shadow-extrauser"
 	echo 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' >> "$SCRIPTSDIR/passwd-extrauser"
 	PASSWD="$SCRIPTSDIR/passwd-extrauser"
 	SHADOW="$SCRIPTSDIR/shadow-extrauser"
 	GROUP="$SCRIPTSDIR/group-extrauser"
 	( update_shadow; ) || error "copy with newuser failed"
-	grep -q newuser "$SCRIPTSDIR/passwd-target" || error "newuser not copied (passwd)"
-	grep -q newuser "$SCRIPTSDIR/shadow-target" || error "newuser not copied (shadow)"
-	grep -q newuser "$SCRIPTSDIR/group-target" || error "newuser not copied (group)"
+	grep -q 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' \
+			"$SCRIPTSDIR/passwd-target" || error "newuser not copied (passwd)"
+	grep -qF 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' \
+			"$SCRIPTSDIR/shadow-target" || error "newuser not copied (shadow)"
+	grep -q 'newuser:x:1001:' "$SCRIPTSDIR/group-target" || error "newuser not copied (group)"
+	grep -q 'newtest:x:1002:newuser' "$SCRIPTSDIR/group-target" || error "newuser not copied (group)"
 
 	echo "passwd copy: test running again with new user already existing"
 	( update_shadow; ) || error "copy with newuser again failed"
