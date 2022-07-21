@@ -7,7 +7,7 @@ update_shadow_user() {
 	# password was never set: skip
 	[ -n "$oldpass" ] || return
 	# password already set on target: also skip
-	grep -qE "^$user:[^:]" "$NSHADOW" && return
+	grep -qE "^$user:[^!:]" "$NSHADOW" && return
 
 	if grep -qE "^$user:" "$NSHADOW"; then
 		sed -i -e 's:^'"$user"'\:.*:'"$oldpass"':' "$NSHADOW"

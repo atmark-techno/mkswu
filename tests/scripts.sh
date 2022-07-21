@@ -149,7 +149,8 @@ test_passwd_update() {
 	NGROUP="$SCRIPTSDIR/group-target"
 
 	( update_shadow; ) || error "Normal copy failed"
-
+	grep -qF 'root:$' "$SCRIPTSDIR/shadow-target" || error "root pass not copied"
+	grep -qF 'atmark:$' "$SCRIPTSDIR/shadow-target" || error "atmark pass not copied"
 
 	echo "passwd copy: test not overriding passwd already set"
 	sed -i -e 's/root:[^:]*/root:GREPMEFAKE/' "$SCRIPTSDIR/shadow-target"
