@@ -1,3 +1,26 @@
+4.3
+===
+breaking changes:
+ - mkswu --genkey will now prompt for new key creations if a key
+already exists. Use --noprompt for non-interactive uses.
+
+features:
+ - setting UPDATE_CERTS in mkswu.conf will send certificates in
+$PUBKEY to device's /etc/swupdate.pem
+(this is set automatically when genkey command generates new keys)
+ - initialize uboot env with content from /boot/uboot_env.d/* on
+boot image updates, and provide a script to update env immediately
+
+fixes:
+ - fix atmark user password not being preserved on updates (broken
+in 4.1)
+ - POST_ACTION=container would sometimes fail to umount podman readonly
+storage, leading to an extra reboot
+ - post install script would sometimes fail to notice errors from podman
+commands (cleanup only)
+
+ -- 2022-07-25
+
 4.2
 ===
 breaking changes:
