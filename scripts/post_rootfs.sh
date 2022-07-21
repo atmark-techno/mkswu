@@ -261,13 +261,6 @@ EOF
 		rm -f /var/log/rc.log
 	fi
 
-	# Lock atmark account if it has no password
-	# (locked by default in 3.16-at.1)
-	if grep -q 'atmark::' /target/etc/shadow; then
-		sed -i -e 's/atmark::/atmark:!:/' /target/etc/shadow \
-			|| error "Could not lock atmark user"
-	fi
-
 	# Increase swupdate.cfg verbosity
 	# (done in 3.16-at.1)
 	if grep -q 'loglevel = 2;' /target/etc/swupdate.cfg; then
