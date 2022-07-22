@@ -46,6 +46,11 @@ main() {
 		set -- "$@" "$file"
 	done
 
+	# If that link exists we had a boot image update and default
+	# env is not set yet, so fw_setenv will fail.
+	# post_boot script will apply these settings for us.
+	[ -e /dev/swupdate_bootdev ] && exit 0
+
 	# we want to set env to the to-be-activated partition, so adjust
 	# fw_env.config if required e.g. we use mmcblkXbootY partitions
 	# with Y being the wrong partition.
