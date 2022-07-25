@@ -1835,8 +1835,9 @@ mkinit_mkimageinitswu() {
 			"$CONFIG_DIR/initial_setup.desc" \
 		|| error "Could not generate initial setup swu"
 	echo
-	info "You can use \"%s\" as is or regenerate an image" "$CONFIG_DIR/initial_setup.swu"
-	info "with extra modules with: mkswu \"%s\" other_desc_files" \
+	info "You can use \"%s\" as is or" "$CONFIG_DIR/initial_setup.swu"
+	info "regenerate an image with extra modules using the following command:"
+	info "  mkswu \"%s\" [other_desc_files]" \
 		"$CONFIG_DIR/initial_setup.desc"
 	info
 	info "Note that once installed, you must preserve this directory as losing"

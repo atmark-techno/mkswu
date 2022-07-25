@@ -507,10 +507,13 @@ msgstr ""
 msgid "Could not generate initial setup swu"
 msgstr ""
 #: mkswu
-msgid "You can use \"%s\" as is or regenerate an image"
+msgid "You can use \"%s\" as is or"
 msgstr ""
 #: mkswu
-msgid "with extra modules with: mkswu \"%s\" other_desc_files"
+msgid "regenerate an image with extra modules using the following command:"
+msgstr ""
+#: mkswu
+msgid "  mkswu \"%s\" [other_desc_files]"
 msgstr ""
 #: mkswu
 msgid "Note that once installed, you must preserve this directory as losing"
