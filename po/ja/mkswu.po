@@ -675,12 +675,16 @@ msgid "Could not generate initial setup swu"
 msgstr "swuの初期設定の作成に失敗しました。"
 
 #: mkswu
-msgid "You can use \"%s\" as is or regenerate an image"
-msgstr "\"%s\" をそのまま使うことができますが、モジュールを追加してイメージを再構築する場合は"
+msgid "You can use \"%s\" as is or"
+msgstr "\"%s\" をそのまま使うことができますが、"
 
 #: mkswu
-msgid "with extra modules with: mkswu \"%s\" other_desc_files"
-msgstr "次のコマンドで作成してください： mkswu \"%s\" other_desc_files"
+msgid "regenerate an image with extra modules using the following command:"
+msgstr "モジュールを追加してイメージを再構築する場合は次のコマンドで作成してください："
+
+#: mkswu
+msgid "  mkswu \"%s\" [other_desc_files]"
+msgstr "  mkswu \"%s\" [他の.descファイル]"
 
 #: mkswu
 msgid "Note that once installed, you must preserve this directory as losing"
