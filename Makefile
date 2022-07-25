@@ -82,7 +82,7 @@ install: all
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
 	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) $(install_completions)
-	install -D -t $(DESTDIR)$(SHARE) swupdate_post.sh
+	install -D -t $(DESTDIR)$(SHARE) scripts_pre.sh scripts_post.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode
 	cp -t $(DESTDIR)$(SHARE)/scripts $(install_scripts)
