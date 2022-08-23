@@ -44,9 +44,9 @@ umount_or_reboot() {
 podman_killall() {
 	if [ -n "$(command podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
-		podman kill -a
+		podman stop -a
 		podman ps --format '{{.ID}}' \
-			| timeout 30s xargs -r podman wait
+			| timeout 20s xargs -r podman wait
 	fi
 	podman pod rm -a -f
 	podman rm -a -f
