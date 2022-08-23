@@ -6,11 +6,3 @@ swdesc_option version=1
 # files will not unset variables or restore defaults, for that
 # set empty values e.g. 'varname=' will unset varname.
 swdesc_files --extra-os --dest /boot/uboot_env.d uboot_env
-
-# Just copying the file will not update uboot environment immediately,
-# this script applies the content of files that have just been written.
-# Multiple files can be passed as parameters.
-# Please note the order is important: we can only apply files after
-# they have been written!
-swdesc_script_nochroot --extra-os uboot_env_apply.sh -- \
-	bootdelay

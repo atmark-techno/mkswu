@@ -11,15 +11,20 @@ cleanup_boot() {
 		return
 	fi
 
-	# restore user env if uboot got updated & env present
-	if [ -e "/dev/swupdate_bootdev" ] \
-	    && stat /target/boot/uboot_env.d/* > /dev/null 2>&1; then
-		cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/default_env" \
+	# reset uboot env from config
+	if stat /target/boot/uboot_env.d/* > /dev/null 2>&1; then
+		# We need to reset env everytime to avoid leaving new variables unset
+		# after no-boot upgrades.
+		# note this will not clear extra values that had been set manually
+		# but are not present in configs, we should zero the env block for
+		# that... Maybe if that becomes a problem.
+		cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/uboot_env" \
 			|| error "uboot env files existed but could not merge them"
-		fw_setenv_quiet --config "/target/etc/fw_env.config" \
-				--defenv "$SCRIPTSDIR/default_env" \
-			|| error "Could not restore default env"
-		rm -f "$SCRIPTSDIR/default_env"
+		fw_setenv_nowarn --config "/target/etc/fw_env.config" \
+				--script "$SCRIPTSDIR/uboot_env" \
+				--defenv /dev/null \
+			|| error "Could not set uboot env"
+		rm -f "$SCRIPTSDIR/uboot_env"
 	fi
 
 	if [ "$rootdev" = "/dev/mmcblk2" ]; then
