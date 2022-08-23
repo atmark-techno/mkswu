@@ -38,7 +38,7 @@ update_preserve_list() {
 		esac
 	fi
 
-	[ "$preserve_version" = "$max_version" ] && return
+	[ "$preserve_version" -ge "$max_version" ] && return
 
 	if [ -e "$list" ] && grep -qE '^PRESERVE_FILES_VERSION' "$list"; then
 		sed -i -e "s/^\(PRESERVE_FILES_VERSION\).*/\1 $max_version/" "$list" \
