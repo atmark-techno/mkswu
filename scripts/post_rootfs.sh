@@ -314,7 +314,7 @@ post_rootfs() {
 	# if other fs was recreated: fix partition-specific things
 	if [ -e /target/.created ]; then
 		# fwenv: either generate a new one for mmc, or copy for sd boot (supersedes version in update)
-		if [ "$rootdev" = "/dev/mmcblk2" ]; then
+		if [ -e "${rootdev}boot0" ]; then
 			cat > /target/etc/fw_env.config <<EOF \
 				|| error "Could not write fw_env.config"
 ${rootdev}boot${ab} 0x3fe000 0x2000

@@ -27,7 +27,7 @@ cleanup_boot() {
 		rm -f "$SCRIPTSDIR/uboot_env"
 	fi
 
-	if [ "$rootdev" = "/dev/mmcblk2" ]; then
+	if [ -e "${rootdev}boot0" ]; then
 		cleanup_target
 		if fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
 			echo "writing encrypted uboot update, rollback will be done by current uboot on reboot"
