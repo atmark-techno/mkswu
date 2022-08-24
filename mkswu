@@ -1498,12 +1498,29 @@ mkswu_genkey_aes() {
 		# shellcheck disable=SC2016 # $CONFIG_DIR in single quotes on purpose
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
 			'ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"' >> "$CONFIG" \
-			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
+			|| error "Could not update %s in %s" "ENCRYPT_KEYFILE" "$CONFIG"
 	fi
-	if [ -s "$ENCRYPT_KEYFILE" ]; then
-		warning "%s already exists, skipping" "$ENCRYPT_KEYFILE"
-		return
-	fi
+	while [ -s "$ENCRYPT_KEYFILE" ]; do
+		if [ -n "$NOPROMPT" ]; then
+			warning "%s already exists, skipping" "$ENCRYPT_KEYFILE"
+			return
+		fi
+		prompt_yesno y "%s already exists, generate new key? [Y/n]" "$ENCRYPT_KEYFILE" \
+			|| return
+		# increment index, update config at the end
+		local idx
+		ENCRYPT_KEYFILE="${ENCRYPT_KEYFILE%.aes-key}"
+		idx="${ENCRYPT_KEYFILE##*-}"
+		case "$idx" in
+		""|*[a-zA-Z/]*) idx=1;;
+		*)
+			ENCRYPT_KEYFILE="${ENCRYPT_KEYFILE%-"$idx"}"
+			;;
+		esac
+		idx=$((idx+1))
+		ENCRYPT_KEYFILE="${ENCRYPT_KEYFILE}-$idx.aes-key"
+		extrakey=1
+	done
 
 	oldumask=$(umask)
 	umask 0377
@@ -1512,8 +1529,20 @@ mkswu_genkey_aes() {
 	umask "$oldumask"
 
 	info "Created encryption keyfile %s" "$ENCRYPT_KEYFILE"
-	info "You must also enable aes encryption with examples/initial_setup.desc"
-	info "or equivalent"
+
+	if [ -n "$extrakey" ]; then
+		info "Info: Adding %s to config" "$ENCRYPT_KEYFILE"
+		NEWKEY="${ENCRYPT_KEYFILE#"$CONFIG_DIR"}"
+		if [ "$NEWKEY" != "$ENCRYPT_KEYFILE" ]; then
+			NEWKEY="\$CONFIG_DIR/${NEWKEY#/}"
+		fi
+		printf "%s\n" '' '# extra encryption key. Remove the old one and use new' \
+				'# ENCRYPT_KEYFILE after having installed an update with this first' \
+				"NEW_ENCRYPT_KEYFILE=\"$NEWKEY\"" >> "$CONFIG" \
+			|| error "Could not update %s in %s" "NEW_ENCRYPT_KEYFILE" "$CONFIG"
+	fi
+
+	info "You must also enable aes encryption with initial_setup.desc or equivalent"
 }
 
 mkswu_genkey_sign() {
@@ -1575,13 +1604,13 @@ mkswu_genkey_sign() {
 				"PUBKEY=\"\$PUBKEY,$NEWCERT\"" \
 				'# remove "NEW_" to use' \
 				"NEW_PRIVKEY=\"${NEWCERT%.pem}.key\"" >> "$CONFIG" \
-			|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
+			|| error "Could not update %s in %s" "NEW_PRIVKEY" "$CONFIG"
 		case "$UPDATE_CERTS" in
 		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
 			printf "%s\n" "# This controls if we should update certificates on device," \
 					"# and can be removed once all devices have been updated to only allow new key" \
 					"UPDATE_CERTS=yes" >> "$CONFIG" \
-				|| error "Could not update default ENCRYPT_KEYFILE in %s" "$CONFIG"
+				|| error "Could not update %s in %s" "UPDATE_CERTS" "$CONFIG"
 			;;
 		esac
 	fi

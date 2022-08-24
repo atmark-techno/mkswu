@@ -499,12 +499,16 @@ msgid "Info: using default aes key path"
 msgstr "info: 暗号化鍵のデフォルトパスを使います。"
 
 #: mkswu
-msgid "Could not update default ENCRYPT_KEYFILE in %s"
-msgstr "%s にENCRYPT_KEYFILEのデフォルトを書けませんでした。"
+msgid "Could not update %s in %s"
+msgstr "%s を %s に更新できませんでした。"
 
 #: mkswu
 msgid "%s already exists, skipping"
 msgstr "%s はすでに存在します。このファイルの作成を中止します。"
+
+#: mkswu
+msgid "%s already exists, generate new key? [Y/n]"
+msgstr "%s はすでに存在します。新しい鍵を作成しますか？ [Y/n]"
 
 #: mkswu
 msgid "Generating random number failed"
@@ -515,12 +519,12 @@ msgid "Created encryption keyfile %s"
 msgstr "暗号化の鍵を作成しました：%s"
 
 #: mkswu
-msgid "You must also enable aes encryption with examples/initial_setup.desc"
-msgstr "examples/initial_setup.descで暗号化を有効にしてください。"
+msgid "Info: Adding %s to config"
+msgstr "%s をコンフィグファイルに追加します。"
 
 #: mkswu
-msgid "or equivalent"
-msgstr " "
+msgid "You must also enable aes encryption with initial_setup.desc or equivalent"
+msgstr "initial_setup.swu かアップデートで新しい鍵を転送してください。"
 
 #: mkswu
 msgid "PRIVKEY is not set in config file"
@@ -549,10 +553,6 @@ msgstr "署名鍵 %s と証明書 %s を作成します。"
 #: mkswu
 msgid "Generating certificate/key pair failed"
 msgstr "署名鍵の作成に失敗しました。"
-
-#: mkswu
-msgid "Info: Adding %s to config"
-msgstr "%s をコンフィグファイルに追加します。"
 
 #: mkswu
 msgid "%s will be copied over to /etc/swupdate.pem when installing newly generated swu"
