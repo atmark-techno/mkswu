@@ -20,6 +20,9 @@ cleanup_boot() {
 		# that... Maybe if that becomes a problem.
 		cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/uboot_env" \
 			|| error "uboot env files existed but could not merge them"
+		grep -qE "^bootcmd=" "$SCRIPTSDIR/uboot_env" \
+			|| error "uboot env files existed, but bootcmd is not set. Refusing to continue." \
+				"Please update your Base OS image or provide default environment first."
 		fw_setenv_nowarn --config "/target/etc/fw_env.config" \
 				--script "$SCRIPTSDIR/uboot_env" \
 				--defenv /dev/null \
