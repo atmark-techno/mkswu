@@ -1,3 +1,24 @@
+4.4
+===
+breaking changes:
+ - /boot/uboot_env.d env is always applied after every updates,
+not only for boot image updates.
+
+features:
+ - `mkswu --genkey --aes` now can generate new keys. This interface
+still might slightly change.
+ - add uboot_env.d and machine-id to default preserve files
+ - refuse to apply uboot env if no bootcmd is set, e.g. defaults
+are lacking.
+ - use podman stop instead of podman kill for containers update.
+This gives a chance for containers to shut down cleanly before kill.
+
+fixes:
+ - remove a few referneces to mmcblk2, this fixes mkswu when eMMC is
+at a different index.
+
+ -- 2022-08-26
+
 4.3
 ===
 breaking changes:
