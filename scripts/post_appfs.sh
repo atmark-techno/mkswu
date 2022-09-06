@@ -25,7 +25,7 @@ podman_killall() {
 	if [ -n "$(command podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
 		podman stop -a
-		podman ps --format '{{.ID}}' \
+		command podman ps --format '{{.ID}}' \
 			| timeout 20s xargs -r podman wait
 	fi
 	podman pod rm -a -f
