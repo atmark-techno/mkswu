@@ -1,3 +1,11 @@
+4.5
+===
+fixes:
+ - fix script not waiting for podman containers to stop properly
+in podman-storage --disk mode
+
+ -- 2022-09-26
+
 4.4
 ===
 breaking changes:
