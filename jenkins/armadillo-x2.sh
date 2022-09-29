@@ -33,7 +33,7 @@ EOF
 
 . ./tests/common.sh
 
-build_check "$OUTPUT" "version --board AGX4500 boot '20[^ ]* different'" \
+build_check "$OUTPUT.desc" -- "version --board AGX4500 boot '20[^ ]* different'" \
 	"version base_os '[^ ]+ higher'" \
 	"file imx-boot_armadillo_x2.* imx-boot_yakushima-eva.* '$ROOTFS'" \
 	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem" \

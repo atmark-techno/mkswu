@@ -65,15 +65,21 @@ check() {
 }
 
 build_check() {
-	local desc="$1"
-	local name="${desc##*/}"
+	local mkswu_arg=()
+	local name="${1##*/}"
+	name="${name%.desc}"
 	local dir="$TESTS_DIR/out/.$name"
 	local swu="$TESTS_DIR/out/$name.swu"
 	local check
-	shift
+
+	while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do
+		mkswu_arg+=( "$1" )
+		shift
+	done
+	[ "$1" = "--" ] && shift
 
 	echo "Building $name"
-	"$MKSWU" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	"$MKSWU" ${conf+-c "$conf"} -o "$swu" "${mkswu_arg[@]}"
 
 	for check; do
 		eval check "$check"
@@ -81,13 +87,12 @@ build_check() {
 }
 
 build_fail() {
-	local desc="$1"
-	local name="${desc##*/}"
+	local name="${1##*/}"
+	name="${name%.desc}"
 	local dir="$TESTS_DIR/out/.$name"
 	local swu="$TESTS_DIR/out/$name.swu"
 	local check
-	shift
 
 	echo "Building $name (must fail)"
-	! "$MKSWU" ${conf+-c "$conf"} -o "$swu" "$desc.desc"
+	! "$MKSWU" ${conf+-c "$conf"} -o "$swu" "$@"
 }

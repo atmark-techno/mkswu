@@ -6,52 +6,52 @@ cd "$(dirname "$0")"
 
 . ./common.sh
 
-build_check spaces "file test\ space.tar.zst"
-build_check install_files \
+build_check spaces.desc -- "file test\ space.tar.zst"
+build_check install_files.desc -- \
 	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
 
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
 "$MKSWU" --genkey --aes --config mkswu-aes.conf --noprompt
-MKSWU_ENCRYPT_KEYFILE=$PWD/swupdate.aes-key build_check aes \
+MKSWU_ENCRYPT_KEYFILE=$PWD/swupdate.aes-key build_check aes.desc -- \
 	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
 
-build_check board "swdesc 'iot-g4-es1 = '" \
+build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
 	"version --board iot-g4-es1 test '1 higher'"
-build_check board_fail
+build_check board_fail.desc --
 
-build_check exec_quoting "swdesc 'touch /tmp/swupdate-test'"
-build_check exec_readonly "swdesc 'podman run.*read-only.*touch.*/fail'"
+build_check exec_quoting.desc -- "swdesc 'touch /tmp/swupdate-test'"
+build_check exec_readonly.desc -- "swdesc 'podman run.*read-only.*touch.*/fail'"
 
-build_check swdesc_script
-build_check swdesc_script_nochroot
+build_check swdesc_script.desc --
+build_check swdesc_script_nochroot.desc --
 
-build_check update_certs_atmark \
+build_check update_certs_atmark.desc -- \
 	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem"
 
-build_check update_certs_user \
+build_check update_certs_user.desc -- \
 	"file-tar scripts_extras.tar certs_user/swupdate*.pem certs_user/atmark-1.pem"
-build_check update_certs_user \
+build_check update_certs_user.desc -- \
 	"file-tar scripts_extras.tar certs_user/swupdate*.pem"
 
-build_fail ../examples/initial_setup
-build_fail files_os_nonabs_fail
-build_fail files_dotdot_fail
-build_fail version_toobig_fail
-build_fail version_toobig2_fail
-build_fail version_alnum_fail
-build_fail version_alnum2_fail
-build_fail version_non_alnum_fail
-build_fail version_component_space_fail
-build_fail version_space_fail
-build_fail version_different_plus_fail
-build_fail version_different_long_fail
+build_fail ../examples/initial_setup.desc
+build_fail files_os_nonabs_fail.desc
+build_fail files_dotdot_fail.desc
+build_fail version_toobig_fail.desc
+build_fail version_toobig2_fail.desc
+build_fail version_alnum_fail.desc
+build_fail version_alnum2_fail.desc
+build_fail version_non_alnum_fail.desc
+build_fail version_component_space_fail.desc
+build_fail version_space_fail.desc
+build_fail version_different_plus_fail.desc
+build_fail version_different_long_fail.desc
 
 rm -f zoo/hardlink zoo/hardlink2
 echo foo > zoo/hardlink
 ln zoo/hardlink zoo/hardlink2
-build_check hardlink_order
+build_check hardlink_order.desc --
 [ "$(cpio --quiet -t < out/hardlink_order.swu)" = "sw-description
 sw-description.sig
 scripts_pre.sh.zst
