@@ -24,6 +24,18 @@ build_check board_fail.desc --
 build_check exec_quoting.desc -- "swdesc 'touch /tmp/swupdate-test'"
 build_check exec_readonly.desc -- "swdesc 'podman run.*read-only.*touch.*/fail'"
 
+name=exec_quoting_readonly build_check exec_quoting.desc exec_readonly.desc -- \
+	"swdesc 'touch /tmp/swupdate-test'" \
+	"swdesc 'podman run.*read-only.*touch.*/fail'"
+
+printf "%s\n" "swdesc_files build_tests.sh --version stdin 1" \
+	| name=stdin build_check - -- "swdesc 'build_tests.sh'" \
+
+printf "%s\n" "swdesc_files build_tests.sh --version stdin 1" \
+	| name=stdin_quoting build_check exec_quoting.desc - -- \
+		"swdesc 'touch /tmp/swupdate-test'" \
+		"swdesc 'build_tests.sh'" \
+
 build_check swdesc_script.desc --
 build_check swdesc_script_nochroot.desc --
 

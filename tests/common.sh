@@ -66,7 +66,7 @@ check() {
 
 build_check() {
 	local mkswu_arg=()
-	local name="${1##*/}"
+	local name="${name:-${1##*/}}"
 	name="${name%.desc}"
 	local dir="$TESTS_DIR/out/.$name"
 	local swu="$TESTS_DIR/out/$name.swu"
@@ -87,7 +87,7 @@ build_check() {
 }
 
 build_fail() {
-	local name="${1##*/}"
+	local name="${name:-${1##*/}}"
 	name="${name%.desc}"
 	local dir="$TESTS_DIR/out/.$name"
 	local swu="$TESTS_DIR/out/$name.swu"

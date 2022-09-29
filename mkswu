@@ -1988,7 +1988,7 @@ sw-description.sig"
 	# default default values
 	local BOOT_SIZE="4M"
 	local compress=1
-	local main_cwd desc
+	local main_cwd desc desc_file
 	local component version board="" dest=""
 	local install_first="" main_version="" show_cmd=""
 
@@ -2150,6 +2150,11 @@ sw-description.sig"
 			usage
 			exit 0
 			;;
+		"-")
+			# single dash is stdin, treat it as normal file
+			# (duplicate to handle unrecognized options)
+			set -- "$@" "$ARG"
+			;;
 		"-"*)
 			error "Unrecognized option %s" "$ARG"
 			;;
@@ -2197,6 +2202,7 @@ sw-description.sig"
 
 	# actual image building
 	if [ -z "$OUT" ]; then
+		[ "$1" = "-" ] && error "Cannot guess output name from stdin"
 		# OUT defaults to first swu name if not set
 		OUT="${1%.desc}.swu"
 	fi
@@ -2209,14 +2215,22 @@ sw-description.sig"
 	absolutize_file_paths
 	# build sw-desc fragments
 	for desc; do
-		[ -e "$desc" ] || error "%s does not exist" "$desc"
-		cd "$(dirname -- "$desc")" || error "cannot enter %s directory" "$desc"
-		[ "${desc%.desc}" != "$desc" ] || info "Warning: %s does not end in .desc, wrong file?" "$desc"
-		component="${desc%.desc}"
-		component=${component##*/}
 		version=""
 		install_if=""
-		. "./${desc##*/}"
+		if [ "$desc" = "-" ]; then
+			component="stdin"
+			desc_file="/proc/self/fd/0"
+		else
+			[ -e "$desc" ] || error "%s does not exist" "$desc"
+			cd "$(dirname -- "$desc")" \
+				|| error "cannot enter %s directory" "$desc"
+			[ "${desc%.desc}" != "$desc" ] \
+				|| info "Warning: %s does not end in .desc, wrong file?" "$desc"
+			component="${desc%.desc}"
+			component=${component##*/}
+			desc_file="./${desc##*/}"
+		fi
+		. "$desc_file"
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
 		absolutize_file_paths
