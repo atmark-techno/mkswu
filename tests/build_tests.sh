@@ -12,7 +12,7 @@ build_check install_files \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
 
 echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
-"$MKSWU" --genkey --aes --config mkswu-aes.conf
+"$MKSWU" --genkey --aes --config mkswu-aes.conf --noprompt
 MKSWU_ENCRYPT_KEYFILE=$PWD/swupdate.aes-key build_check aes \
 	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
 

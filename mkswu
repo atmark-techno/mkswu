@@ -2134,7 +2134,8 @@ sw-description.sig"
 			SKIP=1
 			;;
 		"--noprompt")
-			[ "$MODE" = "genkey_sign" ] || error "%s must be passed after %s" "$ARG" "--genkey"
+			[ "$MODE" = "genkey_sign" ] || [ "$MODE" = "genkey_aes" ] \
+				|| error "%s must be passed after %s" "$ARG" "--genkey"
 			NOPROMPT=1
 			;;
 		"--version")
