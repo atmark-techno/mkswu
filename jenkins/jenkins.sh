@@ -4,7 +4,7 @@
 set -ex
 
 # setup
-SU=
+SU=eval
 if [ "$(id -u)" = "0" ]; then
 	if command -v apk > /dev/null; then
 		apk add swupdate bash coreutils cpio zstd
@@ -31,6 +31,8 @@ if [ "$(id -u)" = "0" ]; then
 		SU="su testuser -c"
 	fi
 fi
+
+$SU "./mkswu --config-dir . --mkconf"
 
 $SU ./jenkins/armadillo-x2.sh
 
