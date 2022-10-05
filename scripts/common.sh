@@ -24,7 +24,7 @@ warning() {
 
 # adjust podman outputs: podman sometimes lists containers ids
 # and it's not clear what they correspond to without a wrapper
-podman() {
+podman_info() {
 	info_if_not_empty command podman "$@"
 }
 

@@ -60,7 +60,7 @@ info_if_not_empty() {
 	return "$ret"
 }
 
-podman() {
+podman_info() {
 	info_if_not_empty command podman "$@"
 }
 
@@ -83,12 +83,12 @@ podman_pull() {
 	local old_image new_image
 
 
-	old_image=$(podman image --root "$PODMAN_ROOT" \
+	old_image=$(podman_info image --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore="" \
 			inspect --format "{{.Id}}" "$uri" 2>/dev/null)
 
 	echo -n "Pulling $uri... "
-	new_image=$(podman pull --root "$PODMAN_ROOT" \
+	new_image=$(podman_info pull --root "$PODMAN_ROOT" \
 		--storage-opt additionalimagestore="" -q "$uri") \
 		|| error "Could not pull $image"
 
@@ -113,13 +113,13 @@ podman_load() {
 	local archive
 
 	if [ $# -eq 0 ]; then
-		podman load --root "$PODMAN_ROOT" \
+		podman_info load --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore=""
 	else for archive; do
 		if [ -n "$PUB_KEY" ]; then
 			check_sig "$archive"
 		fi
-		podman load --root "$PODMAN_ROOT" \
+		podman_info load --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore="" \
 			-i "$archive"
 	done fi

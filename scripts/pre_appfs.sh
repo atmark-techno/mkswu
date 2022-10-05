@@ -42,14 +42,14 @@ umount_or_reboot() {
 }
 
 podman_killall() {
-	if [ -n "$(command podman ps --format '{{.ID}}')" ]; then
+	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
-		podman stop -a
-		command podman ps --format '{{.ID}}' \
-			| timeout 20s xargs -r podman wait
+		podman_info stop -a
+		podman ps --format '{{.ID}}' \
+			| timeout 20s xargs -r podman_info wait
 	fi
-	podman pod rm -a -f
-	podman rm -a -f
+	podman_info pod rm -a -f
+	podman_info rm -a -f
 }
 
 check_update_disk_encryption() {
