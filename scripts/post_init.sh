@@ -1,9 +1,4 @@
 init() {
-	if [ -e "$SCRIPTSDIR/nothing_to_do" ]; then
-		rm -f "$SCRIPTSDIR/nothing_to_do"
-		exit 0
-	fi
-
 	rootdev="$(cat "$SCRIPTSDIR/rootdev")" \
 		|| error "Could not read rootdev from prepare step?!"
 	partdev="$rootdev"
