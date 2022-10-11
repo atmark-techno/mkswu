@@ -76,8 +76,9 @@ check_update_disk_encryption() {
 		done \
 		|| exit 1
 
-	warning "Reformatting appfs with encryption, current container images and volumes" \
-		"Also, in case of update failure or rollback current system will not be able to mount it"
+	warning "Reformatting appfs with encryption, current container images and" \
+		"volumes will be lost. Also, in case of update failure or rollback" \
+		"current system will not be able to mount it"
 
 	luks_format "${partdev##*/}5"
 	mkfs.btrfs -L app -m DUP -R free-space-tree "$dev" \
