@@ -1316,7 +1316,7 @@ sign() {
 
 	track_used "$file.sig"
 
-	check_validity "$file.sig" "$file" && return
+	check_validity "$file.sig" "$file" "$PUBKEY" "$PRIVKEY" && return
 	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
 	[ -n "$PUBKEY" ] || error "PUBKEY must be set"
 	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: %s" "$PRIVKEY"
