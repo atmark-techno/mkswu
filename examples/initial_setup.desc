@@ -11,6 +11,8 @@ swdesc_option component=extra_os.initial_setup version=2
 # change the '>>' to '>' if you do not want to keep the Armadillo
 # Base OS update certificate. You will no longer be able to update
 # directly from atmark-techno.com servers.
+# (note the key itself is ignored when UPDATE_CERTS=y in mkswu.conf,
+# but truncating the file or not is still important for atmark keys)
 swdesc_exec "$ORIG_PUBKEY" 'cat $1 >> /etc/swupdate.pem'
 
 # If encryption is setup, also send encryption key
