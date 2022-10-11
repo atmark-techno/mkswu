@@ -128,8 +128,21 @@ init_really_starting() {
 	) &
 }
 
+# when run in installer environment we skip most of the scripts
+pre_installer() {
+	gen_newversion
+	needs_update base_os && error "Cannot update base OS in installer"
+	needs_update boot && error "Cannot update boot image in installer"
+}
+
 init() {
 	lock_update
+
+	if [ -n "$SWUPDATE_FROM_INSTALLER" ]; then
+		pre_installer
+		exit 0
+	fi
+
 	cleanup
 
 	init_vars
