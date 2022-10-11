@@ -595,9 +595,10 @@ test_update_overlays() {
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
-	. "$SCRIPTS_SRC_DIR/post_rootfs.sh"
+	. "$SCRIPTS_SRC_DIR/post_common.sh"
 	test_passwd_update
 	test_cert_update
+	. "$SCRIPTS_SRC_DIR/post_rootfs.sh"
 	test_preserve_files_post
 ) || error "post test failed"
 
