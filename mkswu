@@ -1032,7 +1032,7 @@ swdesc_usb_container() {
 	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
 	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
-	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"/mnt/$image_usb"
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"$image_usb"
 }
 
 append_certificates() {

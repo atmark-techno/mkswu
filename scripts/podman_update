@@ -3,6 +3,12 @@
 PODMAN_ROOT=/var/lib/containers/storage_readonly
 PODMAN_LOAD=
 PUB_KEY=
+if [ -z "$SWUPDATE_USB_SWU" ]; then
+	ARCHIVE_DIR=/mnt
+else
+	ARCHIVE_DIR="${SWUPDATE_USB_SWU%/*}"
+	[ -n "$ARCHIVE_DIR" ] || ARCHIVE_DIR=/
+fi
 
 [ -z "${CONTAINERS_CONF+x}" ] && \
 	[ -e /etc/atmark/containers.conf ] && \
@@ -116,6 +122,10 @@ podman_load() {
 		podman_info load --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore=""
 	else for archive; do
+		case "$archive" in
+		/*) ;;
+		*) archive="$ARCHIVE_DIR/$archive";;
+		esac
 		if [ -n "$PUB_KEY" ]; then
 			check_sig "$archive"
 		fi
