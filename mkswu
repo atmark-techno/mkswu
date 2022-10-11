@@ -231,6 +231,8 @@ check_validity() {
 	shift
 	local file_src stat=""
 
+	track_used "$file_out.validity"
+
 	# check validity with mtime/size for all source files
 	for file_src; do
 		stat="${stat:+$stat
@@ -250,7 +252,7 @@ compress() {
 	local file_src="$1"
 	local file_out="$2"
 
-	track_used "$file_src" "$file_out" "$file_out.validity"
+	track_used "$file_src" "$file_out"
 	check_validity "$file_out" "$file_src" && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
@@ -1068,8 +1070,7 @@ append_certificates() {
 		return
 	fi
 
-	track_used "$file" "$file.validity"
-
+	track_used "$file"
 	check_validity "$file" "$source" $ATMARK_CERTS $user_certs && return
 
 	cp -a --reflink=auto "$source" "$file.tmp" \
@@ -1310,7 +1311,7 @@ check_duplicate_files() {
 sign() {
 	local file="$OUTDIR/$1"
 
-	track_used "$file.sig" "$file.sig.validity"
+	track_used "$file.sig"
 
 	check_validity "$file.sig" "$file" && return
 	[ -n "$PRIVKEY" ] || error "PRIVKEY must be set"
