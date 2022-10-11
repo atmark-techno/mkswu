@@ -1,19 +1,15 @@
 # Initial update is done with the onetime public key and no encryption, override used keys
 swdesc_option PRIVKEY="$SCRIPT_DIR/swupdate-onetime-public.key"
-ORIG_PUBKEY="$PUBKEY"
 swdesc_option PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
+swdesc_option UPDATE_CERTS=1
 ORIG_ENCRYPT_KEYFILE="$ENCRYPT_KEYFILE"
 swdesc_option ENCRYPT_KEYFILE=""
 
 swdesc_option component=extra_os.initial_setup version=2
 
-# Set our own swupdate certificate.
-# change the '>>' to '>' if you do not want to keep the Armadillo
-# Base OS update certificate. You will no longer be able to update
-# directly from atmark-techno.com servers.
-# (note the key itself is ignored when UPDATE_CERTS=y in mkswu.conf,
-# but truncating the file or not is still important for atmark keys)
-swdesc_exec "$ORIG_PUBKEY" 'cat $1 >> /etc/swupdate.pem'
+# Uncomment to remove atmark techno's Base OS update certificate.
+# You will no longer be able to update directly from atmark-techno.com servers.
+#swdesc_command '> /etc/swupdate.pem'
 
 # If encryption is setup, also send encryption key
 if [ -n "$ORIG_ENCRYPT_KEYFILE" ]; then

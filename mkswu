@@ -1828,7 +1828,7 @@ mkinit_geninitdesc() {
 	cp "$SCRIPT_DIR/examples/initial_setup.desc" "$desc.tmp" \
 		|| error "Could not copy initial_setup.desc from example dir"
 	if [ -z "$KEEPATMARKPEM" ]; then
-		sed -i -e 's@>> /etc/swupdate.pem@> /etc/swupdate.pem@' "$desc.tmp" \
+		sed -i -e 's@^#\(.*> /etc/swupdate.pem\)@\1@' "$desc.tmp" \
 			|| error "Could not update %s" "$desc.tmp"
 	fi
 
