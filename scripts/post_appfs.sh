@@ -68,6 +68,7 @@ cleanup_appfs() {
 
 	# sometimes podman mounts this on pull?
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
+	rm -f "/target/var/lib/containers/storage_readonly/libpod/bolt_state.db"
 
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 
