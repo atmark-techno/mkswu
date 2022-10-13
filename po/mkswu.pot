@@ -570,6 +570,9 @@ msgstr ""
 msgid "Config file not found, create one with mkswu --init"
 msgstr ""
 #: mkswu
+msgid "Cannot guess output name from stdin"
+msgstr ""
+#: mkswu
 msgid "cannot enter %s directory"
 msgstr ""
 #: mkswu

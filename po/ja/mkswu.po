@@ -759,6 +759,10 @@ msgid "Config file not found, create one with mkswu --init"
 msgstr "設定ファイルが見つかりませんでした。 mkswu --init で作成してください。"
 
 #: mkswu
+msgid "Cannot guess output name from stdin"
+msgstr "- (stdin) の場合には --output を設定してください。"
+
+#: mkswu
 msgid "cannot enter %s directory"
 msgstr "%s ディレクトリに入れませんでした。"
 
