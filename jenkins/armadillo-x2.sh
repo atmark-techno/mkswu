@@ -23,7 +23,6 @@ done
 cat > "$OUTPUT.desc" <<EOF
 ATMARK_CERTS=certs/atmark-1.pem,certs/atmark-2.pem
 swdesc_option ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN
-swdesc_boot --board iot-g4-eva imx-boot_yakushima-eva
 swdesc_boot --board iot-g4-es1 imx-boot_armadillo_x2
 swdesc_boot --board iot-g4-es2 imx-boot_armadillo_x2
 swdesc_boot --board AGX4500 imx-boot_armadillo_x2
@@ -35,8 +34,8 @@ EOF
 
 build_check "$OUTPUT.desc" -- "version --board AGX4500 boot '20[^ ]* different'" \
 	"version base_os '[^ ]+ higher'" \
-	"file imx-boot_armadillo_x2.* imx-boot_yakushima-eva.* '$ROOTFS'" \
+	"file imx-boot_armadillo_x2.* '$ROOTFS'" \
 	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem" \
-	"swdesc imx-boot_armadillo_x2 imx-boot_yakushima-eva '$ROOTFS' '# MKSWU_ALLOW_PUBLIC_CERT 1'"
+	"swdesc imx-boot_armadillo_x2 '$ROOTFS' '# MKSWU_ALLOW_PUBLIC_CERT 1'"
 
 mv "tests/out/$OUTPUT.swu" .
