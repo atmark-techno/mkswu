@@ -3,6 +3,7 @@
 # disable noisy shellcheck warnings
 # shellcheck disable=SC2039,SC1090,SC2165,SC2167,SC2064,SC2015
 # shellcheck disable=SC2247,SC2119,SC1090,SC2120,SC3043,SC3013
+# shellcheck disable=SC2016 # $ in single quotes on purpose
 
 if command -v gettext >/dev/null; then
 	_gettext() { TEXTDOMAINDIR="$TEXTDOMAINDIR" TEXTDOMAIN=mkswu gettext -- "$@"; }
@@ -887,7 +888,6 @@ swdesc_exec_nochroot() {
 
 	parse_swdesc exec_nochroot "$@"
 
-	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec_nochroot with a non-empty file, but not referring to it with $1'
 
@@ -914,7 +914,6 @@ swdesc_exec() {
 
 	parse_swdesc exec "$@"
 
-	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
 
@@ -987,7 +986,6 @@ swdesc_script() {
 
 	parse_swdesc script "$@"
 
-	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	swdesc_exec "$script" 'sh $1'" $cmd"
 }
 
@@ -1000,7 +998,6 @@ swdesc_script_nochroot() {
 
 	parse_swdesc script_nochroot "$@"
 
-	# shellcheck disable=SC2016 # $1 in single quotes on purpose
 	swdesc_exec_nochroot "$script" 'sh $1'" $cmd"
 }
 
@@ -1013,7 +1010,6 @@ swdesc_embed_container() {
 
 	parse_swdesc embed_container "$@"
 
-	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly -l $1'
 }
 
@@ -1025,7 +1021,6 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
-	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly "'"$image"'"'
 }
 
@@ -1047,7 +1042,6 @@ swdesc_usb_container() {
 	COPY_USB="${COPY_USB:+$COPY_USB }$(shell_quote "$(realpath "$image")")"
 	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
-	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --storage /target/var/lib/containers/storage_readonly --pubkey /etc/swupdate.pem -l '"$image_usb"
 }
 
@@ -1139,7 +1133,6 @@ embedded_preinstall_script() {
 	file="$OUTDIR/scripts_pre.sh"
 	create_prescript
 
-	# shellcheck disable=SC2016 # $TMPDIR and $1 in single quotes on purpose
 	swdesc_script_nochroot "$file"
 }
 
@@ -1303,7 +1296,6 @@ ${NO_PRESERVE_FILES:+NO_PRESERVE_FILES}"
 check_common_mistakes() {
 	local swdesc="$OUTDIR/$1"
 
-	# shellcheck disable=SC2016 # $ in single quotes... duh
 	# grep for common patterns of easy mistakes that would fail installing
 	! grep -qF '$6$salt$hash' "$swdesc" \
 		|| error "Please set user passwords (usermod command in .desc)"
@@ -1515,7 +1507,6 @@ mkswu_genkey_aes() {
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		info "Info: using default aes key path"
 		ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"
-		# shellcheck disable=SC2016 # $CONFIG_DIR in single quotes on purpose
 		printf "%s\n" '' '# Default encryption key path (set by genkey.sh)' \
 			'ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"' >> "$CONFIG" \
 			|| error "Could not update %s in %s" "ENCRYPT_KEYFILE" "$CONFIG"
