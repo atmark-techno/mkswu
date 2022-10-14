@@ -8,8 +8,8 @@ cd "$(dirname "$0")"
 . ./common.sh
 
 # custom script: no prereq
-build_check ../examples/custom_script.desc -- "file custom_script_app.sh scripts_pre.sh.zst" \
-	"swdesc scripts_pre.sh.zst custom_script.app.sh 'POST_ACTION container' 'Built with mkswu [0-9]'"
+build_check ../examples/custom_script.desc -- "file scripts_pre.sh.zst" \
+	"swdesc custom_script_app.sh scripts_pre.sh.zst custom_script.app.sh 'POST_ACTION container' 'Built with mkswu [0-9]'"
 
 # sshd: build tar
 build_check ../examples/enable_sshd.desc -- "version extra_os.sshd '[^ ]+ higher'" \
@@ -38,7 +38,7 @@ build_check ../examples/kernel_update_plain.desc -- \
 
 # kernel apk: likewise we don't actually test install here,
 touch ../examples/linux-at-5.10.9-r3.apk
-build_check ../examples/kernel_update_apk.desc -- "file linux-at-5.10.9-r3.apk" "swdesc linux-at-5.10.9-r3.apk"
+build_check ../examples/kernel_update_apk.desc -- "swdesc linux-at-5.10.9-r3.apk"
 
 # volume files: relative, absolute path
 build_check ../examples/volumes_assets.desc -- \

@@ -39,6 +39,9 @@ printf "%s\n" "swdesc_files build_tests.sh --version stdin 1" \
 build_check swdesc_script.desc --
 build_check swdesc_script_nochroot.desc --
 
+build_check two_scripts.desc -- \
+	"swdesc 'one' 'two'"
+
 build_check update_certs_atmark.desc -- \
 	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem"
 

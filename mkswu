@@ -636,7 +636,7 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $cmd"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file $cmd"
 		;;
 	*container)
 		[ $# -eq 0 ] && [ -n "$image" ] && return
@@ -880,7 +880,7 @@ conf_quote() {
 }
 
 swdesc_exec_nochroot() {
-	local file="$file" cmd="$cmd"
+	local file="$file" cmd="$cmd" orig_file
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
 	local install_if="$install_if" show_cmd="$show_cmd"
@@ -891,6 +891,14 @@ swdesc_exec_nochroot() {
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec_nochroot with a non-empty file, but not referring to it with $1'
 
+	# allow multiple execs with same file if command changes
+	# don't rename if no arguments for easier debugging
+	if [ -n "$cmd" ] && [ "$cmd" != 'sh $1 ' ]; then
+		orig_file="$file"
+		set_file_from_content "$file" "$cmd"
+		link "$orig_file" "$file"
+	fi
+
 	cmd="sh -c $(shell_quote "$cmd") --"
 
 	write_entry files "$file" "type = \"exec\";" \
@@ -899,7 +907,7 @@ swdesc_exec_nochroot() {
 }
 
 swdesc_exec() {
-	local file="$file" cmd="$cmd" chroot_cmd
+	local file="$file" cmd="$cmd" chroot_cmd orig_file
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
 	local install_if="$install_if" show_cmd="$show_cmd"
@@ -925,6 +933,14 @@ swdesc_exec() {
 		chroot_cmd="$chroot_cmd --rootfs /target sh -c $(shell_quote "$cmd") -- "
 		;;
 	esac
+
+	# allow multiple execs with same file if command changes
+	# don't rename if no arguments for easier debugging
+	if [ -n "$cmd" ] && [ "$cmd" != 'sh $1 ' ]; then
+		orig_file="$file"
+		set_file_from_content "$file" "$cmd"
+		link "$orig_file" "$file"
+	fi
 
 	write_entry files "$file" "type = \"exec\";" \
 		"properties: {" \

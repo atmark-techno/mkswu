@@ -1,0 +1,10 @@
+FORCE_VERSION=1
+DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+
+cat > "$OUTDIR/echo.sh" <<EOF
+#!/bin/sh
+echo "\$@" >> /tmp/swupdate-test/echo
+EOF
+
+swdesc_script_nochroot "$OUTDIR/echo.sh" -- one
+swdesc_script_nochroot "$OUTDIR/echo.sh" -- two

@@ -118,6 +118,13 @@ line2 with space and ! \ @" ] || error "updated content does not match (podman)"
 line1
 line2 with space and ! \ @" ] || error "updated content does not match (nochroot)"
 	rm -rf /tmp/swupdate-test
+
+	mkdir /tmp/swupdate-test
+	"$SWUPDATE" -i ./out/two_scripts.swu -v -k ../swupdate.pem \
+		|| error "swupdate failed"
+	[ "$(cat /tmp/swupdate-test/echo)" = "one
+two" ] || error "updated content does not match (two scripts)"
+	rm -rf /tmp/swupdate-test
 fi
 
 # finish with a successful command to not keep last failed on purpose test result
