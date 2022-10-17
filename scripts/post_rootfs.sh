@@ -171,8 +171,13 @@ EOF
 
 		# use appfs storage for podman if used previously
 		if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
+			# newer versions also remove the ro store, but only do it if done previously
+			local remove_ro_store=""
+			grep -q "containers/storage_readonly" /etc/containers/storage.conf \
+				|| remove_ro_store='/containers\/storage_readonly/d'
+
 			sed -i -e 's@graphroot = .*@graphroot = "/var/lib/containers/storage"@' \
-				/target/etc/containers/storage.conf \
+				-e "$remove_ro_store" /target/etc/containers/storage.conf \
 				|| error "could not rewrite storage.conf"
 		fi
 		if update_baseos; then
