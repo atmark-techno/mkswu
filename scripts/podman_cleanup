@@ -10,6 +10,13 @@ error() {
 	exit 1
 }
 
+warning() {
+	case "$SWUPDATE_WARN_FD" in
+	4) printf "%s\n" "$@" >&4;;
+	*) printf "%s\n" "$@" >&2;;
+	esac
+}
+
 usage() {
 	echo "Usage: $0 [options]"
 	echo
@@ -38,7 +45,7 @@ get_pod_infra_image_tag() {
 	fi
 
 	if [ -z "$infra_image" ]; then
-		warning "Warning: Could not guess podman pod infra container name, continuing without one"
+		warning "Warning: Could not guess podman pod infra container name, continuing without one" \
 			"podman_start will probably require an internet to start pods"
 		return
 	fi
