@@ -1,10 +1,36 @@
+allow_upgrade_available() {
+	# Do not set upgrade_available if other boot is encrypted,
+	# we would not be able to boot into it.
+	[ -z "$encrypted_boot" ] || return
+
+	# Cannot fw_setenv without this...
+	[ -s /etc/fw_env.config ] || return
+
+	# Do not set upgrade_available if it is not set in default
+	# configuration.
+	cat /boot/uboot_env.d/* 2>/dev/null | awk -F= '
+		$1 == "upgrade_available" {
+			set=$2
+		}
+		END {
+			if (set != "1")
+				exit(1)
+		}'
+}
+
 cleanup_target() {
 	sync
 	cleanup
+
+	# Mark other fs as usable again unless encrypted boot is used
+	if allow_upgrade_available; then
+		fw_setenv_nowarn upgrade_available 1 \
+			|| warn "could not restore rollback"
+	fi
 }
 
 cleanup_boot() {
-	local dev
+	local dev encrypted_boot=""
 
 	if ! needs_reboot; then
 		cleanup_target
@@ -37,6 +63,7 @@ cleanup_boot() {
 			# make sure we're still set to boot on current uboot
 			mmc bootpart enable "$((!ab+1))" 0 "$rootdev"
 			fw_setenv_nowarn encrypted_update_available 1
+			encrypted_boot=1
 		else
 			echo "setting mmc bootpart enable $((ab+1))"
 			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
@@ -60,7 +87,7 @@ cleanup_boot() {
 		error "Do not know how to A/B switch this system"
 	fi
 
-	# from here on, failure is not appropriate
+	# from here on, failure is not appropriate.
 	soft_fail=1
 }
 

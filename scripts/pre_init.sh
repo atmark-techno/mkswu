@@ -101,6 +101,7 @@ init_really_starting() {
 	# if we got here we're really updating:
 	# - signal we're starting an update if instructed
 	# - handle a fail command if there is one
+	# - mark the other partition as unbootable for rollback
 	local action
 
 	rm -f "$TMPDIR/swupdate_post_fail_action"
@@ -126,6 +127,13 @@ init_really_starting() {
 		sh "$TMPDIR/swupdate_post_fail_action"
 		rm -f "$TMPDIR/swupdate_post_fail_action"
 	) &
+
+	# we won't be able to reboot into other partition until installer
+	# finished; disable rollback
+	if [ -e "/etc/fw_env.config" ]; then
+		fw_setenv_nowarn upgrade_available \
+			|| error "Could not set u-boot environment variable, refusing to run"
+	fi
 }
 
 # when run in installer environment we skip most of the scripts
