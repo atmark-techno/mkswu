@@ -29,7 +29,7 @@ podman_info() {
 }
 
 fw_setenv_nowarn() {
-	FILTER="Cannot read environment, using default|Environment WRONG" \
+	FILTER="Cannot read environment, using default|Environment WRONG|Environment OK" \
 		info_if_not_empty command fw_setenv "$@"
 }
 

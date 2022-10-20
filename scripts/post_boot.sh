@@ -36,7 +36,7 @@ cleanup_boot() {
 			echo "writing encrypted uboot update, rollback will be done by current uboot on reboot"
 			# make sure we're still set to boot on current uboot
 			mmc bootpart enable "$((!ab+1))" 0 "$rootdev"
-			fw_setenv encrypted_update_available 1
+			fw_setenv_nowarn encrypted_update_available 1
 		else
 			echo "setting mmc bootpart enable $((ab+1))"
 			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
@@ -45,7 +45,7 @@ cleanup_boot() {
 	elif [ -s /etc/fw_env.config ]; then
 		cleanup_target
 		# if uboot env is supported, use it (e.g. sd card)
-		fw_setenv mmcpart $((ab+1)) \
+		fw_setenv_nowarn mmcpart $((ab+1)) \
 			|| error " Could not setenv mmcpart"
 	elif [ -e /target/boot/extlinux.conf ]; then
 		# assume gpt boot e.g. extlinux
