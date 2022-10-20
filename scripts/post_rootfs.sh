@@ -39,13 +39,13 @@ post_copy_preserve_files() {
 	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
-		| sort -u > "$TMPDIR/preserve_files_post"
+		| sort -u > "$SCRIPTSDIR/preserve_files_post"
 	while read -r f; do
 		# No quote to expand globs
 		overwrite_to_target $f
-	done < "$TMPDIR/preserve_files_post"
+	done < "$SCRIPTSDIR/preserve_files_post"
 
-	rm -f "$TMPDIR/preserve_files_post"
+	rm -f "$SCRIPTSDIR/preserve_files_post"
 }
 
 

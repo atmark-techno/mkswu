@@ -140,13 +140,13 @@ copy_preserve_files() {
 	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
-		| sort -u > "$TMPDIR/preserve_files_pre"
+		| sort -u > "$SCRIPTSDIR/preserve_files_pre"
 	while read -r f; do
 		# No quote to expand globs
 		copy_to_target $f
-	done < "$TMPDIR/preserve_files_pre"
+	done < "$SCRIPTSDIR/preserve_files_pre"
 
-	rm -f "$TMPDIR/preserve_files_pre"
+	rm -f "$SCRIPTSDIR/preserve_files_pre"
 }
 
 mount_target_rootfs() {
