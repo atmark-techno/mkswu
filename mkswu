@@ -1837,7 +1837,7 @@ mkinit_geninitdesc() {
 		|| error "Could not update %s" "$desc.tmp"
 
 	if [ -n "$KEEPATMARKPEM" ] && \
-	    prompt n "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"; then
+	    prompt_yesno n "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"; then
 
 		while true; do
 			prompt AUTOUPDATE "Select update frequency ([weekly]/daily)"

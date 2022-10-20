@@ -70,7 +70,7 @@ scripts_pre.sh.zst
 hardlink
 scripts_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
 
-rm -rf "$TESTS_DIR/out/init"
+rm -rf "$TESTS_DIR/out/init" "$TESTS_DIR/out/init_noupdate" "$TESTS_DIR/out/init_noatmark"
 "$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
 	|| error "mkswu --init failed"
 cn
@@ -78,6 +78,8 @@ privkeypass
 privkeypass
 
 
+somepass
+differentpass(ask again)
 root
 root
 atmark
@@ -85,17 +87,70 @@ atmark
 y
 
 EOF
+"$MKSWU" --config-dir "$TESTS_DIR/out/init_noupdate" --init <<EOF \
+	|| error "mkswu --init noupdate failed"
+
+cn(empty=should reask)
+somepass
+differentpass(ask again)
+
+
+
+
+root
+root
+somepass
+differentpass(ask again)
+
+
+
+EOF
+"$MKSWU" --config-dir "$TESTS_DIR/out/init_noatmark" --init <<EOF \
+	|| error "mkswu --init noatmark failed"
+cn
+keypass
+keypass
+y
+n
+
+root
+root
+
+
+EOF
 # in order:
 # certif common name, private key pass x2, aes encryption (default=n), allow atmark updates (default=y),
 # root pass x2, atmark pass x2, autoupdate (force y) + frequency (default weekly)
+# frequency skipped if autoupdate = n (default)
+
+grep -q swupdate-url "$TESTS_DIR/out/init/initial_setup.desc" \
+	|| error "autoupdate not enabled"
+grep -q swupdate-url "$TESTS_DIR/out/init_noupdate/initial_setup.desc" \
+	&& error "autoupdate incorrectly enabled (noupdate)"
+grep -q swupdate-url "$TESTS_DIR/out/init_noatmark/initial_setup.desc" \
+	&& error "autoupdate incorrectly enabled (noatmark)"
+grep -qxF "swdesc_command '> /etc/swupdate.pem'" \
+		"$TESTS_DIR/out/init_noatmark/initial_setup.desc" \
+	|| error "noatmark kept atmark certs"
+grep -qxF "swdesc_command '> /etc/swupdate.pem'" \
+		"$TESTS_DIR/out/init/initial_setup.desc" \
+	&& error "incorrectly wiped atmark certs"
 
 # validate generated passwords match
 checkpass() {
-	local user="$1"
-	local pass="$2"
+	local dir="$1"
+	local user="$2"
+	local pass="$3"
 	local desc
 	local check
-	desc=$(sed -ne "s/^[ \t].*'\"'\(.*\)'\"'.*$user.*/\1/p" "$TESTS_DIR/out/init/initial_setup.desc")
+
+	if [ -z "$pass" ]; then
+		grep -qE "^[^#]*\"usermod -L $user\"" "$TESTS_DIR/out/$dir/initial_setup.desc" \
+			|| error "$user not locked in $dir"
+		return
+	fi
+
+	desc=$(sed -ne "s/^[^#]*'\"'\(.*\)'\"'.*$user.*/\1/p" "$TESTS_DIR/out/$dir/initial_setup.desc")
 	if command -v python3 >/dev/null; then
 		check=$(python3 -c "import crypt; print(crypt.crypt('$pass', '$desc'))") \
 			|| error "python3 crypt call failed"
@@ -107,10 +162,12 @@ checkpass() {
 	else
 		error "install either python3 or mkpasswd"
 	fi
-	[ "$desc" = "$check" ] || error "Error: $pass was invalid (got $desc expected $check)"
+	[ "$desc" = "$check" ] || error "Error: $pass was invalid (got $desc expected $check for $dir)"
 }
-checkpass atmark atmark
-checkpass root root
+checkpass init atmark atmark
+checkpass init root root
+checkpass init_noupdate atmark
+checkpass init_noupdate root root
 
 # test atmark pass is regenerated on old version
 sed -i -e 's/version=[0-9]/version=1/' "$TESTS_DIR/out/init/initial_setup.desc"
