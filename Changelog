@@ -1,3 +1,38 @@
+4.6
+===
+fixes:
+ - /!\ mkswu --init would incorrectly enable auto-updates even when disabled
+during the question /!\
+This was broken since 4.3 (included), if you have generated a new mkswu
+config with mkswu 4.3, 4.4 or 4.5 and did not want autoupdate please:
+    - remove autoupdate lines from initial_setup.desc and regenerate its swu
+    - disable swupdate-url service on armadillo with the following mkswu
+    command:
+        swdesc_command 'rc-update del swupdate-url default'
+    or directly on armadillo:
+        persist_file -dv /etc/runlevels/default/swupdate-url
+ - fix swupdate logs when using swdesc_pull_container (removed useless inspect
+message)
+ - make sure bolt_state.db is removed in persistent storage when using
+non-standard paths. Podman refuses to start if we leave it behind.
+ - improve changed file detection; in particular make sure we resign files
+if certificate or key changed.
+
+feature:
+ - add compatibility with abos-base 1.12-r0:
+    - preserve containers storage.conf additionalimagestore setting
+    - write directly in persistent development storage if it is in use.
+ - improve logs when updating in persistent storage case
+ - allow multiple identical swdesc_exec in same swu if arguments differ.
+This is useful for using the same swdesc_script with different parameters,
+as can be done when using multiple desc files that update preserve files
+ - handle swdesc from stdin as '-' as done by other software
+ - add support for installing swu in SD installer. This was already
+technically possible with reboots, but we can now install extra swu
+directly at the end of install without extra reboot.
+
+ -- 2022-10-20
+
 4.5
 ===
 fixes:
