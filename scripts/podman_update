@@ -95,21 +95,9 @@ podman_pull() {
 	local uri="$1"
 	local old_image new_image
 
-
-	old_image=$(podman_info image --root "$PODMAN_ROOT" \
-			--storage-opt additionalimagestore="" \
-			inspect --format "{{.Id}}" "$uri" 2>/dev/null)
-
-	echo -n "Pulling $uri... "
-	new_image=$(podman_info pull --root "$PODMAN_ROOT" \
-		--storage-opt additionalimagestore="" -q "$uri") \
+	podman_info pull --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" -q "$uri" \
 		|| error "Could not pull $image"
-
-	if [ "$new_image" != "$old_image" ]; then
-		echo "Updated"
-	else
-		echo "No update"
-	fi
 }
 
 check_sig() {
