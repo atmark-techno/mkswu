@@ -39,10 +39,8 @@ $SU ./jenkins/armadillo-x2.sh
 # If we want to build debian package, quite a bit of work...
 case "$1" in
 deb)
-	if ! dpkg -s debhelper >/dev/null 2>&1; then
-		sudo apt update
-		sudo apt install -y debhelper jq
-	fi
+	sudo apt update
+	sudo apt install -y debhelper jq
 	VERSION=$(git describe | tr '-' '.')
 	# touch is required to make sure make dist re-runs locale check
 	touch mkswu mkimage.sh hawkbit-compose/setup_container.sh
