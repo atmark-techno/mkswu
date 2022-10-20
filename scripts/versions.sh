@@ -117,12 +117,15 @@ gen_newversion() {
 	# Could probably do better but it works and files are small..
 	awk '!filter[$1] { filter[$1]=1; print }' "$system_versions" \
 		| while read -r component oldvers; do
-			case "$component" in
-			other_boot) continue;;
-			boot) printf "%s\n" "other_boot $oldvers";;
-			other_boot_linux) continue;;
-			boot_linux) printf "%s\n" "other_boot_linux $oldvers";;
-			esac
+			# installer will not copy boot image
+			if [ -z "$SWUPDATE_FROM_INSTALLER" ]; then
+				case "$component" in
+				other_boot) continue;;
+				boot) printf "%s\n" "other_boot $oldvers";;
+				other_boot_linux) continue;;
+				boot_linux) printf "%s\n" "other_boot_linux $oldvers";;
+				esac
+			fi
 			newvers=$(get_version --install-if "$component" present)
 			install_if=${newvers##* }
 			newvers=${newvers% *}
