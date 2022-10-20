@@ -66,9 +66,11 @@ cleanup_appfs() {
 		--confdir /target/etc/atmark/containers $cleanup_fail \
 		|| error "cleanup of old images failed: mismatching configuration/container update?"
 
-	# sometimes podman mounts this on pull?
-	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
+	# cleanup readonly storage
+	[ -z "$(podman ps --root /target/var/lib/containers/storage_readonly -qa)" ] \
+		|| error "podman state is not clean"
 	rm -f "/target/var/lib/containers/storage_readonly/libpod/bolt_state.db"
+	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
 
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 

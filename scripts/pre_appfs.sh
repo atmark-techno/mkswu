@@ -114,8 +114,7 @@ prepare_appfs() {
 		|| error "Could not mount appfs"
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
-		podman_killall "Persistent storage is used for podman, stopping all containers before taking snapshot" \
-			       "This is only for development, do not use this mode for production!"
+		podman_killall "Persistent storage is used for podman, stopping all containers before updating"
 	fi
 
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
@@ -147,6 +146,11 @@ prepare_appfs() {
 	btrfs_subvol_create "volumes" \
 		|| error "Could not create volumes subvol"
 
+	if mountpoint -q /var/lib/containers/storage; then
+		mount --bind /var/lib/containers/storage \
+				/target/var/lib/containers/storage \
+			|| error "Could not bind mount persistent storage"
+	fi
 	mount -t btrfs -o "$mountopt=boot_${ab}/containers_storage" \
 			"$dev" /target/var/lib/containers/storage_readonly \
 		|| error "Could not mount containers_storage subvol"

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PODMAN_ROOT=/var/lib/containers/storage_readonly
+PODMAN_ROOT=
 PODMAN_LOAD=
 PUB_KEY=
 if [ -z "$SWUPDATE_USB_SWU" ]; then
@@ -21,8 +21,15 @@ fi
 	export CONTAINERS_REGISTRIES_CONF=/etc/atmark/containers_registries.conf
 
 error() {
-	echo "$@" >&2
+	printf "%s\n" "$@" >&2
 	exit 1
+}
+
+warning() {
+        case "$SWUPDATE_WARN_FD" in
+        4) printf "%s\n" "$@" >&4;;
+        *) printf "%s\n" "$@" >&2;;
+        esac
 }
 
 # info commands duplicated from scripts/common
@@ -138,7 +145,25 @@ podman_load() {
 update_containers() {
 	local uri
 
-	# cleanup podman silly location-binding db before using directory.
+	# find which db to use: we prefer persistent development storage
+	# over readonly one as images in ro storage won't be visible
+	if [ -z "$PODMAN_ROOT" ]; then
+		if grep -q 'containers/storage_readonly' /etc/containers/storage.conf; then
+			PODMAN_ROOT=/target/var/lib/containers/storage_readonly
+		else
+			# note we don't use /target bind: they're identical, but bolt_sate.db
+			# has the canonical path
+			PODMAN_ROOT=/var/lib/containers/storage
+			warning "Updating images on development storage, do not use this mode for production!" \
+			       "(Old images are never removed, not safe on power loss...)"
+		fi
+		mountpoint -q "$PODMAN_ROOT" \
+			|| error "Trying to use $PODMAN_ROOT which is not mounted"
+	fi
+
+	# cleanup podman silly location-binding db before/after using directory.
+	[ -z "$(podman ps --root "$PODMAN_ROOT" -qa)" ] \
+		|| error "podman state not clean"
 	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
 
 	if [ -n "$PODMAN_LOAD" ]; then
@@ -148,6 +173,9 @@ update_containers() {
 			podman_pull "$uri"
 		done
 	fi
+
+	# cleanup again afterwards for whoever comes next
+	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
 }
 
 [ $# -lt 1 ] && usage && exit 1
