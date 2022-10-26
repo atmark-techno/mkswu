@@ -50,6 +50,38 @@ swap_btrfs_snapshots() {
 	fi
 }
 
+check_warn_new_containers_removed() {
+	awk '
+		NR==FNR {
+			x[$1]=1
+		}
+		NR!=FNR && ! x[$1] {
+			print $1;
+			x[$1]=1
+		}' \
+		"$SCRIPTSDIR/podman_images_pre" \
+		"$SCRIPTSDIR/podman_images_post" \
+		> "$SCRIPTSDIR/podman_images_new" \
+		|| error "Could not compare list of podman images?"
+
+	[ -s "$SCRIPTSDIR/podman_images_new" ] || return
+	podman_list_images > "$SCRIPTSDIR/podman_images_cleaned"
+
+	while read -r added_image; do
+		grep -qw "$added_image" "$SCRIPTSDIR/podman_images_cleaned" \
+			&& continue
+		image_name=$(awk -v img="$added_image" '
+			$1 == img {
+				print $2;
+				exit
+			}' "$SCRIPTSDIR/podman_images_post")
+		[ -n "$image_name" ] || image_name="$added_image"
+		warning "Container image $image_name was added in swu but immediately removed" \
+			"Please use it in /etc/atmark/containers.d if you would like to keep it"
+	done < "$SCRIPTSDIR/podman_images_new"
+}
+
+
 cleanup_appfs() {
 	local dev basemount
 	local cleanup_fail="--fail-missing"
@@ -61,6 +93,8 @@ cleanup_appfs() {
 		cleanup_fail=""
 	fi
 
+	podman_list_images > "$SCRIPTSDIR/podman_images_post"
+
 	stdout_info echo "Removing unused containers"
 	stdout_info "$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
 		--confdir /target/etc/atmark/containers $cleanup_fail \
@@ -71,8 +105,16 @@ cleanup_appfs() {
 		|| error "podman state is not clean"
 	rm -f "/target/var/lib/containers/storage_readonly/libpod/bolt_state.db"
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
-
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
+
+	# if new images were installed, check that we did not remove any of
+	# the new images during cleanup.
+	if ! cmp -s "$SCRIPTSDIR/podman_images_pre" "$SCRIPTSDIR/podman_images_post"; then
+		check_warn_new_containers_removed
+		rm -f "$SCRIPTSDIR/podman_images_new" "$SCRIPTSDIR/podman_images_cleaned"
+	fi
+	rm -f "$SCRIPTSDIR/podman_images_pre" "$SCRIPTSDIR/podman_images_post"
+
 
 	if ! needs_reboot; then
 		dev=$(findmnt -nv -o SOURCE /var/tmp)

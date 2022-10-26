@@ -28,6 +28,22 @@ podman_info() {
 	info_if_not_empty command podman "$@"
 }
 
+podman_list_images() {
+	local store="/target/var/lib/containers/storage_readonly"
+	local format='{{$id := .Id}}{{range .Names}}{{$id}} {{.}}{{println}}{{end}}{{.Id}}'
+	# temporary podman root cannot be in overlayfs due to podman
+	# restrictions (in particular /tmp would not work), so use /run
+	local tmproot="/run/podman_empty_root"
+	[ -e "$tmproot" ] && rm -rf "$tmproot"
+
+	podman image list --root "$tmproot" \
+			--storage-opt additionalimagestore="$store" \
+			--format "$format" \
+		|| error "Could not list container images"
+	rm -rf "$tmproot"
+}
+
+
 fw_setenv_nowarn() {
 	FILTER="Cannot read environment, using default|Environment WRONG|Environment OK" \
 		info_if_not_empty command fw_setenv "$@"
