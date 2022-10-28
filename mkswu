@@ -831,7 +831,9 @@ create_archive() {
 				| sort >> "$OUTDIR/tar.validity.tmp" \
 			|| error "Could not create tar for %s" "$tarfile_raw"
 		set -- "$@" "$tarfile"
-		track_used "$tarfile"
+		# tarfile is relative, renormalize it...
+		[ "$tarfile" = "." ]  && tarfile=""
+		track_used "$basedir/$tarfile"
 	done
 
 	if [ -z "$file" ]; then
