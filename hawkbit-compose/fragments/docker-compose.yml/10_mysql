@@ -7,7 +7,7 @@
             MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?Must set environment variables in .env}"
         restart: always
         volumes:
-            - ./data/mysql_utf8.cnf:/etc/mysql/mysql.conf.d/utf8.cnf
+            - ./data/mysql_utf8.cnf:/etc/mysql/conf.d/utf8.cnf
             - ./data/mysql:/var/lib/mysql
         expose:
             - 3306
