@@ -51,6 +51,10 @@ init_vars_update() {
 	if [ "$POST_ACTION" != "container" ]; then
 		needs_reboot=1
 	fi
+	if [ -e "/etc/fw_env.config" ] \
+	    && fw_printenv upgrade_available | grep -qx 'upgrade_available=1'; then
+		upgrade_available=1
+	fi
 }
 
 save_vars() {
@@ -68,6 +72,8 @@ save_vars() {
 }
 
 fail_redundant_update() {
+	[ -z "$upgrade_available" ] && return
+
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then

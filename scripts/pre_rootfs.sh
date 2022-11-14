@@ -191,7 +191,8 @@ mount_target_rootfs() {
 
 	# Check if the current copy is up to date.
 	# If there is no base_os update we can use it.
-	if ! needs_update "base_os" \
+	if [ -n "$upgrade_available" ] \
+	    && ! needs_update "base_os" \
 	    && luks_unlock "rootfs_$ab" \
 	    && mount -t ext4,btrfs "$dev" /target 2>/dev/null; then
 		if [ ! -e /target/.created ] \
