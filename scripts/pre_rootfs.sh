@@ -193,7 +193,7 @@ mount_target_rootfs() {
 	# If there is no base_os update we can use it.
 	if ! needs_update "base_os" \
 	    && luks_unlock "rootfs_$ab" \
-	    && mount "$dev" /target 2>/dev/null; then
+	    && mount -t ext4,btrfs "$dev" /target 2>/dev/null; then
 		if [ ! -e /target/.created ] \
 		    && [ -s /etc/.rootfs_update_timestamp ] \
 		    && [ "$(cat /etc/.rootfs_update_timestamp 2>/dev/null)" \
@@ -220,12 +220,12 @@ mount_target_rootfs() {
 	btrfs)
 		mkfs.btrfs -q -L "rootfs_${ab}" -m dup -f "$dev" \
 			|| error "Could not reformat $dev"
-		mount "$dev" "/target" -o compress=zstd,discard=async
+		mount -t btrfs "$dev" "/target" -o compress=zstd,discard=async
 		;;
 	ext4)
 		mkfs.ext4 -q ${extlinux:+-O "^64bit"} -L "rootfs_${ab}" -F "$dev" \
 			|| error "Could not reformat $dev"
-		mount "$dev" "/target" || error "Could not mount $dev"
+		mount -t ext4 "$dev" "/target" || error "Could not mount $dev"
 		;;
 	*)
 		error "Unexpected fstype for rootfs: $fstype. Must be ext4 or btrfs"

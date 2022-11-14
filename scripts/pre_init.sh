@@ -85,7 +85,7 @@ fail_redundant_update() {
 		local dev="${partdev}$((ab+1))"
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
 		    && luks_unlock "rootfs_$ab" \
-		    && mount "$dev" /target 2>/dev/null; then
+		    && mount -t ext4,btrfs "$dev" /target 2>/dev/null; then
 			if cmp -s /target/etc/sw-versions \
 					"$SCRIPTSDIR/sw-versions.merged"; then
 				rm -rf "$SCRIPTSDIR"

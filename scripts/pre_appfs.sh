@@ -83,12 +83,12 @@ check_update_disk_encryption() {
 	luks_format "${partdev##*/}5"
 	mkfs.btrfs -L app -m DUP -R free-space-tree "$dev" \
 		|| error "Could not format btrfs onto $dev after encryption setup"
-	mount "$dev" "$basemount" \
+	mount -t btrfs "$dev" "$basemount" \
 		|| error "Could not mount freshly created encrypted appfs"
 	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
 	umount "$basemount" \
 		|| error "Could not umount appfs"
-	mount "$dev" /var/tmp -o "$mountopt=tmp" \
+	mount -t btrfs "$dev" /var/tmp -o "$mountopt=tmp" \
 		|| error "Could not remount /var/tmp on host. Further swu install will fail unless manually fixed"
 
 	sed -i -e "s:[^ \t]*p5\t:$dev\t:" /target/etc/fstab \
@@ -110,7 +110,7 @@ prepare_appfs() {
 	[ -n "$dev" ] || error "Could not find appfs source device"
 	check_update_disk_encryption
 
-	mount "$dev" "$basemount" -o "${mountopt%,subvol}" \
+	mount -t btrfs "$dev" "$basemount" -o "${mountopt%,subvol}" \
 		|| error "Could not mount appfs"
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then

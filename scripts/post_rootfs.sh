@@ -136,7 +136,7 @@ check_update_log_encryption() {
 	luks_format "${partdev##*/}3"
 	mkfs.ext4 -L logs "$dev" \
 		|| error "Could not format ext4 onto $dev after encryption setup"
-	mount "$dev" /var/log \
+	mount -t ext4 "$dev" /var/log \
 		|| error "Could not re-mount encrypted /var/log"
 
 	sed -i -e "s:[^ \t]*\(\t/var/log\t\):$dev\1:" /target/etc/fstab \

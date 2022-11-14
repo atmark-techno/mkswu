@@ -120,7 +120,7 @@ cleanup_appfs() {
 		dev=$(findmnt -nv -o SOURCE /var/tmp)
 		[ -n "$dev" ] || error "Could not find appfs source device"
 		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
-		mount "$dev" "$basemount" || error "Could not mount app root"
+		mount -t btrfs "$dev" "$basemount" || error "Could not mount app root"
 
 		# We're not rebooting, since we got here there was something
 		# to do and want to use updated apps on currenet os (old apps
