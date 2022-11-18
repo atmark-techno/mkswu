@@ -36,11 +36,16 @@ update_user_groups() {
 
 update_shadow() {
 	local user group
-	local PASSWD="${PASSWD:-/etc/passwd}"
+
+	# support older version of overlayfs
+	local fsroot=/live/rootfs
+	[ -e "$fsroot" ] || fsroot=""
+
+	local PASSWD="${PASSWD:-$fsroot/etc/passwd}"
 	local NPASSWD="${NPASSWD:-/target/etc/passwd}"
-	local SHADOW="${SHADOW:-/etc/shadow}"
+	local SHADOW="${SHADOW:-$fsroot/etc/shadow}"
 	local NSHADOW="${NSHADOW:-/target/etc/shadow}"
-	local GROUP="${GROUP:-/etc/group}"
+	local GROUP="${GROUP:-$fsroot/etc/group}"
 	local NGROUP="${NGROUP:-/target/etc/group}"
 
 	# "$PASSWD", group and shadow have to be part of rootfs as
