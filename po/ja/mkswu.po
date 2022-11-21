@@ -451,6 +451,10 @@ msgid "Could not enter %s"
 msgstr "%s ディレクトリに入れませんでした。"
 
 #: mkswu
+msgid "Could not create SWU (cpio archive)"
+msgstr "SWU (cpio アーカイブ）の作成が失敗しました。"
+
+#: mkswu
 msgid "cpio does not contain files we requested (in the order we requested): check %s"
 msgstr "%s ファイルに設定した中身を確認できませんでした。"
 

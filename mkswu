@@ -1355,9 +1355,20 @@ mkcpio() {
 	check_common_mistakes sw-description
 	sign sw-description
 	(
+		IFS="
+"
 		cd "$OUTDIR" || error "Could not enter %s" "$OUTDIR"
-		printf %s "$FILES" | cpio -o -H crc -L --quiet
-	) > "$OUT"
+		# GNU gpio has a bug with checksums for files bigger than 2GB
+		# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=962188
+		# fall back to newc in this case, we also compute sha256 for
+		# every file so this isn't a big loss
+		format=crc
+		# shellcheck disable=SC2086 # we want split by newline
+		if ! stat -L -c %s $FILES | awk '$1 > 2147483648 { exit 1; }'; then
+			format=newc
+		fi
+		printf %s "$FILES" | cpio -o -H "$format" -L --quiet
+	) > "$OUT" || error "Could not create SWU (cpio archive)"
 
 	CPIO_FILES=$(cpio -t --quiet < "$OUT")
 	[ "$CPIO_FILES" = "$FILES" ] \

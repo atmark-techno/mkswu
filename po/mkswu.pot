@@ -339,6 +339,9 @@ msgstr ""
 msgid "Could not enter %s"
 msgstr ""
 #: mkswu
+msgid "Could not create SWU (cpio archive)"
+msgstr ""
+#: mkswu
 msgid "cpio does not contain files we requested (in the order we requested): check %s"
 msgstr ""
 #: mkswu
