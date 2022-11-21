@@ -6,7 +6,8 @@ cd "$(dirname "$0")"
 
 . ./common.sh
 
-build_check spaces.desc -- "file test\ space.tar.zst"
+build_check spaces.desc -- "file test\ space.tar.zst" \
+	"file .*test_space_tar.*podman.*\.zst"
 build_check install_files.desc -- \
 	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
