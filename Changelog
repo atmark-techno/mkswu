@@ -1,3 +1,48 @@
+4.7
+===
+breaking changes:
+ - Passwords used to be copied from live system (overlay) if not set
+in the installed image, e.g. after a Base OS upgrade.
+This caused troubles when operators would log in for diagnostic on the
+installer system, so the copy now only considers files stored on rootfs
+with persist_file (or previously updated through initial_setup)
+
+fixes:
+ - Files would not be compressed when included through a symbolic link.
+In particular, container images embedded in SWU (swdesc_embed_containers)
+were no longer compressed in version 4.6 due to an unrelated change
+making it use a symlink.
+Fix the size check to consider dereferenced file size.
+ - Fix incorrect CRC error if any single file is bigger than 2GB
+This is a bug in GNU cpio, which we work around by disabling CRC
+annotation when a compressed file is this big. We already have
+checksums of the files themselves, so this is not required.
+ - Fix intermediate file being incorrectly removed if source for
+swdesc_files is inside the output temporary files directory.
+ - hawkbit-compose: fix path used for mysql extra config.
+This extra config only sets an alternative encoding for the database,
+so the only issue with this is that japanese could not be used in
+various description fields. (Repairing this for existing installations
+requires converting the DB if required)
+
+features:
+ - Unset and re-set (if appropriate) upgrade_available in uboot env
+during installs. This avoids trying to rollback into a partially
+installed system.
+ - Avoid warnings in dmesg when mounting filesystems by always specifying
+the filesystems types for mount and not trying to mount the old target
+system when upgrade_available is unset.
+ - Add a warning if a container image was included in a SWU but deleted
+immediately due to lack of configuration file using it.
+This is just a warning that can safely be ignored if done on purpose,
+but should help diagnostic if this was a mistake.
+ - Remove dependency to 'strings' to extract boot image version.
+ - Also print 'included x.desc' message for the first desc file in case
+multiple files were given. This is more consistent, in particular if an
+output filename was set that is different from the first desc file name.
+
+ -- 2022-11-24
+
 4.6
 ===
 fixes:
@@ -18,7 +63,7 @@ non-standard paths. Podman refuses to start if we leave it behind.
  - improve changed file detection; in particular make sure we resign files
 if certificate or key changed.
 
-feature:
+features:
  - add compatibility with abos-base 1.12-r0:
     - preserve containers storage.conf additionalimagestore setting
     - write directly in persistent development storage if it is in use.
