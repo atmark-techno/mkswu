@@ -72,8 +72,6 @@ save_vars() {
 }
 
 fail_redundant_update() {
-	[ -z "$upgrade_available" ] && return
-
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
@@ -90,6 +88,7 @@ fail_redundant_update() {
 		# also check B-side unless SW_ALLOW_ROLLBACK is set
 		local dev="${partdev}$((ab+1))"
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
+		    && [ -n "$upgrade_available" ] \
 		    && luks_unlock "rootfs_$ab" \
 		    && mount -t ext4,btrfs "$dev" /target 2>/dev/null; then
 			if cmp -s /target/etc/sw-versions \
