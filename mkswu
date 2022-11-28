@@ -2221,6 +2221,12 @@ sw-description.sig"
 		exit 0
 	fi
 
+	if [ "$#" = "0" ]; then
+		usage
+		echo
+		error "Must provide at least one desc file"
+	fi
+
 	# actual image building
 	if [ -z "$OUT" ]; then
 		[ "$1" = "-" ] && error "Cannot guess output name from stdin"
@@ -2260,7 +2266,7 @@ sw-description.sig"
 	done
 
 	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$FORCE_VERSION" ] \
-		|| error "No or empty desc given?"
+		|| error "No command could be found in desc files"
 
 	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"

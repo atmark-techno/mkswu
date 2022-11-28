@@ -763,6 +763,10 @@ msgid "Config file not found, create one with mkswu --init"
 msgstr "設定ファイルが見つかりませんでした。 mkswu --init で作成してください。"
 
 #: mkswu
+msgid "Must provide at least one desc file"
+msgstr ".desc ファイルの引数が必要です。"
+
+#: mkswu
 msgid "Cannot guess output name from stdin"
 msgstr "- (stdin) の場合には --output を設定してください。"
 
@@ -783,8 +787,8 @@ msgid "Successfully included %s contents"
 msgstr "%s を組み込みました。"
 
 #: mkswu
-msgid "No or empty desc given?"
-msgstr "descファイルを読み取ることができませんでした。"
+msgid "No command could be found in desc files"
+msgstr "desc ファイルに有効なコマンドがありませんでした。"
 
 #: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"

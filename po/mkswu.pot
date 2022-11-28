@@ -573,6 +573,9 @@ msgstr ""
 msgid "Config file not found, create one with mkswu --init"
 msgstr ""
 #: mkswu
+msgid "Must provide at least one desc file"
+msgstr ""
+#: mkswu
 msgid "Cannot guess output name from stdin"
 msgstr ""
 #: mkswu
@@ -588,7 +591,7 @@ msgstr ""
 msgid "Successfully included %s contents"
 msgstr ""
 #: mkswu
-msgid "No or empty desc given?"
+msgid "No command could be found in desc files"
 msgstr ""
 #: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
