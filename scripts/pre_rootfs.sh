@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=5
+	local preserve_version=0 max_version=6
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -128,6 +128,16 @@ EOF
 # v5 list: uboot env, machine-id
 /boot/uboot_env.d
 /etc/machine-id
+EOF
+	fi
+
+	if [ "$preserve_version" -le 5 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+# v6 list: g4/a6e LTE extension board support
+/etc/runlevels/boot/modemmanager
+/etc/runlevels/boot/ems31-boot
+/etc/runlevels/default/wwan-led
+/etc/runlevels/shutdown/wwan-safe-poweroff
 EOF
 	fi
 }
