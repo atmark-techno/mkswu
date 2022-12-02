@@ -289,7 +289,7 @@ do_check_letsencrypt() {
 	# nor necessary, but should prevent people running letsencrypt blindling
 	# in atde.
 	local domain_ip
-	domain_ip=$(dig "$REVERSE_PROXY_CERT_DOMAIN" +short)
+	domain_ip=$(dig "$REVERSE_PROXY_CERT_DOMAIN" +short 2>/dev/null)
 	[[ -n "$domain_ip" ]] || return 1
 	[[ "$(echo "$domain_ip" | wc -l)" = 1 ]] || return 1
 
