@@ -1,5 +1,25 @@
+enable_service() {
+	local service="$1"
+	local runlevel="$2"
+
+	if [ -L "/target/etc/runlevels/$runlevel/$service" ] ||
+	   ! [ -e "/target/etc/init.d/$service" ]; then
+		return
+	fi
+
+	ln -sf "/etc/init.d/$service" "/target/etc/runlevels/$runlevel/" \
+		|| error "could not enable $service service"
+}
+
+disable_service() {
+	local service="$1"
+	local runlevel="$2"
+
+	rm -f "/target/etc/runlevels/$runlevel/$service"
+}
+
 baseos_upgrade_fixes() {
-	local baseos_version
+	local baseos_version overlays
 
 	# if user has local certificates we should regenerate the bundle
 	if stat /target/usr/local/share/ca-certificates/* >/dev/null 2>&1; then
@@ -47,6 +67,30 @@ EOF
 		sed -i -e 's/loglevel = 2/loglevel = 3/' /target/etc/swupdate.cfg \
 			|| error "Could not update swupdate.cfg"
 	fi
+
+	# Restore modemmanager/wwan services if required,
+	# and add new wwan-safe-shutdown as well in this case
+	# (preserve_files fixed in 3.16.2-at.6 // mkswu 1.8)
+	overlays="$(awk -F= '$1 == "fdt_overlays" { print $2 }' /boot/overlays.txt 2>/dev/null)"
+	case " $overlays " in
+	*" armadillo_iotg_g4-lte-ext-board.dtbo "*)
+		# G4 LTE - mm is started from udev rule
+		disable_service modemmanager boot
+		enable_service wwan-safe-poweroff shutdown
+		;;
+	*" armadillo-iotg-a6e-els31.dtbo "*)
+		# A6E Cat.1
+		enable_service modemmanager boot
+		enable_service wwan-safe-poweroff shutdown
+		enable_service wwan-led default
+		;;
+	*" armadillo-iotg-a6e-ems31.dtbo "*)
+		# A6E Cat.M1
+		enable_service ems31-boot boot
+		enable_service wwan-safe-poweroff shutdown
+		enable_service wwan-led default
+		;;
+	esac
 }
 
 baseos_upgrade_fixes
