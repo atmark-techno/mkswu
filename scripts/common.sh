@@ -123,6 +123,8 @@ stderr_info() {
 try_lock() {
 	local pid
 
+	lock_check_rebooting
+
 	if mkdir /tmp/.swupdate_lock 2>/dev/null; then
 		echo $PPID > /tmp/.swupdate_lock/pid
 		return 0
@@ -159,10 +161,19 @@ try_lock() {
 	return 1
 }
 
-lock_update() {
-	# If we've flagged this as rebooting, abort immediately
-	[ -e "/tmp/.swupdate_rebooting" ] && error "reboot in progress!!"
+lock_check_rebooting() {
+	local unlock="$1"
 
+	if [ -e "/tmp/.swupdate_rebooting" ]; then
+		if [ -n "$unlock" ]; then
+			unlock_update
+		fi
+		error "reboot in progress!!"
+	fi
+
+}
+
+lock_update() {
 	# lock handling necessary for hawkbit/usb/manual install locking
 	# we cannot just use flock here as this shell script will exit before
 	# the end of the install, and we cannot use a simple 'mkdir lock'
@@ -184,12 +195,17 @@ lock_update() {
 	# tl;dr: move this lock within swupdate itself eventually or accept
 	# very rare deadlocks when mixing e.g. USB and hawkbit updates after
 	# failures.
-	try_lock && return
+	if try_lock; then
+		# recheck for reboot after we've locked in case of race.
+		lock_check_rebooting unlock
+		return
+	fi
 	stdout_warn echo "/tmp/.swupdate_lock exists: another update in progress? Waiting until it disappears"
 
 	while ! try_lock; do
 		sleep 5;
 	done
+	lock_check_rebooting unlock
 }
 
 unlock_update() {
