@@ -91,6 +91,16 @@ EOF
 		enable_service wwan-led default
 		;;
 	esac
+	# Enable wifi-recover, only for wifi-enabled boards if the
+	# service just got added to allow for users disabling it.
+	# (added in 3.16.2-at.6)
+	case " $overlays " in
+	*" armadillo_iotg_g4-aw-xm458.dtbo "*)
+		if ! [ -e /etc/init.d/wifi-recover ]; then
+			enable_service wifi-recover default
+		fi
+		;;
+	esac
 }
 
 baseos_upgrade_fixes
