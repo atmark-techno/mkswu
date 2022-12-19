@@ -133,12 +133,15 @@ EOF
 
 	if [ "$preserve_version" -le 5 ]; then
 		cat >> "$list" << EOF || error "Could not update $list"
-# v6 list: g4/a6e LTE/wifi extension board support
+
+# v6 list: g4/a6e LTE/wifi extension board support, atmark conf.d files
 /etc/runlevels/boot/modemmanager
 /etc/runlevels/boot/ems31-boot
 /etc/runlevels/default/wwan-led
 /etc/runlevels/shutdown/wwan-safe-poweroff
 /etc/runlevels/default/wifi-recover
+POST /etc/conf.d/wifi-recover
+POST /etc/conf.d/podman-atmark
 EOF
 	fi
 }
