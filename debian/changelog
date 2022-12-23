@@ -1,3 +1,9 @@
+mkswu (4.8-1) experimental; urgency=low
+
+  * upstream update (see changelog)
+
+ -- Kojiro YAMADA <kojiro.yamada@atmark-techno.com>  Fri, 23 Dec 2022 15:01:30 +0900
+
 mkswu (4.7.1-1) experimental; urgency=low
 
   * upstream update (see changelog)

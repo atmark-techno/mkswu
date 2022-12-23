@@ -1,3 +1,26 @@
+4.8
+===
+fixes:
+ - mkswu prints help if no argument given.
+ - some runlevel files for LTE model such as ems31-boot are preserved if
+needed.
+ - restore/add the following services on Base OS update:
+    - G4 LTE model:
+      - del modemmanager (started by udev), add wwan-safe-poweroff
+    - A6E Cat.M1 model:
+      - add ems31-boot, wwan-led, wwan-safe-poweroff
+    - A6E Cat.1 model:
+      - add modemmanager, wwan-led, wwan-safe-poweroff
+ - check for rebooting in try_lock to avoid a second update while
+rebooting on the first update.
+
+features:
+ - Add support for wifi-recover for future updates.
+Preserving files, enabling the service as required. wifi-recover and
+podman-atmark in /etc/conf.d are reserved as 'POST'.
+
+ -- 2022-12-23
+
 4.7.1
 =====
 fixes:
