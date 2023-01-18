@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=6
+	local preserve_version=0 max_version=7
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -142,6 +142,13 @@ EOF
 /etc/runlevels/default/wifi-recover
 POST /etc/conf.d/wifi-recover
 POST /etc/conf.d/podman-atmark
+EOF
+	fi
+	if [ "$preserve_version" -le 6 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v7 list: a6e power-utils files
+/etc/containers/aiot_gw_container_hooks.d
 EOF
 	fi
 }
