@@ -1,3 +1,11 @@
+4.9
+===
+fixes:
+ - add /etc/containers/aiot_gw_container_hooks.d to preserve_files default
+paths for Armadillo-IoT Gateway A6E
+
+ -- 2023-01-26
+
 4.8
 ===
 fixes:
