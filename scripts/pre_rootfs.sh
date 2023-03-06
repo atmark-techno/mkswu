@@ -12,7 +12,7 @@ copy_to_target() {
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
-		cp -aTn "$file" "$TARGET/$file" \
+		cp -aTn "$fsroot$file" "$TARGET/$file" \
 			|| error "Failed to copy $file from previous rootfs"
 	done
 }
@@ -176,6 +176,10 @@ mount_target_rootfs() {
 	local tmp fail extlinux
 	local encrypted=""
 	local fstype=""
+
+	# support older version of overlayfs
+	local fsroot=/live/rootfs/
+	[ -e "$fsroot" ] || fsroot="/"
 
 	cryptsetup isLuks "$dev" >/dev/null 2>&1 && encrypted=1
 

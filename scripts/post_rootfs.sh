@@ -3,10 +3,6 @@ update_running_versions() {
 
 	[ "$(stat -f -c %T /etc/sw-versions)" = "overlayfs" ] || return
 
-	# support older version of overlayfs
-	local fsroot=/live/rootfs
-	[ -e "$fsroot" ] || fsroot=/
-
 	# bind-mount / somewhere else to write below it as well
 	mount --bind "$fsroot" /target || error "Could not bind mount rootfs"
 	mount -o remount,rw /target || error "Could not make rootfs rw"
@@ -26,7 +22,7 @@ overwrite_to_target() {
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
 		rm -rf --one-file-system "${TARGET:-inval}/$f"
-		cp -a "$file" "$TARGET/$file" \
+		cp -a "$fsroot$file" "$TARGET/$file" \
 			|| error "Failed to copy $file from previous rootfs"
 	done
 }
@@ -83,6 +79,10 @@ check_update_log_encryption() {
 }
 
 post_rootfs() {
+	# support older version of overlayfs
+	local fsroot=/live/rootfs/
+	[ -e "$fsroot" ] || fsroot=/
+
 	# Sanity check: refuse to continue if someone tries to write a
 	# rootfs that was corrupted or "too wrong": check for /bin/sh
 	if ! [ -e /target/bin/sh ]; then

@@ -36,11 +36,7 @@ update_user_groups() {
 
 update_shadow() {
 	local user group
-
-	# support older version of overlayfs
-	local fsroot=/live/rootfs
-	[ -e "$fsroot" ] || fsroot=""
-
+	# test constants
 	local PASSWD="${PASSWD:-$fsroot/etc/passwd}"
 	local NPASSWD="${NPASSWD:-/target/etc/passwd}"
 	local SHADOW="${SHADOW:-$fsroot/etc/shadow}"
@@ -77,13 +73,13 @@ update_shadow() {
 }
 
 
-SWUPDATE_PEM=/target/etc/swupdate.pem
-
 update_swupdate_certificate()  {
 	local certsdir cert pubkey
 	local public_onetime_path=""
 	local atmark_present="" atmark_seen=""
 	local user_present="" user_seen=""
+	# test constants
+	local SWUPDATE_PEM=${SWUPDATE_PEM:-/target/etc/swupdate.pem}
 
 	# what certificates were embedded into swu, if any?
 	for cert in "$SCRIPTSDIR/certs_atmark/"*; do
