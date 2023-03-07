@@ -1,16 +1,32 @@
-# set version once for all below swdesc elements unless
-# forced with --version
-swdesc_option component=extra_os.kernel version=5.10.82-1
+# Automatically get version from ./$KERNEL_INSTALL/lib/modules/<version>
+# kernel directory can be installed with examples/kernel_update_plain.install.sh,
+# or manually from:
+# arch/arm64/boot/Image
+# arch/arm64/boot/dts/freescale/armadillo_*dtb{,o}
+# make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH=$HOME/mkswu/kernel modules_install
+# or
+# arch/arm/boot/uImage
+# arch/arm/boot/dts/armadillo-*dtb{,o}
+# make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$HOME/mkswu/kernel modules_install
+
+swdesc_option component=extra_os.kernel
+# version is automatically updated from kernel_update_plain.install.sh
+swdesc_option version=1
+# KERNEL_INSTALL/IMAGE are also automatically updated if appropriate
+KERNEL_INSTALL=kernel
+KERNEL_IMAGE=Image
 
 # write over files in /boot
-swdesc_files --dest /boot "Image" "imx8mp-yakushima-eva.dtb"
+swdesc_files --dest /boot \
+	"$KERNEL_INSTALL"/"$KERNEL_IMAGE" \
+	"$KERNEL_INSTALL"/*.dtb \
+	"$KERNEL_INSTALL"/*.dtbo
 
-# if you have modules, also remove old ones and ship new ones
+# remove old modules and install new ones
 swdesc_command 'rm -rf /lib/modules'
-# (install with INSTALL_MOD_PATH=..../inst make modules_install)
-swdesc_files --dest /lib/modules "inst/lib/modules"
+swdesc_files --dest /lib/modules "$KERNEL_INSTALL"/lib/modules
 
 # add the kernel to files to be preserved on OS update
-swdesc_script update_preserve_files.sh -- \
+swdesc_script "$SCRIPT_DIR/examples/update_preserve_files.sh" -- \
 	"POST /boot" \
 	"POST /lib/modules"

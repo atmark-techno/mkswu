@@ -26,7 +26,8 @@ clean:
 	rm -rf tests/out
 	@# tests input
 	rm -f tests/zoo/* tests/mkswu-aes.conf tests/swupdate.aes-key
-	rm -f examples/Image examples/imx8mp-yakushima-eva.dtb examples/nginx_start.tar imx-boot_armadillo_x2 examples/linux-at-5.10.9-r3.apk
+	rm -f examples/nginx_start.tar imx-boot_armadillo_x2 examples/linux-at-5.10.9-r3.apk
+	rm -rf examples/kernel
 
 
 po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc

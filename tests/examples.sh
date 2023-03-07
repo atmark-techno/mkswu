@@ -24,17 +24,18 @@ build_check ../examples/pull_container_nginx.desc -- \
 	"version extra_os.pull_container_nginx '[^ ]+ higher'" \
 	"swdesc nginx_start.**tar.zst docker.io/nginx"
 
-# boot: prereq fullfilled by yakushima tar
+# boot: bundle boot image
 [ -e ../imx-boot_armadillo_x2 ] \
 	|| echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e' > ../imx-boot_armadillo_x2
 build_check ../examples/boot.desc -- "file imx-boot_armadillo_x2.*.zst" "version boot '202.* different'" "swdesc imx-boot_armadillo_x2"
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
-touch ../examples/Image ../examples/imx8mp-yakushima-eva.dtb
-mkdir -p ../examples/inst/lib/modules/5.10.82
+mkdir -p ../examples/kernel/lib/modules/5.10.82
+touch ../examples/kernel/Image ../examples/kernel/armadillo_iotg_g4.dtb
+touch ../examples/kernel/armadillo_iotg_g4-nousb.dtbo
 build_check ../examples/kernel_update_plain.desc -- \
-	"file-tar *boot_Image*dtb*.tar.zst Image imx8mp-yakushima-eva.dtb" \
-	"swdesc boot.*tar.zst"
+	"file-tar *boot_Image*dtb*.tar.zst Image armadillo_iotg_g4.dtb" \
+	"swdesc update_preserve_files"
 
 # kernel apk: likewise we don't actually test install here,
 touch ../examples/linux-at-5.10.9-r3.apk
