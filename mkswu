@@ -237,7 +237,7 @@ check_validity() {
 	# check validity with mtime/size for all source files
 	for file_src; do
 		stat="${stat:+$stat
-}$(stat -L -c %n-%Y-%s "$file_src")" \
+}$(stat -L -c %n-%.Y-%s "$file_src")" \
 			|| error "Source file %s for %s does not exist" "$file_src" "$file_out"
 	done
 
@@ -365,7 +365,7 @@ write_entry_stdout() {
 	if [ -e "$file_out.sha256sum" ]; then
 		sha256=$(cat "$file_out.sha256sum")
 		# check validity with mtime + size
-		[ "${sha256#* }" = "$(stat -L -c %Y-%s "$file_out")" ] \
+		[ "${sha256#* }" = "$(stat -L -c %.Y-%s "$file_out")" ] \
 			|| sha256=""
 		sha256="${sha256% *}"
 	fi
@@ -374,7 +374,7 @@ write_entry_stdout() {
 		sha256=$(sha256sum < "$file_out") \
 			|| error "Checksumming %s failed" "$file_out"
 		sha256=${sha256%% *}
-		printf "%s\n" "$sha256 $(stat -L -c %Y-%s "$file_out")" > "$file_out.sha256sum"
+		printf "%s\n" "$sha256 $(stat -L -c %.Y-%s "$file_out")" > "$file_out.sha256sum"
 	fi
 
 
@@ -832,7 +832,7 @@ create_archive() {
 		[ "${tarfile#../}" = "$tarfile" ] \
 			|| error "%s is not inside %s" "$tarfile_raw" "$basedir"
 
-		find "$tarfile_raw" -exec stat -c "%n-%Y-%s" {} + \
+		find "$tarfile_raw" -exec stat -c "%n-%.Y-%s" {} + \
 				| sort >> "$OUTDIR/tar.validity.tmp" \
 			|| error "Could not create tar for %s" "$tarfile_raw"
 		set -- "$@" "$tarfile"
