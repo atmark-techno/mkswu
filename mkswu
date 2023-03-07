@@ -518,6 +518,11 @@ parse_swdesc() {
 			SKIP=$((SKIP-1))
 			continue
 		fi
+		# split --switch=value
+		if [ "${ARG#--*=}" != "$ARG" ]; then
+			set -- "${ARG#--*=}" "$@"
+			ARG="${ARG%%=*}"
+		fi
 		case "$NOPARSE$ARG" in
 		"-b"|"--board")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
