@@ -1476,7 +1476,7 @@ mkswu_import() {
 	CONFIG_DIR="$(realpath "$(dirname "$CONFIG")")" \
 		|| error "Could not resolve %s directory name" "$CONFIG"
 
-	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
+	[ $# -gt 0 ] && error "--%s had extra arguments?" "$(mode_to_opt "$MODE")"
 	if [ -e "$NEW_CONFIG" ]; then
 		warning "Config %s already exists, skipping import" "$NEW_CONFIG"
 		return
@@ -1515,7 +1515,7 @@ absolutize_file_paths() {
 mkswu_genkey_aes() {
 	local oldumask
 
-	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
+	[ $# -gt 0 ] && error "--%s had extra arguments?" "$(mode_to_opt "$MODE")"
 	if [ -z "$ENCRYPT_KEYFILE" ]; then
 		info "Info: using default aes key path"
 		ENCRYPT_KEYFILE="$CONFIG_DIR/swupdate.aes-key"
@@ -1574,7 +1574,7 @@ mkswu_genkey_sign() {
 	local DAYS="${GENKEY_DAYS:-$((5*365))}"
 	local NEWCERT ORIGCERT="$PUBKEY"
 
-	[ $# -gt 0 ] && error "--%s had extra arguments?" "$MODE"
+	[ $# -gt 0 ] && error "--%s had extra arguments?" "$(mode_to_opt "$MODE")"
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
 	[ -n "$PUBKEY" ] || error "PUBKEY is not set in config file"
 	[ -z "$NOPROMPT" ] || [ -n "$GENKEY_CN" ] \
@@ -1986,6 +1986,13 @@ mkswu_show() {
 	done
 }
 
+mode_to_opt() {
+	case "$1" in
+	genkey*) echo "genkey";;
+	*) echo "$1";;
+	esac
+}
+
 mkimage() {
 	local SCRIPT_DIR
 	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
@@ -2117,11 +2124,11 @@ sw-description.sig"
 			exit 0
 			;;
 		"--init")
-			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=init
 			;;
 		"--import")
-			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=import
 			# for import mode, also use config in current directory if
 			# another one wasn't already found/set
@@ -2132,11 +2139,15 @@ sw-description.sig"
 			fi
 			;;
 		"--internal")
-			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=internal
 			;;
+		"--update-version")
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
+			MODE=update_version
+			;;
 		"--show")
-			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=show
 			;;
 		"--raw")
@@ -2144,7 +2155,7 @@ sw-description.sig"
 			SHOW_RAW=1
 			;;
 		"--genkey")
-			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$MODE"
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=genkey_sign
 			;;
 		"--aes")
@@ -2221,7 +2232,7 @@ sw-description.sig"
 	PUBKEY="${PUBKEY%%,*}"
 
 	if [ -n "$MODE" ]; then
-		[ -n "$OUT" ] && error "%s is incompatible with --%s" "out" "$MODE"
+		[ -n "$OUT" ] && error "%s is incompatible with --%s" "out" "$(mode_to_opt "$MODE")"
 		"mkswu_$MODE" "$@"
 		exit 0
 	fi
