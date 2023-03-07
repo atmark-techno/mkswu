@@ -58,6 +58,39 @@ test2" ] || error "var was not correct: $var"
 	[ "$var" = "" ] || error "var was not correct: $var"
 }
 
+test_version_compare() {
+	local base version
+
+	echo "version_compare: test version_higher helper"
+	# versions higher than base
+	base=1
+	for version in 2 1.1 1.0; do
+		version_higher "$base" "$version" \
+			|| error "$version was not higher than $base"
+	done
+	base=1.1.1-1.abc
+	for version in 1.1.1 1.1.2 1.2 2 1.1.1-2 1.1.1-1.abd 1.1.1-1.b; do
+		version_higher "$base" "$version" \
+			|| error "$version was not higher than $base"
+	done
+
+	# versions lower or equal to base
+	base=1
+	for version in 1 1-0 0; do
+		version_higher "$base" "$version" \
+			&& error "$version was higher than $base"
+	done
+	base=1.1.1-1.abc
+	for version in 1 1.1.0 1.1.1-0 1.1.1-1.a; do
+		version_higher "$base" "$version" \
+			&& error "$version was higher than $base"
+	done
+
+	# tests if different as well, for principle...
+	version_update different 1 2 || error "1 was not different from 2?!"
+	version_update different 1 1 && error "1 was not equal to 1?!"
+}
+
 test_version_update() {
 	SWDESC="$SCRIPTSDIR/swdesc"
 	system_versions="$SCRIPTSDIR/sw-versions"
@@ -588,6 +621,7 @@ test_update_overlays() {
 	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/versions.sh"
+	test_version_compare
 	test_version_update
 ) || error "versions test failed"
 

@@ -40,15 +40,16 @@ version_higher() {
 	newpredash=${newvers%%-*}
 	if [ "$oldpredash" = "$newpredash" ]; then
 		# swupdate compares version as semver which says x.y.z > x.y.z-t
-		# if only either of the two component have a dash *and*
+		# (which is not native sort -V order)
+		# If only either of the two component have a dash *and*
 		# the prefix part before the only dash is the same, override
 		# sort -V result here.
 		[ "$oldpredash" != "$oldvers" ] && oldhasdash="1"
 		[ "$newpredash" != "$newvers" ] && newhasdash="1"
 
 		case "$oldhasdash,$newhasdash" in
-		0,1) return 0;;
-		1,0) return 1;;
+		,1) return 1;;
+		1,) return 0;;
 		esac
 	fi
 
