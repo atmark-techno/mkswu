@@ -1,1 +1,0 @@
-swdesc_files --install-if different --version test 1.2.3.4-test version_non_alnum_fail.desc

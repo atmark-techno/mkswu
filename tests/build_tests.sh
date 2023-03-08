@@ -54,15 +54,20 @@ build_check update_certs_user.desc -- \
 build_fail ../examples/initial_setup.desc
 build_fail files_os_nonabs_fail.desc
 build_fail files_dotdot_fail.desc
-build_fail version_toobig_fail.desc
-build_fail version_toobig2_fail.desc
-build_fail version_alnum_fail.desc
-build_fail version_alnum2_fail.desc
-build_fail version_non_alnum_fail.desc
-build_fail version_component_space_fail.desc
-build_fail version_space_fail.desc
-build_fail version_different_plus_fail.desc
-build_fail version_different_long_fail.desc
+
+version_fail() {
+	printf "%s\n" "swdesc_command --version ${*@Q} 'echo ok'" \
+		| name=version build_fail -
+}
+version_fail test abc # base version must be num
+version_fail test 1.2-123abc # mixed alnum
+version_fail 'test space' 1 # space in component
+version_fail test '1 2' # space in version
+version_fail test 1.2.3.4-test --install-if different # only up to 3 digits with -
+version_fail test 1.2.3+test --install-if different # + ignored if no -
+version_fail test 1.2-@bc # non alnum
+version_fail test 1.2.3.12345678 # too big for 4 digits
+version_fail test 1234567890123 # too big
 
 rm -f zoo/hardlink zoo/hardlink2
 echo foo > zoo/hardlink
