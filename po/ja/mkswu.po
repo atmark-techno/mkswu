@@ -43,6 +43,22 @@ msgid "  --show [--raw] <in.swu> print details about input swu"
 msgstr ""
 
 #: mkswu
+msgid "  --update-version [--version-base <base>] <desc> [<desc>...]"
+msgstr ""
+
+#: mkswu
+msgid "                          update version in desc file"
+msgstr ""
+
+#: mkswu
+msgid "                          if base is given, restart from base or fail if that would"
+msgstr ""
+
+#: mkswu
+msgid "                          lower the version"
+msgstr ""
+
+#: mkswu
 msgid "  --version               print version and exit"
 msgstr ""
 
@@ -171,6 +187,30 @@ msgid "Source file %s for %s does not exist"
 msgstr "%s が存在しません、%s を作成できません。"
 
 #: mkswu
+msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
+msgstr "%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z は数字のみ）にしてください。"
+
+#: mkswu
+msgid "base_os version %s must be in x[.y[.z]]-t format"
+msgstr "base_os のバージョン %s の書式は x[.y[.z]]-t にしてください。"
+
+#: mkswu
+msgid "version check failed for %s: %s must be <= %s"
+msgstr "バージョン %s は使えません: %s を %s 以下にしてください。"
+
+#: mkswu
+msgid "version check failed for %s: %s must not mix alpha and digits, e.g.:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+msgstr "バージョン %s は使えません: %s に数字とアルファベットが混在しています。\\n例:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
+
+#: mkswu
+msgid "version %s has too many digit components, please use somthing else"
+msgstr " バージョン %s に数字の部分が多すぎてswupdateに無視されます。他を使ってください。"
+
+#: mkswu
+msgid "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else"
+msgstr " バージョン %s に含まれる+以降の部分はswupdateに無視されます。他を使ってください。"
+
+#: mkswu
 msgid "failed to compress %s"
 msgstr "%s を圧縮できませんでした。"
 
@@ -193,30 +233,6 @@ msgstr "%s のチェックサムの生成ができませんでした。"
 #: mkswu
 msgid "version %s was set without associated component"
 msgstr "バージョン %s に 関連するコンポーネントがありません！"
-
-#: mkswu
-msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
-msgstr "%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z は数字のみ）にしてください。"
-
-#: mkswu
-msgid "base_os version %s must be in x[.y[.z]]-t format"
-msgstr "base_os のバージョン %s の書式はx[.y[.z]]-tにしてください。"
-
-#: mkswu
-msgid "version check failed for %s: %s must be <= %s"
-msgstr "バージョン %s は使えません: %s を %s 以下にしてください。"
-
-#: mkswu
-msgid "version check failed for %s: %s must not mix alpha and digits, e.g.:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
-msgstr "バージョン %s は使えません: %s に数字とアルファベットが混在しています。\\n例:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
-
-#: mkswu
-msgid "version %s has too many digit components, please use somthing else"
-msgstr " バージョン %s に数字の部分が多すぎてswupdateに無視されます。他を使ってください。"
-
-#: mkswu
-msgid "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else"
-msgstr " バージョン %s に含まれる+以降の部分はswupdateに無視されます。他を使ってください。"
 
 #: mkswu
 msgid "install_if must be higher or different"
@@ -701,6 +717,26 @@ msgstr "鍵を失うと新たなアップデートはデバイスの /etc/swupda
 #: mkswu
 msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr "を修正しないとインストールできなくなります。"
+
+#: mkswu
+msgid "Could not find previous version in %s, not updating"
+msgstr "%s からバージョンを読み取りできませんでした。更新できません。"
+
+#: mkswu
+msgid "Desc %s previous version %s is higher than base %s-0, refusing to update"
+msgstr "%s にさ記載れているバージョン（%s）は指定されたベースのバージョン（%s-0)より上です。更新しません。"
+
+#: mkswu
+msgid "Updated %s version from %s to %s"
+msgstr "%s のバージョンを %s から %s に変更しました。"
+
+#: mkswu
+msgid "--version-base %s must not include a dash"
+msgstr "--version-base %s にハイフン(-)を入れないでください。"
+
+#: mkswu
+msgid "--version-base %s must have at most 3 components (x[.y[.z]])"
+msgstr "--version-base %s の書式を x[.y[.z]] にしてください。"
 
 #: mkswu
 msgid "File does not end in .swu: %s"

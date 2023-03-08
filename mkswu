@@ -107,6 +107,10 @@ usage() {
 	info "  --import                import current directory's config and keys into config dir"
 	info "  --genkey                toggle key generation mode (see below for suboptions)"
 	info "  --show [--raw] <in.swu> print details about input swu"
+	info "  --update-version [--version-base <base>] <desc> [<desc>...]"
+	info "                          update version in desc file"
+	info "                          if base is given, restart from base or fail if that would"
+	info "                          lower the version"
 	info "  --version               print version and exit"
 	info "  desc                    image description file(s), if multiple are given"
 	info "                          then the generated image will merge all the contents"
@@ -1930,6 +1934,93 @@ mkswu_init() {
 	mkinit_mkimageinitswu
 }
 
+update_one_version() {
+	local desc="$1"
+	local old_version version="$VERSION_BASE"
+
+	if ! [ -e "$desc" ]; then
+		warning "%s does not exist" "$desc"
+		return 1
+	fi
+
+	old_version=$(sed -ne 's/^swdesc_option.*version=\([^ ]*\).*/\1/p' "$desc")
+	if [ -z "$old_version" ]; then
+		warning "Could not find previous version in %s, not updating" "$desc"
+		return 1
+	fi
+	trace "Found old version %s" "$old_version"
+
+	case "$version,$old_version" in
+	"$version,$version"-*)
+		version="$version-$((${old_version##*-} + 1))"
+		;;
+	,*-*)
+		# no version base, just increment last digit
+		version="${old_version%-*}-$((${old_version##*-} + 1))"
+		;;
+	,*.*)
+		# same with dot separation...
+		version="${old_version%.*}.$((${old_version##*.} + 1))"
+		;;
+	,*)
+		# same with no separator
+		version="$((old_version + 1))"
+		;;
+	*)
+		# old version isn't new version, check we're higher
+		# and just use as is.
+		if command -v version_higher >/dev/null \
+		    && version_higher "$version-0" "$old_version"; then
+			warning "Desc %s previous version %s is higher than base %s-0, refusing to update" \
+				"$desc" "$old_version" "$version"
+			return 1
+		fi
+		version="$version-0"
+		;;
+	esac
+
+	mv "$desc" "$desc.old" \
+		|| error "Could not rename %s" "$desc"
+	if ! sed -e 's/\(swdesc_option.*version=\)\([^ ]*\)/\1'"$version"'/' \
+			"$desc.old" > "$desc"; then
+		mv "$desc.old" "$desc"
+		error "Could not update %s" "$desc"
+	fi
+
+	info "Updated %s version from %s to %s" "$desc" "$old_version" "$version"
+}
+
+mkswu_update_version() {
+	local desc
+	local status=0
+
+	# make sure version base is valid
+	case "$VERSION_BASE" in
+	*-*)
+		error "--version-base %s must not include a dash" "$VERSION_BASE"
+		;;
+	*.*.*.*)
+		error "--version-base %s must have at most 3 components (x[.y[.z]])" \
+			"$VERSION_BASE"
+		;;
+	"")	;;
+	*)
+		check_version_higher "$VERSION_BASE"
+		;;
+	esac
+
+	# optionally source versions.sh for version_higher.
+	# skipped if not found
+	if [ -e "$SCRIPT_DIR/scripts/versions.sh" ]; then
+		. "$SCRIPT_DIR/scripts/versions.sh"
+	fi
+
+	for desc; do
+		update_one_version "$desc" || status=$?
+	done
+	return "$status"
+}
+
 mkswu_show() {
 	local swu desc
 	for swu; do
@@ -2010,6 +2101,7 @@ mkswu_show() {
 mode_to_opt() {
 	case "$1" in
 	genkey*) echo "genkey";;
+	update_version) echo "update-version";;
 	*) echo "$1";;
 	esac
 }
@@ -2038,6 +2130,7 @@ sw-description.sig"
 
 	# mode options
 	local GENKEY_PLAIN="" GENKEY_CN=""
+	local VERSION_BASE=""
 	local SHOW_RAW=""
 	local NOPROMPT=""
 
@@ -2166,6 +2259,12 @@ sw-description.sig"
 		"--update-version")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=update_version
+			;;
+		"--version-base")
+			[ "$MODE" = "update_version" ] || error "%s must be passed after %s" "$ARG" "--update-version"
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			VERSION_BASE="$1"
+			SKIP=1
 			;;
 		"--show")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"

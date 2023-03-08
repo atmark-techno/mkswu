@@ -204,3 +204,25 @@ echo y | "$MKSWU" --config-dir "$TESTS_DIR/out/genkey" --genkey --cn test --plai
 	[ "$PUBKEY" = "$TESTS_DIR/out/genkey/swupdate.pem,$TESTS_DIR/out/genkey/swupdate-2.pem" ] || error "bad PUBKEY: $PUBKEY"
 	[ "$NEW_PRIVKEY" = "$TESTS_DIR/out/genkey/swupdate-2.key" ] || error "bad PRIVKEY: $PRIVKEY"
 ) || error "genkey test failed"
+
+# check version update
+DESC="$TESTS_DIR/out/version_update.desc"
+echo 'swdesc_option component=foo version=1' > "$DESC"
+"$MKSWU" --update-version "$DESC"
+grep -q version=2 "$DESC" || error "version was not updated to 2"
+grep -qx "swdesc_option component=foo version=2" "$DESC" \
+	|| error "non-version part was cobblered"
+"$MKSWU" --update-version "$DESC" --version-base=5.10
+grep -q version=5.10-0 "$DESC" || error "version was not updated to 5.10-0"
+"$MKSWU" --update-version "$DESC" --version-base=5.10
+grep -q version=5.10-1 "$DESC" || error "version was not updated to 5.10-1"
+echo 'swdesc_option version=5.10 component=foo' > "$DESC"
+"$MKSWU" --update-version "$DESC"
+grep -q version=5.11 "$DESC" || error "version was not updated to 5.11"
+grep -qx "swdesc_option version=5.11 component=foo" "$DESC" \
+	|| error "non-version part was cobblered"
+"$MKSWU" --update-version "$DESC" --version-base=5.10 \
+	&& error "should refuse to update 5.11 to 5.10-0"
+
+# test is ok even if last command failed...
+true
