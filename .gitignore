@@ -1,6 +1,6 @@
-/swupdate.key
-/swupdate.pem
-/swupdate.aes-key
+/swupdate*.key
+/swupdate*.pem
+/swupdate*.aes-key
 /mkswu.conf
 /mkswu.conf.autosave*
 /mkimage.conf
