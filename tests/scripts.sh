@@ -64,12 +64,12 @@ test_version_compare() {
 	echo "version_compare: test version_higher helper"
 	# versions higher than base
 	base=1
-	for version in 2 1.1 1.0; do
+	for version in 2 1.1; do
 		version_higher "$base" "$version" \
 			|| error "$version was not higher than $base"
 	done
 	base=1.1.1-1.abc
-	for version in 1.1.1 1.1.2 1.2 2 1.1.1-2 1.1.1-1.abd 1.1.1-1.b; do
+	for version in 1.1.1 1.1.2 1.2 2 1.1.1-2 1.1.1-1.abd 1.1.1-1.b 1.1.1-1.abc.0; do
 		version_higher "$base" "$version" \
 			|| error "$version was not higher than $base"
 	done
@@ -85,10 +85,49 @@ test_version_compare() {
 		version_higher "$base" "$version" \
 			&& error "$version was higher than $base"
 	done
+	base=1.1-1
+	for version in 1.1-1 1.1-0; do
+		version_higher "$base" "$version" \
+			&& error "$version was higher than $base"
+	done
 
 	# tests if different as well, for principle...
 	version_update different 1 2 || error "1 was not different from 2?!"
 	version_update different 1 1 && error "1 was not equal to 1?!"
+
+	# versions with extra .0 and leading zeroes are transformed and
+	# not handled directly in version_update/version_higher, make sure
+	# simplify works...
+	echo "Testing get_version simplifies version correctly..."
+	local versions="$SCRIPTSDIR/sw-versions.merged"
+	get_v() {
+		local vers="$1"
+		echo "comp $vers" > "$versions"
+		get_version comp
+	}
+	# These require gawk or busybox awk, mawk does not implement the
+	# necessary \< or \B. This is fine as this is meant to run on ABOS
+	if awk -W version | grep -q mawk; then
+		echo "Skipping most get_version check as awk is mawk"
+		[ "$(get_v 1.2)" = "1.2" ] \
+			|| error "1.2 was not preserved on mawk:  $(get_v 1.2)"
+		return
+	fi
+	for version in 1 \
+			1.0,1 \
+			1.0.0-1.0.ab,1-1.0.ab \
+			1.00.01-01.123,1.0.1-1.123 \
+			2020.04-at2,2020.4-at2 \
+			100,100 \
+			01.00000.0-1.0.0,1-1.0.0 \
+			0.0.0.0,0 \
+			0.1,0.1; do
+		simplified="${version#*,}"
+		version="${version%,*}"
+		[ -n "$simplified" ] || simplified="$version"
+		[ "$(get_v "$version")" = "$simplified" ] \
+			|| error "$version was not simplified to $simplified:  $(get_v "$version")"
+	done
 }
 
 test_version_update() {
@@ -121,33 +160,39 @@ test_version_update() {
 	version=$(get_version extra_os.kernel)
 	[ "$version" = "5.10.99-1" ] || error "Did not merge in new kernel version (higher)"
 
+	# like test_version_compare, this is half broken with mawk,
+	# but only impacts tests.
+	uboot_vbase="2020.4"
+	if awk -W version | grep -q mawk; then
+		uboot_vbase="2020.04"
+	fi
 	echo "  #VERSION boot 2020.04-at2 different *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.04-at2" ] || error "Did not merge new boot version"
+	[ "$version" = "$uboot_vbase-at2" ] || error "Did not merge new boot version"
 	version=$(get_version other_boot)
-	[ "$version" = "2020.04-at0" ] || error "other_boot should stay at old boot"
+	[ "$version" = "$uboot_vbase-at0" ] || error "other_boot should stay at old boot"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
+	[ "$version" = "$uboot_vbase-at2" ] || error "boot somehow changed?"
 	version=$(get_version other_boot)
-	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
+	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot did not tickle down"
 
 	sed -i -e '/boot/d' "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.04-at2" ] || error "boot was not added"
+	[ "$version" = "$uboot_vbase-at2" ] || error "boot was not added"
 	version=$(get_version other_boot)
 	[ "$version" = "" ] || error "other_boot somehow got made up?"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.04-at2" ] || error "boot somehow changed?"
+	[ "$version" = "$uboot_vbase-at2" ] || error "boot somehow changed?"
 	version=$(get_version other_boot)
-	[ "$version" = "2020.04-at2" ] || error "other_boot did not tickle down"
+	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot did not tickle down"
 
 	cp "$merged" "$system_versions"
 	echo "  #VERSION boot 2020.04-at3 different $board" > "$SWDESC"
@@ -155,15 +200,15 @@ test_version_update() {
 	gen_newversion
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
-	[ "$version" = "2020.04-at3" ] || error "Did not merge correct new boot version"
+	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
 	version=$(get_version other_boot)
-	[ "$version" = "2020.04-at2" ] || error "other_boot should not stay at previous boot value"
+	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot should not stay at previous boot value"
 
 	: > "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
-	[ "$version" = "2020.04-at3" ] || error "Did not merge correct new boot version"
+	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
 	version=$(get_version other_boot)
 	[ -z "$version" ] || error "other_boot should not be set"
 }

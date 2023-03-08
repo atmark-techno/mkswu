@@ -16,15 +16,26 @@ get_version() {
 	# remembering all versions for this component and printing the right one
 	# It is an error to request install-if on installed version files
 	# (but we don't enforce that check)
-	awk '$1 == "'"$component"'" {
-			if (NF == 2) { print $2; exit; }
+	# Lastly, swupdate ignores leading 0 and (trailing .0 in main version),
+	# so we need to filter that out too with simplify_version helper
+	awk 'function print_vers(vers) {
+			gsub(/\<0+\B/, "", vers);
+			if (vers ~ /-/) {
+				gsub(/(\.0)+-/, "-", vers);
+			} else {
+				gsub(/(\.0)+$/, "", vers);
+			}
+			print vers;
+		}
+		$1 == "'"$component"'" {
+			if (NF == 2) { print_vers($2); exit; }
 			board[$4]=$2'"${install_if:+ \" \"  \$3}"'
 		}
 		END {
 			if (board["'"$board"'"]) {
-				print board["'"$board"'"];
+				print_vers(board["'"$board"'"]);
 			} else if (board["*"]) {
-				print board["*"];
+				print_vers(board["*"]);
 			}
 		}' < "$source"
 }
