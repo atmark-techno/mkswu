@@ -101,6 +101,15 @@ EOF
 		fi
 		;;
 	esac
+
+	# correct URL in /etc/swupdate.watch
+	local target_for_x2="https://download.atmark-techno.com/armadillo-iot-g4/image/baseos-x2-latest.swu"
+	if [ "$(cat /etc/swupdate.watch)" = "$target_for_x2" ]; then
+		case "$(cat /etc/hwrevision)" in
+		iot-a6e*) sed -i -e 's/g4/a6e/; s/x2/6e/' /etc/swupdate.watch;;
+		AX2210*) sed -i -e 's/iot-g4/x2/' /etc/swupdate.watch;;
+		esac || error "Could not update swupdate.watch"
+	fi
 }
 
 baseos_upgrade_fixes
