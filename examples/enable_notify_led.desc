@@ -17,7 +17,7 @@ swdesc_option NOTIFY_FAIL_CMD="$fail_cmd"
 # the delete option removes previous settings if any, then
 # defines commands that will be respected for any update which does not
 # explicitly set these settings
-swdesc_script --extra-os update_preserve_files.sh -- \
+swdesc_script --extra-os "$SCRIPT_DIR/examples/update_preserve_files.sh" -- \
 	--file /etc/atmark/baseos.conf \
 	--del-regex "MKSWU_NOTIFY_.*|# Make leds blinking.*" \
 	--add --comment "Make leds blinking on swu install" \

@@ -19,6 +19,6 @@ swdesc_exec "linux-at-5.10.9-r3.apk" 'apk add $1'
 
 
 # add the kernel to files to be preserved on OS update
-swdesc_script update_preserve_files.sh -- \
+swdesc_script "$SCRIPT_DIR/examples/update_preserve_files.sh" -- \
 	"POST /boot" \
 	"POST /lib/modules"

@@ -6,9 +6,9 @@ version=1
 swdesc_files --dest /boot "armadillo_iotg_g4-customize.dtbo"
 
 # update /boot/overlays.txt to load it
-swdesc_script update_overlays.sh -- \
+swdesc_script "$SCRIPT_DIR/examples/update_overlays.sh" -- \
 	"armadillo_iotg_g4-customize.dtbo"
 
 # and update /etc/swupdate_preserve_files to survive updates
-swdesc_script update_preserve_files.sh -- \
+swdesc_script "$SCRIPT_DIR/examples/update_preserve_files.sh" -- \
 	"/boot/armadillo_iotg_g4-customize.dtbo"
