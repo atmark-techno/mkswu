@@ -249,6 +249,81 @@ check_validity() {
 	return 1
 }
 
+check_version_higher() {
+	local version="$1"
+	local max err
+
+	# handle only x.y.z.t or x.y.z-t
+	printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
+		|| error "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)" "$version"
+	# ... and check for max values
+	if [ "${version%-*}" = "${version}" ]; then
+		# only dots, "old style version" valid for 16 bits, but now overflow
+		# falls back to semver which is signed int but only for 3 elements
+		if printf %s "${version}" | grep -qE '\..*\..*\.'; then
+			max=65535
+		else
+			max=2147483647
+		fi
+		# base_os must be x.y.z-t format to avoid surprises
+		# with semver prerelease field filtering
+		[ "$component" = "base_os" ] \
+			&& error "base_os version %s must be in x[.y[.z]]-t format" "$version"
+	else
+		# semver, signed int
+		max=2147483647
+	fi
+	err=$(printf %s "$version" | tr '.-' '\n' | awk '
+		/^[0-9]+$/ && $1 > '$max' {
+			print "1 " $1;
+			exit
+		}
+		/[0-9][a-zA-Z]|[a-zA-Z][0-9]/ {
+			print "2 " $1;
+			exit
+		}')
+	case "$err" in
+	1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
+	2\ *) error "version check failed for %s: %s must not mix alpha and digits, e.g.:\n\t1.2.3-rc.4\n\t1.2.3.4\n\t1.2.3-4" \
+		"$version" "${err#* }";;
+	esac
+}
+
+check_version_different() {
+	local version="$1"
+	local max err
+
+	# different still goes through integer parsing, but is more relaxed
+	# as different ordering does not matter, and pure lexicographical
+	# is also allowed... Who said painful ?...
+	if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.-]+)?$'; then
+		# same max check as above without mixed alnum check
+		local max=2147483647
+		[ "${version%-*}" = "${version}" ] \
+			&& printf %s "${version}" | grep -qE '\..*\..*\.' \
+			&& max=65535
+		err=$(printf %s "$version" | tr '.-' '\n' | awk '
+			/^[0-9]+$/ && $1 > '$max' {
+				print "1 " $1;
+				exit
+			}')
+		case "$err" in
+		1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
+		esac
+	else
+		# versions with 5+ components, semvers with 4+ leading digits,
+		# and the '+' part of semvers are completly ignored and will be
+		# considered identical so should be refused.
+		# Anything else should be string-compared and is ok.
+		printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$' \
+			&& error "version %s has too many digit components, please use somthing else" \
+				"$version"
+		printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$' \
+			&& error "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else" \
+				"$version"
+	fi
+}
+
 compress() {
 	local file_src="$1"
 	local file_out="$2"
@@ -288,7 +363,7 @@ write_entry_stdout() {
 	local compress="$compress"
 	local install_if="$install_if"
 	shift
-	local sha256="" iv="" err
+	local sha256="" iv=""
 
 	trace "Processing $file"
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
@@ -392,73 +467,11 @@ write_entry_stdout() {
 		fi
 		case "$install_if" in
 		higher)
-			local max
-			# handle only x.y.z.t or x.y.z-t
-			printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
-				|| error "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)" "$version"
-			# ... and check for max values
-			if [ "${version%-*}" = "${version}" ]; then
-				# only dots, "old style version" valid for 16 bits, but now overflow
-				# falls back to semver which is signed int but only for 3 elements
-				if printf %s "${version}" | grep -qE '\..*\..*\.'; then
-					max=65535
-				else
-					max=2147483647
-				fi
-				# base_os must be x.y.z-t format to avoid surprises
-				# with semver prerelease field filtering
-				[ "$component" = "base_os" ] \
-					&& error "base_os version %s must be in x[.y[.z]]-t format" "$version"
-			else
-				# semver, signed int
-				max=2147483647
-			fi
-			err=$(printf %s "$version" | tr '.-' '\n' | awk '
-				/^[0-9]+$/ && $1 > '$max' {
-					print "1 " $1;
-					exit
-				}
-				/[0-9][a-zA-Z]|[a-zA-Z][0-9]/ {
-					print "2 " $1;
-					exit
-				}')
-			case "$err" in
-			1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
-			2\ *) error "version check failed for %s: %s must not mix alpha and digits, e.g.:\n\t1.2.3-rc.4\n\t1.2.3.4\n\t1.2.3-4" \
-				"$version" "${err#* }";;
-			esac
+			check_version_higher "$version"
 			;;
 		different)
-			# different still goes through integer parsing, but is more relaxed
-			# as different ordering does not matter, and pure lexicographical
-			# is also allowed... Who said painful ?...
-			if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.-]+)?$'; then
-				# same max check as above without mixed alnum check
-				local max=2147483647
-				[ "${version%-*}" = "${version}" ] \
-					&& printf %s "${version}" | grep -qE '\..*\..*\.' \
-					&& max=65535
-				err=$(printf %s "$version" | tr '.-' '\n' | awk '
-					/^[0-9]+$/ && $1 > '$max' {
-						print "1 " $1;
-						exit
-					}')
-				case "$err" in
-				1\ *) error "version check failed for %s: %s must be <= %s" "$version" "${err#* }" "$max";;
-				esac
-			else
-				# versions with 5+ components, semvers with 4+ leading digits,
-				# and the '+' part of semvers are completly ignored and will be
-				# considered identical so should be refused.
-				# Anything else should be string-compared and is ok.
-				printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$' \
-					&& error "version %s has too many digit components, please use somthing else" \
-						"$version"
-				printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$' \
-					&& error "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else" \
-						"$version"
-			fi
-	 ;;
+			check_version_different "$version"
+			;;
 		*) error "install_if must be higher or different";;
 		esac
 		[ "${component#* }" = "$component" ] || error "component must not contain spaces (%s)" "$component"
