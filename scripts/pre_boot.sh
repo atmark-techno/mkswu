@@ -23,16 +23,27 @@ copy_boot() {
 }
 
 copy_boot_imxboot() {
-	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count=4 \
+	local sz offset=0x3fa000 count=4
+
+	# <4MB partition need special handling
+	sz=$(blockdev --getsize64 "/dev/$flash_dev") \
+		|| error "Could not get $flash_dev size"
+	if [ "$sz" -lt 4194304 ]; then
+		offset=0x1fa000
+		count=2
+	fi
+
+	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count="$count" \
 			conv=fdatasync status=none \
 		|| return
 
 	# ... and make sure we reset env
 	dd if=/dev/zero of="/dev/$flash_dev" bs=8k count=3 \
-			seek=$((0x3fa000)) oflag=seek_bytes \
+			seek=$((offset)) oflag=seek_bytes \
 			conv=fdatasync status=none \
 		|| return
 }
+
 copy_boot_linux() {
 	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M skip=5 seek=5 \
 			conv=fdatasync status=none
