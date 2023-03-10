@@ -37,6 +37,33 @@ cleanup_boot() {
 		return
 	fi
 
+	if fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
+		encrypted_boot=1
+	fi
+
+	# if uboot was installed, try to safeguard against u-boot
+	# installed on incompatible arch.
+	# This is not strictly enough but should prevent most complete
+	# bricks from installing an incompatible SWU...
+	if [ -e /dev/swupdate_bootdev ] \
+	    && [ -z "$encrypted_boot" ] \
+	    && [ -z "$(mkswu_var NO_ARCH_CHECK)" ]; then
+		case "$(uname -m)" in
+		aarch64)
+			dd if=/dev/swupdate_bootdev  bs=1M count=4 \
+					| grep -m 1 -q aarch64 \
+				|| error "Installed u-boot does not appear to be for aarch64, aborting!" \
+					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
+			;;
+		armv7*)
+			dd if=/dev/swupdate_bootdev  bs=1M count=4 \
+					| grep -m 1 -q armv7 \
+				|| error "Installed u-boot does not appear to be for armv7, aborting!" \
+					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
+			;;
+		esac
+	fi
+
 	# reset uboot env from config
 	if stat /target/boot/uboot_env.d/* > /dev/null 2>&1; then
 		# We need to reset env everytime to avoid leaving new variables unset
@@ -58,12 +85,11 @@ cleanup_boot() {
 
 	if [ -e "${rootdev}boot0" ]; then
 		cleanup_target
-		if fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
+		if [ -n "$encrypted_boot" ]; then
 			echo "writing encrypted uboot update, rollback will be done by current uboot on reboot"
 			# make sure we're still set to boot on current uboot
 			mmc bootpart enable "$((!ab+1))" 0 "$rootdev"
 			fw_setenv_nowarn encrypted_update_available 1
-			encrypted_boot=1
 		else
 			echo "setting mmc bootpart enable $((ab+1))"
 			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
