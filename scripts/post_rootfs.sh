@@ -80,13 +80,22 @@ check_update_log_encryption() {
 
 post_rootfs() {
 	# support older version of overlayfs
-	local fsroot=/live/rootfs/
+	local fsroot=/live/rootfs/ libc_arch=""
 	[ -e "$fsroot" ] || fsroot=/
 
 	# Sanity check: refuse to continue if someone tries to write a
 	# rootfs that was corrupted or "too wrong": check for /bin/sh
 	if ! [ -e /target/bin/sh ]; then
 		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
+	fi
+	case "$(uname -m)" in
+	aarch64) libc_arch=aarch64;;
+	armv7*) libc_arch=armv7;;
+	esac
+	if [ -z "$(mkswu_var NO_ARCH_CHECK)" ] && [ -n "$libc_arch" ] \
+	    && ! ldd /target/bin/sh | grep -q "$libc_arch"; then
+		error "/bin/sh was not dynamically linked or linked for a different arch than expected, refusing to continue." \
+			"In case of false positive set MKSWU_NO_ARCH_CHECK=1"
 	fi
 
 	# if other fs was recreated: fix partition-specific things
