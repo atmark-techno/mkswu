@@ -90,7 +90,7 @@ fail_redundant_update() {
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
 		    && [ -n "$upgrade_available" ] \
 		    && luks_unlock "rootfs_$ab" \
-		    && mount -t ext4,btrfs "$dev" /target 2>/dev/null; then
+		    && mount -t btrfs,ext4 "$dev" /target 2>/dev/null; then
 			if cmp -s /target/etc/sw-versions \
 					"$SCRIPTSDIR/sw-versions.merged"; then
 				rm -rf "$SCRIPTSDIR"
