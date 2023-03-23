@@ -23,23 +23,30 @@ copy_boot() {
 }
 
 copy_boot_imxboot() {
-	local sz offset=0x3fa000 count=4
+	local env_offset env_sz
 
-	# <4MB partition need special handling
-	sz=$(blockdev --getsize64 "/dev/$flash_dev") \
-		|| error "Could not get $flash_dev size"
-	if [ "$sz" -lt 4194304 ]; then
-		offset=0x1fa000
-		count=2
-	fi
+	# We copy until env and clear env.
+	# This assumes nothing is present between redundant envs
+	env_offset=$(awk '/^[^#]/ && $2 > 0 {
+			if (!start || $2 < start)
+				start = $2;
+			if (!end || $2 + $3 > end)
+				end = $2 + $3;
+		}
+		END {
+			if (!start) exit(1);
+			printf("%d,%d\n", start, end-start);
+		}
+		' < /etc/fw_env.config) \
+		|| error "Could not get boot env location"
+	env_sz="${env_offset##*,}"
+	env_offset="${env_offset%,*}"
 
-	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M count="$count" \
+	dd if="$cur_dev" of="/dev/$flash_dev" bs="$env_offset" count=1 \
 			conv=fdatasync status=none \
 		|| return
-
-	# ... and make sure we reset env
-	dd if=/dev/zero of="/dev/$flash_dev" bs=8k count=3 \
-			seek=$((offset)) oflag=seek_bytes \
+	dd if=/dev/zero of="/dev/$flash_dev" bs="$env_sz" count=1 \
+			seek="$env_offset" oflag=seek_bytes \
 			conv=fdatasync status=none \
 		|| return
 }
