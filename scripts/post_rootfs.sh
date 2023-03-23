@@ -80,7 +80,7 @@ check_update_log_encryption() {
 
 post_rootfs() {
 	# support older version of overlayfs
-	local fsroot=/live/rootfs/ libc_arch=""
+	local fsroot=/live/rootfs/
 	[ -e "$fsroot" ] || fsroot=/
 
 	# Sanity check: refuse to continue if someone tries to write a
@@ -88,6 +88,7 @@ post_rootfs() {
 	if ! [ -e /target/bin/sh ]; then
 		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
 	fi
+	local libc_arch
 	case "$(uname -m)" in
 	aarch64) libc_arch=aarch64;;
 	armv7*) libc_arch=armv7;;
@@ -112,9 +113,22 @@ EOF
 				|| error "Could not copy fw_env.config"
 		fi
 
-		# adjust ab_boot
+		# adjust fstab/partitions
 		sed -i -e "s/boot_[01]/boot_${ab}/" /target/etc/fstab \
 			|| error "Could not update fstab"
+		local fstype mntopts="ro,noatime"
+		fstype="$(findmnt -nr -o FSTYPE /target)" \
+			|| error "Could not query rootfs' fstype"
+		case "$fstype" in
+		btrfs) mntopts="$mntopts,compress-force=zstd,discard=async";;
+		ext4) ;;
+		*) error "Unexpected fstype for rootfs $fstype";;
+		esac
+		if ! grep -qE "/dev/root\s+/\s+$fstype\s+$mntopts\s" /target/etc/fstab; then
+			sed -i -e "s@^/dev/root.*@/dev/root\t/\t\t\t\t$fstype\t$mntopts\t0 0@" \
+					/target/etc/fstab \
+				|| error "Could not update fstab"
+		fi
 		check_update_log_encryption
 
 		# use appfs storage for podman if used previously
