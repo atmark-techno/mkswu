@@ -49,7 +49,7 @@ check_update_log_encryption() {
 	# note we do not "decrypt" a fs if the var is not set
 	[ -z "$(mkswu_var ENCRYPT_USERFS)" ] && return
 
-	local dev="$(findmnt -n -o SOURCE /var/log)"
+	local dev="$(findmnt -nr -o SOURCE /var/log)"
 	[ -z "$dev" ] && return
 
 	# already encrypted ?
