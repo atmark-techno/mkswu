@@ -312,7 +312,7 @@ mount_target_rootfs() {
 
 	fstype=$(mkswu_var ROOTFS_FSTYPE)
 	[ -n "$fstype" ] || fstype=$(findmnt -nr -o FSTYPE /live/rootfs 2>/dev/null)
-	[ -n "$fstype" ] || fstype=ext4
+	[ -n "$fstype" ] || fstype=btrfs
 	# extlinux requires... ext filesystem, override any setting.
 	[ -e "/boot/extlinux.conf" ] && extlinux=1 && fstype=ext4
 	case "$fstype" in
