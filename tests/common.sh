@@ -73,7 +73,11 @@ build_check() {
 	local check
 
 	while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do
-		mkswu_arg+=( "$1" )
+		if [ "$1" = "---" ]; then
+			mkswu_arg+=( -- )
+		else
+			mkswu_arg+=( "$1" )
+		fi
 		shift
 	done
 	[ "$1" = "--" ] && shift

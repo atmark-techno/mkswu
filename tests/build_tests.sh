@@ -8,6 +8,10 @@ cd "$(dirname "$0")"
 
 build_check spaces.desc -- "file test\ space.tar.zst" \
 	"file .*test_space_tar.*podman.*\.zst"
+name="--odd desc" build_check --- --odd\ desc.desc
+# --- is made into -- for mkswu
+[ "$(grep -c 'filename = "zoo' "out/.--odd desc/sw-description")" = 1 ] \
+	|| error "zoo archive was not included exactly once"
 build_check install_files.desc -- \
 	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"

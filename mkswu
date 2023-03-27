@@ -2180,6 +2180,7 @@ sw-description.sig"
 			continue
 		fi
 		if [ "$SKIP" -lt 0 ]; then
+			shift
 			set -- "$@" "$ARG"
 			continue
 		fi
