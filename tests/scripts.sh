@@ -107,7 +107,7 @@ test_version_compare() {
 	}
 	# These require gawk or busybox awk, mawk does not implement the
 	# necessary \< or \B. This is fine as this is meant to run on ABOS
-	if awk -W version | grep -q mawk; then
+	if awk -W version 2>/dev/null | grep -q mawk; then
 		echo "Skipping most get_version check as awk is mawk"
 		[ "$(get_v 1.2)" = "1.2" ] \
 			|| error "1.2 was not preserved on mawk:  $(get_v 1.2)"
@@ -163,7 +163,7 @@ test_version_update() {
 	# like test_version_compare, this is half broken with mawk,
 	# but only impacts tests.
 	uboot_vbase="2020.4"
-	if awk -W version | grep -q mawk; then
+	if awk -W version 2>/dev/null | grep -q mawk; then
 		uboot_vbase="2020.04"
 	fi
 	echo "  #VERSION boot 2020.04-at2 different *" > "$SWDESC"
