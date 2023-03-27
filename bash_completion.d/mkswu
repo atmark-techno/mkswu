@@ -8,6 +8,9 @@ _mkswu()
 		_filedir
 		return
 		;;
+	--version-base)
+		return
+		;;
 	-c|--config)
 		_filedir 'conf'
 		return
@@ -20,6 +23,7 @@ _mkswu()
 		--init) mode=init;;
 		--import) mode=import;;
 		--show) mode=show;;
+		--update-version) mode=update_version;;
 		esac
 	done
 
@@ -28,11 +32,12 @@ _mkswu()
 	genkey) options+=" --aes --cn --plain";;
 	genkey_aes|init|import) :;;
 	show) options+=" --raw";;
-	"") options+=" -o --out --init --import --genkey --show";;
+	update_version) options+=" --version-base";;
+	"") options+=" -o --out --init --import --genkey --show --update-version";;
 	esac
 	COMPREPLY=($(compgen -W "$options" -- "$cur"))
 	case "$mode" in
 	show) _filedir 'swu';;
-	"") _filedir 'desc';;
+	""|update_version) _filedir 'desc';;
 	esac
 } && complete -F _mkswu mkswu
