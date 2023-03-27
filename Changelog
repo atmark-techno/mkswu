@@ -1,3 +1,27 @@
+4.10
+====
+fixes:
+ - only copy files present in swupdate_preserve_files from rootfs, not from
+overlayfs. This prevents accidental copies of files that weren't persited when
+an update is installed.
+ - fix URL used for a6e when auto-update is enabled. The url now comes from
+the rootfs and is left untouched. (the release build will fix previously
+incorrectly filled URLs by checking the current hwrevision)
+ - fix various versions handling, in particular comparison was not properly
+done in some corner cases (semvers with or without a dash component, version
+with leading zeroes being incorrectly considered different...)
+ - use sub-second precision for cached files validity, this helps when
+ running mkswu in a tight loop for e.g. tests when the generated file also
+ could not be differentiated by size.
+
+features:
+ - add mkswu --update-version to update .desc files version fields
+ - add examples/kernel_update_plain.install.sh helper script for kernel
+updates
+ - handle --opt=value in swdesc_* commands (e.g. swdesc_files --dest=/dir)
+
+ -- 2023-03-27
+
 4.9
 ===
 fixes:
