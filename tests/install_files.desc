@@ -5,3 +5,5 @@ swdesc_files --basedir . --dest /tmp/swupdate-test \
 
 swdesc_files --dest /tmp/swupdate-test/autobase zoo/test\ space
 swdesc_files --dest /tmp/swupdate-test/subdir zoo
+swdesc_files --dest=/tmp/swupdate-test/"subdir space" \
+	"zoo/test space"

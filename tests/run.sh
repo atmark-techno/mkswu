@@ -52,8 +52,10 @@ if command -v "$SWUPDATE" > /dev/null; then
 		|| error "test space.tar content does not match"
 	[ -e "/tmp/swupdate-test/autobase/test space" ] \
 		|| error "auto basedir extraction failed"
-	[ -e "/tmp/swupdate-test/subdir/test space" ] \
+	[ "$(cat "/tmp/swupdate-test/subdir/test space")" = "test content" ] \
 		|| error "subdir extraction failed"
+	[ "$(cat "/tmp/swupdate-test/subdir space/test space")" = "test content" ] \
+		|| error "subdir extraction with space failed"
 	rm -rf /tmp/swupdate-test
 
 	# tests/aes
