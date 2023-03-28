@@ -28,13 +28,19 @@ echo "iot-g4-es1 at1" > "$HWREV"
 test_version_install() {
 	local oldvers="$1" newvers="$2"
 	local canary=/tmp/swupdate-installed rc
+	local normalized_newvers
+	# shellcheck disable=SC2016 ## single quote on purpose...
+	normalized_newvers=$(version="$newvers" "$MKSWU" --internal \
+			eval 'normalize_version; echo $version') \
+		&& [ -n "$normalized_newvers" ] \
+		|| error "Could not normalize version"
 	shift 2 # extra args extra swdesc arguments
 	printf "%s\n" \
 			'DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"' \
 			"$@" \
 			"swdesc_command_nochroot --version testcomp '$newvers' \\" \
 			"	'touch \"$canary\"'" \
-		| name=version_install build_check - -- "swdesc 'VERSION testcomp $newvers'" \
+		| name=version_install build_check - -- "swdesc 'VERSION testcomp $normalized_newvers'" \
 		|| error "mkswu build failed"
 
 	echo "testcomp $oldvers" > "$SW_VERSIONS"
@@ -93,6 +99,13 @@ for version in 1.1.1.1 1.1.2 1.1.1-0; do
 done
 base=1.1-0
 for version in 1.1-0.0 1.1-1; do
+	test_version_install "$base" "$version" \
+			'swdesc_option install_if=different' \
+		|| error "$base was same as $version..."
+done
+# not allowed for higher, but uboot's different can have multiple dashes
+base=1.1-01-01
+for version in 1.1-01-1 1.1-1-01; do
 	test_version_install "$base" "$version" \
 			'swdesc_option install_if=different' \
 		|| error "$base was same as $version..."

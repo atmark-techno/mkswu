@@ -25,6 +25,34 @@ mkdir -p "$SCRIPTSDIR"
 touch "$TMPDIR/sw-description"
 
 
+test_version_normalize() {
+	# versions with extra .0 and leading zeroes are transformed and
+	# not handled directly in version_update/version_higher, make sure
+	# normalization works...
+	echo "Testing mkswu simplifies version correctly..."
+	get_v() {
+		local version="$1"
+		normalize_version
+		echo "$version"
+	}
+	for version in 1 \
+			1.0,1 \
+			1.0.0-1.0.ab,1-1.0.ab \
+			1.00.01-01.123,1.0.1-1.123 \
+			2020.04-at2,2020.4-at2 \
+			100,100 \
+			01.00000.0-1.0.0,1-1.0.0 \
+			01.01-01-01.01.01.01-01.01,1.1-01-01.1.1.01-01.1 \
+			1.0.0123-0000.0.0,1.0.123-0.0.0 \
+			0.0.0.0,0 \
+			0.1,0.1; do
+		simplified="${version#*,}"
+		version="${version%,*}"
+		[ "$(get_v "$version")" = "$simplified" ] \
+			|| error "$version was not simplified to $simplified:  $(get_v "$version")"
+	done
+}
+
 test_common() {
 	SWDESC="$SCRIPTSDIR/swdesc"
 	BASEOS_CONF="$SCRIPTSDIR/baseos.conf"
@@ -94,40 +122,6 @@ test_version_compare() {
 	# tests if different as well, for principle...
 	version_update different 1 2 || error "1 was not different from 2?!"
 	version_update different 1 1 && error "1 was not equal to 1?!"
-
-	# versions with extra .0 and leading zeroes are transformed and
-	# not handled directly in version_update/version_higher, make sure
-	# simplify works...
-	echo "Testing get_version simplifies version correctly..."
-	local versions="$SCRIPTSDIR/sw-versions.merged"
-	get_v() {
-		local vers="$1"
-		echo "comp $vers" > "$versions"
-		get_version comp
-	}
-	# These require gawk or busybox awk, mawk does not implement the
-	# necessary \< or \B. This is fine as this is meant to run on ABOS
-	if awk -W version 2>/dev/null | grep -q mawk; then
-		echo "Skipping most get_version check as awk is mawk"
-		[ "$(get_v 1.2)" = "1.2" ] \
-			|| error "1.2 was not preserved on mawk:  $(get_v 1.2)"
-		return
-	fi
-	for version in 1 \
-			1.0,1 \
-			1.0.0-1.0.ab,1-1.0.ab \
-			1.00.01-01.123,1.0.1-1.123 \
-			2020.04-at2,2020.4-at2 \
-			100,100 \
-			01.00000.0-1.0.0,1-1.0.0 \
-			0.0.0.0,0 \
-			0.1,0.1; do
-		simplified="${version#*,}"
-		version="${version%,*}"
-		[ -n "$simplified" ] || simplified="$version"
-		[ "$(get_v "$version")" = "$simplified" ] \
-			|| error "$version was not simplified to $simplified:  $(get_v "$version")"
-	done
 }
 
 test_version_update() {
@@ -163,10 +157,7 @@ test_version_update() {
 	# like test_version_compare, this is half broken with mawk,
 	# but only impacts tests.
 	uboot_vbase="2020.4"
-	if awk -W version 2>/dev/null | grep -q mawk; then
-		uboot_vbase="2020.04"
-	fi
-	echo "  #VERSION boot 2020.04-at2 different *" > "$SWDESC"
+	echo "  #VERSION boot 2020.4-at2 different *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$version" = "$uboot_vbase-at2" ] || error "Did not merge new boot version"
@@ -195,8 +186,8 @@ test_version_update() {
 	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot did not tickle down"
 
 	cp "$merged" "$system_versions"
-	echo "  #VERSION boot 2020.04-at3 different $board" > "$SWDESC"
-	echo "  #VERSION boot 2020.04-at4 different not-$board" >> "$SWDESC"
+	echo "  #VERSION boot 2020.4-at3 different $board" > "$SWDESC"
+	echo "  #VERSION boot 2020.4-at4 different not-$board" >> "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
@@ -654,6 +645,13 @@ test_update_overlays() {
 }
 
 # run in subshell as we cannot source all at once
+(
+	set -e
+	. "$SCRIPTS_SRC_DIR/../mkswu"
+
+	test_version_normalize
+) || error "mkswu subfunctions failed"
+
 (
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"

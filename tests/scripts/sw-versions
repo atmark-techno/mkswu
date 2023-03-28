@@ -1,5 +1,5 @@
 base_os 3.15.0-at.1
 extra_os.initial_setup 1
 extra_os.kernel 5.10.90-1
-other_boot 2020.04-at0
-boot 2020.04-at0
+other_boot 2020.4-at0
+boot 2020.4-at0

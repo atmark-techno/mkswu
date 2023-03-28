@@ -319,13 +319,65 @@ check_version_different() {
 		# and the '+' part of semvers are completly ignored and will be
 		# considered identical so should be refused.
 		# Anything else should be string-compared and is ok.
-		printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$' \
-			&& error "version %s has too many digit components, please use somthing else" \
+		if printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$'; then
+			error "version %s has too many digit components, please use somthing else" \
 				"$version"
-		printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$' \
-			&& error "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else" \
+		fi
+		if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$'; then
+			error "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else" \
 				"$version"
+		fi
 	fi
+}
+
+normalize_version() {
+	# modifies $version in place
+	local semver_prerelease="${version#*-}"
+	if [ "$semver_prerelease" = "$version" ]; then
+		semver_prerelease=""
+	else
+		version="${version%%-*}"
+	fi
+
+	# the version part is only allowed dots, and we can just
+	# strip any leading 0 and trailing .0s
+	version="$(echo "$version" \
+			| sed -e 's/\<0\+\([0-9]\)/\1/g' -e 's/\(\.0\)\+$//')"
+	if [ -n "$semver_prerelease" ]; then
+		# semver should simplify leading zero if and only if it's a pure
+		# number enclosed in dots; e.g. 01.01 -> 1.1 but 01-01 -> 01-01
+		# as it is considered as a string...
+		# This needs looping on a label because we eat the next dot and
+		# sed does not have lookahead
+		semver_prerelease="$(echo "$semver_prerelease" \
+			| sed -e ':repeat;
+				s/\(^\|\.\)0\+\([0-9]\+\(\.\|$\)\)/\1\2/g;
+				t repeat' )"
+		version="$version-$semver_prerelease"
+	fi
+}
+
+check_version_valid() {
+	case "$install_if" in
+	higher)
+		check_version_higher "$version"
+		;;
+	different)
+		check_version_different "$version"
+		;;
+	*) error "install_if must be higher or different";;
+	esac
+
+	# check version is normalized
+	local orig_version="$version"
+	normalize_version
+	if [ "$version" != "$orig_version" ]; then
+		warning "Warning: %s version %s has been simplified to %s" \
+			"$component" "$orig_version" "$version"
+	fi
+
+	[ "${component#* }" = "$component" ] || error "component must not contain spaces (%s)" "$component"
+	[ "${version#* }" = "$version" ] || error "version must not contain spaces (%s = %s)" "$component" "$version"
 }
 
 compress() {
@@ -469,17 +521,7 @@ write_entry_stdout() {
 			*) install_if="higher";;
 			esac
 		fi
-		case "$install_if" in
-		higher)
-			check_version_higher "$version"
-			;;
-		different)
-			check_version_different "$version"
-			;;
-		*) error "install_if must be higher or different";;
-		esac
-		[ "${component#* }" = "$component" ] || error "component must not contain spaces (%s)" "$component"
-		[ "${version#* }" = "$version" ] || error "version must not contain spaces (%s = %s)" "$component" "$version"
+		check_version_valid
 		write_line "name = \"$component\";" \
 			   "version = \"$version\";" \
 			   "install-if-${install_if} = true;"
@@ -717,6 +759,7 @@ swdesc_boot() {
 	if [ -z "$version" ]; then
 		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$BOOT") \
 			|| error "Could not guess boot version in %s" "$BOOT"
+		normalize_version
 	fi
 
 	write_entry images "$BOOT" "type = \"raw\";" \
@@ -1732,7 +1775,7 @@ mkswu_internal() {
 		info "Successfully generated %s" "$OUT"
 		;;
 	eval)
-		"$@"
+		eval "$*"
 		;;
 	*)
 		error "Unrecognized internal command %s" "$command"
