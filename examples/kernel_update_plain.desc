@@ -1,10 +1,10 @@
 # Automatically get version from ./$KERNEL_INSTALL/lib/modules/<version>
 # kernel directory can be installed with examples/kernel_update_plain.install.sh,
-# or manually from:
+# or manually from (aarch64 kernels):
 # arch/arm64/boot/Image
 # arch/arm64/boot/dts/freescale/armadillo_*dtb{,o}
 # make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH=$HOME/mkswu/kernel modules_install
-# or
+# or (armv7 kernels):
 # arch/arm/boot/uImage
 # arch/arm/boot/dts/armadillo-*dtb{,o}
 # make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$HOME/mkswu/kernel modules_install

@@ -15,39 +15,7 @@ usage() {
 	exit
 }
 
-update_desc() {
-	local version
-	version="${kver%%-*}"
-
-	if ! [ -e "$desc" ]; then
-		[ -e "$desc_template" ] \
-			|| error "Template desc file for kernel does not exist: $desc_template"
-		cp "$desc_template" "$desc" \
-			|| error "Could not copy $desc_template to $desc"
-	fi
-
-	# update version (this also creates .old backup)
-	"$mkswu" --update-version --version-base "$version" "$desc" \
-		|| error "Could not update kernel version in $desc"
-
-	# update KERNEL_INSTALL/IMAGE if required
-	if ! grep -qFx "KERNEL_INSTALL=${dest##*/}" "$desc"; then
-		sed -i -e 's/^KERNEL_INSTALL=.*/KERNEL_INSTALL='"${dest##*/}"'/' "$desc" \
-			|| error "Could not update KERNEL_INSTALL in $desc"
-	fi
-	if ! grep -qFx "KERNEL_IMAGE=${image##*/}" "$desc"; then
-		sed -i -e 's/^KERNEL_IMAGE=.*/KERNEL_IMAGE='"${image##*/}"'/' "$desc" \
-			|| error "Could not update KERNEL_IMAGE in $desc"
-	fi
-}
-
-install() {
-	local desc="$1" arch cross
-	local dest image dtb_prefix modalias kver
-	local examples_dir mkswu
-	examples_dir="$(dirname "$(realpath "$0")")"
-	local desc_template="$examples_dir/kernel_update_plain.desc"
-
+preinstall_checks() {
 	[ -n "$desc" ] && [ "${desc%.desc}" = "$desc" ] \
 		&& error "Destination $desc should end in .desc"
 	[ -e Kbuild ] || error "Please run from linux build directory"
@@ -59,7 +27,6 @@ install() {
 	else
 		error "mkswu not found (required for version update)"
 	fi
-	[ "$#" -le 1 ] || error "Extra argument: $2"
 
 	# guess target based on config arch
 	arch=$(grep -oE 'Linux/[a-z0-9]*' -m 1 .config) \
@@ -95,7 +62,9 @@ install() {
 	esac
 	dest="${desc%.desc}"
 	[ -d "${desc%/*}" ] || error "Please create destination directory ${desc%/*}"
+}
 
+install_files() {
 	if [ -e "$dest" ]; then
 		echo "Purging $dest ..."
 		rm -rf "$dest"
@@ -112,7 +81,9 @@ install() {
 	make ARCH="$arch" CROSS_COMPILE="$cross" \
 			INSTALL_MOD_PATH="$dest" modules_install \
 		|| error "Could not install modules"
+}
 
+postinstall_checks() {
 	# get version and sanity checks
 	kver=""
 	for modalias in "$dest"/lib/modules/*/modules.alias.bin; do
@@ -128,6 +99,46 @@ install() {
 	strings "$image" | grep -qxF "$kver" \
 		|| error "Could not find exact version $kver in $image, is build up to date?"
 
+}
+
+update_desc() {
+	local version
+	version="${kver%%-*}"
+
+	if ! [ -e "$desc" ]; then
+		[ -e "$desc_template" ] \
+			|| error "Template desc file for kernel does not exist: $desc_template"
+		cp "$desc_template" "$desc" \
+			|| error "Could not copy $desc_template to $desc"
+	fi
+
+	# update version (this also creates .old backup)
+	"$mkswu" --update-version --version-base "$version" "$desc" \
+		|| error "Could not update kernel version in $desc"
+
+	# update KERNEL_INSTALL/IMAGE if required
+	if ! grep -qFx "KERNEL_INSTALL=${dest##*/}" "$desc"; then
+		sed -i -e 's/^KERNEL_INSTALL=.*/KERNEL_INSTALL='"${dest##*/}"'/' "$desc" \
+			|| error "Could not update KERNEL_INSTALL in $desc"
+	fi
+	if ! grep -qFx "KERNEL_IMAGE=${image##*/}" "$desc"; then
+		sed -i -e 's/^KERNEL_IMAGE=.*/KERNEL_IMAGE='"${image##*/}"'/' "$desc" \
+			|| error "Could not update KERNEL_IMAGE in $desc"
+	fi
+}
+
+install() {
+	local desc="$1" arch cross
+	local dest image dtb_prefix modalias kver
+	local examples_dir mkswu
+	examples_dir="$(dirname "$(realpath "$0")")"
+	local desc_template="$examples_dir/kernel_update_plain.desc"
+
+	[ "$#" -le 1 ] || error "Extra argument: $2"
+
+	preinstall_checks
+	install_files
+	postinstall_checks
 	update_desc
 
 	echo "Done installing kernel, run \`mkswu \"$desc\"\` next."
