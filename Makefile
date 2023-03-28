@@ -39,6 +39,9 @@ po/mkimage.pot: mkimage.sh
 po/hawkbit_setup_container.pot: hawkbit-compose/setup_container.sh
 	./po/update.sh $@ $^
 
+po/mkswu_kernel_update_plain.pot: examples/kernel_update_plain.install.sh
+	./po/update.sh $@ $^
+
 po/$(l)/%.po: po/%.pot
 	msgmerge --no-wrap -o $@ $@ $<
 

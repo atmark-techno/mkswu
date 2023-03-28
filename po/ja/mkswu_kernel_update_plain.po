@@ -1,0 +1,135 @@
+# header
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not get script dir"
+msgstr ""
+
+#: examples/kernel_update_plain.install.sh
+msgid "Usage: $0 [DEST]"
+msgstr "使用法: $0 [DEST]"
+
+#: examples/kernel_update_plain.install.sh
+msgid "DEST defaults to ~/mkswu/kernel-[arch].desc"
+msgstr "DEST のデフォルトは ~/mkswu/kernel-[arch].desc"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Must run from linux build directory"
+msgstr "Linux カーネルのビルドディレクトリから実行してください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Destination $desc should end in .desc"
+msgstr "出力ファイル $desc は「.desc」で終わらせてください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Please run from linux build directory"
+msgstr "Linux カーネルのビルドディレクトリから実行してください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Please build kernel first"
+msgstr "Linux カーネルを先にビルドしてください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "mkswu not found (required for version update)"
+msgstr "mkswu コマンドが見つかりません。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not read arch from .config"
+msgstr ".config ファイルからアーキテクチャを取得できませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Unhandled arch $arch"
+msgstr "$arch というアーキテクチャに対応していません。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Build incomplete: missing $image"
+msgstr "$image ファイルにアクセスできません：ビルドされていますか？"
+
+#: examples/kernel_update_plain.install.sh
+msgid "vmlinux should not be newer than $image, did you rebuild everything ?"
+msgstr "vmlinux が $image より古いです。リビルドは完了していますか？"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Please create destination directory ${desc%/*}"
+msgstr "出力ディレクトリ ${desc%/*} を作ってください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Existing .desc file $desc is too old, please remove it and"
+msgstr "出力ファイル $desc は編集できません。あらかじめ削除しておいてください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "adjust version after installing if required"
+msgstr "必要な場合に作成後のバージョンも修正してください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Purging $dest ..."
+msgstr "$dest を削除します。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Installing kernel in $dest ..."
+msgstr "$dest にカーネルをインストールします。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not create destination $dest"
+msgstr "$desc を作成できませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not copy linux image $image"
+msgstr "Linux カーネルイメージ $image をコピーできませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not copy dtb files $dtb_prefix*.{dtb,dtbo}"
+msgstr "DTB ファイル $dtb_prefix*.{dtb,dtbo} をコピーできませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not install modules"
+msgstr "カーネルモジュールをインストールできませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "depmod did not run on module install"
+msgstr "depmod は実行されませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Multiple kernel versions in $dest/lib/modules, modules_install did not work as expected?"
+msgstr "$desc/lib/modules に複数のバージョンがインストールされたようです。modules_install の問題だと思われます。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "module alias $modalias is suspiciously small, assuming depmod failed to parse modules"
+msgstr "$modalias のモジュール alias ファイルは小さすぎます。depmodがモジュールの解析に失敗した可能性があります。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Please check CONFIG_MODULE_COMPRESS is unset"
+msgstr "CONFIG_MODULE_COMPRESS が無効化されているか確認してください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not find exact version $kver in $image, is build up to date?"
+msgstr "$image ファイルに $kver を見つかりませんでした。ビルドは更新されましたか？"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Template desc file for kernel does not exist: $desc_template"
+msgstr ".desc ファイルのテンプレートは存在しません： $desc_template"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not copy $desc_template to $desc"
+msgstr "$desc_template を $desc にコピーできませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not update kernel version in $desc"
+msgstr "$desc ファイルにカーネルのバージョンを更新できませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not update KERNEL_INSTALL in $desc"
+msgstr "$desc ファイルに KERNEL_INSTALL 変数を更新できませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Could not update KERNEL_IMAGE in $desc"
+msgstr "$desc ファイルに KERNEL_IMAGE 変数を更新できませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Extra argument: $2"
+msgstr "不要な引数： $2"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Done installing kernel, run \\`mkswu \\\"$desc\\\"\\` next."
+msgstr "カーネルのインストールが完了しました。 \\`mkswu \\\"$desc\\\"\\` を実行してください。"

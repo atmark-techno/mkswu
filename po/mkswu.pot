@@ -159,6 +159,18 @@ msgstr ""
 msgid "metadata (+ part) in %s while valid semver are ignored by swupdate, please use something else"
 msgstr ""
 #: mkswu
+msgid "install_if must be higher or different"
+msgstr ""
+#: mkswu
+msgid "Warning: %s version %s has been simplified to %s"
+msgstr ""
+#: mkswu
+msgid "component must not contain spaces (%s)"
+msgstr ""
+#: mkswu
+msgid "version must not contain spaces (%s = %s)"
+msgstr ""
+#: mkswu
 msgid "failed to compress %s"
 msgstr ""
 #: mkswu
@@ -175,15 +187,6 @@ msgid "Checksumming %s failed"
 msgstr ""
 #: mkswu
 msgid "version %s was set without associated component"
-msgstr ""
-#: mkswu
-msgid "install_if must be higher or different"
-msgstr ""
-#: mkswu
-msgid "component must not contain spaces (%s)"
-msgstr ""
-#: mkswu
-msgid "version must not contain spaces (%s = %s)"
 msgstr ""
 #: mkswu
 msgid "%s requires --version to be set"

@@ -211,6 +211,22 @@ msgid "metadata (+ part) in %s while valid semver are ignored by swupdate, pleas
 msgstr " バージョン %s に含まれる+以降の部分はswupdateに無視されます。他を使ってください。"
 
 #: mkswu
+msgid "install_if must be higher or different"
+msgstr "install_if には「higher」か「different」を指定してください。"
+
+#: mkswu
+msgid "Warning: %s version %s has been simplified to %s"
+msgstr ""
+
+#: mkswu
+msgid "component must not contain spaces (%s)"
+msgstr "コンポーネント %s にスペースを含めることはできません。"
+
+#: mkswu
+msgid "version must not contain spaces (%s = %s)"
+msgstr "バージョン %s = %s にスペースを含めることはできません。"
+
+#: mkswu
 msgid "failed to compress %s"
 msgstr "%s を圧縮できませんでした。"
 
@@ -233,18 +249,6 @@ msgstr "%s のチェックサムの生成ができませんでした。"
 #: mkswu
 msgid "version %s was set without associated component"
 msgstr "バージョン %s に 関連するコンポーネントがありません！"
-
-#: mkswu
-msgid "install_if must be higher or different"
-msgstr "install_if には「higher」か「different」を指定してください。"
-
-#: mkswu
-msgid "component must not contain spaces (%s)"
-msgstr "コンポーネント %s にスペースを含めることはできません。"
-
-#: mkswu
-msgid "version must not contain spaces (%s = %s)"
-msgstr "バージョン %s = %s にスペースを含めることはできません。"
 
 #: mkswu
 msgid "%s requires --version to be set"
