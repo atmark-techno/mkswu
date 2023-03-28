@@ -62,6 +62,12 @@ preinstall_checks() {
 	esac
 	dest="${desc%.desc}"
 	[ -d "${desc%/*}" ] || error "Please create destination directory ${desc%/*}"
+
+	if [ -e "$desc" ] \
+	    && ! grep -q "version is automatically updated from kernel_update_plain.install.sh" "$desc"; then
+		error "Existing .desc file $desc is too old, please remove it and" \
+			"adjust version after installing if required"
+	fi
 }
 
 install_files() {
