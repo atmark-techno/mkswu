@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 . ./common.sh
 
 build_check spaces.desc -- "file test\ space.tar.zst" \
-	"file .*test_space_tar.*podman.*\.zst" \
+	"file .*test_space_tar.*target_load.*\.zst" \
 	"swdesc 'path = \"/tmp/test space\"'"
 name="--odd desc" build_check --- --odd\ desc.desc
 # --- is made into -- for mkswu

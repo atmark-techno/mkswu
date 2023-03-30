@@ -1,7 +1,6 @@
 #!/bin/sh
 
 PODMAN_ROOT=
-PODMAN_LOAD=
 PUB_KEY=
 if [ -z "$SWUPDATE_USB_SWU" ]; then
 	ARCHIVE_DIR=/mnt
@@ -75,8 +74,10 @@ info_if_not_empty() {
 	return "$ret"
 }
 
-podman_info() {
-	info_if_not_empty command podman "$@"
+podman_in_root() {
+	info_if_not_empty command podman --root "$PODMAN_ROOT" \
+		--storage-opt additionalimagestore="" \
+		"$@"
 }
 
 usage() {
@@ -95,11 +96,9 @@ usage() {
 
 podman_pull() {
 	local uri="$1"
-	local old_image new_image
 
-	podman_info pull --root "$PODMAN_ROOT" \
-			--storage-opt additionalimagestore="" -q "$uri" \
-		|| error "Could not pull $image"
+	podman_in_root pull -q "$uri" \
+		|| error "Could not pull $uri"
 }
 
 check_sig() {
@@ -116,8 +115,8 @@ podman_load() {
 	local archive
 
 	if [ $# -eq 0 ]; then
-		podman_info load --root "$PODMAN_ROOT" \
-			--storage-opt additionalimagestore=""
+		podman_in_root load \
+			|| error "Could not load archive"
 	else for archive; do
 		case "$archive" in
 		/*) ;;
@@ -126,10 +125,9 @@ podman_load() {
 		if [ -n "$PUB_KEY" ]; then
 			check_sig "$archive"
 		fi
-		podman_info load --root "$PODMAN_ROOT" \
-			--storage-opt additionalimagestore="" \
-			-i "$archive"
-	done fi
+		podman_in_root load -i "$archive" \
+			|| error "Could not load $archive"
+	done; fi
 }
 
 update_containers() {
@@ -156,13 +154,21 @@ update_containers() {
 		|| error "podman state not clean"
 	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
 
-	if [ -n "$PODMAN_LOAD" ]; then
+	local CMD="$1"
+	shift
+	case "$CMD" in
+	load)
 		podman_load "$@"
-	else
+		;;
+	pull)
 		for uri do
 			podman_pull "$uri"
 		done
-	fi
+		;;
+	*)
+		error "Unhandled command $CMD"
+		;;
+	esac
 
 	# cleanup again afterwards for whoever comes next
 	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
@@ -172,10 +178,6 @@ update_containers() {
 
 while [ $# -ge 1 ]; do
 	case "$1" in
-	"-l")
-		PODMAN_LOAD=yes
-		shift
-		;;
 	"--pubkey")
 		[ $# -ge 2 ] || error "$1 needs an argument"
 		PUB_KEY="$2"

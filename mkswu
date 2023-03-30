@@ -1081,7 +1081,7 @@ swdesc_embed_container() {
 
 	parse_swdesc embed_container "$@"
 
-	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_update -l $1'
+	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_target load $1'
 }
 
 swdesc_pull_container() {
@@ -1092,7 +1092,7 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
-	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update "'"$image"'"'
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target pull "'"$image"'"'
 }
 
 swdesc_usb_container() {
@@ -1113,7 +1113,7 @@ swdesc_usb_container() {
 	COPY_USB="${COPY_USB:+$COPY_USB }$(shell_quote "$(realpath "$image")")"
 	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
-	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_update --pubkey /etc/swupdate.pem -l '"$image_usb"
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target --pubkey /etc/swupdate.pem load '"$image_usb"
 }
 
 append_certificates() {
