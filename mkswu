@@ -421,7 +421,7 @@ write_entry_stdout() {
 	local compress="$compress"
 	local install_if="$install_if"
 	shift
-	local sha256="" iv=""
+	local sha256="" iv="" indent=0
 
 	trace "Processing $file"
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
@@ -1103,7 +1103,7 @@ swdesc_embed_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	local install_if="$install_if" show_cmd=""
 
 	parse_swdesc embed_container "$@"
 
@@ -1114,7 +1114,7 @@ swdesc_pull_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	local install_if="$install_if" show_cmd=""
 
 	parse_swdesc pull_container "$@"
 
@@ -1125,7 +1125,7 @@ swdesc_usb_container() {
 	local image="$image"
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	local install_if="$install_if" show_cmd=""
 
 	parse_swdesc usb_container "$@"
 
@@ -1511,6 +1511,8 @@ verify() {
 }
 
 mkcpio() {
+	local CPIO_FILES
+
 	FILES="${FILES_FIRST}${FILES}"
 
 	check_common_mistakes sw-description
@@ -1583,6 +1585,7 @@ update_mkswu_conf() {
 		sha=$(sha256sum "$SCRIPT_DIR/mkswu.conf.defaults")
 		sha=${sha%% *}
 		if [ -e "$CONFIG" ]; then
+			local DEFAULTS_MKSWU_CONF_SHA256
 			DEFAULTS_MKSWU_CONF_SHA256=$(sed -ne 's/DEFAULTS_\(MKIMAGE\|MKSWU\)_CONF_SHA256="\(.*\)"/\2/p' "$CONFIG")
 			# config exist + no sha: don't update
 			[ -z "$DEFAULTS_MKSWU_CONF_SHA256" ] && exit
@@ -2283,9 +2286,10 @@ sw-description.sig"
 	local MKSWU_VERSION=""
 
 	# config file variables
-	local PRIVKEY PUBKEY PRIVKEY_PASS
+	local PRIVKEY="" PUBKEY="" PRIVKEY_PASS=""
 	local USER_PUBKEYS="" ATMARK_CERTS="" UPDATE_CERTS=""
-	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
+	local ENCRYPT_KEYFILE="" ENCRYPT_KEY=""
+	local HW_COMPAT="" DESCRIPTION=""
 
 	# swdesc_option variables
 	local MKSWU_SWDESC_OPTS=""
@@ -2303,7 +2307,7 @@ sw-description.sig"
 	local BOOT_SIZE="4M"
 	local compress=1
 	local main_cwd desc desc_file
-	local component version board="" dest=""
+	local component version board="" dest="" install_if=""
 	local install_first="" main_version="" show_cmd=""
 
 	set -e
