@@ -165,6 +165,10 @@ update_containers() {
 			podman_pull "$uri"
 		done
 		;;
+	run)
+		podman_in_root "$CMD" "$@" \
+			|| error "podman $CMD $* failed"
+		;;
 	*)
 		error "Unhandled command $CMD"
 		;;

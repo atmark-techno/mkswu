@@ -634,6 +634,15 @@ parse_swdesc() {
 			basedir="$1"
 			SKIP=1
 			;;
+		"--container")
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			case "$CMD" in
+			exec|command|script) ;;
+			*) error "%s only allowed for swdesc_exec/swdesc_command/swdesc_script" "$ARG";;
+			esac
+			container="$1"
+			SKIP=1
+			;;
 		--)
 			# stop parsing
 			SKIP=-1
@@ -701,7 +710,7 @@ parse_swdesc() {
 		;;
 	exec*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
-		[ $# -ge 2 ] || error "swdesc_exec requires at least two arguments\nUsage: swdesc_exec [options] file command"
+		[ $# -ge 2 ] || error "swdesc_%s requires at least two arguments\nUsage: swdesc_%s [options] file command" "$CMD" "$CMD"
 		file="$1"
 		shift
 		cmd=""
@@ -984,27 +993,40 @@ swdesc_exec() {
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
 	local install_if="$install_if" show_cmd="$show_cmd"
+	local container="$container"
 
 	parse_swdesc exec "$@"
 
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
 
-	case "$component" in
-	base_os|extra_os*)
-		chroot_cmd="podman run --net=host --rm"
-		chroot_cmd="$chroot_cmd -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
-		chroot_cmd="$chroot_cmd --rootfs /target sh -c $(shell_quote "$cmd") --"
+	chroot_cmd="run --net=host --rm -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
+	case "$container,$component" in
+	,base_os|,extra_os*)
+		chroot_cmd="podman $chroot_cmd --rootfs /target"
 		;;
-	*)
+	*,base_os|*,extra_os*)
+		# use podman_target to use newly installed images
+		chroot_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target '"$chroot_cmd"
+		chroot_cmd="$chroot_cmd --root /target/var/lib/containers"
+		chroot_cmd="$chroot_cmd -v /target:/target $container"
+		;;
+	,*)
 		# If target is read-only we need special handling to run (silly podman tries
 		# to write to / otherwise) but keep volumes writable
-		chroot_cmd="podman run --net=host --rm --read-only -v /target/var/app/volumes:/var/app/volumes"
+		chroot_cmd="podman $chroot_cmd --read-only -v /target/var/app/volumes:/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/var/app/rollback/volumes"
-		chroot_cmd="$chroot_cmd -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
-		chroot_cmd="$chroot_cmd --rootfs /target sh -c $(shell_quote "$cmd") -- "
+		chroot_cmd="$chroot_cmd --rootfs /target"
+		;;
+	*)
+		# likewise, keep only /target read-only
+		chroot_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target '"$chroot_cmd"
+		chroot_cmd="$chroot_cmd -v /target/var/app/volumes:/target/var/app/volumes"
+		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/target/var/app/rollback/volumes"
+		chroot_cmd="$chroot_cmd -v /target:/target:ro $container"
 		;;
 	esac
+	chroot_cmd="$chroot_cmd sh -c $(shell_quote "$cmd") -- "
 
 	# allow multiple execs with same file if command changes
 	# don't rename if no arguments for easier debugging
@@ -1025,6 +1047,7 @@ swdesc_command() {
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
 	local install_if="$install_if" show_cmd="$show_cmd"
+	local container="$container"
 
 	parse_swdesc command "$@"
 
@@ -1055,6 +1078,7 @@ swdesc_script() {
 	local component="$component" version="$version"
 	local board="$board" main_version="$main_version"
 	local install_if="$install_if" show_cmd="$show_cmd"
+	local container="$container"
 	local cmd="$cmd"
 
 	parse_swdesc script "$@"
