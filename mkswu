@@ -1246,12 +1246,12 @@ swdesc_option() {
 	local opt
 	for opt; do
 		case "$opt" in
-		FORCE_VERSION) FORCE_VERSION=1;;
-		POST_ACTION=*) POST_ACTION=${opt#POST_ACTION=};;
-		NOTIFY_STARTING_CMD=*) NOTIFY_STARTING_CMD="${opt#NOTIFY_STARTING_CMD=}";;
-		NOTIFY_FAIL_CMD=*) NOTIFY_FAIL_CMD="${opt#NOTIFY_FAIL_CMD=}";;
-		NOTIFY_SUCCESS_CMD=*) NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
-		ROOTFS_FSTYPE=*) ROOTFS_FSTYPE="${opt#ROOTFS_FSTYPE=}";;
+		FORCE_VERSION) MKSWU_FORCE_VERSION=1;;
+		POST_ACTION=*) MKSWU_POST_ACTION=${opt#POST_ACTION=};;
+		NOTIFY_STARTING_CMD=*) MKSWU_NOTIFY_STARTING_CMD="${opt#NOTIFY_STARTING_CMD=}";;
+		NOTIFY_FAIL_CMD=*) MKSWU_NOTIFY_FAIL_CMD="${opt#NOTIFY_FAIL_CMD=}";;
+		NOTIFY_SUCCESS_CMD=*) MKSWU_NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
+		ROOTFS_FSTYPE=*) MKSWU_ROOTFS_FSTYPE="${opt#ROOTFS_FSTYPE=}";;
 		BOOT_SIZE=*) BOOT_SIZE="${opt#BOOT_SIZE=}";;
 		ENCRYPT_KEYFILE=*) ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}";;
 		PUBKEY=*) PUBKEY="${opt#PUBKEY=}";;
@@ -1265,11 +1265,72 @@ swdesc_option() {
 		CONTAINER_CLEAR|NO_PRESERVE_FILES|\
 		ENCRYPT_ROOTFS|ENCRYPT_USERFS|\
 		SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
-			SWDESC_OPTS="$SWDESC_OPTS
+			MKSWU_SWDESC_OPTS="$MKSWU_SWDESC_OPTS
 $opt";;
 		*) error "Unknown option for swdesc_option: %s" "$opt";;
 		esac
 	done
+}
+
+fix_swdesc_option_vars() {
+	if [ -n "$FORCE_VERSION" ] && [ -z "$MKSWU_FORCE_VERSION" ]; then
+		warning "%s was set directly, please use swdesc_option %s instead." \
+			"FORCE_VERSION" "FORCE_VERSION"
+		warning "This will stop working in %s update" "2024/04"
+		swdesc_option FORCE_VERSION
+	fi
+	if [ -n "$POST_ACTION" ] && [ -z "$MKSWU_POST_ACTION" ]; then
+		warning "%s was set directly, please use swdesc_option %s instead." \
+			"POST_ACTION" "POST_ACTION=$POST_ACTION"
+		warning "This will stop working in %s update" "2024/04"
+		swdesc_option "POST_ACTION=$POST_ACTION"
+	fi
+	if [ -n "$NOTIFY_STARTING_CMD" ] && [ -z "$MKSWU_NOTIFY_STARTING_CMD" ]; then
+		warning "%s was set directly, please use swdesc_option %s instead." \
+			"NOTIFY_STARTING_CMD" "NOTIFY_STARTING_CMD=..."
+		warning "This will stop working in %s update" "2024/04"
+		swdesc_option "NOTIFY_STARTING_CMD=$NOTIFY_STARTING_CMD"
+	fi
+	if [ -n "$NOTIFY_FAIL_CMD" ] && [ -z "$MKSWU_NOTIFY_FAIL_CMD" ]; then
+		warning "%s was set directly, please use swdesc_option %s instead." \
+			"NOTIFY_FAIL_CMD" "NOTIFY_FAIL_CMD=..."
+		warning "This will stop working in %s update" "2024/04"
+		swdesc_option "NOTIFY_FAIL_CMD=$NOTIFY_FAIL_CMD"
+	fi
+	if [ -n "$NOTIFY_SUCCESS_CMD" ] && [ -z "$MKSWU_NOTIFY_SUCCESS_CMD" ]; then
+		warning "%s was set directly, please use swdesc_option %s instead." \
+			"NOTIFY_SUCCESS_CMD" "NOTIFY_SUCCESS_CMD=..."
+		warning "This will stop working in %s update" "2024/04"
+		swdesc_option "NOTIFY_SUCCESS_CMD=$NOTIFY_SUCCESS_CMD"
+	fi
+	if [ -n "$ROOTFS_FSTYPE" ] && [ -z "$MKSWU_ROOTFS_FSTYPE" ]; then
+		warning "%s was set directly, please use swdesc_option %s instead." \
+			"ROOTFS_FSTYPE" "ROOTFS_FSTYPE=$ROOTFS_FSTYPE"
+		warning "This will stop working in %s update" "2024/04"
+		swdesc_option "ROOTFS_FSTYPE=$ROOTFS_FSTYPE"
+	fi
+	if [ -n "$CONTAINER_CLEAR" ]; then
+		case "$MKSWU_SWDESC_OPTS" in
+		*CONTAINER_CLEAR*) ;;
+		*)
+			warning "%s was set directly, please use swdesc_option %s instead." \
+				"CONTAINER_CLEAR" "CONTAINER_CLEAR"
+			warning "This will stop working in %s update" "2024/04"
+			swdesc_option CONTAINER_CLEAR
+			;;
+		esac
+	fi
+	if [ -n "$NO_PRESERVE_FILE" ]; then
+		case "$MKSWU_SWDESC_OPTS" in
+		*NO_PRESERVE_FILE*) ;;
+		*)
+			warning "%s was set directly, please use swdesc_option %s instead." \
+				"NO_PRESERVE_FILE" "NO_PRESERVE_FILE"
+			warning "This will stop working in %s update" "2024/04"
+			swdesc_option NO_PRESERVE_FILE
+			;;
+		esac
+	fi
 }
 
 write_sw_desc() {
@@ -1353,32 +1414,35 @@ EOF
 			|| error "above component used multiple times with different versions or install-if mode"
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
-	elif [ -z "$FORCE_VERSION" ]; then
+	elif [ -z "$MKSWU_FORCE_VERSION" ]; then
 		error "No versions found: empty image or version not set?"
 	fi
-	SWDESC_OPTS="$SWDESC_OPTS
-${FORCE_VERSION:+FORCE_VERSION}
-${CONTAINER_CLEAR:+CONTAINER_CLEAR}
-${NO_PRESERVE_FILES:+NO_PRESERVE_FILES}"
+	MKSWU_SWDESC_OPTS="${MKSWU_SWDESC_OPTS:+$MKSWU_SWDESC_OPTS
+}${MKSWU_FORCE_VERSION:+FORCE_VERSION}"
 	local option
-	for option in $SWDESC_OPTS; do
+	for option in $MKSWU_SWDESC_OPTS; do
 		echo "  # MKSWU_$option 1"
 	done
-	[ -n "${NOTIFY_STARTING_CMD+1}" ] \
-		&& echo "$NOTIFY_STARTING_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_STARTING_CMD /'
-	[ -n "${NOTIFY_FAIL_CMD+1}" ] \
-		&& echo "$NOTIFY_FAIL_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_FAIL_CMD /'
-	[ -n "${NOTIFY_SUCCESS_CMD+1}" ] \
-		&& echo "$NOTIFY_SUCCESS_CMD" | sed -e 's/^/  # MKSWU_NOTIFY_SUCCESS_CMD /'
-	case "$ROOTFS_FSTYPE" in
-	ext4|btrfs) echo "# MKSWU_ROOTFS_FSTYPE $ROOTFS_FSTYPE";;
+	[ -n "${MKSWU_NOTIFY_STARTING_CMD+1}" ] \
+		&& echo "$MKSWU_NOTIFY_STARTING_CMD" \
+			| sed -e 's/^/  # MKSWU_NOTIFY_STARTING_CMD /'
+	[ -n "${MKSWU_NOTIFY_FAIL_CMD+1}" ] \
+		&& echo "$MKSWU_NOTIFY_FAIL_CMD" \
+			| sed -e 's/^/  # MKSWU_NOTIFY_FAIL_CMD /'
+	[ -n "${MKSWU_NOTIFY_SUCCESS_CMD+1}" ] \
+		&& echo "$NOTIFY_SUCCESS_CMD" \
+			| sed -e 's/^/  # MKSWU_NOTIFY_SUCCESS_CMD /'
+	case "$MKSWU_ROOTFS_FSTYPE" in
+	ext4|btrfs) echo "# MKSWU_ROOTFS_FSTYPE $MKSWU_ROOTFS_FSTYPE";;
 	"") ;;
-	*) error "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs" "$ROOTFS_FSTYPE";;
+	*) error "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs" \
+		"$MKSWU_ROOTFS_FSTYPE";;
 	esac
-	case "$POST_ACTION" in
-	poweroff|wait|container) echo " # MKSWU_POST_ACTION $POST_ACTION";;
+	case "$MKSWU_POST_ACTION" in
+	poweroff|wait|container) echo " # MKSWU_POST_ACTION $MKSWU_POST_ACTION";;
 	""|reboot) ;;
-	*) error "invalid POST_ACTION \"%s\", must be empty, poweroff or wait" "$POST_ACTION";;
+	*) error "invalid POST_ACTION \"%s\", must be empty, poweroff or wait" \
+		"$MKSWU_POST_ACTION";;
 	esac
 
 	# and also add extra debug comments
@@ -2223,6 +2287,12 @@ sw-description.sig"
 	local USER_PUBKEYS="" ATMARK_CERTS="" UPDATE_CERTS=""
 	local ENCRYPT_KEYFILE HW_COMPAT DESCRIPTION
 
+	# swdesc_option variables
+	local MKSWU_SWDESC_OPTS=""
+	local MKSWU_FORCE_VERSION="" MKSWU_POST_ACTION=""
+	local MKSWU_NOTIFY_STARTING_CMD="" MKSWU_NOTIFY_FAIL_CMD=""
+	local MKSWU_NOTIFY_SUCCESS_CMD="" MKSWU_ROOTFS_FSTYPE=""
+
 	# mode options
 	local GENKEY_PLAIN="" GENKEY_CN=""
 	local VERSION_BASE=""
@@ -2497,7 +2567,8 @@ sw-description.sig"
 		[ "$#" -gt 1 ] && info "Successfully included %s contents" "$desc"
 	done
 
-	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$FORCE_VERSION" ] \
+	fix_swdesc_option_vars
+	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$MKSWU_FORCE_VERSION" ] \
 		|| error "No command could be found in desc files"
 
 	embedded_postinstall_script
