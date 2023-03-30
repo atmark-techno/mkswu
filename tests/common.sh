@@ -83,7 +83,7 @@ build_check() {
 	[ "$1" = "--" ] && shift
 
 	echo "Building $name"
-	"$MKSWU" ${conf+-c "$conf"} -o "$swu" "${mkswu_arg[@]}" \
+	"$MKSWU" -o "$swu" "${mkswu_arg[@]}" \
 		|| error "mkswu failed for $name"
 
 	for check; do
@@ -99,5 +99,5 @@ build_fail() {
 	local check
 
 	echo "Building $name (must fail)"
-	! "$MKSWU" ${conf+-c "$conf"} -o "$swu" "$@"
+	! "$MKSWU" -o "$swu" "$@"
 }

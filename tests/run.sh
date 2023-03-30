@@ -60,7 +60,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 
 	# tests/aes
 	mkdir /tmp/swupdate-test
-	"$SWUPDATE" -i ./out/aes.swu -v -k ../swupdate.pem -K swupdate.aes-key \
+	"$SWUPDATE" -i ./out/aes.swu -v -k ../swupdate.pem -K out/swupdate.aes-key \
 		|| error "swupdate failed"
 	ls /tmp/swupdate-test
 	[ "$(cat "/tmp/swupdate-test/test space")" = "test content" ] \

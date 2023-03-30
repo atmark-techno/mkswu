@@ -17,9 +17,21 @@ build_check install_files.desc -- \
 	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
 
-echo 'ENCRYPT_KEYFILE="swupdate.aes-key"' >> mkswu-aes.conf
-"$MKSWU" --genkey --aes --config mkswu-aes.conf --noprompt
-MKSWU_ENCRYPT_KEYFILE=$PWD/swupdate.aes-key build_check aes.desc -- \
+[ -e out/mkswu-aes.conf ] || touch out/mkswu-aes.conf
+"$MKSWU" --genkey --cn test --plain --config out/mkswu-aes.conf --noprompt \
+	|| error "mkswu --genkey failed"
+[ "$(head -n 1 out/swupdate.pem)" = "# swupdate.pem: test" ] \
+	|| error "swupdate.pem header was not correct"
+(
+	# run in subshell to unexport MKSWU_ENCRYPT_KEYFILE from common.sh
+	unset MKSWU_ENCRYPT_KEYFILE
+	"$MKSWU" --genkey --aes --config out/mkswu-aes.conf --noprompt \
+		|| error "mkswu --genkey --aes failed"
+
+	build_check aes.desc --config out/mkswu-aes.conf -- \
+		"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
+) || exit
+MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key build_check aes.desc -- \
 	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
 
 build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
