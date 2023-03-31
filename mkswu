@@ -405,7 +405,7 @@ append_file() {
 	# we want to install anything marked base_os first,
 	# because if base_os is written anything like swdesc_command
 	# cannot run until baseos has been extracted
-	if [ -n "$install_first" ] || [ "$component" = "base_os" ]; then
+	if [ -n "$MKSWU_install_first" ] || [ "$component" = "base_os" ]; then
 		FILES_FIRST="$FILES_FIRST
 $file"
 	else
@@ -669,7 +669,7 @@ parse_swdesc() {
 		[ $# -eq 2 ] || error "swdesc_boot_enc requires two arguments\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
 		BOOT="$1"
 		DEK_OFFSETS="$2"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $BOOT"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $BOOT $DEK_OFFSETS"
 		;;
 	boot_linux)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
@@ -678,10 +678,10 @@ parse_swdesc() {
 		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file"
 		;;
 	tar)
-		[ $# -eq 0 ] && [ -n "$source" ] && return
+		[ $# -eq 0 ] && [ -n "$file" ] && return
 		[ $# -eq 1 ] || error "swdesc_tar requires an argument\nUsage: swdesc_tar [options] file.tar"
-		source="$1"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD${dest:+ --dest $dest}${preserve_attributes:+ --preserve-attributes} $source"
+		file="$1"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD${dest:+ --dest $dest}${preserve_attributes:+ --preserve-attributes} $file"
 		;;
 	files)
 		[ $# -eq 0 ] && [ -n "$file" ] && [ -n "$tarfiles_src" ] && return
@@ -699,14 +699,18 @@ parse_swdesc() {
 		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $cmd"
 		;;
 	script*)
-		[ $# -eq 0 ] && [ -n "$script" ] && return
+		if [ $# -eq 0 ] && [ -n "$file" ]; then
+			[ -n "$cmd" ] || cmd='sh $1'
+			return
+		fi
 		[ $# -ge 1 ] || error "swdesc_script requires arguments\nUsage: swdesc_script [options] script [args]"
-		script="$1"
+		file="$1"
 		shift
+		cmd='sh $1'
 		for ARG; do
 			cmd="${cmd:+$cmd }$(shell_quote "$ARG")"
 		done
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $script $cmd"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file${cmd#sh \$1}"
 		;;
 	exec*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
@@ -757,9 +761,8 @@ pad_boot() {
 }
 
 swdesc_boot() {
-	local BOOT="$BOOT" component=boot version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	component=boot
 
 	parse_swdesc boot "$@"
 
@@ -778,10 +781,9 @@ swdesc_boot() {
 }
 
 swdesc_boot_enc() {
-	local BOOT="$BOOT" DEK_OFFSETS="$DEK_OFFSETS" offsets
-	local component=boot version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local BOOT="" DEK_OFFSETS="" offsets
+	component=boot
 
 	parse_swdesc boot_enc "$@"
 
@@ -796,6 +798,7 @@ swdesc_boot_enc() {
 	[ -n "$offsets" ] \
 		|| error "dek offset file %s was not readable or empty" "$DEK_OFFSETS"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$BOOT" \
 		'[ -e /dev/swupdate_bootdev ]' \
 		"fw_setenv $offsets" \
@@ -806,10 +809,8 @@ swdesc_boot_enc() {
 
 
 swdesc_boot_linux() {
-	local component=boot_linux version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
-	local file=""
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	component=boot_linux
 
 	parse_swdesc boot_linux "$@"
 
@@ -820,6 +821,7 @@ swdesc_boot_linux() {
 	[ "$(stat -L -c %s "$file")" -lt "$((26 * 1024 * 1024))" ] \
 		|| error "swdesc_boot_linux image must be at most 26MB big"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$file" \
 		'[ -e /dev/swupdate_bootdev ]' \
 		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
@@ -828,11 +830,7 @@ swdesc_boot_linux() {
 }
 
 swdesc_tar() {
-	local source="$source" dest="$dest"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
-	local preserve_attributes="$preserve_attributes"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local target="/target"
 
 	parse_swdesc tar "$@"
@@ -873,7 +871,7 @@ swdesc_tar() {
 		info "Warning: automatically setting --preserve-attributes for base_os update" >&2
 		preserve_attributes=1
 	fi
-	write_entry images "$source" "type = \"archive\";" \
+	write_entry images "$file" "type = \"archive\";" \
 		"path = \"$target$dest\";" \
 		"properties: { create-destination = \"true\"; };" \
 		"${preserve_attributes:+preserve-attributes = true;}"
@@ -936,19 +934,16 @@ create_archive() {
 }
 
 swdesc_files() {
-	local file="" dest="$dest" basedir="$basedir"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd
-	local preserve_attributes="$preserve_attributes"
-	local tarfiles_src="$tarfiles_src"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local basedir="" tarfiles_src=""
 	local IFS="
 "
 	parse_swdesc files "$@"
 
 	create_archive
 
-	swdesc_tar "$file"
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
+	swdesc_tar
 }
 
 
@@ -963,10 +958,7 @@ conf_quote() {
 }
 
 swdesc_exec_nochroot() {
-	local file="$file" cmd="$cmd" orig_file
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 
 	parse_swdesc exec_nochroot "$@"
 
@@ -975,8 +967,8 @@ swdesc_exec_nochroot() {
 
 	# allow multiple execs with same file if command changes
 	# don't rename if no arguments for easier debugging
-	if [ -n "$cmd" ] && [ "$cmd" != 'sh $1 ' ]; then
-		orig_file="$file"
+	if [ -n "$cmd" ] && [ "$cmd" != 'sh $1' ]; then
+		local orig_file="$file"
 		set_file_from_content "$file" "$cmd"
 		link "$orig_file" "$file"
 	fi
@@ -989,10 +981,7 @@ swdesc_exec_nochroot() {
 }
 
 swdesc_exec() {
-	local file="$file" cmd="$cmd" chroot_cmd orig_file
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local container="$container"
 
 	parse_swdesc exec "$@"
@@ -1000,7 +989,7 @@ swdesc_exec() {
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
 
-	chroot_cmd="run --net=host --rm -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
+	local chroot_cmd="run --net=host --rm -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
 	case "$container,$component" in
 	,base_os|,extra_os*)
 		chroot_cmd="podman $chroot_cmd --rootfs /target"
@@ -1030,8 +1019,8 @@ swdesc_exec() {
 
 	# allow multiple execs with same file if command changes
 	# don't rename if no arguments for easier debugging
-	if [ -n "$cmd" ] && [ "$cmd" != 'sh $1 ' ]; then
-		orig_file="$file"
+	if [ -n "$cmd" ] && [ "$cmd" != 'sh $1' ]; then
+		local orig_file="$file"
 		set_file_from_content "$file" "$cmd"
 		link "$orig_file" "$file"
 	fi
@@ -1042,90 +1031,72 @@ swdesc_exec() {
 }
 
 swdesc_command() {
-	local orig_cmd="swdesc_command $*"
-	local cmd="$cmd" file
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
-	local container="$container"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 
 	parse_swdesc command "$@"
 
 	set_file_from_content "$cmd"
 	[ -e "$file" ] || : > "$file"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec
 }
 
 swdesc_command_nochroot() {
-	local orig_cmd="swdesc_command_nochroot $*"
-	local cmd="$cmd" file
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 
 	parse_swdesc command_nochroot "$@"
 
 	set_file_from_content "$cmd"
 	[ -e "$file" ] || : > "$file"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot
 }
 
 swdesc_script() {
-	local orig_cmd="swdesc_script $*"
-	local script="$script"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
-	local container="$container"
-	local cmd="$cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 
 	parse_swdesc script "$@"
 
-	swdesc_exec "$script" 'sh $1'" $cmd"
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
+	swdesc_exec
 }
 
 swdesc_script_nochroot() {
-	local script="$script"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd="$show_cmd"
-	local cmd="$cmd"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local script=""
 
 	parse_swdesc script_nochroot "$@"
 
-	swdesc_exec_nochroot "$script" 'sh $1'" $cmd"
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
+	swdesc_exec_nochroot
 }
 
 
 swdesc_embed_container() {
-	local image="$image"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd=""
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local image=""
 
 	parse_swdesc embed_container "$@"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_target load $1'
 }
 
 swdesc_pull_container() {
-	local image="$image"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd=""
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local image=""
 
 	parse_swdesc pull_container "$@"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target pull "'"$image"'"'
 }
 
 swdesc_usb_container() {
-	local image="$image"
-	local component="$component" version="$version"
-	local board="$board" main_version="$main_version"
-	local install_if="$install_if" show_cmd=""
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local image=""
 
 	parse_swdesc usb_container "$@"
 
@@ -1139,6 +1110,7 @@ swdesc_usb_container() {
 	COPY_USB="${COPY_USB:+$COPY_USB }$(shell_quote "$(realpath "$image")")"
 	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target --pubkey /etc/swupdate.pem load '"$image_usb"
 }
 
@@ -1181,6 +1153,7 @@ append_certificates() {
 	fi
 
 	track_used "$file"
+	# shellcheck disable=SC2086 ## expand certs on purpose
 	check_validity "$file" "$source" $ATMARK_CERTS $user_certs && return
 
 	cp -a --reflink=auto "$source" "$file.tmp" \
@@ -1202,7 +1175,7 @@ append_certificates() {
 }
 
 create_prescript() {
-	# prescript is a self-extracting tar archive
+	# prefile is a self-extracting tar archive
 	track_used "$file"
 
 	check_validity "$file" "$PRE_SCRIPT" "$tar" && return
@@ -1213,10 +1186,11 @@ create_prescript() {
 }
 
 embedded_preinstall_script() {
-	local component="" version="" board="" main_version=""
-	local install_if="" show_cmd="pre_script"
-	local script="" cmd=""
-	local install_first=1
+	local MKSWU_ran_fixvars_stanza="1"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local component="" version="" install_if=""
+	local show_cmd="pre_script"
+	local MKSWU_install_first=1
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="$SCRIPT_DIR/scripts_pre.sh"
 
@@ -1230,16 +1204,19 @@ embedded_preinstall_script() {
 	file="$OUTDIR/scripts_pre.sh"
 	create_prescript
 
-	swdesc_script_nochroot "$file"
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
+	swdesc_script_nochroot
 }
 
 embedded_postinstall_script() {
-	local component="" version="" board="" main_version=""
-	local install_if="" show_cmd="post_script"
-	local script="" cmd=""
-	local POST_SCRIPT="$SCRIPT_DIR/scripts_post.sh"
+	local MKSWU_ran_fixvars_stanza="1"
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local component="" version="" install_if=""
+	local show_cmd="post_script"
+	local file="$SCRIPT_DIR/scripts_post.sh"
 
-	swdesc_script_nochroot "$POST_SCRIPT"
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
+	swdesc_script_nochroot
 }
 
 swdesc_option() {
@@ -1259,9 +1236,9 @@ swdesc_option() {
 		PRIVKEY=*) PRIVKEY="${opt#PRIVKEY=}";;
 		PRIVKEY_PASS=*) PRIVKEY_PASS="${opt#PRIVKEY_PASS=}";;
 		DESCRIPTION=*) DESCRIPTION="${opt#DESCRIPTION=}";;
-		component=*) component="${opt#component=}";;
-		version=*) version="${opt#version=}";;
-		install_if=*) install_if="${opt#install_if=}";;
+		component=*) MKSWU_component="${opt#component=}";;
+		version=*) MKSWU_version="${opt#version=}";;
+		install_if=*) MKSWU_install_if="${opt#install_if=}";;
 		CONTAINER_CLEAR|NO_PRESERVE_FILES|\
 		ENCRYPT_ROOTFS|ENCRYPT_USERFS|\
 		SKIP_APP_SUBVOL_SYNC|ALLOW_PUBLIC_CERT|ALLOW_EMPTY_LOGIN)
@@ -1330,6 +1307,40 @@ fix_swdesc_option_vars() {
 			swdesc_option NO_PRESERVE_FILE
 			;;
 		esac
+	fi
+}
+
+fix_swdesc_parse_vars() {
+	[ -n "$MKSWU_ran_fixvars_stanza" ] && return
+	MKSWU_ran_fixvars_stanza=1
+
+	if [ -n "$component" ]; then
+		MKSWU_component="$component"
+		if [ -z "$MKSWU_WARN_component" ]; then
+			warning "%s was set directly, please use swdesc_option %s instead." \
+				"component" "component=$component"
+			warning "This will stop working in %s update" "2024/04"
+			MKSWU_WARN_component=1
+		fi
+	fi
+	if [ -n "$version" ]; then
+		MKSWU_version="$version"
+		if [ -z "$MKSWU_WARN_version" ]; then
+			warning "%s was set directly, please use swdesc_option %s instead." \
+				"version" "version=$version"
+			warning "This will stop working in %s update" "2024/04"
+			MKSWU_WARN_version=1
+		fi
+	fi
+	if [ -n "$install_if" ]; then
+		MKSWU_install_if="$install_if"
+		install_if=""
+		if [ -z "$MKSWU_WARN_install_if" ]; then
+			warning "%s was set directly, please use swdesc_option %s instead." \
+				"install_if" "install_if=$MKSWU_install_if"
+			warning "This will stop working in %s update" "2024/04"
+			MKSWU_WARN_install_if=1
+		fi
 	fi
 }
 
@@ -1735,7 +1746,7 @@ mkswu_genkey_sign() {
 	local oldumask extrakey=""
 	local CURVE="${GENKEY_CURVE:-secp256k1}"
 	local DAYS="${GENKEY_DAYS:-$((5*365))}"
-	local NEWCERT ORIGCERT="$PUBKEY"
+	local NEWCERT
 
 	[ $# -gt 0 ] && error "--%s had extra arguments?" "$(mode_to_opt "$MODE")"
 	[ -n "$PRIVKEY" ] || error "PRIVKEY is not set in config file"
@@ -1931,10 +1942,7 @@ mkinit_genkey() {
 	fi || exit 1
 
 	# Also prompt for encryption
-	local AES
-
 	[ -n "$ENCRYPT_KEYFILE" ] && [ -e "$ENCRYPT_KEYFILE" ] && return
-
 	if prompt_yesno n "Use AES encryption? (N/y)"; then
 		VERBOSE=1 mkswu_genkey_aes
 		info "Generated %s" "$ENCRYPT_KEYFILE"
@@ -2306,9 +2314,34 @@ sw-description.sig"
 	# default default values
 	local BOOT_SIZE="4M"
 	local compress=1
+	local MKSWU_declare_swdesc_cmd_vars_stanza='
+local MKSWU_ran_fixvars_stanza="$MKSWU_ran_fixvars_stanza"
+fix_swdesc_parse_vars
+local component="$MKSWU_component" version="$MKSWU_version"
+local board="$MKSWU_board" main_version="$MKSWU_main_version"
+local install_if="$MKSWU_install_if" show_cmd="$MKSWU_show_cmd"
+local file="$MKSWU_file" dest="$MKSWU_dest" cmd="$MKSWU_cmd"
+local preserve_attributes="$MKSWU_preserve_attributes"
+local container="$MKSWU_container"
+local MKSWU_component="" MKSWU_version="" MKSWU_board=""
+local MKSWU_main_version="" MKSWU_install_if="" MKSWU_show_cmd=""
+local MKSWU_file="" MKSWU_dest="" MKSWU_cmd=""
+local MKSWU_preserve_attributes="" MKSWU_container=""
+'
+	local MKSWU_export_swdesc_cmd_vars_stanza='
+local MKSWU_component="$component" MKSWU_version="$version"
+local MKSWU_board="$board" MKSWU_main_version="$main_version"
+local MKSWU_install_if="$install_if" MKSWU_show_cmd="$show_cmd"
+local MKSWU_file="$file" MKSWU_dest="$dest" MKSWU_cmd="$cmd"
+local MKSWU_preserve_attributes="$preserve_attributes"
+local MKSWU_container="$container"
+local component="" version="" board="" main_version=""
+local install_if="" show_cmd="" file="" dest=""
+local cmd="" preserve_attributes="" container=""
+'
 	local main_cwd desc desc_file
-	local component version board="" dest="" install_if=""
-	local install_first="" main_version="" show_cmd=""
+	local MKSWU_version="" MKSWU_component="" MKSWU_install_if=""
+	local MKSWU_install_first=""
 
 	set -e
 
@@ -2548,10 +2581,11 @@ sw-description.sig"
 	absolutize_file_paths
 	# build sw-desc fragments
 	for desc; do
-		version=""
-		install_if=""
+		# shellcheck disable=SC2034 ## variable is used, really...
+		MKSWU_version=""
+		MKSWU_install_if=""
 		if [ "$desc" = "-" ]; then
-			component="stdin"
+			MKSWU_component="stdin"
 			desc_file="/proc/self/fd/0"
 		else
 			[ -e "$desc" ] || error "%s does not exist" "$desc"
@@ -2559,8 +2593,8 @@ sw-description.sig"
 				|| error "cannot enter %s directory" "$desc"
 			[ "${desc%.desc}" != "$desc" ] \
 				|| info "Warning: %s does not end in .desc, wrong file?" "$desc"
-			component="${desc%.desc}"
-			component=${component##*/}
+			MKSWU_component="${desc%.desc}"
+			MKSWU_component=${MKSWU_component##*/}
 			desc_file="./${desc##*/}"
 		fi
 		. "$desc_file"

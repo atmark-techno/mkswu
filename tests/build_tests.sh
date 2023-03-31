@@ -34,6 +34,11 @@ build_check install_files.desc -- \
 MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key build_check aes.desc -- \
 	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
 
+# test old variables backwards compatibility
+printf "%s\n" "component=test" "install_if=different" "version=1" "swdesc_files build_tests.sh" \
+    | name=compat_version_vars build_check - -- \
+        "swdesc 'VERSION test 1 different'"
+
 build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
 	"version --board iot-g4-es1 test '1 higher'"
