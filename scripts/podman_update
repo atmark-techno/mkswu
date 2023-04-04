@@ -21,7 +21,9 @@ fi
 	export CONTAINERS_REGISTRIES_CONF=/etc/atmark/containers_registries.conf
 
 error() {
-	printf "%s\n" "$@" >&2
+	printf -- "----------------------------------------------\n" >&2
+	printf -- "/!\ %s\n" "$@" >&2
+	printf -- "----------------------------------------------\n" >&2
 	exit 1
 }
 
