@@ -37,7 +37,8 @@ cleanup_boot() {
 		return
 	fi
 
-	if fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
+	if [ -e /etc/fw_env.config ] \
+	    && fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
 		encrypted_boot=1
 	fi
 
@@ -65,7 +66,7 @@ cleanup_boot() {
 	fi
 
 	# reset uboot env from config
-	if stat /target/boot/uboot_env.d/* > /dev/null 2>&1; then
+	if grep -qE '^[^#]' /boot/uboot_env.d/* 2>/dev/null; then
 		# We need to reset env everytime to avoid leaving new variables unset
 		# after no-boot upgrades.
 		# note this will not clear extra values that had been set manually
@@ -107,7 +108,7 @@ cleanup_boot() {
 
 		sed -i -e "s/root=[^ ]*/root=LABEL=rootfs_${ab}/" /target/boot/extlinux.conf \
 			|| error "Could not update extlinux.conf"
-		extlinux -i /target/boot || error "Could not reinstall bootloader"
+		extlinux -i /target/boot 2>&1 || error "Could not reinstall bootloader"
 		cleanup_target
 	else
 		error "Do not know how to A/B switch this system"

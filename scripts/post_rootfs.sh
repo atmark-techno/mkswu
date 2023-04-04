@@ -108,7 +108,7 @@ post_rootfs() {
 ${rootdev}boot${ab} 0x3fe000 0x2000
 ${rootdev}boot${ab} 0x3fa000 0x2000
 EOF
-		else
+		elif [ -e /etc/fw_env.config ]; then
 			cp /etc/fw_env.config /target/etc/fw_env.config \
 				|| error "Could not copy fw_env.config"
 		fi

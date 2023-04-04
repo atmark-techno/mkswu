@@ -266,12 +266,11 @@ mount_target_rootfs() {
 		luks_format "rootfs_$ab"
 	fi
 
-	# note mkfs.ext4 fails even with -F if the filesystem is mounted
-	# somewhere, so this doubles as failguard
-	[ -e "/boot/extlinux.conf" ] && extlinux=1
 	fstype=$(mkswu_var ROOTFS_FSTYPE)
 	[ -n "$fstype" ] || fstype=$(findmnt -nr -o FSTYPE /live/rootfs 2>/dev/null)
 	[ -n "$fstype" ] || fstype=ext4
+	# extlinux requires... ext filesystem, override any setting.
+	[ -e "/boot/extlinux.conf" ] && extlinux=1 && fstype=ext4
 	case "$fstype" in
 	btrfs)
 		mkfs.btrfs -q -L "rootfs_${ab}" -m dup -f "$dev" \

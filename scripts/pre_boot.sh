@@ -3,7 +3,7 @@ copy_boot() {
 	local other_vers cur_vers
 	local flash_dev cur_dev
 
-	# skip for sd cards
+	# skip for sd cards / qemu
 	[ -e "${rootdev}boot1" ] || return
 
 	other_vers=$(get_version "other_$version" old)
