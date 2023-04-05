@@ -77,7 +77,7 @@ check_warn_new_containers_removed() {
 			}' "$SCRIPTSDIR/podman_images_post")
 		[ -n "$image_name" ] || image_name="$added_image"
 		warning "Container image $image_name was added in swu but immediately removed" \
-			"Please use it in /etc/atmark/containers.d if you would like to keep it"
+			"Please use it in /etc/atmark/containers if you would like to keep it"
 	done < "$SCRIPTSDIR/podman_images_new"
 }
 
