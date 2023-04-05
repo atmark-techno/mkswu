@@ -145,13 +145,13 @@ update_swupdate_certificate()  {
 			# only add atmark certs if they're currently installed
 			for cert in "$SCRIPTSDIR/certs_atmark/"*; do
 				[ -e "$cert" ] || continue
-				echo "# ${cert##*/}"
 				cat "$cert" || exit 1
 			done
 		fi
 		for cert in "$SCRIPTSDIR/certs_user/"*; do
 			[ -e "$cert" ] || continue
-			echo "# ${cert##*/}"
+			# add comment to older certificates
+			grep -qE '^# ' "$cert" || echo "# ${cert##*/}"
 			cat "$cert" || exit 1
 		done
 	) > "$SWUPDATE_PEM" \

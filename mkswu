@@ -1682,9 +1682,15 @@ mkswu_genkey_sign() {
 	info "Creating signing key %s and its public counterpart %s" "$PRIVKEY" "${PUBKEY##*/}"
 
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:"$CURVE" \
-		-keyout "$PRIVKEY" -out "$PUBKEY" -subj "/O=SWUpdate/CN=$GENKEY_CN" \
+		-keyout "$PRIVKEY.tmp" -out "$PUBKEY.tmp" -subj "/O=SWUpdate/CN=$GENKEY_CN" \
 		${GENKEY_PLAIN:+-nodes} ${PRIVKEY_PASS:+-passout $PRIVKEY_PASS} \
 		-days "$DAYS" || error "Generating certificate/key pair failed"
+
+	mv "$PRIVKEY.tmp" "$PRIVKEY" \
+		|| error "Could not rename %s" "$PRIVKEY"
+	sed -e "1i# ${PUBKEY##*/}: $GENKEY_CN" "$PUBKEY.tmp" > "$PUBKEY" \
+		&& rm -f "$PUBKEY.tmp" \
+		|| error "Could not rename %s" "$PUBKEY"
 
 	if [ -n "$extrakey" ]; then
 		info "Info: Adding %s to config" "$PUBKEY"
@@ -1700,8 +1706,8 @@ mkswu_genkey_sign() {
 			|| error "Could not update %s in %s" "NEW_PRIVKEY" "$CONFIG"
 		case "$UPDATE_CERTS" in
 		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
-			printf "%s\n" "# This controls if we should update certificates on device," \
-					"# and can be removed once all devices have been updated to only allow new key" \
+			printf "%s\n" "# This controls if we should update certificates on device, and can be" \
+					"# removed once all devices have been updated to only allow new certificate " \
 					"UPDATE_CERTS=yes" >> "$CONFIG" \
 				|| error "Could not update %s in %s" "UPDATE_CERTS" "$CONFIG"
 			;;
