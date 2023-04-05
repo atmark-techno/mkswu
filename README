@@ -1,14 +1,3 @@
-## genkey.sh
-
-Generate a private/public key pair to use for rsa pss signing of files.
-generated files:
- - swupdate.key is the private signing key that should be kept private.
- - swupdate.pem should be installed to /etc/swupdate.pem and is used
-for verification of sw-description and container images if side-loaded.
-
-Note that encryption does not use this key.
-
-
 ## mkswu
 
 Helper to generate swupdate image.
@@ -180,6 +169,24 @@ swdesc_pull_container <image url>
 Generate image file from tags or image ids.
 If a base image/tag is given, remove objects from image file that
 were used in base image.
+
+
+## genkey.sh
+
+Generate a private/public key pair to use for rsa pss signing of files.
+generated files:
+ - swupdate.key is the private signing key that should be kept private.
+ - swupdate.pem should be installed to /etc/swupdate.pem and is used
+for verification of sw-description and container images if side-loaded.
+
+Note that encryption does not use this key.
+
+Only here for compatibility, please use mkswu --genkey instead
+
+
+## docs
+
+Extra documentation files e.g. common error patterns
 
 
 ## examples

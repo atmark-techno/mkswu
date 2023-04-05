@@ -9,18 +9,23 @@ BASH_COMPLETION_DIR = $(PREFIX)/share/bash-completion/completions
 l = ja
 translations = $(wildcard po/$(l)/*.po)
 locales = $(patsubst po/$(l)/%.po,locale/$(l)/LC_MESSAGES/%.mo,$(translations))
-pot = po/mkswu.pot
 
 # XXX install example data more cleanly
 install_scripts = $(wildcard scripts/*sh) $(wildcard scripts/podman_*)
 install_completions = $(wildcard bash_completion.d/*)
 install_examples = $(wildcard examples/*desc) $(wildcard examples/*sh)
 install_hawkbit = hawkbit-compose/setup_container.sh hawkbit-compose/fragments
+install_docs = $(wildcard docs/*md)
+install_docs_html = $(patsubst docs/%.md,docs/%.html,$(install_docs))
 
 
-.PHONY: all install check clean
+.PHONY: all install check clean locales doc
 
-all: $(locales) $(pot)
+all: locales
+
+locales: $(locales)
+
+doc: $(install_docs_html)
 
 clean:
 	rm -rf tests/out
@@ -54,6 +59,9 @@ locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 	fi
 	msgfmt -o $@ $<
 
+docs/%.html: docs/%.md
+	pandoc -s $< > $@
+
 check:
 	./tests/run.sh
 
@@ -77,7 +85,7 @@ dist: all
 	git ls-files hawkbit-compose | \
 		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
 
-install: all
+install: all $(install_docs_html)
 	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
 	sed -i -e "s/MKSWU_VERSION=\"/&$(TAG)/" $(DESTDIR)$(BIN)/mkswu
 	install -D -t $(DESTDIR)$(BIN) podman_partial_image
@@ -101,3 +109,5 @@ install: all
 	install -d $(DESTDIR)$(SHARE)/hawkbit-compose
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES hawkbit-compose/locale/ja/LC_MESSAGES/hawkbit_setup_container.mo
 	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
+	install -d $(DESTDIR)$(SHARE)/docs
+	cp -t $(DESTDIR)$(SHARE)/docs $(install_docs_html)
