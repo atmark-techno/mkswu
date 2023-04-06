@@ -53,6 +53,24 @@ test_version_normalize() {
 	done
 }
 
+test_encrypt_sign() {
+	ENCRYPT_KEYFILE="$SCRIPTSDIR/aes-key"
+	echo "$(openssl rand -hex 32) $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
+	setup_encryption
+
+	iv=$(gen_iv)
+	dd if=/dev/urandom of="$SCRIPTSDIR/file" bs=1M count=1 status=none
+	cp "$SCRIPTSDIR/file" "$SCRIPTSDIR/file.copy"
+	encrypt_file "$SCRIPTSDIR/file" "$SCRIPTSDIR/file.enc" "$iv"
+	decrypt_file "$SCRIPTSDIR/file.enc" "$iv"
+	cmp "$SCRIPTSDIR/file" "$SCRIPTSDIR/file.copy" || error "file not identical after decryption"
+
+	PUBKEY=../swupdate-onetime-public.pem
+	PRIVKEY=../swupdate-onetime-public.key
+	OUTDIR="$SCRIPTSDIR" sign "file"
+	verify "$SCRIPTSDIR/file"
+}
+
 test_common() {
 	SWDESC="$SCRIPTSDIR/swdesc"
 	BASEOS_CONF="$SCRIPTSDIR/baseos.conf"
@@ -650,6 +668,7 @@ test_update_overlays() {
 	. "$SCRIPTS_SRC_DIR/../mkswu"
 
 	test_version_normalize
+	test_encrypt_sign
 ) || error "mkswu subfunctions failed"
 
 (

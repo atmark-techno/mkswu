@@ -202,15 +202,17 @@ decrypt_file() {
 	local src="$1"
 	local dest="${src%.enc}"
 	[ "$dest" != "$src" ] || error "File must end in .enc"
-	local iv tmp file=${src##*/}
-	ivs="${src%/*}/sw-description-ivs"
+	local iv="${2-}"
 
-	[ -e "$ivs" ] || error "ivs file %s does not exist" "$ivs"
+	if [ -z "$iv" ]; then
+		local ivs="${src%/*}/sw-description-ivs" tmp file="${src##*/}"
+		[ -e "$ivs" ] || error "ivs file %s does not exist" "$ivs"
 
-	while read -r iv tmp; do
-		[ "$tmp" != "$file" ] || break
-	done < "$ivs"
-	[ "$tmp" = "$file" ] || error "%s not found in %s" "$file" "$ivs"
+		while read -r iv tmp; do
+			[ "$tmp" != "$file" ] || break
+		done < "$ivs"
+		[ "$tmp" = "$file" ] || error "%s not found in %s" "$file" "$ivs"
+	fi
 	setup_encryption
 	openssl enc -aes-256-cbc -d -in "$src" -out "$dest" \
 			-K "$ENCRYPT_KEY" -iv "$iv" \
@@ -1756,11 +1758,26 @@ mkswu_internal() {
 			verify "$file"
 		done
 		;;
-	decrypt)
+	encrypt)
 		[ $# -lt 1 ] && error "%s requires an argument" "--internal $command"
+		setup_encryption
 		local file
 		for file; do
-			decrypt_file "$file"
+			iv=$(gen_iv)
+			encrypt_file "$file" "$file.enc" "$iv"
+			echo "$file iv: $iv"
+		done
+		;;
+	decrypt)
+		[ $# -lt 2 ] && error "%s requires at least two arguments" "--internal $command"
+		[ $(($# % 2)) = 0 ] || error "%s requires an even number of arguments" "--internal $command"
+		local file iv
+		
+		while [ $# -ge 2 ]; do
+			file="$1"
+			iv="$2"
+			shift 2
+			decrypt_file "$file" "$iv"
 		done
 		;;
 	mkcpio)
