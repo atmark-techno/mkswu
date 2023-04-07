@@ -617,20 +617,20 @@ parse_swdesc() {
 			;;
 		"--preserve-attributes")
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
-				|| error "%s only allowed for swdesc_files and swdesc_tar" "$ARG"
+				|| error "%s only allowed for %s" "$ARG" "swdesc_files/swdesc_tar"
 			preserve_attributes=1
 			;;
 		"-d"|"--dest")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			[ "$CMD" = "tar" ] || [ "$CMD" = "files" ] \
-				|| error "%s only allowed for swdesc_files and swdesc_tar" "$ARG"
+				|| error "%s only allowed for %s" "$ARG" "swdesc_files/swdesc_tar"
 			dest="$1"
 			SKIP=1
 			;;
 		"--basedir")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			[ "$CMD" = "files" ] \
-				|| error "%s only allowed for swdesc_files" "$ARG"
+				|| error "%s only allowed for %s" "$ARG" "swdesc_files"
 			basedir="$1"
 			SKIP=1
 			;;
@@ -638,7 +638,7 @@ parse_swdesc() {
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
 			case "$CMD" in
 			exec|command|script) ;;
-			*) error "%s only allowed for swdesc_exec/swdesc_command/swdesc_script" "$ARG";;
+			*) error "%s only allowed for %s" "$ARG" "swdesc_exec/swdesc_command/swdesc_script";;
 			esac
 			container="$1"
 			SKIP=1
@@ -659,17 +659,17 @@ parse_swdesc() {
 	done
 	case "$CMD" in
 	boot)
-		[ $# -eq 0 ] && [ -n "$BOOT" ] && return
+		[ $# -eq 0 ] && [ -n "$boot_file" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot requires an argument\nUsage: swdesc_boot [options] boot_file"
-		BOOT="$1"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $BOOT"
+		boot_file="$1"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $boot_file"
 		;;
 	boot_enc)
-		[ $# -eq 0 ] && [ -n "$BOOT" ] && [ -n "$DEK_OFFSETS" ] && return
+		[ $# -eq 0 ] && [ -n "$boot_file" ] && [ -n "$dek_offsets_file" ] && return
 		[ $# -eq 2 ] || error "swdesc_boot_enc requires two arguments\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
-		BOOT="$1"
-		DEK_OFFSETS="$2"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $BOOT $DEK_OFFSETS"
+		boot_file="$1"
+		dek_offsets_file="$2"
+		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $boot_file $dek_offsets_file"
 		;;
 	boot_linux)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
@@ -735,71 +735,43 @@ parse_swdesc() {
 	esac
 }
 
-pad_boot() {
-	local file="${BOOT##*/}"
-	local src="$BOOT"
-	local size
-
-	BOOT_SIZE=$(numfmt --from=iec "$BOOT_SIZE")
-	BOOT="$OUTDIR/$file"
-
-	if [ "$src" -ot "$BOOT" ]; then
-		size=$(stat -L -c "%s" "$BOOT")
-		if [ "$size" -eq "$BOOT_SIZE" ]; then
-			# already up to date
-			return
-		fi
-	fi
-
-	size=$(stat -L -c "%s" "$src") || error "Cannot stat boot file: %s" "$src"
-	if [ "$size" -gt "$BOOT_SIZE" ]; then
-		error "BOOT_SIZE set smaller than boot file actual size"
-	fi
-	rm -f "$BOOT"
-	cp "$src" "$BOOT"
-	truncate -s "$BOOT_SIZE" "$BOOT"
-}
-
 swdesc_boot() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local boot_file=""
 	component=boot
 
 	parse_swdesc boot "$@"
 
-	[ -n "$BOOT_SIZE" ] && pad_boot
-
 	[ "$component" = "boot" ] \
 		|| error "Version component for swdesc_boot must be set to boot"
 	if [ -z "$version" ]; then
-		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$BOOT") \
-			|| error "Could not guess boot version in %s" "$BOOT"
+		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$boot_file") \
+			|| error "Could not guess boot version in %s" "$boot_file"
 		normalize_version
 	fi
 
-	write_entry images "$BOOT" "type = \"raw\";" \
+	write_entry images "$boot_file" "type = \"raw\";" \
 		"device = \"/dev/swupdate_bootdev\";"
 }
 
 swdesc_boot_enc() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
-	local BOOT="" DEK_OFFSETS="" offsets
+	local boot_file="" dek_offsets_file="" offsets
 	component=boot
 
 	parse_swdesc boot_enc "$@"
-
-	[ -n "$BOOT_SIZE" ] && pad_boot
 
 	[ "$component" = "boot" ] \
 		|| error "Version component for swdesc_boot must be set to boot"
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_encrypted"
 
-	offsets=$(cat "$DEK_OFFSETS")
+	offsets=$(cat "$dek_offsets_file")
 	[ -n "$offsets" ] \
-		|| error "dek offset file %s was not readable or empty" "$DEK_OFFSETS"
+		|| error "dek offset file %s was not readable or empty" "$dek_offsets_file"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_exec_nochroot "$BOOT" \
+	swdesc_exec_nochroot "$boot_file" \
 		'[ -e /dev/swupdate_bootdev ]' \
 		"fw_setenv $offsets" \
 		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
@@ -1229,7 +1201,7 @@ swdesc_option() {
 		NOTIFY_FAIL_CMD=*) MKSWU_NOTIFY_FAIL_CMD="${opt#NOTIFY_FAIL_CMD=}";;
 		NOTIFY_SUCCESS_CMD=*) MKSWU_NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
 		ROOTFS_FSTYPE=*) MKSWU_ROOTFS_FSTYPE="${opt#ROOTFS_FSTYPE=}";;
-		BOOT_SIZE=*) BOOT_SIZE="${opt#BOOT_SIZE=}";;
+		BOOT_SIZE=*) warning "BOOT_SIZE is no longer used and has been ignored";;
 		ENCRYPT_KEYFILE=*) ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}";;
 		PUBKEY=*) PUBKEY="${opt#PUBKEY=}";;
 		UPDATE_CERTS=*) UPDATE_CERTS="${opt#UPDATE_CERTS=}";;
@@ -2312,7 +2284,6 @@ sw-description.sig"
 	local NOPROMPT=""
 
 	# default default values
-	local BOOT_SIZE="4M"
 	local compress=1
 	local MKSWU_declare_swdesc_cmd_vars_stanza='
 local MKSWU_ran_fixvars_stanza="$MKSWU_ran_fixvars_stanza"
