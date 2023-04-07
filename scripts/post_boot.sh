@@ -29,8 +29,71 @@ cleanup_target() {
 	fi
 }
 
+reset_uboot_env() {
+	local env_dev env_offset env_sz
+
+	# not applicable to this target
+	[ -e /target/etc/fw_env.config ] || return
+
+	# Get environment device, offset and size
+	# This assumes a single device contains env with nothing in
+	# between redundant envs
+	env_dev=$(awk '/^[^#]/ && $2 > 0 {
+			if (!start || $2 < start)
+				start = $2;
+			if (!end || $2 + $3 > end)
+				end = $2 + $3;
+			if (dev && dev != $1) {
+				print "Multiple devices in fw_env.config is not supported" > "/dev/stderr"
+				exit(1)
+			}
+			dev=$1
+		}
+		END {
+			if (!start) exit(1);
+			printf("%s,%d,%d\n", dev, start, end-start);
+		}
+		' < /target/etc/fw_env.config) \
+		|| error "Could not get boot env location"
+	# ugly sh-compatible way of splitting vars...
+	env_sz="${env_dev##*,}"
+	env_dev="${env_dev%,*}"
+	env_offset="${env_dev##*,}"
+	env_dev="${env_dev%,*}"
+	env_dev="${env_dev#/dev/}"
+	if [ -e "/sys/block/$env_dev/force_ro" ]; then
+		echo 0 > "/sys/block/$env_dev/force_ro" \
+			|| error "Could not make $env_dev read-write"
+	fi
+
+	local rc
+	dd if=/dev/zero of="/dev/$env_dev" bs="$env_sz" count=1 \
+		seek="$env_offset" oflag=seek_bytes \
+		conv=fdatasync status=none
+	rc=$?
+	if [ -e "/sys/block/$env_dev/force_ro" ]; then
+		echo 1 > "/sys/block/$env_dev/force_ro" \
+			|| error "Could not make $env_dev read-only again"
+	fi
+	[ "$rc" = 0 ] || error "Could not clear uboot env"
+
+	# stop here if nothing in uboot_env.d
+	grep -qE '^[^#]' /boot/uboot_env.d/* 2>/dev/null || return
+
+	cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/uboot_env" \
+		|| error "uboot env files existed but could not merge them"
+	grep -qE "^bootcmd=" "$SCRIPTSDIR/uboot_env" \
+		|| error "uboot env files existed, but bootcmd is not set. Refusing to continue." \
+			"Please update your Base OS image or provide default environment first."
+	fw_setenv_nowarn --config "/target/etc/fw_env.config" \
+			--script "$SCRIPTSDIR/uboot_env" \
+			--defenv /dev/null \
+		|| error "Could not set uboot env"
+	rm -f "$SCRIPTSDIR/uboot_env"
+}
+
 cleanup_boot() {
-	local dev encrypted_boot=""
+	local encrypted_boot=""
 
 	if ! needs_reboot; then
 		cleanup_target
@@ -65,24 +128,10 @@ cleanup_boot() {
 		esac
 	fi
 
-	# reset uboot env from config
-	if grep -qE '^[^#]' /boot/uboot_env.d/* 2>/dev/null; then
-		# We need to reset env everytime to avoid leaving new variables unset
-		# after no-boot upgrades.
-		# note this will not clear extra values that had been set manually
-		# but are not present in configs, we should zero the env block for
-		# that... Maybe if that becomes a problem.
-		cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/uboot_env" \
-			|| error "uboot env files existed but could not merge them"
-		grep -qE "^bootcmd=" "$SCRIPTSDIR/uboot_env" \
-			|| error "uboot env files existed, but bootcmd is not set. Refusing to continue." \
-				"Please update your Base OS image or provide default environment first."
-		fw_setenv_nowarn --config "/target/etc/fw_env.config" \
-				--script "$SCRIPTSDIR/uboot_env" \
-				--defenv /dev/null \
-			|| error "Could not set uboot env"
-		rm -f "$SCRIPTSDIR/uboot_env"
-	fi
+	# reset uboot env from config everytime:
+	#  - we need to clear env after boot updates
+	#  - we want uboot_env.d updates immediately, always
+	reset_uboot_env
 
 	if [ -e "${rootdev}boot0" ]; then
 		cleanup_target

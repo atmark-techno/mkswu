@@ -23,30 +23,22 @@ copy_boot() {
 }
 
 copy_boot_imxboot() {
-	local env_offset env_sz
+	local env_offset
 
-	# We copy until env and clear env.
-	# This assumes nothing is present between redundant envs
+	# We copy until env start (assume nothing else than boot image before)
+	# Env will be cleared in post_boot
 	env_offset=$(awk '/^[^#]/ && $2 > 0 {
 			if (!start || $2 < start)
 				start = $2;
-			if (!end || $2 + $3 > end)
-				end = $2 + $3;
 		}
 		END {
 			if (!start) exit(1);
-			printf("%d,%d\n", start, end-start);
+			printf("%d\n", start);
 		}
 		' < /etc/fw_env.config) \
 		|| error "Could not get boot env location"
-	env_sz="${env_offset##*,}"
-	env_offset="${env_offset%,*}"
 
 	dd if="$cur_dev" of="/dev/$flash_dev" bs="$env_offset" count=1 \
-			conv=fdatasync status=none \
-		|| return
-	dd if=/dev/zero of="/dev/$flash_dev" bs="$env_sz" count=1 \
-			seek="$env_offset" oflag=seek_bytes \
 			conv=fdatasync status=none \
 		|| return
 }
