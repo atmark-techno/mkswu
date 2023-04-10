@@ -735,6 +735,36 @@ parse_swdesc() {
 	esac
 }
 
+check_pad_boot() {
+	local header
+	[ -e "$boot_file" ] || error "%s does not exist" "$boot_file"
+
+	header=$(xxd -l 4 -p "$boot_file")
+	case "$header" in
+	d1002041)
+		# imx8 boot image, ok
+		return
+		;;
+	d1002040)
+		# unpadded imx6ull/imx7d, requires prepending 1kb padding
+		local dest="$OUTDIR/${boot_file##*/}"
+		dd if="$boot_file" of="$dest" bs=1M status=none \
+				seek=1024 oflag=seek_bytes \
+			|| error "Could not copy %s to %s" "$boot_file" "$dest"
+		boot_file="$dest"
+		return
+		;;
+	esac
+	header=$(xxd -l 4 -p -s 1024 "$boot_file")
+	case "$header" in
+	d1002040)
+		# padded imx6ull/imx7d, ok
+		return
+		;;
+	esac
+	error "Unrecognized boot image for %s" "$boot_file"
+}
+
 swdesc_boot() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local boot_file=""
@@ -744,6 +774,7 @@ swdesc_boot() {
 
 	[ "$component" = "boot" ] \
 		|| error "Version component for swdesc_boot must be set to boot"
+	check_pad_boot
 	if [ -z "$version" ]; then
 		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$boot_file") \
 			|| error "Could not guess boot version in %s" "$boot_file"
@@ -765,6 +796,7 @@ swdesc_boot_enc() {
 		|| error "Version component for swdesc_boot must be set to boot"
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_encrypted"
+	check_pad_boot
 
 	offsets=$(cat "$dek_offsets_file")
 	[ -n "$offsets" ] \

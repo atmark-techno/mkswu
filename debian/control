@@ -11,6 +11,7 @@ Depends:
  cpio,
  zstd,
  jq,
+ xxd,
  ${misc:Depends}
 Architecture: all
 Description: build SWU images for armadillo base OS

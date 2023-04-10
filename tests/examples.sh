@@ -25,8 +25,17 @@ build_check ../examples/pull_container_nginx.desc -- \
 	"swdesc nginx_start.**tar.zst docker.io/nginx"
 
 # boot: bundle boot image
-[ -e ../imx-boot_armadillo_x2 ] \
-	|| echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e' > ../imx-boot_armadillo_x2
+if ! [ -e ../imx-boot_armadillo_x2 ] \
+    || [ "$(xxd -l 4 -p ../imx-boot_armadillo_x2)" != d1002041 ]; then
+    	{
+		# create file with proper signature...
+		echo '0: d1002041' | xxd -r
+		# big enough to be compressed...
+		dd if=/dev/zero bs=1M count=1 status=none
+		# and with version recognizable
+		echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e'
+	} > ../imx-boot_armadillo_x2
+fi
 build_check ../examples/boot.desc -- "file imx-boot_armadillo_x2.*.zst" "version boot '202.* different'" "swdesc imx-boot_armadillo_x2"
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
