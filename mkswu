@@ -2220,13 +2220,13 @@ mkswu_show() {
 		[ "$swu" != "${swu%.swu}" ] \
 			|| error "File does not end in .swu: %s" "$swu"
 
-		printf "%s\n\n" "$swu"
+		printf "# %s\n\n" "$swu"
 
 		desc=$(cpio -i --quiet --to-stdout sw-description < "$swu")
 		[ -n "$desc" ] || error "Could not get swu sw-description content from %s" "$swu"
 
 		# default to raw for old swu generated before command hints
-		if ! printf "%s\n" "$desc" | grep -q '# swdesc'; then
+		if ! printf "%s\n" "$desc" | grep -qE '# swdesc|description:'; then
 			info "SWU was build with an old version of mkswu or was empty,"
 			info "falling back to --raw"
 			echo
@@ -2241,49 +2241,67 @@ mkswu_show() {
 			/^ *# Built with mkswu/ {
 				print "# built with mkswu", $NF
 			}
-			/^ *# swdesc_/ {
+			# pre mkswu-4.11
+			/^ *# swdesc/ {
 				sub(/ *# /, "")
-				cmd=$0
-				if (seen[cmd]) {
-					cmd=""
+				cmd_pending=$0
+			}
+			/^ *description: / {
+				sub(/ *description: "/, "")
+				sub(/";$/, "")
+				gsub(/\\"/, "\"")
+				gsub(/\\\\/, "\\")
+				if ($0 ~ /^pre_script$|^post_script$/) {
+					# skip
+				} else if (filename) {
+					cmd[filename]=$0
 				} else {
-					seen[cmd]=1
+					cmd_pending=$0
 				}
 			}
-			/^ *version =/ && cmd {
+			/^ *filename =/ {
 				gsub(/.*= "|";/, "")
-				version[cmd]=$0
+				filename = $0
+				if (cmd_pending) {
+					cmd[filename]=cmd_pending;
+					cmd_pending=""
+				}
 			}
-			/^ *name =/ && cmd {
+			/^ *version =/ && filename {
 				gsub(/.*= "|";/, "")
-				component[cmd]=$0
+				version[filename]=$0
 			}
-			/^ *encrypted = true/ && cmd {
-				encrypted[cmd]="1"
+			/^ *name =/ && filename {
+				gsub(/.*= "|";/, "")
+				component[filename]=$0
 			}
-			/^ *install-if-different/ {
-				install_if[cmd]="different"
+			/^ *encrypted = true/ && filename {
+				encrypted[filename]="1"
 			}
-			/^ *}/ && cmd {
-				cmd=""
+			/^ *install-if-different/ && filename {
+				install_if[filename]="different"
+			}
+			/^ *}/ && filename {
+				filename=""
 			}
 			/^ *# MKSWU_/ {
-				sub(/ *# MKSWU_/, "swdesc_option ")
+				sub(/ *# MKSWU_/, "")
 				sub(/ 1$/, "")
-				print
+				sub(/ /, "=")
+				print "swdesc_option " $0
 			}
 			END {
-				for (cmd in seen) {
+			for (filename in cmd) {
 				print ""
-				print cmd
-				if (component[cmd] && version[cmd]) {
-					print "  --version", component[cmd], version[cmd]
-					if (install_if[cmd]) {
-						print "  --install-if", install_if[cmd]
-					}
+				if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
+				        sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
 				}
-				if (encrypted[cmd]) {
-					print "  (encrypted)"
+				if (!(cmd[filename] ~ /--install-if/) && install_if[filename]) {
+					sub(/ /, "  --install-if " install_if[filename] " ", cmd[filename])
+				}
+				print cmd[filename]
+				if (encrypted[filename]) {
+					print "#  (encrypted)"
 				}
 			}
 			}
