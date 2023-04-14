@@ -1028,8 +1028,9 @@ swdesc_exec() {
 		;;
 	,*)
 		# If target is read-only we need special handling to run (silly podman tries
-		# to write to / otherwise) but keep volumes writable
-		chroot_cmd="podman $chroot_cmd --read-only -v /target/var/app/volumes:/var/app/volumes"
+		# to write to / otherwise) but keep volumes and tmp writable
+		chroot_cmd="podman $chroot_cmd --read-only -v /target/tmp:/tmp"
+		chroot_cmd="$chroot_cmd -v /target/var/app/volumes:/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/var/app/rollback/volumes"
 		chroot_cmd="$chroot_cmd --rootfs /target"
 		;;

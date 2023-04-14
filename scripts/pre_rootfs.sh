@@ -321,6 +321,10 @@ prepare_rootfs() {
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		rm -f /target/etc/atmark/containers/*.conf
 	fi
+	# mount tmpfs in /target/tmp for scripts that might want to use /tmp
+	[ -d /target/tmp ] || mkdir /target/tmp
+	mount -t tmpfs tmpfs /target/tmp \
+		|| error "Could not mount tmpfs on target's /tmp"
 }
 
 [ -n "$TEST_SCRIPTS" ] && return
