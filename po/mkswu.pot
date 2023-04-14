@@ -192,6 +192,9 @@ msgstr ""
 msgid "%s requires --version to be set"
 msgstr ""
 #: mkswu
+msgid "properties opening tag should be on its own line"
+msgstr ""
+#: mkswu
 msgid "%s requires an argument"
 msgstr ""
 #: mkswu
@@ -286,6 +289,9 @@ msgid "%s is not inside %s"
 msgstr ""
 #: mkswu
 msgid "Could not create tar for %s"
+msgstr ""
+#: mkswu
+msgid "Using %s with a non-empty file, but not referring to it with \\$1"
 msgstr ""
 #: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"

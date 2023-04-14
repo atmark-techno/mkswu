@@ -216,7 +216,7 @@ msgstr "install_if には「higher」か「different」を指定してくださ�
 
 #: mkswu
 msgid "Warning: %s version %s has been simplified to %s"
-msgstr ""
+msgstr "Warning: %s のバージョン %s は %s に略されました。"
 
 #: mkswu
 msgid "component must not contain spaces (%s)"
@@ -253,6 +253,10 @@ msgstr "バージョン %s に 関連するコンポーネントがありませ�
 #: mkswu
 msgid "%s requires --version to be set"
 msgstr "%s に --version の指定が必要です。"
+
+#: mkswu
+msgid "properties opening tag should be on its own line"
+msgstr ""
 
 #: mkswu
 msgid "%s requires an argument"
@@ -381,6 +385,10 @@ msgstr "%s は %s の中にありません。"
 #: mkswu
 msgid "Could not create tar for %s"
 msgstr "%s のtarを作成できませんでした。"
+
+#: mkswu
+msgid "Using %s with a non-empty file, but not referring to it with \\$1"
+msgstr "%s コマンドのファイルは \\$1 で使用されていません。"
 
 #: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"

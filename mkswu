@@ -987,7 +987,8 @@ swdesc_exec_nochroot() {
 	parse_swdesc exec_nochroot "$@"
 
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
-		|| error 'Using swdesc_exec_nochroot with a non-empty file, but not referring to it with $1'
+		|| error "Using %s with a non-empty file, but not referring to it with \$1" \
+			"swdesc_exec_nochroot"
 
 	# allow multiple execs with same file if command changes
 	# don't rename if no arguments for easier debugging
@@ -1011,7 +1012,8 @@ swdesc_exec() {
 	parse_swdesc exec "$@"
 
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
-		|| error 'Using swdesc_exec with a non-empty file, but not referring to it with $1'
+		|| error "Using %s with a non-empty file, but not referring to it with \$1" \
+			"swdesc_exec"
 
 	local chroot_cmd="run --net=host --rm -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
 	case "$container,$component" in
