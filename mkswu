@@ -513,7 +513,6 @@ write_entry_stdout() {
 
 	write_line "{"
 	indent=$((indent+2))
-	printf "%s\n" "$show_cmd" | sed -e "s/^/$(printf "%*s" "$indent" "")# /"
 	write_line "filename = \"$file\";"
 	if [ -n "$version" ]; then
 		[ -n "$component" ] || error "version %s was set without associated component" "$version"
@@ -543,7 +542,20 @@ write_entry_stdout() {
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
 	write_line "installed-directly = true;"
 	write_line "sha256 = \"$sha256\";"
-	write_line "$@"
+	local line properties_written=""
+	for line; do
+		write_line "$line"
+		case "$line" in
+		"properties: {")
+			write_line "  description: \"$(conf_quote "$show_cmd")\";"
+			properties_written=1
+			;;
+		"properties: {*")
+			error "properties opening tag should be on its own line";;
+		esac
+	done
+	[ -n "$properties_written" ] \
+		|| write_line "properties: {" "  description: \"$(conf_quote "$show_cmd")\";" "};"
 
 	indent=$((indent-2))
 	write_line "},"
@@ -877,7 +889,7 @@ swdesc_tar() {
 	fi
 	write_entry images "$file" "type = \"archive\";" \
 		"path = \"$target$dest\";" \
-		"properties: { create-destination = \"true\"; };" \
+		"properties: {" "  create-destination = \"true\";" "};" \
 		"${preserve_attributes:+preserve-attributes = true;}"
 }
 
@@ -1464,7 +1476,6 @@ EOF
 	for line in $DEBUG_SWDESC; do
 		indent=2 write_line "$line"
 	done
-
 
 	indent=0 write_line "};"
 }
