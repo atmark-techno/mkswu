@@ -579,9 +579,18 @@ write_entry() {
 parse_swdesc() {
 	# first argument tells us what to parse for
 	local CMD="$1"
+	local ARG
 	shift
 
-	local ARG SKIP=0
+	# build command faithfully
+	if [ -z "$show_cmd" ]; then
+		show_cmd="swdesc_$CMD"
+		for ARG; do
+			show_cmd="${show_cmd:+$show_cmd }$(shell_quote "$ARG")"
+		done
+	fi
+
+	local SKIP=0
 	for ARG; do
 		# skip previously used argument
 		# using a for loop means we can't shift ahead
@@ -674,32 +683,27 @@ parse_swdesc() {
 		[ $# -eq 0 ] && [ -n "$boot_file" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot requires an argument\nUsage: swdesc_boot [options] boot_file"
 		boot_file="$1"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $boot_file"
 		;;
 	boot_enc)
 		[ $# -eq 0 ] && [ -n "$boot_file" ] && [ -n "$dek_offsets_file" ] && return
 		[ $# -eq 2 ] || error "swdesc_boot_enc requires two arguments\nUsage: swdesc_boot_enc [options] boot_enc_file dek_offets_file"
 		boot_file="$1"
 		dek_offsets_file="$2"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $boot_file $dek_offsets_file"
 		;;
 	boot_linux)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot_linux requires an argument\nUsage: swdesc_boot_linux [options] boot_linux_file"
 		file="$1"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file"
 		;;
 	tar)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
 		[ $# -eq 1 ] || error "swdesc_tar requires an argument\nUsage: swdesc_tar [options] file.tar"
 		file="$1"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD${dest:+ --dest $dest}${preserve_attributes:+ --preserve-attributes} $file"
 		;;
 	files)
 		[ $# -eq 0 ] && [ -n "$file" ] && [ -n "$tarfiles_src" ] && return
 		[ $# -ge 1 ] || error "swdesc_files requires arguments\nUsage: swdesc_files [options] file [files...]"
 		tarfiles_src="$(printf "%s\n" "$@")"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD${dest:+ --dest $dest}${preserve_attributes:+ --preserve-attributes} $(printf "%s " "$@")"
 		;;
 	command*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && return
@@ -708,7 +712,6 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $cmd"
 		;;
 	script*)
 		if [ $# -eq 0 ] && [ -n "$file" ]; then
@@ -722,7 +725,6 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd }$(shell_quote "$ARG")"
 		done
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file${cmd#sh \$1}"
 		;;
 	exec*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
@@ -733,13 +735,11 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $file $cmd"
 		;;
 	*container)
 		[ $# -eq 0 ] && [ -n "$image" ] && return
 		[ $# -eq 1 ] || error "%s requires an argument\nUsage: %s [options] image" "swdesc_$CMD" "swdesc_$CMD"
 		image="$1"
-		[ -n "$show_cmd" ] || show_cmd="swdesc_$CMD $image"
 		;;
 	*)
 		error "Unhandled command %s" "$CMD"
@@ -964,9 +964,17 @@ swdesc_files() {
 
 
 shell_quote() {
-	# sh-compliant quote function from http://www.etalabs.net/sh_tricks.html
-	printf %s "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+	case "$1" in
+	# do not escape strings that only contain the following sh-safe chars
+	*[!a-zA-Z0-9=_.,:/-]*)
+		# sh-compliant quote function from http://www.etalabs.net/sh_tricks.html
+		printf %s\\n "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+		;;
+	*)
+		printf %s\\n "$1"
+	esac
 }
+
 conf_quote() {
 	# Double backslashes, escape double-quotes, replace newlines by \n
 	# (the last operation requires reading all input into patternspace first)
