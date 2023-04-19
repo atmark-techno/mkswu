@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=7
+	local preserve_version=0 max_version=8
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -149,6 +149,13 @@ EOF
 
 # v7 list: a6e power-utils files
 /etc/containers/aiot_gw_container_hooks.d
+EOF
+	fi
+	if [ "$preserve_version" -le 7 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v8 list: udev rules
+/etc/udev/rules.d
 EOF
 	fi
 }
