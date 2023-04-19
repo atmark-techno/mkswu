@@ -96,7 +96,7 @@ EOF
 	# (added in 3.16.2-at.6)
 	case " $overlays " in
 	*" armadillo_iotg_g4-aw-xm458.dtbo "*)
-		if ! [ -e /etc/init.d/wifi-recover ]; then
+		if ! [ -e /target/etc/init.d/wifi-recover ]; then
 			enable_service wifi-recover default
 		fi
 		;;
@@ -104,10 +104,10 @@ EOF
 
 	# correct URL in /etc/swupdate.watch
 	local target_for_x2="https://download.atmark-techno.com/armadillo-iot-g4/image/baseos-x2-latest.swu"
-	if [ "$(cat /etc/swupdate.watch)" = "$target_for_x2" ]; then
+	if [ "$(cat /target/etc/swupdate.watch)" = "$target_for_x2" ]; then
 		case "$(cat /etc/hwrevision)" in
-		iot-a6e*) sed -i -e 's/g4/a6e/; s/x2/6e/' /etc/swupdate.watch;;
-		AX2210*) sed -i -e 's/iot-g4/x2/' /etc/swupdate.watch;;
+		iot-a6e*) sed -i -e 's/g4/a6e/; s/x2/6e/' /target/etc/swupdate.watch;;
+		AX2210*) sed -i -e 's/iot-g4/x2/' /target/etc/swupdate.watch;;
 		esac || error "Could not update swupdate.watch"
 	fi
 }
