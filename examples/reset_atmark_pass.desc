@@ -6,5 +6,5 @@ swdesc_option version=1
 #       "usermod -p '"'$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.'"' atmark"
 
 # the default version locks atmark account:
-swdesc_command --extra-os \
+swdesc_command --description "reset atmark password" --extra-os \
 	"usermod -L atmark"

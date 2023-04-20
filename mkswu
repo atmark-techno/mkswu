@@ -2041,7 +2041,7 @@ geninitdesc_promptpass() {
 }
 
 geninitdesc_fixinitdesc() {
-	local version
+	local version max_version=3
 	version=$(sed -ne 's/.*version=\([0-9]*\).*/\1/p' "$desc")
 	if [ -z "$version" ]; then
 		echo "initial_setup.desc is too old, regenerating it"
@@ -2049,6 +2049,7 @@ geninitdesc_fixinitdesc() {
 		mv "$desc" "$desc.old" || error "Could not rename %s" "$desc"
 		return 1
 	fi
+	[ "$version" -ge "$max_version" ] && return
 
 	if [ "$version" -le 1 ]; then
 		info "atmark password was incorrectly generated, regenerating it"
@@ -2057,12 +2058,22 @@ geninitdesc_fixinitdesc() {
 
 		local PASSWD
 		geninitdesc_promptpass atmark
-
 		sed -i -e 's:\(^[ \t]*"usermod\).*atmark:\1 '"$PASSWD"' atmark:' \
-				-e 's/version=[0-9]*/version=2/' \
 				"$desc" \
 			|| error "Could not update %s" "$desc"
 	fi
+
+	if [ "$version" -le 2 ]; then
+		# read all to pattern space for newlines, there might be a
+		# better way of doing this but it's "good enough"
+		sed -i -e ':a;$!N;$!ba;s/\(\nswdesc_command\)\( \\\n[^\n]*usermod\)/\1 --description "setting passwords"\2/' \
+				"$desc" \
+			|| error "Could not update %s" "$desc"
+	fi
+
+	sed -i -e "s/version=[0-9]*/version=$max_version/" \
+			"$desc" \
+		|| error "Could not update %s" "$desc"
 }
 
 mkinit_geninitdesc() {
@@ -2108,6 +2119,7 @@ mkinit_geninitdesc() {
 				AUTOUPDATE="tomorrow"; break;;
 			esac
 		done
+		# a6e swupdate.watch wart to be removed 2024/04
 		cat >> "$desc.tmp" <<EOF \
 			|| error "Could not update %s" "$desc.tmp"
 

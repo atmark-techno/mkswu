@@ -5,7 +5,7 @@ swdesc_option UPDATE_CERTS=1
 ORIG_ENCRYPT_KEYFILE="$ENCRYPT_KEYFILE"
 swdesc_option ENCRYPT_KEYFILE=""
 
-swdesc_option component=extra_os.initial_setup version=2
+swdesc_option component=extra_os.initial_setup version=3
 
 # Uncomment to remove atmark techno's Base OS update certificate.
 # You will no longer be able to update directly from atmark-techno.com servers.
@@ -26,7 +26,7 @@ fi
 #       "usermod -p '"'$6$hfq6eDj4DpwIbn./$ER9tNgX0BYM1WDpYkV2CsI5tK3BWLIjjhbzJ5qlz8QooDJvwfM39KPDr4GKbKQzQB8TzMwlFwBRIekdENJ1/3.'"' root"
 # You can also lock the account, e.g.
 #       "usermod -L atmark"
-swdesc_command \
+swdesc_command --description "setting passwords" \
 	"usermod -p '"'$6$salt$hash'"' root" \
 	"usermod -p '"'$6$salt$hash'"' atmark"
 
