@@ -61,7 +61,15 @@ reset_uboot_env() {
 	env_offset="${env_dev##*,}"
 	env_dev="${env_dev%,*}"
 	env_dev="${env_dev#/dev/}"
-	if [ -e "/sys/block/$env_dev/force_ro" ]; then
+
+	local force_ro=""
+	# SD cards have force_ro, but default to 0 and
+	# fw_setenv do not handle it: only make sure to unlock
+	# (and relock!) if previously locked.
+	if [ "$(cat "/sys/block/$env_dev/force_ro" 2>/dev/null)" = 1 ]; then
+		force_ro=1
+	fi
+	if [ -n "$force_ro" ]; then
 		echo 0 > "/sys/block/$env_dev/force_ro" \
 			|| error "Could not make $env_dev read-write"
 	fi
@@ -71,7 +79,7 @@ reset_uboot_env() {
 		seek="$env_offset" oflag=seek_bytes \
 		conv=fdatasync status=none
 	rc=$?
-	if [ -e "/sys/block/$env_dev/force_ro" ]; then
+	if [ -n "$force_ro" ]; then
 		echo 1 > "/sys/block/$env_dev/force_ro" \
 			|| error "Could not make $env_dev read-only again"
 	fi
@@ -85,7 +93,7 @@ reset_uboot_env() {
 	grep -qE "^bootcmd=" "$SCRIPTSDIR/uboot_env" \
 		|| error "uboot env files existed, but bootcmd is not set. Refusing to continue." \
 			"Please update your Base OS image or provide default environment first."
-	fw_setenv_nowarn --config "/target/etc/fw_env.config" \
+	fw_setenv --config "/target/etc/fw_env.config" \
 			--script "$SCRIPTSDIR/uboot_env" \
 			--defenv /dev/null \
 		|| error "Could not set uboot env"
