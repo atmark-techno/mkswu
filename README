@@ -108,6 +108,8 @@ Common options for all helpers:
   Only used for image managements (e.g. around hawkbit) which will
   normally only consider the first one to be set
 
+--description
+  Alternate text that will be printed when swu is installing this step
 
 Images are then built progressively by calling the following helpers:
 

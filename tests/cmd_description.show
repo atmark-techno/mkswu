@@ -1,0 +1,13 @@
+# out/cmd_description.swu
+
+# built with mkswu
+swdesc_option FORCE_VERSION
+
+swdesc_command_nochroot 'echo ran default command >&2'
+
+swdesc_command_nochroot --description '' 'echo ran empty description >&2'
+
+swdesc_command_nochroot --description 'test
+with newline and 日本語' 'echo ran newline description >&2'
+
+swdesc_command_nochroot --description 'some description' 'echo ran normal description >&2'

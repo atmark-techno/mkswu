@@ -543,11 +543,17 @@ write_entry_stdout() {
 	write_line "installed-directly = true;"
 	write_line "sha256 = \"$sha256\";"
 	local line properties_written=""
+	local LF="
+"
+	local show_desc="${cmd_description%"$LF"*}"
+	if [ "$show_desc" != "$cmd_description" ]; then
+		write_line "# mkswu_orig_cmd ${cmd_description##*"$LF"}"
+	fi
 	for line; do
 		write_line "$line"
 		case "$line" in
 		"properties: {")
-			write_line "  description: \"$(conf_quote "$show_cmd")\";"
+			write_line "  description: \"$show_desc\";"
 			properties_written=1
 			;;
 		"properties: {*")
@@ -555,7 +561,8 @@ write_entry_stdout() {
 		esac
 	done
 	[ -n "$properties_written" ] \
-		|| write_line "properties: {" "  description: \"$(conf_quote "$show_cmd")\";" "};"
+		|| write_line "properties: {" \
+			"  description: \"$show_desc\";" "};"
 
 	indent=$((indent-2))
 	write_line "},"
@@ -583,11 +590,12 @@ parse_swdesc() {
 	shift
 
 	# build command faithfully
-	if [ -z "$show_cmd" ]; then
-		show_cmd="swdesc_$CMD"
+	if [ -z "$cmd_description" ]; then
+		cmd_description="swdesc_$CMD"
 		for ARG; do
-			show_cmd="${show_cmd:+$show_cmd }$(shell_quote "$ARG")"
+			cmd_description="${cmd_description:+$cmd_description }$(shell_quote "$ARG")"
 		done
+		cmd_description="$(conf_quote "$cmd_description")"
 	fi
 
 	local SKIP=0
@@ -653,6 +661,15 @@ parse_swdesc() {
 			[ "$CMD" = "files" ] \
 				|| error "%s only allowed for %s" "$ARG" "swdesc_files"
 			basedir="$1"
+			SKIP=1
+			;;
+		"--description")
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			# keep original description after a new line:
+			# these are not possible in config-escaped strings
+			local LF="
+"
+			cmd_description="$(conf_quote "$1")$LF${cmd_description##*"$LF"}"
 			SKIP=1
 			;;
 		"--container")
@@ -1219,7 +1236,7 @@ embedded_preinstall_script() {
 	local MKSWU_ran_fixvars_stanza="1"
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local component="" version="" install_if=""
-	local show_cmd="pre_script"
+	local cmd_description="pre_script"
 	local MKSWU_install_first=1
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="$SCRIPT_DIR/scripts_pre.sh"
@@ -1242,7 +1259,7 @@ embedded_postinstall_script() {
 	local MKSWU_ran_fixvars_stanza="1"
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local component="" version="" install_if=""
-	local show_cmd="post_script"
+	local cmd_description="post_script"
 	local file="$SCRIPT_DIR/scripts_post.sh"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
@@ -2244,6 +2261,13 @@ mkswu_show() {
 		fi
 
 		printf "%s\n" "$desc" | awk '
+			function dequote() {
+				# undo "conf_quote"
+				sub(/";$/, "")
+				gsub(/\\"/, "\"")
+				gsub(/\\\\/, "\\")
+				gsub(/\\n/, "\n")
+			}
 			/^ *# Built with mkswu/ {
 				print "# built with mkswu", $NF
 			}
@@ -2252,17 +2276,18 @@ mkswu_show() {
 				sub(/ *# /, "")
 				cmd_pending=$0
 			}
-			/^ *description: / {
+			/^ *# mkswu_orig_cmd / {
+				sub(/ *# mkswu_orig_cmd /, "")
+				dequote()
+				cmd[filename]=$0
+			}
+			/^ *description: / && ! cmd[filename] {
 				sub(/ *description: "/, "")
-				sub(/";$/, "")
-				gsub(/\\"/, "\"")
-				gsub(/\\\\/, "\\")
+				dequote()
 				if ($0 ~ /^pre_script$|^post_script$/) {
 					# skip
-				} else if (filename) {
-					cmd[filename]=$0
 				} else {
-					cmd_pending=$0
+					cmd[filename]=$0
 				}
 			}
 			/^ *filename =/ {
@@ -2289,6 +2314,7 @@ mkswu_show() {
 			}
 			/^ *}/ && filename {
 				filename=""
+				cmd_pending=""
 			}
 			/^ *# MKSWU_/ {
 				sub(/ *# MKSWU_/, "")
@@ -2298,6 +2324,10 @@ mkswu_show() {
 			}
 			END {
 			for (filename in cmd) {
+				if (!(cmd[filename])) {
+					continue
+				}
+				# XXX keep order in filenames and sort by filename?
 				print ""
 				if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
 				        sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
@@ -2367,24 +2397,24 @@ local MKSWU_ran_fixvars_stanza="$MKSWU_ran_fixvars_stanza"
 fix_swdesc_parse_vars
 local component="$MKSWU_component" version="$MKSWU_version"
 local board="$MKSWU_board" main_version="$MKSWU_main_version"
-local install_if="$MKSWU_install_if" show_cmd="$MKSWU_show_cmd"
+local install_if="$MKSWU_install_if" cmd_description="$MKSWU_cmd_description"
 local file="$MKSWU_file" dest="$MKSWU_dest" cmd="$MKSWU_cmd"
 local preserve_attributes="$MKSWU_preserve_attributes"
 local container="$MKSWU_container"
 local MKSWU_component="" MKSWU_version="" MKSWU_board=""
-local MKSWU_main_version="" MKSWU_install_if="" MKSWU_show_cmd=""
+local MKSWU_main_version="" MKSWU_install_if="" MKSWU_cmd_description=""
 local MKSWU_file="" MKSWU_dest="" MKSWU_cmd=""
 local MKSWU_preserve_attributes="" MKSWU_container=""
 '
 	local MKSWU_export_swdesc_cmd_vars_stanza='
 local MKSWU_component="$component" MKSWU_version="$version"
 local MKSWU_board="$board" MKSWU_main_version="$main_version"
-local MKSWU_install_if="$install_if" MKSWU_show_cmd="$show_cmd"
+local MKSWU_install_if="$install_if" MKSWU_cmd_description="$cmd_description"
 local MKSWU_file="$file" MKSWU_dest="$dest" MKSWU_cmd="$cmd"
 local MKSWU_preserve_attributes="$preserve_attributes"
 local MKSWU_container="$container"
 local component="" version="" board="" main_version=""
-local install_if="" show_cmd="" file="" dest=""
+local install_if="" cmd_description="" file="" dest=""
 local cmd="" preserve_attributes="" container=""
 '
 	local main_cwd desc desc_file
