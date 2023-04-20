@@ -2325,7 +2325,9 @@ mode_to_opt() {
 
 mkimage() {
 	local SCRIPT_DIR
-	SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" || error "Could not get script dir"
+	SCRIPT_DIR="$(realpath -- "$0")" \
+		&& SCRIPT_DIR="$(dirname -- "$SCRIPT_DIR")" \
+		|| error "Could not get script dir"
 	local OUT=""
 	local OUTDIR=""
 	local CONFIG_DIR
