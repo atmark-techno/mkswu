@@ -1096,7 +1096,6 @@ swdesc_script() {
 
 swdesc_script_nochroot() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
-	local script=""
 
 	parse_swdesc script_nochroot "$@"
 
