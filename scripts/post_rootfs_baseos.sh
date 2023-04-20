@@ -33,7 +33,7 @@ baseos_upgrade_fixes() {
 
 	# note this is the currently running version,
 	# not the version we install (which would always be too recent!)
-	baseos_version=$(cat /etc/atmark-release) || return
+	baseos_version=$(cat /etc/atmark-release 2>/dev/null) || return
 
 	# not a baseos install? skip fixes...
 	[ -n "$baseos_version" ] || return
@@ -91,20 +91,10 @@ EOF
 		enable_service wwan-led default
 		;;
 	esac
-	# Enable wifi-recover, only for wifi-enabled boards if the
-	# service just got added to allow for users disabling it.
-	# (added in 3.16.2-at.6)
-	case " $overlays " in
-	*" armadillo_iotg_g4-aw-xm458.dtbo "*)
-		if ! [ -e /target/etc/init.d/wifi-recover ]; then
-			enable_service wifi-recover default
-		fi
-		;;
-	esac
 
 	# correct URL in /etc/swupdate.watch
 	local target_for_x2="https://download.atmark-techno.com/armadillo-iot-g4/image/baseos-x2-latest.swu"
-	if [ "$(cat /target/etc/swupdate.watch)" = "$target_for_x2" ]; then
+	if [ "$(cat /target/etc/swupdate.watch 2>/dev/null)" = "$target_for_x2" ]; then
 		case "$(cat /etc/hwrevision)" in
 		iot-a6e*) sed -i -e 's/g4/a6e/; s/x2/6e/' /target/etc/swupdate.watch;;
 		AX2210*) sed -i -e 's/iot-g4/x2/' /target/etc/swupdate.watch;;
