@@ -970,8 +970,12 @@ shell_quote() {
 		# sh-compliant quote function from http://www.etalabs.net/sh_tricks.html
 		printf %s\\n "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
 		;;
+	"")
+		printf %s\\n "''"
+		;;
 	*)
 		printf %s\\n "$1"
+		;;
 	esac
 }
 
