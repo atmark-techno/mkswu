@@ -68,9 +68,10 @@ get_pod_infra_image_tag() {
 
 get_conf_image() {
 	local tag type autostart pull
-	tag=$({ echo 'set_image() { image=$1; }';
+	tag=$({ echo 'set_image() { image="$1"; [ -n "$image" ] || image=unknown; }';
 		grep -E '^(set_)?image' "$conf" && echo 'echo "$image"'; } | sh)
-	if [ -z "$tag" ]; then
+	case "$tag" in
+	"")
 		type=$({ echo 'set_type() { type=$1; }';
 			grep -E '^(set_)?type' "$conf" && echo 'echo "$type"'; } | sh)
 		case "$type" in
@@ -90,7 +91,15 @@ get_conf_image() {
 			# network or other new unhandled type
 			return
 		esac
-	fi
+		;;
+	unknown)
+		warning "Warning: could not resolve container tag with just grep, executing $conf"
+		warning "Please consider using set_image without intermediate variable"
+		tag=$(set_image() { echo "$1"; exit 0; };
+		      . "$conf" 2>/dev/null; exit 1) \
+			|| error "Could not extract image from $conf"
+		;;
+	esac
 
 	# if tag starts with a / it's likely a rootfs,
 	# and anyway it's an "invalid reference format" so skip.
