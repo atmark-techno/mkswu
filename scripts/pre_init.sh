@@ -136,8 +136,24 @@ init_really_starting() {
 	# we won't be able to reboot into other partition until installer
 	# finished; disable rollback
 	if [ -e "/etc/fw_env.config" ]; then
-		fw_setenv_nowarn upgrade_available \
-			|| error "Could not set u-boot environment variable, refusing to run"
+		fw_setenv_nowarn upgrade_available
+		case "$?" in
+		0) ;; # ok
+		243)
+			# -EBADF usually means it tried to access default environment
+			# This should normally never happen, but if the boot partition got
+			# wiped out we should not leave swupdate unusable so try harder
+			# to provide default env.
+			grep -qE '^bootcmd=' /boot/uboot_env.d/* 2>/dev/null \
+				|| error "Could not set u-boot environment variable and no default was provided, refusing to run"
+			info "Could not set u-boot environment variable without defaults, retrying with a default file"
+			cat /boot/uboot_env.d/* \
+				| fw_setenv_nowarn --defenv - upgrade_available \
+				|| error "Could not set u-boot environment variable, refusing to run"
+			;;
+		*)
+			error "Could not set u-boot environment variable, refusing to run"
+		esac
 	fi
 }
 

@@ -22,6 +22,10 @@ warning() {
 	stdout_warn printf -- "----------------------------------------------\n"
 }
 
+info() {
+	stdout_info printf -- "%s\n" "$@"
+}
+
 # adjust podman outputs: podman sometimes lists containers ids
 # and it's not clear what they correspond to without a wrapper
 podman_info() {
