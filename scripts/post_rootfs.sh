@@ -109,6 +109,9 @@ post_rootfs() {
 		elif [ -e /etc/fw_env.config ]; then
 			cp /etc/fw_env.config /target/etc/fw_env.config \
 				|| error "Could not copy fw_env.config"
+		elif [ -e /target/boot/extlinux.conf ]; then
+			sed -i -e "s/root=[^ ]*/root=LABEL=rootfs_${ab}/" /target/boot/extlinux.conf \
+				|| error "Could not update extlinux.conf"
 		fi
 
 		# adjust fstab/partitions

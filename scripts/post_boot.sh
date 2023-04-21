@@ -86,15 +86,14 @@ reset_uboot_env() {
 	[ "$rc" = 0 ] || error "Could not clear uboot env"
 
 	# stop here if nothing in uboot_env.d
-	grep -qE '^[^#]' /boot/uboot_env.d/* 2>/dev/null || return
-
-	cat /target/boot/uboot_env.d/* > "$SCRIPTSDIR/uboot_env" \
-		|| error "uboot env files existed but could not merge them"
-	grep -qE "^bootcmd=" "$SCRIPTSDIR/uboot_env" \
+	grep -qE '^[^#]' /target/boot/uboot_env.d/* 2>/dev/null || return
+	grep -qE "^bootcmd=" /target/boot/uboot_env.d/* \
 		|| error "uboot env files existed, but bootcmd is not set. Refusing to continue." \
 			"Please update your Base OS image or provide default environment first."
-	fw_setenv_nowarn --config "/target/etc/fw_env.config" \
-			--script "$SCRIPTSDIR/uboot_env" \
+
+	cat /target/boot/uboot_env.d/* \
+		| fw_setenv_nowarn --config "/target/etc/fw_env.config" \
+			--script - \
 			--defenv /dev/null \
 		|| error "Could not set uboot env"
 	rm -f "$SCRIPTSDIR/uboot_env"
@@ -162,9 +161,6 @@ cleanup_boot() {
 		# assume gpt boot e.g. extlinux
 		sgdisk --attributes=$((ab+1)):set:2 --attributes=$((!ab+1)):clear:2 "$rootdev" \
 			|| error "Could not set boot attribute"
-
-		sed -i -e "s/root=[^ ]*/root=LABEL=rootfs_${ab}/" /target/boot/extlinux.conf \
-			|| error "Could not update extlinux.conf"
 		extlinux -i /target/boot 2>&1 || error "Could not reinstall bootloader"
 		cleanup_target
 	else
