@@ -93,7 +93,7 @@ reset_uboot_env() {
 	grep -qE "^bootcmd=" "$SCRIPTSDIR/uboot_env" \
 		|| error "uboot env files existed, but bootcmd is not set. Refusing to continue." \
 			"Please update your Base OS image or provide default environment first."
-	fw_setenv --config "/target/etc/fw_env.config" \
+	fw_setenv_nowarn --config "/target/etc/fw_env.config" \
 			--script "$SCRIPTSDIR/uboot_env" \
 			--defenv /dev/null \
 		|| error "Could not set uboot env"
