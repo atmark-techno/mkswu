@@ -1,3 +1,56 @@
+4.11
+====
+deprecation notice:
+ - In order to avoid conflicting use of variables inside .desc file and
+variables in other mkswu itself or other desc files, swdesc_* commands
+and mkswu itself will stop processing some variables that have been used
+directly such as 'version' in the past.
+Please use swdesc_option or swdesc_* --<option> instead. Use of these
+variables will display a warning, and will stop working in new swu
+created after 2024/04.
+
+fixes:
+ - version normalization had a few problems, in particular leading zeroes
+were incorrectly removed in some cases (after a succession of dashes,
+where it should be considered as a string). The normalization now happens
+during preprocessing at mkswu step and should be more correct.
+ - avoid using incompatible desc when running kernel_update_plain install
+script
+ - fix running on qemu-based ABOS (only useful for testing)
+
+features:
+ - Support smaller boot partition sizes: the boot image is no longer
+padded, and environment is cleared during install based on offsets in
+the fw_env.config file
+ - Automatically pad leading 1KB of boot image if required: older image
+format (used for imx6ull) requires being written from the 1KB offset of
+the boot partition; pad the image so the actual image starts at the
+correct offset if required
+ - Improve comments in /etc/swupdate.pem for newly created certificates.
+The comment will be present in the certificate on ATDE side as well,
+and will contain the common name as well as the file name now.
+ - Improve error messages in podman scripts. The errors now have the same
+dash banner as other errors.
+ - Add support for command descriptions printing progress-like messages
+as install is executed on compatible versions of swupdate.
+ - mkswu --show will now output something closer to the desc file itself
+by default. It is not recommended to use as is, but can be used to
+reproduce part of a swu.
+ - /tmp is now mounted as a tmpfs for swdesc_exec (and script, command);
+the directory can be used to produce temporary data.
+ - Allow running mkswu as a symlink to the script in git directory.
+ - Add /etc/udev/rules.d to the default swupdate_preserve_files.
+ - Armadillo A6E: add a6e-gw-container to swupdate.watch
+
+experimental:
+ - swdesc_exec has gained a --container option which allows running
+command from an arbitrary container. This can be used to perform tasks
+that are difficult to do on Base OS (due to e.g. lack of dependencies).
+In this case, the partition being installed to is mounted as /target.
+This might go away in the future and should not be relied on yet.
+
+ -- 2023-04-25
+
 4.10.1
 ======
 fixes:
@@ -406,7 +459,8 @@ fixes:
  - post_app: fix possible failure case where swap happened but we error into
 reboot case, leading to double-swap
  - version managements: do not remove extra_os versions on base_os update
- - examples/initial_setup.desc: fix using wrong public key for /etc/swupdate.pem update
+ - examples/initial_setup.desc: fix using wrong public key for
+/etc/swupdate.pem update
 
  -- 2021-12-21
 
