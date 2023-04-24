@@ -172,8 +172,6 @@ test_version_update() {
 	version=$(get_version extra_os.kernel)
 	[ "$version" = "5.10.99-1" ] || error "Did not merge in new kernel version (higher)"
 
-	# like test_version_compare, this is half broken with mawk,
-	# but only impacts tests.
 	uboot_vbase="2020.4"
 	echo "  #VERSION boot 2020.4-at2 different *" > "$SWDESC"
 	gen_newversion

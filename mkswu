@@ -2250,7 +2250,21 @@ mkswu_update_version() {
 }
 
 mkswu_show() {
-	local swu desc
+	local swu desc order awk=""
+
+	if command -v gawk >/dev/null; then
+		awk="gawk"
+	elif command -v awk > /dev/null; then
+		# gensub isn't posix and mawk in particular doesn't like it
+		echo "test" | awk ' {
+				$0 = gensub(/(te)st/, "\\1", "g");
+				if ($0 != "te") {
+					exit(1)
+				}
+			}' 2>/dev/null \
+			&& awk="awk"
+	fi
+
 	for swu; do
 		[ "$swu" != "${swu%.swu}" ] \
 			|| error "File does not end in .swu: %s" "$swu"
@@ -2272,13 +2286,19 @@ mkswu_show() {
 			continue
 		fi
 
-		printf "%s\n" "$desc" | awk '
+		[ -n "$awk" ] || error "mkswu --show requires a compatible awk (e.g. gawk)"
+
+		order=$(cpio -t --quiet < "$swu") \
+			|| error "Could not get SWU file list from %s" "$swu"
+
+		printf "%s\n" "$desc" | "$awk" -v "order_string=$order" '
 			function dequote() {
 				# undo "conf_quote"
 				sub(/";$/, "")
-				gsub(/\\"/, "\"")
+				# only "unquote" after an odd number of backslashes...
+				$0 = gensub(/(^|[^\\])((\\\\)*)\\n/, "\\1\\2\n", "g");
+				$0 = gensub(/(^|[^\\])((\\\\)*)\\"/, "\\1\\2\"", "g");
 				gsub(/\\\\/, "\\")
-				gsub(/\\n/, "\n")
 			}
 			/^ *# Built with mkswu/ {
 				print "# built with mkswu", $NF
@@ -2335,23 +2355,24 @@ mkswu_show() {
 				print "swdesc_option " $0
 			}
 			END {
-			for (filename in cmd) {
-				if (!(cmd[filename])) {
-					continue
+				split(order_string, order);
+				for (key in order) {
+					filename = order[key];
+					if (!(cmd[filename])) {
+						continue
+					}
+					print ""
+					if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
+					        sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
+					}
+					if (!(cmd[filename] ~ /--install-if/) && install_if[filename]) {
+						sub(/ /, "  --install-if " install_if[filename] " ", cmd[filename])
+					}
+					print cmd[filename]
+					if (encrypted[filename]) {
+						print "#  (encrypted)"
+					}
 				}
-				# XXX keep order in filenames and sort by filename?
-				print ""
-				if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
-				        sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
-				}
-				if (!(cmd[filename] ~ /--install-if/) && install_if[filename]) {
-					sub(/ /, "  --install-if " install_if[filename] " ", cmd[filename])
-				}
-				print cmd[filename]
-				if (encrypted[filename]) {
-					print "#  (encrypted)"
-				}
-			}
 			}
 			'
 	done

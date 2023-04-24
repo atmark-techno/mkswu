@@ -779,6 +779,14 @@ msgid "falling back to --raw"
 msgstr "--raw の出力を表示します。"
 
 #: mkswu
+msgid "mkswu --show requires a compatible awk (e.g. gawk)"
+msgstr "mkswu --show には gawk が必要です。"
+
+#: mkswu
+msgid "Could not get SWU file list from %s"
+msgstr "%s からファイルリストを読み取れませんでした。"
+
+#: mkswu
 msgid "Could not get script dir"
 msgstr "スクリプトのディレクトリが読み取れませんでした。"
 

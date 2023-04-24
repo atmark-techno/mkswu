@@ -585,6 +585,12 @@ msgstr ""
 msgid "falling back to --raw"
 msgstr ""
 #: mkswu
+msgid "mkswu --show requires a compatible awk (e.g. gawk)"
+msgstr ""
+#: mkswu
+msgid "Could not get SWU file list from %s"
+msgstr ""
+#: mkswu
 msgid "Could not get script dir"
 msgstr ""
 #: mkswu

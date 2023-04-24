@@ -104,14 +104,12 @@ scripts_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio 
 build_check cmd_description.desc -- \
 	"swdesc '# mkswu_orig_cmd swdesc_command_nochroot --description' \
 		'description: \"some description\";'"
-"$MKSWU" --show "out/cmd_description.swu" \
-	| sed -e 's/\(built with mkswu\) .*/\1/' > "out/cmd_description.show"
-# XXX: diff (correctly) assumes that show will preserve output order,
-# but it is currently left to an implementation detail of awk which
-# fails CI tests.
-# Re-enable after mkswu --show output is properly sorted, later.
-#diff -u "cmd_description.show" "out/cmd_description.show" \
-#	|| error "mkswu --show output not as expected"
+if command -v gawk || command -v awk && ! awk -W version | grep -q mawk; then
+	"$MKSWU" --show "out/cmd_description.swu" \
+		| sed -e 's/\(built with mkswu\) .*/\1/' > "out/cmd_description.show"
+	diff -u "cmd_description.show" "out/cmd_description.show" \
+		|| error "mkswu --show output not as expected"
+fi
 
 rm -rf "$TESTS_DIR/out/init" "$TESTS_DIR/out/init_noupdate" "$TESTS_DIR/out/init_noatmark"
 "$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
