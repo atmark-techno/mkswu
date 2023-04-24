@@ -774,7 +774,7 @@ check_pad_boot() {
 		return
 		;;
 	esac
-	error "Unrecognized boot image for %s" "$boot_file"
+	error "Unrecognized boot image format for %s" "$boot_file"
 }
 
 swdesc_boot() {

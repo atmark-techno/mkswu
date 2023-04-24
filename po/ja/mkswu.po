@@ -256,7 +256,7 @@ msgstr "%s に --version の指定が必要です。"
 
 #: mkswu
 msgid "properties opening tag should be on its own line"
-msgstr ""
+msgstr "properties の開始タグに他の文字を含めることはできません。"
 
 #: mkswu
 msgid "%s requires an argument"
@@ -271,12 +271,8 @@ msgid "--install-if must be higher or different"
 msgstr "--install-if には「higher」か「different」を指定してください。"
 
 #: mkswu
-msgid "%s only allowed for swdesc_files and swdesc_tar"
-msgstr "%s は swdesc_files か swdesc_tar にしか使えません。"
-
-#: mkswu
-msgid "%s only allowed for swdesc_files"
-msgstr "%s は swdesc_files にしか使えません。"
+msgid "%s only allowed for %s"
+msgstr "%s は %s にしか使えません。"
 
 #: mkswu
 msgid "%s is not a known %s argument"
@@ -311,8 +307,8 @@ msgid "swdesc_script requires arguments\\nUsage: swdesc_script [options] script 
 msgstr "swdesc_script に引数が必要です。\\nUsage: swdesc_script [options] script [args]"
 
 #: mkswu
-msgid "swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] file command"
-msgstr "swdesc_exec には最低二つの引数が必要です。\\nUsage: swdesc_exec [options] file command"
+msgid "swdesc_%s requires at least two arguments\\nUsage: swdesc_%s [options] file command"
+msgstr "swdesc_%s には最低二つの引数が必要です。\\nUsage: swdesc_%s [options] file command"
 
 #: mkswu
 msgid "%s requires an argument\\nUsage: %s [options] image"
@@ -323,12 +319,12 @@ msgid "Unhandled command %s"
 msgstr "%s コマンドを実行できません。"
 
 #: mkswu
-msgid "Cannot stat boot file: %s"
-msgstr "%s ファイルにアクセスできません。"
+msgid "%s does not exist"
+msgstr "%s が存在しません。"
 
 #: mkswu
-msgid "BOOT_SIZE set smaller than boot file actual size"
-msgstr "BOOT_SIZE変数がファイルサイズよりも小さいです。"
+msgid "Unrecognized boot image format for %s"
+msgstr "%s ブートイメージフォーマットを認識できませんでした。"
 
 #: mkswu
 msgid "Version component for swdesc_boot must be set to boot"
@@ -375,10 +371,6 @@ msgid "Warning: automatically setting --preserve-attributes for base_os update"
 msgstr "Warning: base_osアップデートで--preserve-attributesを自動的に設定しました。"
 
 #: mkswu
-msgid "%s does not exist"
-msgstr "%s が存在しません。"
-
-#: mkswu
 msgid "%s is not inside %s"
 msgstr "%s は %s の中にありません。"
 
@@ -411,8 +403,20 @@ msgid "Could not create pre script"
 msgstr "実行前スクリプトの作成が失敗しました。"
 
 #: mkswu
+msgid "BOOT_SIZE is no longer used and has been ignored"
+msgstr "BOOT_SIZE は使用されません。無視されます。"
+
+#: mkswu
 msgid "Unknown option for swdesc_option: %s"
 msgstr "swdesc_option の %s オプションを認識できません。"
+
+#: mkswu
+msgid "%s was set directly, please use swdesc_option %s instead."
+msgstr "%s が直接指定されました。代わりに swdesc_option %s を使用してください。"
+
+#: mkswu
+msgid "This will stop working in %s update"
+msgstr "この指定方法は、%s のアップデートで利用できなくなります。"
 
 #: mkswu
 msgid "DESCRIPTION must be set"
@@ -601,6 +605,14 @@ msgstr "%s 変数を認識できません。"
 #: mkswu
 msgid "Variable %s was not set"
 msgstr "%s 変数は設定されてません。"
+
+#: mkswu
+msgid "%s requires at least two arguments"
+msgstr "%s には最低二つの引数が必要です"
+
+#: mkswu
+msgid "%s requires an even number of arguments"
+msgstr "%s の引数の数は偶数である必要があります。"
 
 #: mkswu
 msgid "%s must end with .swu"

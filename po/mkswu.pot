@@ -204,10 +204,7 @@ msgstr ""
 msgid "--install-if must be higher or different"
 msgstr ""
 #: mkswu
-msgid "%s only allowed for swdesc_files and swdesc_tar"
-msgstr ""
-#: mkswu
-msgid "%s only allowed for swdesc_files"
+msgid "%s only allowed for %s"
 msgstr ""
 #: mkswu
 msgid "%s is not a known %s argument"
@@ -234,7 +231,7 @@ msgstr ""
 msgid "swdesc_script requires arguments\\nUsage: swdesc_script [options] script [args]"
 msgstr ""
 #: mkswu
-msgid "swdesc_exec requires at least two arguments\\nUsage: swdesc_exec [options] file command"
+msgid "swdesc_%s requires at least two arguments\\nUsage: swdesc_%s [options] file command"
 msgstr ""
 #: mkswu
 msgid "%s requires an argument\\nUsage: %s [options] image"
@@ -243,10 +240,10 @@ msgstr ""
 msgid "Unhandled command %s"
 msgstr ""
 #: mkswu
-msgid "Cannot stat boot file: %s"
+msgid "%s does not exist"
 msgstr ""
 #: mkswu
-msgid "BOOT_SIZE set smaller than boot file actual size"
+msgid "Unrecognized boot image format for %s"
 msgstr ""
 #: mkswu
 msgid "Version component for swdesc_boot must be set to boot"
@@ -282,9 +279,6 @@ msgstr ""
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
 msgstr ""
 #: mkswu
-msgid "%s does not exist"
-msgstr ""
-#: mkswu
 msgid "%s is not inside %s"
 msgstr ""
 #: mkswu
@@ -309,7 +303,16 @@ msgstr ""
 msgid "Could not create pre script"
 msgstr ""
 #: mkswu
+msgid "BOOT_SIZE is no longer used and has been ignored"
+msgstr ""
+#: mkswu
 msgid "Unknown option for swdesc_option: %s"
+msgstr ""
+#: mkswu
+msgid "%s was set directly, please use swdesc_option %s instead."
+msgstr ""
+#: mkswu
+msgid "This will stop working in %s update"
 msgstr ""
 #: mkswu
 msgid "DESCRIPTION must be set"
@@ -451,6 +454,12 @@ msgid "Invalid variable name %s"
 msgstr ""
 #: mkswu
 msgid "Variable %s was not set"
+msgstr ""
+#: mkswu
+msgid "%s requires at least two arguments"
+msgstr ""
+#: mkswu
+msgid "%s requires an even number of arguments"
 msgstr ""
 #: mkswu
 msgid "%s must end with .swu"

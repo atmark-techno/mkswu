@@ -294,11 +294,11 @@ msgstr "certbotコンテナを設定しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "If the host is directly accessible over internet, it it possible to setup a let's"
-msgstr "サーバーが直接インタネットにアクセス可能であれば、Let's Encryptの証明書"
+msgstr "サーバーが直接インターネットにアクセス可能であれば、Let's Encryptの証明書"
 
 #: hawkbit-compose/setup_container.sh
 msgid "encrypt certificate instead of the self-signed one. Accepting means you agree to the TOS:"
-msgstr "を設定することができます。TOSへの同意を意味します。"
+msgstr "を設定することができます。これを設定することは、次の利用規約への同意を意味します。"
 
 #: hawkbit-compose/setup_container.sh
 msgid "The generated certificate needs to be registered on device."
