@@ -665,7 +665,7 @@ test_update_overlays() {
 # run in subshell as we cannot source all at once
 (
 	set -e
-	. "$SCRIPTS_SRC_DIR/../mkswu"
+	. "$MKSWU"
 
 	test_version_normalize
 	test_encrypt_sign
