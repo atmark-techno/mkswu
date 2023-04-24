@@ -1,8 +1,0 @@
-# desc file version
-swdesc_option version=1
-
-# copy files from uboot_env directory to /boot/uboot_env.d
-# removing files can be done with swdesc_command but removed
-# files will not unset variables or restore defaults, for that
-# set empty values e.g. 'varname=' will unset varname.
-swdesc_files --extra-os --dest /boot/uboot_env.d uboot_env

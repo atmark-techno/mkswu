@@ -1,2 +1,0 @@
-ATMARK_CERTS="$PWD/../certs/atmark-1.pem,$PWD/../certs/atmark-2.pem"
-FORCE_VERSION=1

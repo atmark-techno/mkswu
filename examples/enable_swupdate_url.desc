@@ -1,6 +1,0 @@
-swdesc_command --version extra_os.swupdate_url 1 \
-	'rc-update add swupdate-url default' \
-	'echo https://download.atmark-techno.com/armadillo-iot-g4/image/baseos-x2-latest.swu > /etc/swupdate.watch' \
-	'echo -e "schedule=\"0 tomorrow\"\nrdelay=21600" > /etc/conf.d/swupdate-url'
-
-# schedule above can be set to anything e.g. "0 next week" for less checks

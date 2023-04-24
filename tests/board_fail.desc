@@ -1,4 +1,0 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
-FORCE_VERSION=1
-swdesc_files --board noexist --dest /tmp/swupdate-test zoo/test\ space
-swdesc_files --dest /tmp/swupdate-test zoo/test\ space.tar

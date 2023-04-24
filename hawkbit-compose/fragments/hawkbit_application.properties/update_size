@@ -1,5 +1,0 @@
-# max file size for artifcat upload
-# If planning to use bigger updates, increase it
-# (and nginx client_max_body_size if using nginx)
-spring.servlet.multipart.max-file-size=1024MB
-spring.servlet.multipart.max-request-size=-1

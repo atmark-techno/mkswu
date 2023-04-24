@@ -1,9 +1,0 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
-
-component=extra_os.test
-version=1
-
-swdesc_script_nochroot "../examples/update_preserve_files.sh" -- \
-	--file /tmp/swupdate-test/preserve \
-	--comment "## okay" \
-	line1 "line2 with space and ! \ @"

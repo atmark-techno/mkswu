@@ -1,9 +1,0 @@
-# example environment file
-#
-# lines starting with # or not containing = are ignored
-# unset variables by setting empty value, e.g. 'varname='
-# any number of variables can be set in a file.
-
-# reduce bootdelay to zero to speed up boot
-# (set to -2 to disable prompt completely)
-bootdelay=0

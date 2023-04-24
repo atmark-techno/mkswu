@@ -1,6 +1,0 @@
-/hawkbit_artifactrepo
-/mysql
-/docker-compose.yml
-/.env
-/data
-/setup_container.conf

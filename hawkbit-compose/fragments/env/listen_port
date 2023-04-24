@@ -1,4 +1,0 @@
-# port and ip hawkbit will listen to (where reverse proxy needs to redirect)
-# you might want to restrict host to 127.0.0.1 if running a reverse proxy
-#HAWKBIT_LISTEN_PORT=8080
-#HAWKBIT_LISTEN_HOST=0.0.0.0

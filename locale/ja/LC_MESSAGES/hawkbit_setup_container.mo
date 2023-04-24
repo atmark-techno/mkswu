@@ -1,1 +1,0 @@
-../../../hawkbit-compose/locale/ja/LC_MESSAGES/hawkbit_setup_container.mo

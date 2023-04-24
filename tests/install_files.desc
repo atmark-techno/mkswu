@@ -1,9 +1,0 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
-swdesc_option FORCE_VERSION
-swdesc_files --basedir . --dest /tmp/swupdate-test \
-	zoo/test\ space zoo/test\ space.tar
-
-swdesc_files --dest /tmp/swupdate-test/autobase zoo/test\ space
-swdesc_files --dest /tmp/swupdate-test/subdir zoo
-swdesc_files --dest=/tmp/swupdate-test/"subdir space" \
-	"zoo/test space"

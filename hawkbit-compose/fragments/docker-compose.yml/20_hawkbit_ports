@@ -1,4 +1,0 @@
-        #LISTENports:
-        #LISTEN    - "${HAWKBIT_LISTEN_HOST:-0.0.0.0}:8080:${HAWKBIT_LISTEN_PORT:-8080}"
-        #EXPOSEexpose:
-        #EXPOSE    - 8080
