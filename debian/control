@@ -4,7 +4,7 @@ Priority: optional
 Homepage: https://github.com/atmark-techno/swupdate-mkimage
 Standards-Version: 3.9.2
 Maintainer: Dominique Martinet <dominique.martinet@atmark-techno.com>
-Build-Depends: debhelper-compat (= 12)
+Build-Depends: debhelper-compat (= 12), gettext, pandoc
 
 Package: mkswu
 Depends:
