@@ -54,7 +54,7 @@ get_pod_infra_image_tag() {
 
 	if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
 			image inspect --format '{{.Id}}' "$infra_image" 2>/dev/null; then
-		warning "pod configured but pod infra container $infra_image was not found!" \
+		warning "Warning: pod configured but pod infra container $infra_image was not found!" \
 			"Trying to get it now"
 		[ -n "$DRY_RUN" ] && return
 		# pull command prints the id of the image it just fetched
@@ -115,7 +115,13 @@ get_conf_image() {
 		case "$pull" in
 		always|missing) return;;
 		esac
-		error "image $tag in $conf not found in image store !"
+		if [ "$conf" != "${conf#/target}" ] \
+		    && cmp -s "$conf" "${conf#/target}" 2>/dev/null; then
+			# do not fail update if the config file was already present
+			warning "Warning: image $tag in $conf not found in image store !"
+		else
+			error "image $tag in $conf not found in image store !"
+		fi
 	fi
 }
 
