@@ -132,20 +132,23 @@ two" ] || error "updated content does not match (two scripts)"
 			> out/cmd_description_stdout \
 			2> out/cmd_description_stderr \
 		|| error "swupdate failed: $(cat out/cmd_description_stderr)"
-# XXX: swupdate package is too old in test container,
-# uncomment after release
-#	for description in "some description" "" "test
+	for description in "some description" "" "test
 #with newline and 日本語" "swdesc_command_nochroot 'echo ran default command >&2'"; do
-#		grep -qe "Installing $description$" "out/cmd_description_stdout" \
-#			|| error "Missing '$description' in stdout"
-#	done
-	for output in "ran default command" "ran normal description" \
+		grep -qe "Installing $description$" "out/cmd_description_stdout" \
+			|| error "Missing '$description' in stdout"
+	done
+	for output in "ran normal description" \
 			"ran empty description" "ran newline description"; do
 		grep -qE "ERROR : $output$" "out/cmd_description_stderr" \
 			|| error "Missing '$output' in stderr"
 		grep -F "$output" out/cmd_description_stdout \
 			&& error "Printed command '$output' in stdout when it shouldn't"
 	done
+	# 'ran default command' is also in stdout because description
+	# reflects the command, so check separately
+	output="ran default command"
+	grep -qE "ERROR : $output$" "out/cmd_description_stderr" \
+		|| error "Missing '$output' in stderr"
 fi
 
 # finish with a successful command to not keep last failed on purpose test result
