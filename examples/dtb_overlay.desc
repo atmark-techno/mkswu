@@ -1,5 +1,5 @@
-component=extra_os.dtb_overlay
-version=1
+swdesc_option component=extra_os.dtb_overlay
+swdesc_option version=1
 
 
 # write over files in /boot
