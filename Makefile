@@ -33,6 +33,7 @@ clean:
 	rm -f tests/zoo/* tests/mkswu-aes.conf tests/swupdate.aes-key
 	rm -f examples/nginx_start.tar imx-boot_armadillo_x2 examples/linux-at-5.10.9-r3.apk
 	rm -rf examples/kernel
+	rm -f docs/*.html
 
 
 po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc
@@ -60,7 +61,7 @@ locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 	msgfmt -o $@ $<
 
 docs/%.html: docs/%.md
-	pandoc -s $< > $@
+	pandoc -s $< -o $@
 
 check:
 	./tests/run.sh
