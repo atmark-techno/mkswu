@@ -28,6 +28,7 @@ echo "iot-g4-es1 at1" > "$HWREV"
 test_version_install() {
 	local oldvers="$1" newvers="$2"
 	local canary=/tmp/swupdate-installed rc
+	local swupdate_component=${swupdate_component:-testcomp}
 	local normalized_newvers
 	# shellcheck disable=SC2016 ## single quote on purpose...
 	normalized_newvers=$(version="$newvers" "$MKSWU" --internal \
@@ -43,7 +44,7 @@ test_version_install() {
 		| name=version_install build_check - -- "swdesc 'VERSION testcomp $normalized_newvers'" \
 		|| error "mkswu build failed"
 
-	echo "testcomp $oldvers" > "$SW_VERSIONS"
+	echo "$swupdate_component $oldvers" > "$SW_VERSIONS"
 	rm -f "$canary"
 	"$SWUPDATE" -k ../swupdate.pem -i ./out/version_install.swu \
 		|| error "swupdate failed"
@@ -124,6 +125,21 @@ for version in 1.1.0-1 1.01-1 1.1-01; do
 			'swdesc_option install_if=different' \
 		&& error "$base was not equal to $version"
 done
+
+# version missing in swupdate, all should be upgrade
+for version in 1 0; do
+	swupdate_component=other \
+	test_version_install 1 "$version" \
+		|| error "$version not considered an upgrade over nothing"
+done
+
+# from here, test things that normally aren't allowed just to see...
+export MKSWU_TEST_ALLOW_BOGUS_VERSION=1
+
+# negative version (should be handled as string)
+swupdate_component=other \
+test_version_install 1 "-1" \
+	|| error "$version not considered an upgrade over nothing"
 
 # finish with a successful command to not keep last failed on purpose test result
 true

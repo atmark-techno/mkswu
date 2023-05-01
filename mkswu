@@ -360,6 +360,8 @@ normalize_version() {
 }
 
 check_version_valid() {
+	[ -n "$MKSWU_TEST_ALLOW_BOGUS_VERSION" ] && return
+
 	case "$install_if" in
 	higher)
 		check_version_higher "$version"
