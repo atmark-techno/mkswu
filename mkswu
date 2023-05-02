@@ -1365,6 +1365,7 @@ fix_swdesc_parse_vars() {
 
 	if [ -n "$component" ]; then
 		MKSWU_component="$component"
+		component=""
 		if [ -z "$MKSWU_WARN_component" ]; then
 			warning "%s was set directly, please use swdesc_option %s instead." \
 				"component" "component=$component"
@@ -1374,6 +1375,7 @@ fix_swdesc_parse_vars() {
 	fi
 	if [ -n "$version" ]; then
 		MKSWU_version="$version"
+		version=""
 		if [ -z "$MKSWU_WARN_version" ]; then
 			warning "%s was set directly, please use swdesc_option %s instead." \
 				"version" "version=$version"

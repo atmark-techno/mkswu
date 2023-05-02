@@ -35,9 +35,14 @@ MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key build_check aes.desc -- \
 	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
 
 # test old variables backwards compatibility
-printf "%s\n" "component=test" "install_if=different" "version=1" "swdesc_files build_tests.sh" \
+printf "%s\n" "component=test" "install_if=different" "version=1" \
+	"swdesc_files build_tests.sh" \
+	"swdesc_files examples.sh" \
     | name=compat_version_vars build_check - -- \
         "swdesc 'VERSION test 1 different'"
+[ "$(grep -cE 'name = "test"|version = "1"' \
+		out/.compat_version_vars/sw-description)" = 4 ] \
+	|| error "compat_version_vars: both files didn't have version set"
 
 build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
