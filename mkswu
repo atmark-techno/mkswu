@@ -632,6 +632,13 @@ parse_swdesc() {
 			version="$2"
 			SKIP=2
 			;;
+		"--version-ignore")
+			component=""
+			;;
+		"--version-force")
+			MKSWU_FORCE_VERSION=1
+			component=""
+			;;
 		"--extra-os")
 			[ "${component#extra_os.}" != "$component" ] || component="extra_os.$component"
 			;;

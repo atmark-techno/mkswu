@@ -103,6 +103,16 @@ Common options for all helpers:
   force either mode, in particular hawkbit only supports different
   mode so one might want to enable this globally.
 
+--version-ignore
+  Explicitly do not set any version for this command. It will be installed
+  every time if and only if the swu would be installed.
+  See the FORCE_VERSION global option or --version-force if you would like
+  to install the SWU again every time.
+
+--version-force
+  This is the same as --version-ignore, except that it also enforce the
+  SWU installation like `swdesc_option FORCE_VERSION` would.
+
 --main-version
   Tag this component's name/version as image's main version.
   Only used for image managements (e.g. around hawkbit) which will
@@ -110,6 +120,7 @@ Common options for all helpers:
 
 --description
   Alternate text that will be printed when swu is installing this step
+
 
 Images are then built progressively by calling the following helpers:
 
