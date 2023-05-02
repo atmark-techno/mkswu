@@ -2,3 +2,4 @@
 # so could leave your device without any software on installation failures!
 # !! Do not use in production !!
 swdesc_option FORCE_VERSION CONTAINER_CLEAR
+swdesc_command true

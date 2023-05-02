@@ -186,7 +186,16 @@ msgstr ""
 msgid "Checksumming %s failed"
 msgstr ""
 #: mkswu
-msgid "version %s was set without associated component"
+msgid "Warning: item was set without version:\\n%s"
+msgstr ""
+#: mkswu
+msgid "This will stop working in %s update"
+msgstr ""
+#: mkswu
+msgid "Please set a version (e.g. global swdesc_option version=...)"
+msgstr ""
+#: mkswu
+msgid "version %s was set without associated component:\\n%s"
 msgstr ""
 #: mkswu
 msgid "%s requires --version to be set"
@@ -312,9 +321,6 @@ msgstr ""
 msgid "%s was set directly, please use swdesc_option %s instead."
 msgstr ""
 #: mkswu
-msgid "This will stop working in %s update"
-msgstr ""
-#: mkswu
 msgid "DESCRIPTION must be set"
 msgstr ""
 #: mkswu
@@ -325,9 +331,6 @@ msgid "HW_COMPAT must be set"
 msgstr ""
 #: mkswu
 msgid "above component used multiple times with different versions or install-if mode"
-msgstr ""
-#: mkswu
-msgid "No versions found: empty image or version not set?"
 msgstr ""
 #: mkswu
 msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"

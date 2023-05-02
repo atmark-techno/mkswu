@@ -247,8 +247,20 @@ msgid "Checksumming %s failed"
 msgstr "%s のチェックサムの生成ができませんでした。"
 
 #: mkswu
-msgid "version %s was set without associated component"
-msgstr "バージョン %s に 関連するコンポーネントがありません！"
+msgid "Warning: item was set without version:\\n%s"
+msgstr "Warning: バージョンは設定されませんでした：\\n%s"
+
+#: mkswu
+msgid "This will stop working in %s update"
+msgstr "この指定方法は、%s のアップデートで利用できなくなります。"
+
+#: mkswu
+msgid "Please set a version (e.g. global swdesc_option version=...)"
+msgstr "swdesc_option version=... 等でバージョンを設定してください"
+
+#: mkswu
+msgid "version %s was set without associated component:\\n%s"
+msgstr "バージョン %s に 関連するコンポーネントがありません：\\n%s"
 
 #: mkswu
 msgid "%s requires --version to be set"
@@ -415,10 +427,6 @@ msgid "%s was set directly, please use swdesc_option %s instead."
 msgstr "%s が直接指定されました。代わりに swdesc_option %s を使用してください。"
 
 #: mkswu
-msgid "This will stop working in %s update"
-msgstr "この指定方法は、%s のアップデートで利用できなくなります。"
-
-#: mkswu
 msgid "DESCRIPTION must be set"
 msgstr "DESCRIPTION変数を設定してください。"
 
@@ -433,10 +441,6 @@ msgstr "HW_COMPAT変数を設定してください。"
 #: mkswu
 msgid "above component used multiple times with different versions or install-if mode"
 msgstr "上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
-
-#: mkswu
-msgid "No versions found: empty image or version not set?"
-msgstr "バージョンが見つかりませんでした。--versionかswdesc_option version=1を使ってください。"
 
 #: mkswu
 msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"

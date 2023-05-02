@@ -424,8 +424,11 @@ write_entry_stdout() {
 	local install_if="$install_if"
 	shift
 	local sha256="" iv="" indent=0
+	local LF="
+"
+	local show_desc="${cmd_description%"$LF"*}"
 
-	trace "Processing $file"
+	trace "Processing $show_desc ($file)"
 	[ -e "$file_src" ] || error "Missing source file: %s" "$file_src"
 
 	if [ -n "$compress" ]; then
@@ -516,8 +519,18 @@ write_entry_stdout() {
 	write_line "{"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
-	if [ -n "$version" ]; then
-		[ -n "$component" ] || error "version %s was set without associated component" "$version"
+	if [ -n "$component" ] && [ -z "$version" ]; then
+		warning "Warning: item was set without version:\n%s" \
+				"$show_desc"
+		warning "This will stop working in %s update" "2024/05"
+		warning "Please set a version (e.g. global swdesc_option version=...)"
+		component=""
+	fi
+	if [ -n "$version" ] && [ -z "$version" ]; then
+		error "version %s was set without associated component:\n%s" \
+			"$version" "$show_desc"
+	fi
+	if [ -n "$component" ]; then
 		if [ -z "$install_if" ]; then
 			case "$component" in
 			boot) install_if="different";;
@@ -531,8 +544,6 @@ write_entry_stdout() {
 
 		# remember version for scripts
 		printf "%s\n" "$component $version $install_if ${board:-*}" >> "$OUTDIR/sw-description-versions"
-	elif [ -n "$version" ]; then
-		error "version %s was set without associated component" "$version"
 	fi
 	if [ -n "$main_version" ]; then
 		[ -n "$component" ] && [ -n "$version" ] \
@@ -545,9 +556,6 @@ write_entry_stdout() {
 	write_line "installed-directly = true;"
 	write_line "sha256 = \"$sha256\";"
 	local line properties_written=""
-	local LF="
-"
-	local show_desc="${cmd_description%"$LF"*}"
 	if [ "$show_desc" != "$cmd_description" ]; then
 		write_line "# mkswu_orig_cmd ${cmd_description##*"$LF"}"
 	fi
@@ -1279,7 +1287,7 @@ swdesc_option() {
 	local opt
 	for opt; do
 		case "$opt" in
-		FORCE_VERSION) MKSWU_FORCE_VERSION=1;;
+		FORCE_VERSION) MKSWU_component=""; MKSWU_FORCE_VERSION=1;;
 		POST_ACTION=*) MKSWU_POST_ACTION=${opt#POST_ACTION=};;
 		NOTIFY_STARTING_CMD=*) MKSWU_NOTIFY_STARTING_CMD="${opt#NOTIFY_STARTING_CMD=}";;
 		NOTIFY_FAIL_CMD=*) MKSWU_NOTIFY_FAIL_CMD="${opt#NOTIFY_FAIL_CMD=}";;
@@ -1306,12 +1314,6 @@ $opt";;
 }
 
 fix_swdesc_option_vars() {
-	if [ -n "$FORCE_VERSION" ] && [ -z "$MKSWU_FORCE_VERSION" ]; then
-		warning "%s was set directly, please use swdesc_option %s instead." \
-			"FORCE_VERSION" "FORCE_VERSION"
-		warning "This will stop working in %s update" "2024/04"
-		swdesc_option FORCE_VERSION
-	fi
 	if [ -n "$POST_ACTION" ] && [ -z "$MKSWU_POST_ACTION" ]; then
 		warning "%s was set directly, please use swdesc_option %s instead." \
 			"POST_ACTION" "POST_ACTION=$POST_ACTION"
@@ -1380,6 +1382,16 @@ fix_swdesc_parse_vars() {
 			MKSWU_WARN_component=1
 		fi
 	fi
+	if [ -n "$FORCE_VERSION" ]; then
+		swdesc_option FORCE_VERSION
+		FORCE_VERSION=""
+		if [ -z "$MKSWU_WARN_FORCE_VERSION" ]; then
+			warning "%s was set directly, please use swdesc_option %s instead." \
+				"FORCE_VERSION" "FORCE_VERSION"
+			warning "This will stop working in %s update" "2024/04"
+			MKSWU_WARN_FORCE_VERSION=1
+		fi
+	fi
 	if [ -n "$version" ]; then
 		MKSWU_version="$version"
 		version=""
@@ -1408,6 +1420,8 @@ write_sw_desc() {
 	local board_hwcompat board_normalize
 	local IFS="
 "
+
+	fix_swdesc_option_vars
 
 	track_used "$OUTDIR/sw-description"
 
@@ -1483,8 +1497,6 @@ EOF
 			|| error "above component used multiple times with different versions or install-if mode"
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
-	elif [ -z "$MKSWU_FORCE_VERSION" ]; then
-		error "No versions found: empty image or version not set?"
 	fi
 	MKSWU_SWDESC_OPTS="${MKSWU_SWDESC_OPTS:+$MKSWU_SWDESC_OPTS
 }${MKSWU_FORCE_VERSION:+FORCE_VERSION}"
@@ -2703,9 +2715,12 @@ local cmd="" preserve_attributes="" container=""
 	absolutize_file_paths
 	# build sw-desc fragments
 	for desc; do
-		# shellcheck disable=SC2034 ## variable is used, really...
-		MKSWU_version=""
-		MKSWU_install_if=""
+		# shellcheck disable=SC2034 ## MKSWU_version is used, yes...
+		MKSWU_version=""; MKSWU_install_if=""
+		MKSWU_FORCE_VERSION="";
+		# until 2024/4...
+		version=""; install_if=""; component=""; FORCE_VERSION=""
+
 		if [ "$desc" = "-" ]; then
 			MKSWU_component="stdin"
 			desc_file="/proc/self/fd/0"
@@ -2720,6 +2735,7 @@ local cmd="" preserve_attributes="" container=""
 			desc_file="./${desc##*/}"
 		fi
 		. "$desc_file"
+
 		# make key files path absolute after each iteration:
 		# this is required if a desc file sets a key path
 		absolutize_file_paths
@@ -2727,8 +2743,7 @@ local cmd="" preserve_attributes="" container=""
 		[ "$#" -gt 1 ] && info "Successfully included %s contents" "$desc"
 	done
 
-	fix_swdesc_option_vars
-	[ -z "$FIRST_SWDESC_INIT" ] || [ -n "$MKSWU_FORCE_VERSION" ] \
+	[ -z "$FIRST_SWDESC_INIT" ] \
 		|| error "No command could be found in desc files"
 
 	embedded_postinstall_script

@@ -1,4 +1,6 @@
 DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+swdesc_option FORCE_VERSION
+
 echo "test content" > zoo/test\ space
 echo "test content" > zoo/test\ space2
 tar -C zoo -cf zoo/test\ space.tar test\ space
