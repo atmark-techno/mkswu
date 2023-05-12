@@ -369,6 +369,42 @@ msgid "Install failed, please install apache2-utils manually"
 msgstr "apache2-utils (htpasswd) をインストールできませんでした。手動でインストールしてください。"
 
 #: hawkbit-compose/setup_container.sh
+msgid "MYSQL_ROOT_PASSWORD was set but not MYSQL_PASSWORD"
+msgstr "MYSQL_ROOT_PASSWORD が設定されていたが MYSQL_PASSWORD が設定されてません。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "Warning: recent hawkBit container requires a newer mysql version"
+msgstr "Warning: 新しい hawkBit コンテナに mysql の更新が必要ですが、"
+
+#: hawkbit-compose/setup_container.sh
+msgid "but update is not transparent."
+msgstr "失敗する可能性があります。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "Backing up $CONFIG_DIR/data/mysql to $CONFIG_DIR/data/mysql.backup..."
+msgstr "$CONFIG_DIR/data/mysql を $CONFIG_DIR/data/mysql.backup に保存します…"
+
+#: hawkbit-compose/setup_container.sh
+msgid "In case it this fails, move the data back and you upgrade manually"
+msgstr "mysql の更新が失敗した場合は手動で更新してください、"
+
+#: hawkbit-compose/setup_container.sh
+msgid "(or keep using the old hawkbit-update-server:0.3.0M7-mysql instead)"
+msgstr "あるいは hawkbit-update-server:0.3.0M7-mysql を使いつづけてください。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "Trying to upgrade the db..."
+msgstr "データベースをアップグレードします…"
+
+#: hawkbit-compose/setup_container.sh
+msgid "Ok. You will need to upgrade container before restarting."
+msgstr "成功しました。コンテナのアップグレードを実行してください。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "$CONFIG_DIR/data/mysql.backup can be deleted after confirming hawkBit works."
+msgstr "無事に起動確認できてから $CONFIG_DIR/data/mysql.backup を削除してください。"
+
+#: hawkbit-compose/setup_container.sh
 msgid "$arg requires an argument"
 msgstr "$arg に引数が必要です。"
 
@@ -431,6 +467,10 @@ msgstr "コンテナの設定が完了しました。docker-compose コマンド
 #: hawkbit-compose/setup_container.sh
 msgid "or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
 msgstr "$CONFIG_DIR/setup_container.sh を再び実行すると設定の変更が可能です。"
+
+#: hawkbit-compose/setup_container.sh
+msgid "Update hawkBit containers?"
+msgstr "hawkBit コンテナを更新しますか？"
 
 #: hawkbit-compose/setup_container.sh
 msgid "Start hawkBit containers?"

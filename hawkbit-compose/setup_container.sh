@@ -674,6 +674,56 @@ check_requirements() {
 	fi
 }
 
+mysql_upgrade() {
+	# didn't have old container, assume no data
+	$SUDO docker image inspect mysql:5.7 > /dev/null 2>&1 || return 0
+	local rootpw userpw
+	rootpw=$(awk -F= '$1 == "MYSQL_ROOT_PASSWORD" { print $2 }' \
+			"$CONFIG_DIR/.env" 2>/dev/null)
+	userpw=$(awk -F= '$1 == "MYSQL_PASSWORD" { print $2 }' \
+			"$CONFIG_DIR/.env" 2>/dev/null)
+	# no password = not initialized yet?
+	[ -n "$rootpw" ] || return 0
+	[ -n "$userpw" ] || error $"MYSQL_ROOT_PASSWORD was set but not MYSQL_PASSWORD"
+	echo $"Warning: recent hawkBit container requires a newer mysql version"
+	echo $"but update is not transparent."
+	echo $"Backing up $CONFIG_DIR/data/mysql to $CONFIG_DIR/data/mysql.backup..."
+	echo $"In case it this fails, move the data back and you upgrade manually"
+	echo $"(or keep using the old hawkbit-update-server:0.3.0M7-mysql instead)"
+	sudo docker run --rm -v "$CONFIG_DIR/data:/data" mysql:5.7 \
+			mv /data/mysql /data/mysql.backup \
+		|| error "Moving db dir failed"
+	sudo docker run --rm -v "$CONFIG_DIR/data/mysql.backup:/var/lib/mysql" \
+			-v "$CONFIG_DIR/data:/data" mysql:5.7 \
+			bash -c "docker-entrypoint.sh mysqld &
+				for i in {1..30}; do
+					sleep 1
+					[ -e /var/run/mysqld/mysqld.sock ] && break
+				done || { echo 'mysqld did not start'; exit 1; }
+				mysqldump hawkbit -p'$rootpw' | gzip > /data/mysql.dump.gz" \
+			> "$CONFIG_DIR/data/mysql.upgrade_log" 2>&1 \
+		|| error "mysqldump failed. See $CONFIG_DIR/data/mysql.upgrade_log for details"
+	echo $"Trying to upgrade the db..."
+	sudo docker run --rm -v "$CONFIG_DIR/data/mysql:/var/lib/mysql" \
+			-v "$CONFIG_DIR/data:/data" \
+			-e "MYSQL_ROOT_PASSWORD=$rootpw" -e "MYSQL_PASSWORD=$userpw" \
+			-e "MYSQL_USER=hawkbit" -e "MYSQL_DATABASE=hawkbit" \
+			mariadb:10 \
+			bash -c "docker-entrypoint.sh mysqld &
+				for i in {1..30}; do
+					sleep 1
+					[ -e /var/run/mysqld/mysqld.sock ] && break
+				done || { echo 'mysqld did not start'; exit 1; }
+				# wait a bit more for init..
+				sleep 5
+				gunzip < /data/mysql.dump.gz | mysql hawkbit -p'$rootpw'" \
+			> "$CONFIG_DIR/data/mysql.upgrade_log" 2>&1 \
+		|| error "mysql restore failed. See $CONFIG_DIR/data/mysql.upgrade_log for details"
+	rm -f "$CONFIG_DIR/data/mysql.dump.gz"
+	echo $"Ok. You will need to upgrade container before restarting."
+	echo $"$CONFIG_DIR/data/mysql.backup can be deleted after confirming hawkBit works."
+}
+
 
 main() {
 	local REVERSE_PROXY_CERT_DOMAIN=""
@@ -815,13 +865,17 @@ main() {
 	esac
 
 	if [[ -e "$CONFIG_DIR/docker-compose.yml" ]] \
-		&& echo $"Checking if container is running... ${SUDO:+(this requires sudo)}" \
-		&& [[ -n "$($SUDO docker-compose -f "$CONFIG_DIR/docker-compose.yml" ps -q 2>/dev/null)" ]] \
-		&& NOSAVE=1 prompt_yesno RUN_COMPOSE $"Stop hawkBit containers?" \
+	    && echo $"Checking if container is running... ${SUDO:+(this requires sudo)}" \
+	    && [[ -n "$($SUDO docker-compose -f "$CONFIG_DIR/docker-compose.yml" ps -q 2>/dev/null)" ]] \
+	    && NOSAVE=1 prompt_yesno RUN_COMPOSE $"Stop hawkBit containers?" \
 			$"hawkBit containers seem to be running, updating config files" \
 			$"might not work as expected."; then
 		$SUDO docker-compose -f "$CONFIG_DIR/docker-compose.yml" down \
 			|| error $"Could not stop containers"
+	fi
+	if [[ -e "$CONFIG_DIR/docker-compose.yml" ]] \
+	    && grep -q "mysql:5.7" "$CONFIG_DIR/docker-compose.yml"; then
+		mysql_upgrade
 	fi
 
 	[[ -n "$reset_proxy" ]] && reverse_proxy_reset
@@ -843,6 +897,11 @@ main() {
 	echo $"Setup finished! Use docker-compose now to manage the containers"
 	echo $"or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
 
+	$SUDO docker-compose down
+	RUN_COMPOSE=""
+	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Update hawkBit containers?"; then
+		$SUDO docker-compose pull -d
+	fi
 	RUN_COMPOSE=""
 	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Start hawkBit containers?"; then
 		$SUDO docker-compose up -d

@@ -276,6 +276,33 @@ msgstr ""
 msgid "Install failed, please install apache2-utils manually"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
+msgid "MYSQL_ROOT_PASSWORD was set but not MYSQL_PASSWORD"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Warning: recent hawkBit container requires a newer mysql version"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "but update is not transparent."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Backing up $CONFIG_DIR/data/mysql to $CONFIG_DIR/data/mysql.backup..."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "In case it this fails, move the data back and you upgrade manually"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "(or keep using the old hawkbit-update-server:0.3.0M7-mysql instead)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Trying to upgrade the db..."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Ok. You will need to upgrade container before restarting."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$CONFIG_DIR/data/mysql.backup can be deleted after confirming hawkBit works."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
 msgid "$arg requires an argument"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
@@ -322,6 +349,9 @@ msgid "Setup finished! Use docker-compose now to manage the containers"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Update hawkBit containers?"
 msgstr ""
 #: hawkbit-compose/setup_container.sh
 msgid "Start hawkBit containers?"
