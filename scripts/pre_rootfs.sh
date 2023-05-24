@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=8
+	local preserve_version=0 max_version=9
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -156,6 +156,13 @@ EOF
 
 # v8 list: udev rules
 /etc/udev/rules.d
+EOF
+	fi
+	if [ "$preserve_version" -le 8 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v9 list: avahi service
+/etc/runlevels/default/avahi-daemon
 EOF
 	fi
 }
