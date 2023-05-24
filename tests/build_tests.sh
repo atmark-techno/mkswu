@@ -132,6 +132,8 @@ atmark
 atmark
 y
 
+abosweb
+abosweb
 EOF
 "$MKSWU" --config-dir "$TESTS_DIR/out/init_noupdate" --init <<EOF \
 	|| error "mkswu --init noupdate failed"
@@ -150,6 +152,8 @@ differentpass(ask again)
 
 
 
+
+
 EOF
 "$MKSWU" --config-dir "$TESTS_DIR/out/init_noatmark" --init <<EOF \
 	|| error "mkswu --init noatmark failed"
@@ -163,6 +167,8 @@ root
 root
 
 
+abosweb
+abosweb
 EOF
 # in order:
 # certif common name, private key pass x2, aes encryption (default=n), allow atmark updates (default=y),
@@ -175,6 +181,8 @@ grep -q swupdate-url "$TESTS_DIR/out/init_noupdate/initial_setup.desc" \
 	&& error "autoupdate incorrectly enabled (noupdate)"
 grep -q swupdate-url "$TESTS_DIR/out/init_noatmark/initial_setup.desc" \
 	&& error "autoupdate incorrectly enabled (noatmark)"
+grep -q abos-web "$TESTS_DIR/out/init_noupdate/initial_setup.desc" \
+	&& error "abosweb password set when it shouldn't be touched"
 grep -qxF "swdesc_command '> /etc/swupdate.pem'" \
 		"$TESTS_DIR/out/init_noatmark/initial_setup.desc" \
 	|| error "noatmark kept atmark certs"
@@ -203,20 +211,31 @@ checkpass() {
 }
 checkpass init atmark atmark
 checkpass init root root
+checkpass init abos-web-admin abosweb
 checkpass init_noupdate atmark
 checkpass init_noupdate root root
+# init_noatmark: abos-web-admin untouched
+checkpass init_noatmark atmark ''
+checkpass init_noatmark root root
+checkpass init_noatmark abos-web-admin abosweb
 
 # test atmark pass is regenerated on old version
-sed -i -e 's/version=[0-9]/version=1/' "$TESTS_DIR/out/init/initial_setup.desc"
+sed -i -e 's/version=[0-9]/version=1/' \
+	-e '/abos-web/d' \
+	"$TESTS_DIR/out/init/initial_setup.desc"
 "$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
 	|| error "mkswu --init on old version failed"
 
 
+abosweb
+abosweb
 EOF
 # atmark pass and confirm; empty = lock
 grep -q "usermod -L atmark" "$TESTS_DIR/out/init/initial_setup.desc" \
 	|| error "atmark account not locked after second init"
-
+grep -q 'abos-web' "$TESTS_DIR/out/init/initial_setup.desc" \
+	|| error "abos-web not disabled after update"
+checkpass init abos-web-admin abosweb
 
 dir="$TESTS_DIR/out/init/.initial_setup" check swdesc usermod
 dir="$TESTS_DIR/out/init/.initial_setup" check swdesc swupdate-url

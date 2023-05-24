@@ -498,9 +498,6 @@ msgstr ""
 msgid "Generated %s"
 msgstr ""
 #: mkswu
-msgid "No command to hash password"
-msgstr ""
-#: mkswu
 msgid "%s user password:"
 msgstr ""
 #: mkswu
@@ -516,6 +513,15 @@ msgstr ""
 msgid "Could not generate password"
 msgstr ""
 #: mkswu
+msgid "Please set the password to log into abos-web."
+msgstr ""
+#: mkswu
+msgid "Not setting a password will disable the service after initial setup."
+msgstr ""
+#: mkswu
+msgid "Could not update %s"
+msgstr ""
+#: mkswu
 msgid "atmark password was incorrectly generated, regenerating it"
 msgstr ""
 #: mkswu
@@ -523,9 +529,6 @@ msgid "if initial_setup was already installed please adjust password"
 msgstr ""
 #: mkswu
 msgid "with %s if necessary"
-msgstr ""
-#: mkswu
-msgid "Could not update %s"
 msgstr ""
 #: mkswu
 msgid "Allow updates signed by Atmark Techno? (Y/n)"

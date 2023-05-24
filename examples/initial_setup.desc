@@ -5,7 +5,7 @@ swdesc_option UPDATE_CERTS=1
 ORIG_ENCRYPT_KEYFILE="$ENCRYPT_KEYFILE"
 swdesc_option ENCRYPT_KEYFILE=""
 
-swdesc_option component=extra_os.initial_setup version=3
+swdesc_option component=extra_os.initial_setup version=4
 
 # Uncomment to remove atmark techno's Base OS update certificate.
 # You will no longer be able to update directly from atmark-techno.com servers.
