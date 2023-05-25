@@ -1,3 +1,30 @@
+4.12
+====
+deprecation notice:
+ - swdesc_* commands with no version now print a warning and will error
+out in 2024/05. These used to be installed in a desc file with other
+rules with versions e.g. `swdesc_foo --version x y` set, if and only if any
+such version was upgraded.
+That behaviour can be confusing when multiple versions are set.
+
+fixes:
+ - hawkbit-compose: update mysql container for new hawkbit version. The
+previous hawkbit container was very old and required an obsolete mysql
+version, but the newer release no logner work with it and require an
+upgrade. Running the script again will try to preserve the data through a
+dump/restore accross the upgrade.
+ - podman_cleanup: print a warning and try harder to get image version
+if a container config file could not be parsed with the current code.
+This should not impact any currently working setup, only allow more
+exotic config files to work (with a warning)
+ - fix 'mkswu' being written as 'mksvu' in Japanese version string...
+
+misc:
+ - refactor the uboot environment variable handling code. This should not have
+any impact.
+
+ -- 2023-05-26
+
 4.11
 ====
 deprecation notice:
