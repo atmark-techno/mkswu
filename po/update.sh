@@ -22,7 +22,8 @@ dedup_messages() {
 		getline
 		prev=""
 	}
-	{
+	prev || /^#/ {
+		# currently printing or new block starting
 		if (prev) print prev;
 		prev=$0
 	}
