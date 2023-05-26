@@ -816,7 +816,7 @@ msgstr "%s は %s の後にしか使えません。"
 
 #: mkswu
 msgid "mkswu version %s"
-msgstr "mksvu バージョン %s"
+msgstr "mkswu バージョン %s"
 
 #: mkswu
 msgid "Unrecognized option %s"
