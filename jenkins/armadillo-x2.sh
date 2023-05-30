@@ -34,7 +34,7 @@ EOF
 
 build_check "$OUTPUT.desc" -- "version --board AGX4500 boot '20[^ ]* different'" \
 	"version base_os '[^ ]+ higher'" \
-	"file imx-boot_armadillo_x2.* '$ROOTFS'" \
+	"file .*imx-boot_armadillo_x2 '$ROOTFS'" \
 	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem" \
 	"swdesc imx-boot_armadillo_x2 '$ROOTFS' '# MKSWU_ALLOW_PUBLIC_CERT 1'"
 

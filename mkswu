@@ -461,8 +461,8 @@ write_entry_stdout() {
 				compress=""
 			else
 				compress=zstd
-				file="$file.zst"
-				file_out="$file_out.zst"
+				file="zst.$file"
+				file_out="$OUTDIR/$file"
 				compress "$file_src" "$file_out"
 				file_src="$file_out"
 			fi
@@ -471,8 +471,8 @@ write_entry_stdout() {
 	fi
 
 	if [ -n "$ENCRYPT_KEY" ] && [ -s "$file_src" ]; then
-		file="$file.enc"
-		file_out="$file_out.enc"
+		file="enc.$file"
+		file_out="$OUTDIR/$file"
 		# if we already had encrypted this file we must reuse the same iv
 		if [ -e "$OUTDIR/sw-description-ivs" ]; then
 			local tmp
@@ -930,14 +930,21 @@ swdesc_tar() {
 }
 
 set_file_from_content() {
-	local content="$*"
+	local content="$*" extension=""
+	# some commands like apk require extension to be kept to work
+	case "$file" in
+	*.*)
+		extension="${file##*.}"
+		[ "${#extension}" -gt 5 ] && extension=""
+		;;
+	esac
 
 	file="$(printf %s "$content" | tr -c '[:alnum:]' '_')"
 	if [ "${#file}" -gt 40 ]; then
 		file="$(printf %s "$file" | head -c 20)..$(printf %s "$file" | tail -c 20)"
 	fi
 	file="${file}_$(printf %s "$content" | sha1sum | cut -d' ' -f1)"
-	file="$OUTDIR/${file}"
+	file="$OUTDIR/${file}${extension:+.$extension}"
 }
 
 create_archive() {

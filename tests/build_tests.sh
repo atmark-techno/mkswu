@@ -6,15 +6,15 @@ cd "$(dirname "$0")"
 
 . ./common.sh
 
-build_check spaces.desc -- "file test\ space.tar.zst" \
-	"file .*test_space_tar.*target_load.*\.zst" \
+build_check spaces.desc -- "file zst.test\ space.tar" \
+	"file zst\..*test_space_tar.*target_load.*" \
 	"swdesc 'path = \"/tmp/test space\"'"
 name="--odd desc" build_check --- --odd\ desc.desc
 # --- is made into -- for mkswu
-[ "$(grep -c 'filename = "zoo' "out/.--odd desc/sw-description")" = 1 ] \
+[ "$(grep -c 'filename = "zst.zoo' "out/.--odd desc/sw-description")" = 1 ] \
 	|| error "zoo archive was not included exactly once"
 build_check install_files.desc -- \
-	"file-tar ___tmp_swupdate_test*.tar.zst zoo/test\ space zoo/test\ space.tar" \
+	"file-tar zst.___tmp_swupdate_test*.tar zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
 
 [ -e out/mkswu-aes.conf ] || touch out/mkswu-aes.conf
@@ -29,10 +29,10 @@ build_check install_files.desc -- \
 		|| error "mkswu --genkey --aes failed"
 
 	build_check aes.desc --config out/mkswu-aes.conf -- \
-		"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
+		"swdesc 'ivt ='" "file enc.zst.scripts_pre.sh"
 ) || exit
 MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key build_check aes.desc -- \
-	"swdesc 'ivt ='" "file scripts_pre.sh.zst.enc"
+	"swdesc 'ivt ='" "file enc.zst.scripts_pre.sh"
 
 # test old variables backwards compatibility
 printf "%s\n" "component=test" "install_if=different" "version=1" \
@@ -102,9 +102,9 @@ ln zoo/hardlink zoo/hardlink2
 build_check hardlink_order.desc --
 [ "$(cpio --quiet -t < out/hardlink_order.swu)" = "sw-description
 sw-description.sig
-scripts_pre.sh.zst
+zst.scripts_pre.sh
 hardlink
-scripts_post.sh.zst" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
+zst.scripts_post.sh" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
 
 build_check cmd_description.desc -- \
 	"swdesc '# mkswu_orig_cmd swdesc_command_nochroot --description' \
