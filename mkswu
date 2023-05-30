@@ -1030,9 +1030,11 @@ conf_quote() {
 }
 
 swdesc_exec_nochroot() {
+	local original_file
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 
 	parse_swdesc exec_nochroot "$@"
+	original_file="${file##*/}"
 
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error "Using %s with a non-empty file, but not referring to it with \$1" \
@@ -1050,14 +1052,18 @@ swdesc_exec_nochroot() {
 
 	write_entry files "$file" "type = \"exec\";" \
 		"properties: {" \
-		"  cmd: \"$(conf_quote "$cmd")\"" "}"
+		"  cmd: \"$(conf_quote "$cmd")\"" \
+		"  filename: \"$(conf_quote "$original_file")\"" \
+		"}"
 }
 
 swdesc_exec() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local container="$container"
+	local original_file
 
 	parse_swdesc exec "$@"
+	original_file="${file##*/}"
 
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error "Using %s with a non-empty file, but not referring to it with \$1" \
@@ -1102,7 +1108,9 @@ swdesc_exec() {
 
 	write_entry files "$file" "type = \"exec\";" \
 		"properties: {" \
-		"  cmd: \"$(conf_quote "$chroot_cmd")\"" "}"
+		"  cmd: \"$(conf_quote "$chroot_cmd")\"" \
+		"  filename: \"$(conf_quote "$original_file")\"" \
+		"}"
 }
 
 swdesc_command() {
@@ -1559,7 +1567,7 @@ check_duplicate_files() {
 		[ -e "$file" ] || continue
 		cat "$file"
 	done | awk -F\" '
-		/filename/ {
+		/filename = / {
 			if (seen[$2]) {
 				print $2
 			}
