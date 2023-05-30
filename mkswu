@@ -553,7 +553,8 @@ write_entry_stdout() {
 	fi
 	[ -n "$compress" ] && write_line "compressed = \"$compress\";"
 	[ -n "$iv" ] && write_line "encrypted = true;" "ivt = \"$iv\";"
-	write_line "installed-directly = true;"
+	[ -n "$MKSWU_TEST_NOT_DIRECTLY" ] \
+		|| write_line "installed-directly = true;"
 	write_line "sha256 = \"$sha256\";"
 	local line properties_written=""
 	if [ "$show_desc" != "$cmd_description" ]; then
