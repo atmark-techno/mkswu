@@ -8,3 +8,6 @@
 /apk-add
 # encrypted_rootfs_linux_update
 /Image.signed
+# encrypted_imxboot_update
+/imx-boot_armadillo_x2.enc
+/armadillo_x2.dek_offsets

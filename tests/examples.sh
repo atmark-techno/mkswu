@@ -51,6 +51,14 @@ touch ../examples/Image.signed
 build_check ../examples/encrypted_rootfs_linux_update.desc -- \
 	"swdesc swupdate_bootdev"
 
+# encrypted boot
+if ! [ -e ../examples/imx-boot_armadillo_x2.enc ]; then
+	ln -s ../imx-boot_armadillo_x2 ../examples/imx-boot_armadillo_x2.enc
+fi
+echo "123 version" > ../examples/armadillo_x2.dek_offsets
+build_check ../examples/encrypted_imxboot_update.desc -- \
+	"swdesc swupdate_bootdev" "swdesc 123 version"
+
 # kernel apk: likewise we don't actually test install here,
 touch ../examples/linux-at-5.10.9-r3.apk
 build_check ../examples/kernel_update_apk.desc -- "swdesc linux-at-5.10.9-r3.apk"
