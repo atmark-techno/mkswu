@@ -46,6 +46,11 @@ build_check ../examples/kernel_update_plain.desc -- \
 	"file-tar *boot_Image*dtb*.tar.zst Image armadillo_iotg_g4.dtb" \
 	"swdesc update_preserve_files"
 
+# encrypted linux
+touch ../examples/Image.signed
+build_check ../examples/encrypted_rootfs_linux_update.desc -- \
+	"swdesc swupdate_bootdev"
+
 # kernel apk: likewise we don't actually test install here,
 touch ../examples/linux-at-5.10.9-r3.apk
 build_check ../examples/kernel_update_apk.desc -- "swdesc linux-at-5.10.9-r3.apk"

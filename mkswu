@@ -725,9 +725,9 @@ parse_swdesc() {
 		dek_offsets_file="$2"
 		;;
 	boot_linux)
-		[ $# -eq 0 ] && [ -n "$file" ] && return
+		[ $# -eq 0 ] && [ -n "$image" ] && return
 		[ $# -eq 1 ] || error "swdesc_boot_linux requires an argument\nUsage: swdesc_boot_linux [options] boot_linux_file"
-		file="$1"
+		image="$1"
 		;;
 	tar)
 		[ $# -eq 0 ] && [ -n "$file" ] && return
@@ -860,19 +860,21 @@ swdesc_boot_enc() {
 
 swdesc_boot_linux() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	local image=""
 	component=boot_linux
 
 	parse_swdesc boot_linux "$@"
 
+	[ -e "$image" ] || error "%s does not exist" "$image"
 	[ "$component" = "boot_linux" ] \
 		|| error "Version component for swdesc_boot_linux must be set to boot_linux"
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_linux"
-	[ "$(stat -L -c %s "$file")" -lt "$((26 * 1024 * 1024))" ] \
+	[ "$(stat -L -c %s "$image")" -lt "$((26 * 1024 * 1024))" ] \
 		|| error "swdesc_boot_linux image must be at most 26MB big"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_exec_nochroot "$file" \
+	swdesc_exec_nochroot "$image" \
 		'[ -e /dev/swupdate_bootdev ]' \
 		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
 		'dd if=$1 of=/dev/swupdate_bootdev bs=1M seek=5 conv=fdatasync status=none' \

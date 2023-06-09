@@ -6,3 +6,5 @@
 # kernel_update_apk
 /linux-at-*apk
 /apk-add
+# encrypted_rootfs_linux_update
+/Image.signed
