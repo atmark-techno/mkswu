@@ -529,7 +529,7 @@ write_entry_stdout() {
 		warning "Please set a version (e.g. global swdesc_option version=...)"
 		component=""
 	fi
-	if [ -n "$version" ] && [ -z "$version" ]; then
+	if [ -n "$version" ] && [ -z "$component" ]; then
 		error "version %s was set without associated component:\n%s" \
 			"$version" "$show_desc"
 	fi
@@ -653,6 +653,7 @@ parse_swdesc() {
 			extra_os.*) component=extra_os.;;
 			*) component="";;
 			esac
+			version=""
 			;;
 		"--extra-os")
 			case "$component" in
