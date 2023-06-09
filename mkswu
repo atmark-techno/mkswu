@@ -519,6 +519,9 @@ write_entry_stdout() {
 	write_line "{"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
+	# special handling for 'extra_os.': this is the no-version variant of extra-os,
+	# so we just unset component here.
+	[ "$component" = "extra_os." ] && component=""
 	if [ -n "$component" ] && [ -z "$version" ]; then
 		warning "Warning: item was set without version:\n%s" \
 				"$show_desc"
@@ -646,10 +649,16 @@ parse_swdesc() {
 			;;
 		"--version-force")
 			MKSWU_FORCE_VERSION=1
-			component=""
+			case "$component" in
+			extra_os.*) component=extra_os.;;
+			*) component="";;
+			esac
 			;;
 		"--extra-os")
-			[ "${component#extra_os.}" != "$component" ] || component="extra_os.$component"
+			case "$component" in
+			extra_os.*) ;;
+			*) component="extra_os.$component";;
+			esac
 			;;
 		"--main-version")
 			main_version=1
