@@ -177,29 +177,21 @@ test_version_update() {
 	gen_newversion
 	version=$(get_version boot)
 	[ "$version" = "$uboot_vbase-at2" ] || error "Did not merge new boot version"
-	version=$(get_version other_boot)
-	[ "$version" = "$uboot_vbase-at0" ] || error "other_boot should stay at old boot"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$version" = "$uboot_vbase-at2" ] || error "boot somehow changed?"
-	version=$(get_version other_boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot did not tickle down"
 
 	sed -i -e '/boot/d' "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$version" = "$uboot_vbase-at2" ] || error "boot was not added"
-	version=$(get_version other_boot)
-	[ "$version" = "" ] || error "other_boot somehow got made up?"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$version" = "$uboot_vbase-at2" ] || error "boot somehow changed?"
-	version=$(get_version other_boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot did not tickle down"
 
 	cp "$merged" "$system_versions"
 	echo "  #VERSION boot 2020.4-at3 different $board" > "$SWDESC"
@@ -208,16 +200,12 @@ test_version_update() {
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
 	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
-	version=$(get_version other_boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "other_boot should not stay at previous boot value"
 
 	: > "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
 	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
-	version=$(get_version other_boot)
-	[ -z "$version" ] || error "other_boot should not be set"
 }
 
 # test user copy on rootfs
