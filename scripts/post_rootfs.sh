@@ -65,8 +65,7 @@ check_update_log_encryption() {
 			|| error "encryption was requested for /var/log but could not umount: aborting. Manually dismount it first"
 	fi
 
-	warning "Reformatting /var/log with encryption, current logs will be lost" \
-		"Also, in case of update failure or rollback current system will not be able to mount it"
+	warning "Reformatting /var/log with encryption, current logs will be lost"
 
 	luks_format "${partdev##*/}3"
 	mkfs.ext4 -L logs "$dev" \
@@ -74,6 +73,11 @@ check_update_log_encryption() {
 	mount -t ext4 "$dev" /var/log \
 		|| error "Could not re-mount encrypted /var/log"
 
+	if ! sed -i -e "s:[^ \t]*\(\t/var/log\t\):$dev\1:" /etc/fstab \
+	    || ! persist_file /etc/fstab; then
+		warning "Could not update the current rootfs fstab for encrypted /var/log," \
+			"will not be able to mount /var/log in case of rollback"
+	fi
 	sed -i -e "s:[^ \t]*\(\t/var/log\t\):$dev\1:" /target/etc/fstab \
 		|| error "Could not update fstab for encrypted /var/log"
 }
