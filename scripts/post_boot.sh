@@ -121,13 +121,13 @@ cleanup_boot() {
 	    && [ -z "$(mkswu_var NO_ARCH_CHECK)" ]; then
 		case "$(uname -m)" in
 		aarch64)
-			dd if=/dev/swupdate_bootdev  bs=1M count=4 \
+			dd if=/dev/swupdate_bootdev bs=1M count=4 status=none \
 					| grep -m 1 -q aarch64 \
 				|| error "Installed u-boot does not appear to be for aarch64, aborting!" \
 					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
 			;;
 		armv7*)
-			dd if=/dev/swupdate_bootdev  bs=1M count=4 \
+			dd if=/dev/swupdate_bootdev bs=1M count=4 status=none \
 					| grep -m 1 -q armv7 \
 				|| error "Installed u-boot does not appear to be for armv7, aborting!" \
 					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
