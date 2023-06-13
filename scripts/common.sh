@@ -369,7 +369,7 @@ luks_format() {
 		&& cryptsetup luksFormat -q --key-file $KEYFILE.luks \
 			--pbkdf pbkdf2 --iter-time 1 \
 			--luks2-keyslots-size=768k \
-			$dev \
+			$dev > /dev/null \
 		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
 			--allow-discards $dev $target \
 		&& dd if=$KEYFILE.mmc of=$rootdev bs=4k count=1 status=none \
