@@ -1,31 +1,37 @@
+bootdev_lock() {
+	[ -e "/sys/block/$flash_dev/force_ro" ] || return 0
+
+	echo 1 > "/sys/block/$flash_dev/force_ro" \
+		|| warning "Could not make $flash_dev ro again"
+}
+
+bootdev_unlock() {
+	[ -e "/sys/block/$flash_dev/force_ro" ] || return 0
+
+	echo 0 > "/sys/block/$flash_dev/force_ro" \
+		|| error "Could not make $flash_dev read-write"
+}
+
 copy_boot() {
-	local target="$1" version="$2"
-	local other_vers cur_vers
+	local target="$1"
 	local flash_dev cur_dev
 
 	# skip for sd cards / qemu
 	[ -e "${rootdev}boot1" ] || return
 
-	other_vers=$(get_version "other_$version" old)
-	cur_vers=$(get_version "$version" old)
-
-	[ "$other_vers" = "$cur_vers" ] && return
-
-	echo "Copying boot over from existing"
 	flash_dev="${rootdev#/dev/}boot${ab}"
 	cur_dev="${rootdev}boot$((!ab))"
-	if ! echo 0 > "/sys/block/$flash_dev/force_ro" \
-	    || ! copy_boot_"$target"; then
-		echo 1 > "/sys/block/$flash_dev/force_ro"
-		error "Could not copy $target over"
+
+	if ! copy_boot_"$target"; then
+		bootdev_lock
+		error "Could not copy $target to $flash_dev"
 	fi
-	echo 1 > "/sys/block/$flash_dev/force_ro"
 }
 
-copy_boot_imxboot() {
+copy_boot_boot() {
 	local env_offset
 
-	# We copy until env start (assume nothing else than boot image before)
+	# We copy until env start if changed.
 	# Env will be cleared in post_boot
 	env_offset=$(awk '/^[^#]/ && $2 > 0 {
 			if (!start || $2 < start)
@@ -38,14 +44,33 @@ copy_boot_imxboot() {
 		' < /etc/fw_env.config) \
 		|| error "Could not get boot env location"
 
+	# already up to date?
+	if cmp -s -n "$env_offset" "$cur_dev" "/dev/$flash_dev"; then
+		echo "boot already up to date"
+		return
+	fi
+
+	echo "Copying boot to $flash_dev"
+	bootdev_unlock
 	dd if="$cur_dev" of="/dev/$flash_dev" bs="$env_offset" count=1 \
 			conv=fdatasync status=none \
 		|| return
+	bootdev_lock
 }
 
 copy_boot_linux() {
+	local offset=$((5*1024*1024))
+
+	if cmp -s "$cur_dev" "/dev/$flash_dev" "$offset" "$offset"; then
+		echo "boot_linux already up to date"
+		return
+	fi
+
+	echo "Copying boot_linux to $flash_dev"
+	bootdev_unlock
 	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M skip=5 seek=5 \
-			conv=fdatasync status=none
+			conv=fdatasync status=none || return
+	bootdev_lock
 }
 
 prepare_boot() {
@@ -54,13 +79,14 @@ prepare_boot() {
 
 	if needs_update "boot_linux"; then
 		setup_link=1
-	else
-		copy_boot linux boot_linux
+	elif [ -n "$(get_version boot_linux)" ]; then
+		# only copy if boot_linux exists
+		copy_boot linux
 	fi
 	if needs_update "boot"; then
 		setup_link=1
 	else
-		copy_boot imxboot boot
+		copy_boot boot
 	fi
 	[ -z "$setup_link" ] && return
 
