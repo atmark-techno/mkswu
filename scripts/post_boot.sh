@@ -116,7 +116,7 @@ cleanup_boot() {
 	# installed on incompatible arch.
 	# This is not strictly enough but should prevent most complete
 	# bricks from installing an incompatible SWU...
-	if [ -e /dev/swupdate_bootdev ] \
+	if [ -e "$SCRIPTSDIR/boot_updated" ] \
 	    && [ -z "$encrypted_boot" ] \
 	    && [ -z "$(mkswu_var NO_ARCH_CHECK)" ]; then
 		case "$(uname -m)" in
