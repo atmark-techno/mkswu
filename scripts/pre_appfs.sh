@@ -77,8 +77,7 @@ check_update_disk_encryption() {
 		|| exit 1
 
 	warning "Reformatting appfs with encryption, current container images and" \
-		"volumes will be lost. Also, in case of update failure or rollback" \
-		"current system will not be able to mount it"
+		"volumes will be lost."
 
 	luks_format "${partdev##*/}5"
 	mkfs.btrfs -L app -m DUP -R free-space-tree "$dev" \
@@ -86,13 +85,22 @@ check_update_disk_encryption() {
 	mount -t btrfs "$dev" "$basemount" \
 		|| error "Could not mount freshly created encrypted appfs"
 	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
+	# this is only for rollback - don't fail on error
+	mkdir "$basemount/boot_$((!ab))"
+	btrfs_subvol_create "boot_$((!ab))/containers_storage"
+	btrfs_subvol_create "boot_$((!ab))/volumes"
 	umount "$basemount" \
 		|| error "Could not umount appfs"
 	mount -t btrfs "$dev" /var/tmp -o "$mountopt=tmp" \
 		|| error "Could not remount /var/tmp on host. Further swu install will fail unless manually fixed"
 
+	if ! sed -i -e "s:[^ \t]*p5\t:$dev\t:" /etc/fstab \
+	    || ! persist_file /etc/fstab; then
+		warning "Could not update the current rootfs fstab for encrypted appfs," \
+			"will not be able to mount /var/log in case of rollback"
+	fi
 	sed -i -e "s:[^ \t]*p5\t:$dev\t:" /target/etc/fstab \
-		|| error "Could not update fstab for encrypted /var/log"
+		|| error "Could not update fstab for encrypted appfs"
 }
 
 prepare_appfs() {
