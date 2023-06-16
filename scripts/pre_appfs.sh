@@ -85,6 +85,7 @@ check_update_disk_encryption() {
 	mount -t btrfs "$dev" "$basemount" \
 		|| error "Could not mount freshly created encrypted appfs"
 	btrfs_subvol_create "tmp" || error "Could not create tmp subvol"
+	mkdir "$basemount/boot_${ab}"
 	btrfs_subvol_create "boot_${ab}/containers_storage" || error "Could not create boot/containers_storage subvol"
 	btrfs_subvol_create "boot_${ab}/volumes" || error "Could not create boot/volumes subvol"
 	umount "$basemount" \
