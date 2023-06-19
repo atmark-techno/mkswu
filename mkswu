@@ -2049,13 +2049,7 @@ mkinit_genkey() {
 geninitdesc_hashpw() {
 	local plain="$1"
 
-	if command -v python3 >/dev/null; then
-		printf 'import crypt; print(crypt.crypt(r"%s", crypt.METHOD_SHA512))' "$plain" | python3
-	elif command -v mkpasswd >/dev/null; then
-		printf "%s" "$plain" | mkpasswd
-	else
-		error "No command to hash password"
-	fi
+	printf "%s" "$plain" | openssl passwd -6 -stdin
 }
 
 geninitdesc_promptpass() {

@@ -187,8 +187,7 @@ checkpass() {
 	local dir="$1"
 	local user="$2"
 	local pass="$3"
-	local desc
-	local check
+	local hash_desc check salt
 
 	if [ -z "$pass" ]; then
 		grep -qE "^[^#]*\"usermod -L $user\"" "$TESTS_DIR/out/$dir/initial_setup.desc" \
@@ -196,19 +195,11 @@ checkpass() {
 		return
 	fi
 
-	desc=$(sed -ne "s/^[^#]*'\"'\(.*\)'\"'.*$user.*/\1/p" "$TESTS_DIR/out/$dir/initial_setup.desc")
-	if command -v python3 >/dev/null; then
-		check=$(python3 -c "import crypt; print(crypt.crypt('$pass', '$desc'))") \
-			|| error "python3 crypt call failed"
-	elif command -v mkpasswd > /dev/null; then
-		check="${desc#\$*\$}"
-		check="${check%%\$*\$}"
-		check=$(mkpasswd "$pass" "$check") \
-			|| error "mkpasswd call failed"
-	else
-		error "install either python3 or mkpasswd"
-	fi
-	[ "$desc" = "$check" ] || error "Error: $pass was invalid (got $desc expected $check for $dir)"
+	hash_desc=$(sed -ne "s/^[^#]*'\"'\(.*\)'\"'.*$user.*/\1/p" "$TESTS_DIR/out/$dir/initial_setup.desc")
+	salt="${hash_desc#'$'*'$'}"
+	salt="${salt%%'$'*}"
+	check=$(printf "%s" "$pass" | openssl passwd -6 -stdin -salt "$salt")
+	[ "$hash_desc" = "$check" ] || error "Error: $pass was invalid (got $hash_desc expected $check for $dir)"
 }
 checkpass init atmark atmark
 checkpass init root root
