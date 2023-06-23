@@ -221,7 +221,7 @@ checkpass init_noatmark abos-web-admin abosweb
 
 # test atmark pass is regenerated on old version
 sed -i -e 's/version=[0-9]/version=1/' \
-	-e '/abos-web/d' \
+	-e '/id abos-web-admin/,/usermod.*abos-web/d' \
 	"$TESTS_DIR/out/init/initial_setup.desc"
 "$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
 	|| error "mkswu --init on old version failed"

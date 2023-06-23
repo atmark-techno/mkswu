@@ -2093,6 +2093,10 @@ geninitdesc_prompt_abosweb() {
 	geninitdesc_promptpass abos-web
 	if [ "$PASSWD" != "-L" ]; then
 		sed -i -e 's:setting passwords.*:&\
+	"if ! id abos-web-admin >/dev/null 2>\&1; then\
+		addgroup -S abos-web-admin 2>/dev/null;\
+		adduser -S -D -H -h /var/empty -s /sbin/nologin -G abos-web-admin -g abos-web-admin abos-web-admin 2>/dev/null;\
+	fi" \\\
 	"usermod '"$PASSWD"' abos-web-admin" \\:' "$desc.tmp" \
 			|| error "Could not update %s" "$desc.tmp"
 	fi
