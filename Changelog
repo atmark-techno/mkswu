@@ -1,3 +1,37 @@
+4.13
+====
+fixes:
+ - swdesc_exec: preserve file extension for exec. In particular, apk files
+were not installable by apk when their extension get mangled. An property
+has also been added which will allow future versions of swupdate to preserve
+the exact original filename in a future upgrade.
+ - fix error check for "version set without component"; this error was
+incorrectly unreachable.
+ - boot image copy: fix copy being incorrectly skipped after a failed boot
+update or rollback of an update with boot image. The system would trust its
+sw-versions but the real image version had changed: compare file content
+directly instead.
+With this change, boot_other and boot_linux_other special versions have been
+dropped
+ - fix swdesc_boot_linux (for linux kernel update on encrypted rootfs setup);
+the command incorrectly wasn't able to find its kernel argument in mkswu 4.11
+ - boot arch check: do not check arch in boot script for boot_linux update.
+This is because an update with boot_linux only on a system where uboot is
+encryped would fail finding the correct arch and incorrectly error out.
+
+features:
+ - add prompt to set abos-web-admin user password in initial_setup
+ - add avahi service to default swupdate preserve list
+ - allow using --extra-os with an empty component (--version-force);
+previously these items were container item and nochroot variants had to be
+used to affect normal OS
+
+misc:
+ - python3 command to generate a hashed password has been deprecated,
+suggest `openssl passwd -6` instead
+
+ -- 2023-06-27
+
 4.12
 ====
 deprecation notice:
