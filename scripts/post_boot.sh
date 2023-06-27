@@ -96,7 +96,6 @@ reset_uboot_env() {
 			--script - \
 			--defenv /dev/null \
 		|| error "Could not set uboot env"
-	rm -f "$SCRIPTSDIR/uboot_env"
 }
 
 cleanup_boot() {
