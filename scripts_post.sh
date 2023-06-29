@@ -27,9 +27,11 @@ poweroff)
 	;;
 wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
-	# we rely on normal lock for this case:
-	# if a user wants to kill swupdate and reinstall a new install
-	# it is somewhat valid, although previous update will be lost
+	# tell the world we're ready to be killed
+	touch /tmp/.swupdate_waiting
+	# also forbid other swupdate executions after we're killed
+	# while external shutdown happens
+	touch /tmp/.swupdate_rebooting
 	sleep infinity
 	;;
 container)
