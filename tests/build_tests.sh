@@ -81,10 +81,13 @@ build_check update_certs_user.desc -- \
 build_fail ../examples/initial_setup.desc
 build_fail files_os_nonabs_fail.desc
 build_fail files_dotdot_fail.desc
+echo 'swdesc_command true' | name="no version" build_fail -
+echo 'swdesc_option CONTAINER_CLEAR' | name="no command" build_fail -
+
 
 version_fail() {
 	printf "%s\n" "swdesc_command --version ${*@Q} 'echo ok'" \
-		| name=version build_fail -
+		| name="version $*" build_fail -
 }
 version_fail test abc # base version must be num
 version_fail test 1.2-123abc # mixed alnum

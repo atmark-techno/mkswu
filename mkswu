@@ -1529,6 +1529,9 @@ EOF
 			|| error "above component used multiple times with different versions or install-if mode"
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
+	elif [ -z "$MKSWU_FORCE_VERSION" ]; then
+		# can remove in 2024/05
+		error "No versions found: empty image or version not set?"
 	fi
 	MKSWU_SWDESC_OPTS="${MKSWU_SWDESC_OPTS:+$MKSWU_SWDESC_OPTS
 }${MKSWU_FORCE_VERSION:+FORCE_VERSION}"
