@@ -38,18 +38,15 @@ get_pod_infra_image_tag() {
 
 	if [ -z "$infra_image" ]; then
 		# get default name of the pod infra container... in the target rootfs!
-		# XXX find better than parsing help. We can't start a pod to inspect it...
-		# note: dry run uses running system instead for easy us
+		# note: dry run uses running system instead for easy use
 		WRAP="podman run --net=none --rootfs /target"
 		[ -n "$DRY_RUN" ] && WRAP=""
 		infra_image=$($WRAP podman pod create --help | \
 					sed -ne 's/.*infra-image.*default "\([^"]*\)".*/\1/p')
-	fi
 
-	if [ -z "$infra_image" ]; then
-		warning "Warning: Could not guess podman pod infra container name, continuing without one" \
-			"podman_start will probably require an internet to start pods"
-		return
+		# if this is empty (podman >= 4.0, abos >= 3.16) we can just skip the rest,
+		# pod can be built locally
+		[ -z "$infra_image" ] && return
 	fi
 
 	if ! podman --root "$PODMAN_ROOT" --storage-opt additionalimagestore="" \
