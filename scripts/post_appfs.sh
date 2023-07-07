@@ -81,24 +81,26 @@ check_warn_new_containers_removed() {
 	done < "$SCRIPTSDIR/podman_images_new"
 }
 
+remove_unused_containers() {
+	stdout_info echo "Removing unused containers"
+	stdout_info "$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
+		--confdir /target/etc/atmark/containers --fail-missing \
+		|| error "cleanup of old images failed: mismatching configuration/container update?"
+}
 
 cleanup_appfs() {
 	local dev basemount
-	local cleanup_fail="--fail-missing"
+
+	podman_list_images > "$SCRIPTSDIR/podman_images_post"
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 		# make sure mount point exists in destination image
 		mkdir -p /target/var/lib/containers/storage
-		# .. and do not complain if an image is not in readonly store
-		cleanup_fail=""
+		# ... and nag user
+		warning "containers running on development storage, not performing unused image removal"
+	else
+		remove_unused_containers
 	fi
-
-	podman_list_images > "$SCRIPTSDIR/podman_images_post"
-
-	stdout_info echo "Removing unused containers"
-	stdout_info "$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
-		--confdir /target/etc/atmark/containers $cleanup_fail \
-		|| error "cleanup of old images failed: mismatching configuration/container update?"
 
 	# cleanup readonly storage
 	[ -z "$(podman ps --root /target/var/lib/containers/storage_readonly -qa)" ] \
