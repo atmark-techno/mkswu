@@ -24,6 +24,12 @@ rm -rf "$SCRIPTSDIR"
 mkdir -p "$SCRIPTSDIR"
 touch "$TMPDIR/sw-description"
 
+setup_test_swupdate_fd() {
+	exec 3>/dev/null
+	exec 4>/dev/null
+	export SWUPDATE_INFO_FD=3
+	export SWUPDATE_WARN_FD=4
+}
 
 test_version_normalize() {
 	# versions with extra .0 and leading zeroes are transformed and
@@ -666,6 +672,7 @@ test_update_overlays() {
 
 (
 	set -e
+	setup_test_swupdate_fd
 	. "$SCRIPTS_SRC_DIR/common.sh"
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/versions.sh"

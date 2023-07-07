@@ -125,10 +125,16 @@ gen_newversion() {
 			other_boot|other_boot_linux) continue;;
 			esac
 			newvers=$(get_version --install-if "$component" present)
+			if [ -z "$newvers" ]; then
+				printf "%s\n" "$component $oldvers"
+				continue
+			fi
 			install_if=${newvers##* }
 			newvers=${newvers% *}
-			version_update "$install_if" "$oldvers" "$newvers" \
-				|| newvers="$oldvers"
+			if ! version_update "$install_if" "$oldvers" "$newvers"; then
+				info "Skipping install of component $component $newvers (has $oldvers)"
+				newvers="$oldvers"
+			fi
 			printf "%s\n" "$component $newvers"
 		done > "$SCRIPTSDIR/sw-versions.merged" \
 		|| error "Version generation from current versions failed"
