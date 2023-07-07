@@ -70,6 +70,28 @@ build_check swdesc_script_nochroot.desc --
 build_check two_scripts.desc -- \
 	"swdesc 'one' 'two'"
 
+
+echo 'swdesc_embed_container doesnotexist' \
+	| name="container_enoent_fail" build_fail -
+echo 'swdesc_embed_container build_tests.sh' \
+	| name="container_nottar_warn" build_check - 2>&1 \
+	| grep -q "was not in docker-archive format" \
+	|| error "mkswu did not warn for container not a tar"
+if command -v podman && command -v jq > /dev/null; then
+	id=$(podman image list --format='{{.Id}}' --sort=size | head -n 1)
+	if [ -z "$id" ]; then
+		id=$(echo 'FROM scratch' | podman build -t empty - -q || true)
+	fi
+	# ignore any error if podman cannot build in test environment
+	if [ -n "$id" ]; then
+		podman save -o out/container.tar "$id"
+		echo 'swdesc_embed_container out/container.tar' \
+			| name="container_notag_warn" build_check - 2>&1 \
+			| grep -q "did not contain any tag" \
+			|| error "mkswu did not warn for no tag in container"
+	fi
+fi
+
 build_check update_certs_atmark.desc -- \
 	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem"
 

@@ -1169,12 +1169,30 @@ swdesc_script_nochroot() {
 	swdesc_exec_nochroot
 }
 
+container_check_archive() {
+	local manifest
+
+	[ -f "$image" ] \
+		|| error "%s does not exist or is not a regular file" "$image"
+
+	if ! manifest=$(tar -Oxf "$image" manifest.json); then
+		warning "Container image %s was not in docker-archive format, install might not work" "$image"
+		return
+	fi
+
+	# skip check if no jq
+	command -v jq >/dev/null || return 0
+	if [ -z "$(printf "%s\n" "$manifest" | jq -r  '.[] | .RepoTags[]')" ]; then
+		warning "Container image %s did not contain any tag, image will not be installed unless selected by id" "$image"
+	fi
+}
 
 swdesc_embed_container() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local image=""
 
 	parse_swdesc embed_container "$@"
+	container_check_archive
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_target load $1'
@@ -1195,6 +1213,7 @@ swdesc_usb_container() {
 	local image=""
 
 	parse_swdesc usb_container "$@"
+	container_check_archive
 
 	local image_usb="${image##*/}"
 	if [ "${image_usb%.tar.*}" != "$image_usb" ]; then
