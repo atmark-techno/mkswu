@@ -1046,6 +1046,8 @@ swdesc_exec_nochroot() {
 	parse_swdesc exec_nochroot "$@"
 	original_file="${file##*/}"
 
+	[ -f "$file" ] \
+		|| error "%s does not exist or is not a regular file" "$file"
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error "Using %s with a non-empty file, but not referring to it with \$1" \
 			"swdesc_exec_nochroot"
@@ -1075,6 +1077,8 @@ swdesc_exec() {
 	parse_swdesc exec "$@"
 	original_file="${file##*/}"
 
+	[ -f "$file" ] \
+		|| error "%s does not exist or is not a regular file" "$file"
 	[ ! -s "$file" ] || [ "$cmd" != "${cmd#*\$1}" ] \
 		|| error "Using %s with a non-empty file, but not referring to it with \$1" \
 			"swdesc_exec"
