@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=9
+	local preserve_version=0 max_version=10
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -163,6 +163,13 @@ EOF
 
 # v9 list: avahi service
 /etc/runlevels/default/avahi-daemon
+EOF
+	fi
+	if [ "$preserve_version" -le 9 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v10 list: chown abos-web directory
+CHOWN abos-web-admin: /etc/atmark/abos_web
 EOF
 	fi
 }
