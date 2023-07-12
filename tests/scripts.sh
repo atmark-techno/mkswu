@@ -431,6 +431,76 @@ test_preserve_files_post() {
 	rm -f "$TARGET/$SRC/copy"*
 }
 
+test_preserve_files_chown() {
+	TARGET=$(realpath -m "$SCRIPTSDIR/target")
+	FLIST="$TARGET/etc/swupdate_preserve_files"
+	rm -rf "$TARGET"
+	mkdir -p "$TARGET/etc" "$TARGET/bin"
+	uid=123; gid=234; rootuid=0
+	echo 'user1:x:123:234::/:/bin/false' > "$TARGET/etc/passwd"
+	echo 'group1:x:234:' > "$TARGET/etc/group"
+
+	touch "$TARGET/file" "$TARGET/file2" "$TARGET/other_file"
+	ln -s a "$TARGET/symlink"
+
+	# test invalid user / groups / file not present: should just skip
+	cat > "$FLIST" <<EOF
+POST /fds
+/fds
+CHOWN nouser /file
+CHOWN user1:nogroup /file
+CHOWN nouser:group1 /file
+CHOWN user1: /nofile
+EOF
+	echo "preserve_files: noop chowns"
+	post_chown_preserve_files
+
+	# real chown tests require a working 'chown' binary in the chroot...
+	# any static binary would do but a static busybox is easiest and
+	# allow checking chown works
+	# The below fudged logic will:
+	# - use any 'busybox-static' file in test directory if present
+	# - if not and we're running alpine get it and create it
+	# - if not give up
+	# - copy inside target for chroot
+	if ! [ -e "./busybox.static" ]; then
+		rm -f busybox-static-*apk
+		if ! command -v apk >/dev/null \
+		    || ! apk fetch busybox-static \
+		    || ! tar xf busybox-static-*apk bin/busybox.static \
+		    || ! mv bin/busybox.static . \
+		    || ! rmdir bin; then
+			echo "skipping real chown preserve_files test (no busybox.static)"
+			return 0
+		fi
+		rm -f busybox-static-*apk
+	fi
+	cp busybox.static "$TARGET/bin/chown"
+
+	# we also need 'chroot' to work: try to wrap it if it helps...
+	if ! chroot "$TARGET" chown --help >/dev/null 2>&1; then
+		if podman unshare chroot "$TARGET" chown --help >/dev/null 2>&1; then
+			chroot() { podman unshare chroot "$@"; }
+			uid=100122; gid=100233; rootuid="$(id -u)"
+		else
+			echo "skipping real chown preserve_files test (no chroot)"
+			return 0
+		fi
+	fi
+
+	cat > "$FLIST" <<EOF
+CHOWN user1: /file*
+CHOWN user1 /other_file
+CHOWN user1:group1 /symlink
+EOF
+	echo "preserve_files: real chowns"
+	post_chown_preserve_files
+	[ "$(stat -c %u:%g "$TARGET/file")" = "$uid:$gid" ] || error "file was not chown'd correctly"
+	[ "$(stat -c %u:%g "$TARGET/file2")" = "$uid:$gid" ] || error "file2 was not chown'd correctly"
+	[ "$(stat -c %u:%g "$TARGET/other_file")" = "$uid:$rootuid" ] || error "other was not chown'd correctly"
+	[ "$(stat -c %u:%g "$TARGET/symlink")" = "$uid:$gid" ] || error "symlink was not chown'd correctly"
+}
+
 test_preserve_files_pre() {
 	TARGET=$(realpath -m "$SCRIPTSDIR/target")
 	SRC=$(realpath -m "$SCRIPTSDIR/src")
@@ -689,6 +759,7 @@ test_update_overlays() {
 	test_cert_update
 	. "$SCRIPTS_SRC_DIR/post_rootfs.sh"
 	test_preserve_files_post
+	test_preserve_files_chown
 ) || error "post test failed"
 
 (

@@ -44,6 +44,51 @@ post_copy_preserve_files() {
 	rm -f "$SCRIPTSDIR/preserve_files_post"
 }
 
+chown_to_target() {
+	local file
+	local owner="$1"
+	shift
+
+	local user="${owner%:*}" group="${owner#*:}"
+	# skip users not on target (e.g. old base OS)
+	awk -v user="$user" -F: '$1 == user { exit(1); }' \
+		< "$TARGET/etc/passwd" && return
+	if [ "$user" != "$owner" ] && [ -n "$group" ]; then
+		# same for group
+		awk -v group="$group" -F: '$1 == group { exit(1); }' \
+			< "$TARGET/etc/group" && return
+	fi
+
+	for file; do
+		[ -L "$file" ] || [ -e "$file" ] || continue
+
+		chroot "$TARGET" chown -hR "$owner" "/${file#$TARGET}" \
+			|| error "Could not chown post files"
+	done
+}
+
+post_chown_preserve_files() {
+	local owner f
+	local TARGET="${TARGET:-/target}"
+	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
+	local IFS=' '
+
+	sed -ne 's:^CHOWN ::p' "$TARGET/etc/swupdate_preserve_files" \
+		| sort -u > "$SCRIPTSDIR/preserve_files_chown"
+	while read -r owner f; do
+		# we reset IFS everytime because we want IFS to be space for
+		# read to split the first word (owner); but we need it to be
+		# new line to not split paths with spaces (yet expand globs)
+		IFS='
+'
+		# No quote to expand globs
+		chown_to_target "$owner" $TARGET/$f
+		IFS=' '
+	done < "$SCRIPTSDIR/preserve_files_chown"
+
+	rm -f "$SCRIPTSDIR/preserve_files_chown"
+}
+
 check_update_log_encryption() {
 	# encrypt /var if we were requested to
 	# note we do not "decrypt" a fs if the var is not set
@@ -164,6 +209,12 @@ post_rootfs() {
 
 		# remove open access swupdate certificate or complain
 		update_swupdate_certificate
+	fi
+
+	if update_baseos; then
+		# update preserve_files owners when required
+		# (after update_shadow)
+		post_chown_preserve_files
 	fi
 
 	# mark filesystem as ready for reuse if something failed
