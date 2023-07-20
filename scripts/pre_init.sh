@@ -83,18 +83,13 @@ fail_redundant_update() {
 			error "Nothing to do -- failing on purpose to save bandwidth"
 		fi
 		# also check B-side unless SW_ALLOW_ROLLBACK is set
-		local dev="${partdev}$((ab+1))"
+		local dev="${partdev#/dev/}$((ab+1))"
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
 		    && [ -n "$upgrade_available" ] \
-		    && luks_unlock "rootfs_$ab" \
-		    && mount -t btrfs,ext4 "$dev" /target 2>/dev/null; then
-			if cmp -s /target/etc/sw-versions \
-					"$SCRIPTSDIR/sw-versions.merged"; then
-				rm -rf "$SCRIPTSDIR"
-				error "Update looks like it already had been installed but rolled back, failing on purpose." \
-					"Set SW_ALLOW_ROLLBACK=1 environment variable to force installing anyway."
-			fi
-			umount /target
+		    && cmp -s "/var/log/swupdate/$dev" "$SCRIPTSDIR/sw-versions.merged"; then
+			rm -rf "$SCRIPTSDIR"
+			error "Update looks like it already had been installed but rolled back, failing on purpose." \
+				"Set SW_ALLOW_ROLLBACK=1 environment variable to force installing anyway."
 		fi
 	fi
 }
