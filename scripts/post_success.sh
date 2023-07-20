@@ -2,6 +2,11 @@ post_success_rootfs() {
 	# record last updated partition for abos-ctrl
 	local newstate
 
+	if ! [ -d "/var/log/swupdate" ] || ! mkdir /var/log/swupdate; then
+		warning "Could not mkdir /var/log/swupdate"
+		return
+	fi
+
 	if needs_reboot; then
 		newstate="${partdev}$((ab+1))"
 	else
@@ -10,6 +15,8 @@ post_success_rootfs() {
 
 	echo "$newstate $(date +%s)" > "/var/log/swupdate/last_update" \
 		|| warning "Could not record last update partition"
+	cp "/target/etc/sw-versions" "/var/log/swupdate/sw-versions-${partdev#/dev/}" \
+		|| warning "Could not update latest sw-versions"
 }
 
 post_success_atlog() {
@@ -117,8 +124,6 @@ set_fw_update_ind() {
 }
 
 post_success() {
-	[ -d "/var/log/swupdate" ] || mkdir /var/log/swupdate \
-		|| warning "Could not mkdir /var/log/swupdate"
 	post_success_rootfs
 	post_success_atlog
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
