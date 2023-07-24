@@ -1176,14 +1176,14 @@ container_check_archive() {
 		|| error "%s does not exist or is not a regular file" "$image"
 
 	if ! manifest=$(tar -Oxf "$image" manifest.json); then
-		warning "Container image %s was not in docker-archive format, install might not work" "$image"
+		warning "Warning: Container image %s was not in docker-archive format, install might not work" "$image"
 		return
 	fi
 
 	# skip check if no jq
 	command -v jq >/dev/null || return 0
 	if [ -z "$(printf "%s\n" "$manifest" | jq -r  '.[] | .RepoTags[]')" ]; then
-		warning "Container image %s did not contain any tag, image will not be installed unless selected by id" "$image"
+		warning "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id" "$image"
 	fi
 }
 
@@ -1550,7 +1550,7 @@ EOF
 				| sed -e 's/^/  #VERSION /'
 	elif [ -z "$MKSWU_FORCE_VERSION" ]; then
 		# can remove in 2024/05
-		error "No versions found: empty image or version not set?"
+		error "No versions found: use '--version x y' or 'swdesc_option version=y'"
 	fi
 	MKSWU_SWDESC_OPTS="${MKSWU_SWDESC_OPTS:+$MKSWU_SWDESC_OPTS
 }${MKSWU_FORCE_VERSION:+FORCE_VERSION}"
@@ -2269,7 +2269,7 @@ update_one_version() {
 
 	old_version=$(sed -ne 's/^swdesc_option.*version=\([^ ]*\).*/\1/p' "$desc")
 	if [ -z "$old_version" ]; then
-		warning "Could not find previous version in %s, not updating" "$desc"
+		warning "Warning: Could not find current version in %s, not updating" "$desc"
 		return 1
 	fi
 	trace "Found old version %s" "$old_version"
@@ -2295,7 +2295,7 @@ update_one_version() {
 		# and just use as is.
 		if command -v version_higher >/dev/null \
 		    && version_higher "$version-0" "$old_version"; then
-			warning "Desc %s previous version %s is higher than base %s-0, refusing to update" \
+			warning "Warning: Desc %s previous version %s is higher than base %s-0, refusing to update" \
 				"$desc" "$old_version" "$version"
 			return 1
 		fi

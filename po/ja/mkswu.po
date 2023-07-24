@@ -391,8 +391,20 @@ msgid "Could not create tar for %s"
 msgstr "%s のtarを作成できませんでした。"
 
 #: mkswu
+msgid "%s does not exist or is not a regular file"
+msgstr "%s が存在しないか、通常のファイルではありません。"
+
+#: mkswu
 msgid "Using %s with a non-empty file, but not referring to it with \\$1"
 msgstr "%s コマンドのファイルは \\$1 で使用されていません。"
+
+#: mkswu
+msgid "Warning: Container image %s was not in docker-archive format, install might not work"
+msgstr "Warning: コンテナイメージ %s は docker-archive として認識できませんでした。インストールは失敗する可能性があります。"
+
+#: mkswu
+msgid "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id"
+msgstr "Warning: コンテナイメージ %s にはイメージタグがありません。イメージを id で指定しない場合インストールされません。"
 
 #: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
@@ -441,6 +453,10 @@ msgstr "HW_COMPAT変数を設定してください。"
 #: mkswu
 msgid "above component used multiple times with different versions or install-if mode"
 msgstr "上記のコンポーネントは別のバージョンかinstall-ifですでに利用されています。"
+
+#: mkswu
+msgid "No versions found: use '--version x y' or 'swdesc_option version=y'"
+msgstr "バージョンが見つかりませんでした。'--version x y' か 'swdesc_option version=y' を使用してください。"
 
 #: mkswu
 msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"
@@ -751,12 +767,12 @@ msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr "を修正しないとインストールできなくなります。"
 
 #: mkswu
-msgid "Could not find previous version in %s, not updating"
-msgstr "%s からバージョンを読み取りできませんでした。更新できません。"
+msgid "Warning: Could not find current version in %s, not updating"
+msgstr "Warning: %s から現在のバージョンを取得できませんでした。更新できません。"
 
 #: mkswu
-msgid "Desc %s previous version %s is higher than base %s-0, refusing to update"
-msgstr "%s にさ記載れているバージョン（%s）は指定されたベースのバージョン（%s-0)より上です。更新しません。"
+msgid "Warning: Desc %s previous version %s is higher than base %s-0, refusing to update"
+msgstr "Warning: %s のバージョン(%s)は指定されたベースのバージョン(%s-0)より新しいです。更新されません。"
 
 #: mkswu
 msgid "Updated %s version from %s to %s"

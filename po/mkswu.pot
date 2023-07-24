@@ -294,7 +294,16 @@ msgstr ""
 msgid "Could not create tar for %s"
 msgstr ""
 #: mkswu
+msgid "%s does not exist or is not a regular file"
+msgstr ""
+#: mkswu
 msgid "Using %s with a non-empty file, but not referring to it with \\$1"
+msgstr ""
+#: mkswu
+msgid "Warning: Container image %s was not in docker-archive format, install might not work"
+msgstr ""
+#: mkswu
+msgid "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id"
 msgstr ""
 #: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
@@ -331,6 +340,9 @@ msgid "HW_COMPAT must be set"
 msgstr ""
 #: mkswu
 msgid "above component used multiple times with different versions or install-if mode"
+msgstr ""
+#: mkswu
+msgid "No versions found: use '--version x y' or 'swdesc_option version=y'"
 msgstr ""
 #: mkswu
 msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"
@@ -564,10 +576,10 @@ msgstr ""
 msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr ""
 #: mkswu
-msgid "Could not find previous version in %s, not updating"
+msgid "Warning: Could not find current version in %s, not updating"
 msgstr ""
 #: mkswu
-msgid "Desc %s previous version %s is higher than base %s-0, refusing to update"
+msgid "Warning: Desc %s previous version %s is higher than base %s-0, refusing to update"
 msgstr ""
 #: mkswu
 msgid "Updated %s version from %s to %s"
