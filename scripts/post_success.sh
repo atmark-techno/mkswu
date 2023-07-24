@@ -2,7 +2,7 @@ post_success_rootfs() {
 	# record last updated partition for abos-ctrl
 	local newstate
 
-	if ! [ -d "/var/log/swupdate" ] || ! mkdir /var/log/swupdate; then
+	if ! [ -d "/var/log/swupdate" ] && ! mkdir /var/log/swupdate; then
 		warning "Could not mkdir /var/log/swupdate"
 		return
 	fi
@@ -11,11 +11,17 @@ post_success_rootfs() {
 		newstate="${partdev}$((ab+1))"
 	else
 		newstate="${partdev}$((!ab+1))"
+		# no reboot means we updated other partition to our's, first.
+		if [ -e "/var/log/swupdate/sw-versions-${newstate#/dev/}" ]; then
+			mv "/var/log/swupdate/sw-versions-${newstate#/dev/}" \
+					"/var/log/swupdate/sw-versions-${partdev#/dev/}$((ab+1))" \
+				|| warning "Could not update latest sw-versions"
+		fi
 	fi
 
 	echo "$newstate $(date +%s)" > "/var/log/swupdate/last_update" \
 		|| warning "Could not record last update partition"
-	cp "/target/etc/sw-versions" "/var/log/swupdate/sw-versions-${partdev#/dev/}" \
+	cp "$SCRIPTSDIR/sw-versions.merged" "/var/log/swupdate/sw-versions-${newstate#/dev/}" \
 		|| warning "Could not update latest sw-versions"
 }
 
