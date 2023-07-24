@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PODMAN_ROOT=/var/lib/containers/storage_readonly
-CONFDIR=/etc/atmark/containers
+CONFDIR=
 FAIL_MISSING=
 DRY_RUN=
 
@@ -25,7 +25,7 @@ usage() {
 	echo "Options:"
 	echo " --storage <path> Path to podman storage to cleanup"
 	echo " --confdir <path> Path to atmark config directory to check in-use image"
-	echo "                  If path is empty, all images with a tag are kept"
+	echo "                  If unset, all images with a tag are kept"
 	echo " --fail-missing   Fail if a configured image is not found"
 	echo " --dry-run        Print what would be removed instead of removing"
 }

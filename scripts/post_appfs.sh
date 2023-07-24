@@ -83,8 +83,7 @@ check_warn_new_containers_removed() {
 
 remove_unused_containers() {
 	stdout_info echo "Removing unused containers"
-	stdout_info "$SCRIPTSDIR/podman_cleanup" --storage /target/var/lib/containers/storage_readonly \
-		--confdir /target/etc/atmark/containers --fail-missing \
+	stdout_info "$SCRIPTSDIR/podman_cleanup" "$@" \
 		|| error "cleanup of old images failed: mismatching configuration/container update?"
 }
 
@@ -97,9 +96,12 @@ cleanup_appfs() {
 		# make sure mount point exists in destination image
 		mkdir -p /target/var/lib/containers/storage
 		# ... and nag user
-		warning "containers running on development storage, not performing unused image removal"
+		warning "containers running on development storage, image removal only removes untagged images"
+		# only purge images without tags
+		remove_unused_containers --storage /var/lib/containers/storage
 	else
-		remove_unused_containers
+		remove_unused_containers --storage /target/var/lib/containers/storage_readonly \
+			--confdir /target/etc/atmark/containers --fail-missing
 	fi
 
 	# cleanup readonly storage

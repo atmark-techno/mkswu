@@ -143,7 +143,7 @@ update_containers() {
 			# has the canonical path
 			PODMAN_ROOT=/var/lib/containers/storage
 			warning "Updating images on development storage, do not use this mode for production!" \
-			       "(Old images are never removed, not safe on power loss...)"
+			       "(Old images removal is conservative, not safe on power loss...)"
 		fi
 		mountpoint -q "$PODMAN_ROOT" \
 			|| error "Trying to use $PODMAN_ROOT which is not mounted"
