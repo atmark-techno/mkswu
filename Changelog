@@ -1,3 +1,32 @@
+4.14
+====
+fixes:
+ - podman >= 4.0 no longer requires internet to build its pod infra image,
+do not print a warning if infra image was not provided
+ - in podman-storage --disk mode, do not cleanup images in read-only
+storage. In recent ABOS the read-only storage can safely be removed as it
+is no longer used, but for old ABOS it was used as an additional image
+store so removing images from there could potentially break images in the
+shared layer.
+ - make mkswu fail again when a desc file is created without any version.
+This used to be the case, so should not be considered a breaking change.
+ - swdesc_exec: error out if file is non-existing or not a real file,
+as swupdate won't be able to handle that later.
+
+features:
+ - print a message for each version that is not installed in a SWU
+This allows noticing that a SWU was only partially installed
+ - print a warning if container image does not contain a tag at mkswu time
+ - for POST_ACTION=wait create /tmp/.swupdate_waiting file to notify
+daemons they can safely reboot or power off (for atmark-power-utils)
+ - in podman-storage --disk mode, cleanup images without tags in shared
+storage. Do not remove any tag as we do not know which images are used.
+ - swupdate_preserve_files: add CHOWN intruction to fix file permissions
+ - keep a copy of sw-versions around in /var/log/swupdate in order to
+ print better messages
+
+ -- 2023-07-25
+
 4.13
 ====
 fixes:
