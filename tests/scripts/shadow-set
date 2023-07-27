@@ -25,7 +25,9 @@ ntp:!::0:::::
 smmsp:!::0:::::
 guest:!::0:::::
 nobody:!::0:::::
-chrony:!:18869:0:99999:7:::
-utmp:!:18869:0:99999:7:::
-messagebus:!:18869:0:99999:7:::
+abos-web-admin:$6$7hjoTzXei0PSmdRI$ilvAfHAHhxGlZJcQpGLLNhtuXL.4o3oi.Fkbt1qWej0oA2H/OXdLlk03yqoUGAqzsrDsWH9qPSyKE/3u7jZ/X0:19565:0:99999:7:::
+avahi:!:19565:0:99999:7:::
+messagebus:!:19565:0:99999:7:::
+chrony:!:19565:0:99999:7:::
+dnsmasq:!:19565:0:99999:7:::
 atmark:$6$hQ7U1lUAUhyk/IB3$fXhtaqYj06i61gm3lh6xXDPadCvfND9OuHW6ux7mM6K.9ysaRcmnymp6PTFv9KfkuCb4.l5.1HORXIUKMk5FO.:18911:0:99999:7:::

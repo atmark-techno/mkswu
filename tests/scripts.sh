@@ -230,13 +230,15 @@ test_passwd_update() {
 	( update_shadow; ) || error "Normal copy failed"
 	grep -qF 'root:$' "$SCRIPTSDIR/shadow-target" || error "root pass not copied"
 	grep -qF 'atmark:$' "$SCRIPTSDIR/shadow-target" || error "atmark pass not copied"
+	grep -qF 'abos-web-admin:$' "$SCRIPTSDIR/shadow-target" || error "abos-web-admin pass not copied"
 
-	echo "passwd copy: test not overriding passwd already set"
+	echo "passwd copy: test not overriding passwd/uid already set"
+	cp ./scripts/passwd-shuffled "$SCRIPTSDIR/passwd-target"
 	sed -i -e 's/root:[^:]*/root:GREPMEFAKE/' "$SCRIPTSDIR/shadow-target"
 
 	( update_shadow; ) || error "copy already set failed"
 	grep -q 'root:GREPMEFAKE' "$SCRIPTSDIR/shadow-target" || error "password was overriden"
-
+	grep -q 'abos-web-admin:x:101' "$SCRIPTSDIR/passwd-target" || error "abos-web-admin uid was changed"
 
 	echo "passwd copy: test leaving empty passwords fail"
 	for f in passwd shadow group; do

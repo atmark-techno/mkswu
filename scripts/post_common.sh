@@ -48,7 +48,7 @@ update_shadow() {
 	# rootfs updates can change system users, but we want to keep
 	# "real" users as well so copy them over manually:
 	# - copy non-existing "real" groups (gid >= 1000)
-	# - for each real user (root or uid >= 1000), copy its password
+	# - for each real user (root, abos* or uid >= 1000), copy its password
 	# if the old one not set and add it to groups it had been added to
 	awk -F: '$3 >= 1000 && $3 < 65500 { print $1 }' < "$GROUP" |
 		while read -r group; do
@@ -56,7 +56,10 @@ update_shadow() {
 				|| grep -E "^$group:" "$GROUP" >> "$NGROUP"
 		done
 
-	awk -F: '$3 == 0 || ( $3 >= 1000 && $3 < 65500 ) { print $1 }' < "$PASSWD" |
+	awk -F: '$1 == "root" || $1 ~ /^abos/ \
+			|| ( $3 >= 1000 && $3 < 65500 ) {
+				print $1
+			}' < "$PASSWD" |
 		while read -r user; do
 			grep -qE "^$user:" "$NPASSWD" \
 				|| grep -E "^$user:" "$PASSWD" >> "$NPASSWD"

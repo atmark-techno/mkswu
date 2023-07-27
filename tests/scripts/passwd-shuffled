@@ -25,9 +25,9 @@ ntp:x:123:123:NTP:/var/empty:/sbin/nologin
 smmsp:x:209:209:smmsp:/var/spool/mqueue:/sbin/nologin
 guest:x:405:100:guest:/dev/null:/sbin/nologin
 nobody:x:65534:65534:nobody:/:/sbin/nologin
-abos-web-admin:x:100:101:abos-web-admin:/var/empty:/sbin/nologin
 avahi:x:86:86:Avahi System User:/var/run/avahi-daemon:/sbin/nologin
-messagebus:x:101:102:messagebus:/dev/null:/sbin/nologin
+messagebus:x:100:101:messagebus:/dev/null:/sbin/nologin
+abos-web-admin:x:101:102:abos-web-admin:/var/empty:/sbin/nologin
 chrony:x:102:103:chrony:/var/log/chrony:/sbin/nologin
 dnsmasq:x:103:104:dnsmasq:/dev/null:/sbin/nologin
 atmark:x:1000:1000:Linux User,,,:/home/atmark:/bin/ash
