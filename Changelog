@@ -1,3 +1,11 @@
+4.14.1
+======
+fixes:
+ - also copy password for users whose name start with abos
+(this preserves abos-web-admin password despite uid being lower than 1000)
+
+ -- 2023-07-27
+
 4.14
 ====
 fixes:
