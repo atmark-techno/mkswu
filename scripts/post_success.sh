@@ -2,11 +2,6 @@ post_success_rootfs() {
 	# record last updated partition for abos-ctrl
 	local newstate
 
-	if ! [ -d "/var/log/swupdate" ] && ! mkdir /var/log/swupdate; then
-		warning "Could not mkdir /var/log/swupdate"
-		return
-	fi
-
 	if needs_reboot; then
 		newstate="${partdev}$((ab+1))"
 	else
@@ -91,10 +86,16 @@ post_success_atlog() {
 }
 
 post_success_hawkbit() {
-	# hawkbit service requires transmitting install status on next restart
-	# /var/log is shared and not mounted on target
+	# transmit install status on mandatory service restart
 	touch /var/log/swupdate/hawkbit_install_done \
 		|| warning "Could not create hawkbit install marker file"
+}
+
+post_success_armadillo_twin() {
+	# transmit install status on next boot -- skip if not rebooting
+	[ "$POST_ACTION" = container ] && return
+	echo "$SWUPDATE_ARMADILLO_TWIN" > /var/log/swupdate/armadillo_twin_install_done \
+		|| warning "Could not create armadillo twin install marker file"
 }
 
 post_success_usb() {
@@ -102,7 +103,6 @@ post_success_usb() {
 	# we don't need to do this if the post action is poweroff, wait or container
 	# as these have no risk of looping
 	if [ -n "$(mkswu_var FORCE_VERSION)" ]; then
-		POST_ACTION=$(post_action)
 		case "$POST_ACTION" in
 		poweroff|container|wait) ;;
 		*) mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed" \
@@ -130,9 +130,15 @@ set_fw_update_ind() {
 }
 
 post_success() {
+	if ! [ -d "/var/log/swupdate" ] && ! mkdir /var/log/swupdate; then
+		warning "Could not create /var/log/swupdate"
+	fi
+
 	post_success_rootfs
 	post_success_atlog
+	POST_ACTION=$(post_action)
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
+	[ -n "$SWUPDATE_ARMADILLO_TWIN" ] && post_success_armadillo_twin
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
 	post_success_custom
 	set_fw_update_ind
