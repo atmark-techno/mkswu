@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 # Do minimal work if called from installer
 post_installer() {
 	# for update_shadow compat, always mounted in installer

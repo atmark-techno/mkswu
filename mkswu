@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 
 # disable noisy shellcheck warnings
 # shellcheck disable=SC2039,SC1090,SC2165,SC2167,SC2064,SC2015

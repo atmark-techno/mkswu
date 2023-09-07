@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 
 TMPDIR="${TMPDIR:-/var/tmp}"
 SCRIPTSDIR="$TMPDIR/scripts"

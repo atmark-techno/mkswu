@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 allow_upgrade_available() {
 	# Do not set upgrade_available if other boot is encrypted,
 	# we would not be able to boot into it.

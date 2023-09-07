@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 exchange_btrfs_snapshots() {
 	if command -v renameat2 >/dev/null; then
 		renameat2 --exchange "$basemount/boot_0" "$basemount/boot_1"

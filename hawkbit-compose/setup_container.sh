@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
 
 ## shellcheck doesn't understand indirect variable usage (prompt/save helpers)
 ## disable this check globally...

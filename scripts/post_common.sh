@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 update_shadow_user() {
 	local user="$1"
 	local oldpass

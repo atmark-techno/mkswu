@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 
 # This script prepares the script environment by extracting the
 # archive we concatenate at the end of it, then rolls the pre steps.

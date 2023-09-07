@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 
 # SC2039: local is ok for dash and busybox ash
 # shellcheck disable=SC2039

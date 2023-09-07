@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 error() {
 	printf -- "----------------------------------------------\n" >&2
 	printf -- "/!\ %s\n" "$@" >&2
