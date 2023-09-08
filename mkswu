@@ -2550,6 +2550,10 @@ local cmd="" preserve_attributes="" container=""
 	local MKSWU_version="" MKSWU_component="" MKSWU_install_if=""
 	local MKSWU_install_first=""
 
+	# (busybox realpath does not have --version and errors)
+	realpath --version >/dev/null 2>&1 \
+		|| error "Please install coreutils first."
+
 	set -e
 
 	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then

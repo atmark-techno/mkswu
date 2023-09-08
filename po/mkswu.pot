@@ -612,6 +612,9 @@ msgstr ""
 msgid "Could not get script dir"
 msgstr ""
 #: mkswu
+msgid "Please install coreutils first."
+msgstr ""
+#: mkswu
 msgid "mkswu not installed and could not guess mkswu version from git"
 msgstr ""
 #: mkswu

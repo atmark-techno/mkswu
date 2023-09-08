@@ -815,6 +815,10 @@ msgid "Could not get script dir"
 msgstr "スクリプトのディレクトリが読み取れませんでした。"
 
 #: mkswu
+msgid "Please install coreutils first."
+msgstr "coreutils をインストールしてください。"
+
+#: mkswu
 msgid "mkswu not installed and could not guess mkswu version from git"
 msgstr "mkswu のバージョンが分かりませんでした。"
 
