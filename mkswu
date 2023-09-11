@@ -910,15 +910,15 @@ swdesc_tar() {
 		;;
 	*)
 		dest="${dest:-/var/app/rollback/volumes}"
-		case "$dest" in
-		/var/app/rollback/volumes*|/var/app/volumes*)
+		case "$dest/" in
+		/tmp/*|/var/tmp/*|/var/app/rollback/volumes/*|/var/app/volumes/*)
 			# ok
 			;;
 		/*)
 			[ -n "$target" ] \
 				&& error "OS is only writable for base/extra_os updates and dest (%s) is not within volumes. Use --extra-os." "$dest"
 			;;
-		..*|*/../*|*/..)
+		..*|*/../*)
 			error ".. is not allowed in destination path for volume update"
 			;;
 		*)
