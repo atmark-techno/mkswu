@@ -50,7 +50,7 @@ reset_uboot_env() {
 			dev=$1
 		}
 		END {
-			if (!start) exit(1);
+			if (! (start+0)) exit(1);
 			printf("%s,%d,%d\n", dev, start, end-start);
 		}
 		' < /target/etc/fw_env.config) \
