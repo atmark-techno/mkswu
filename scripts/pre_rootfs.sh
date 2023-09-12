@@ -281,8 +281,7 @@ mount_target_rootfs() {
 	    && mount_rootfs "$dev" /target; then
 		if [ ! -e /target/.created ] \
 		    && [ -s /etc/.rootfs_update_timestamp ] \
-		    && [ "$(cat /etc/.rootfs_update_timestamp 2>/dev/null)" \
-		    = "$(cat /target/etc/.rootfs_update_timestamp 2>/dev/null)" ]; then
+		    && cmp -s /etc/.rootfs_update_timestamp /target/etc/.rootfs_update_timestamp; then
 			stdout_info echo "Other fs up to date, skipping copy"
 			return
 		fi
@@ -341,8 +340,14 @@ prepare_rootfs() {
 	if update_rootfs; then
 		# we won't be able to reuse the fs again, do this
 		# now in case of error
-		date +%s.%N > /target/etc/.rootfs_update_timestamp \
+		date +%s > /target/etc/.rootfs_update_timestamp \
 			|| error "Could not update rootfs timestamp"
+		# in the unlikely chance we somehow got the same date, add something...
+		if cmp -s /etc/.rootfs_update_timestamp /target/etc/.rootfs_update_timestamp; then
+			echo "(differentiator for identical timestamps)" \
+					>> /target/etc/.rootfs_update_timestamp \
+				|| error "Could not update rootfs timestamp"
+		fi
 	fi
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		rm -f /target/etc/atmark/containers/*.conf
