@@ -223,23 +223,25 @@ unlock_update() {
 }
 
 mkdir_p_target() {
-	local dir="$1" parent mode
-	local TARGET=${TARGET:-/target}
+	local dir="$1" parent ownermode
+	local TARGET="${TARGET:-/target}"
 
 	# nothing to do if target exists or source doesn't
 	[ -e "$TARGET/$dir" ] && return
-	[ -e "$dir" ] || return
+	ownermode=$(stat -c "%u:%g %a" "$dir" 2>/dev/null) \
+		|| return
 
 	parent="${dir%/*}"
 	[ -n "$parent" ] && mkdir_p_target "$parent"
 
 	mkdir "$TARGET/$dir" \
 		|| error "Could not create $TARGET/$dir"
-	chown --reference "$dir" "$TARGET/$dir" \
+
+	chown "${ownermode% *}" "$TARGET/$dir" \
 		|| error "Could not chown $dir"
-	chmod --reference "$dir" "$TARGET/$dir" \
+	chmod "${ownermode#* }" "$TARGET/$dir" \
 		|| error "Could not chmod $dir"
-	touch --reference "$dir" "$TARGET/$dir" \
+	touch -r "$dir" "$TARGET/$dir" \
 		|| error "Could set $dir timestamp"
 }
 
