@@ -380,8 +380,8 @@ test_cert_update() {
 }
 
 test_preserve_files_post() {
-	TARGET=$(realpath -m "$SCRIPTSDIR/target")
-	SRC=$(realpath -m "$SCRIPTSDIR/src")
+	TARGET=$(realpath "$SCRIPTSDIR/target")
+	SRC=$(realpath "$SCRIPTSDIR/src")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
 	mkdir -p "$TARGET/etc" "$TARGET/$SRC" "$SRC"
@@ -434,7 +434,7 @@ test_preserve_files_post() {
 }
 
 test_preserve_files_chown() {
-	TARGET=$(realpath -m "$SCRIPTSDIR/target")
+	TARGET=$(realpath "$SCRIPTSDIR/target")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
 	mkdir -p "$TARGET/etc" "$TARGET/bin"
@@ -504,8 +504,8 @@ EOF
 }
 
 test_preserve_files_pre() {
-	TARGET=$(realpath -m "$SCRIPTSDIR/target")
-	SRC=$(realpath -m "$SCRIPTSDIR/src")
+	TARGET=$(realpath "$SCRIPTSDIR/target")
+	SRC=$(realpath "$SCRIPTSDIR/src")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
 	mkdir -p "$TARGET/etc" "$TARGET/$SRC" "$SRC"
