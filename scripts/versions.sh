@@ -37,6 +37,7 @@ version_higher() {
 	local newvers="$2"
 	local oldpredash newpredash
 	local oldhasdash="" newhasdash=""
+	local order sortorder
 
 	oldpredash=${oldvers%%-*}
 	newpredash=${newvers%%-*}
@@ -55,7 +56,10 @@ version_higher() {
 		esac
 	fi
 
-	! printf "%s\n" "$2" "$1" | sort -VC
+	order="$2
+$1"
+	sortorder=$(echo "$order" | sort -V)
+	[ "$order" != "$sortorder" ]
 }
 
 version_update() {

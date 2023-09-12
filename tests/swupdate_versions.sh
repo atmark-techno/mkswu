@@ -36,6 +36,17 @@ test_version_install() {
 		&& [ -n "$normalized_newvers" ] \
 		|| error "Could not normalize version"
 	shift 2 # extra args extra swdesc arguments
+
+	# also check first that busybox sort -V and coreutils sort -V agree
+	local versorder="$normalized_newvers
+$oldvers"
+	if ! [ "$(sort -V <<<"$versorder")" = "$(busybox sort -V <<<"$versorder")" ]; then
+		# we know -1/1 don't agree, but it's not normally allowed so let it pass...
+		[ -n "$MKSWU_TEST_ALLOW_BOGUS_VERSION" ] \
+			|| error "coreutils and busybox sort -V didn't agree on $versorder"
+		echo "coreutils and busybox sort -V didn't agree on $versorder"
+	fi
+
 	printf "%s\n" \
 			'DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"' \
 			"$@" \
