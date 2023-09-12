@@ -261,7 +261,7 @@ mount_target_rootfs() {
 			# to not impact current fs
 			tmp=$(mktemp -d) \
 			    && mount --bind / "$tmp" \
-			    && mount -o remount,rw "$tmp" \
+			    && mount -o remount,rw - "$tmp" \
 			    && mkdir "$tmp/target" \
 			    || fail=1
 
