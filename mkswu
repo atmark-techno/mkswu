@@ -865,7 +865,7 @@ swdesc_boot_enc() {
 		'[ -e /dev/swupdate_bootdev ]' \
 		"fw_setenv $offsets" \
 		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
-		'dd if=$1 of=/dev/swupdate_bootdev bs=1M conv=fdatasync status=none' \
+		'dd if=$1 of=/dev/swupdate_bootdev bs=1M conv=fsync status=none' \
 		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro'
 }
 
@@ -889,7 +889,7 @@ swdesc_boot_linux() {
 	swdesc_exec_nochroot "$image" \
 		'[ -e /dev/swupdate_bootdev ]' \
 		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
-		'dd if=$1 of=/dev/swupdate_bootdev bs=1M seek=5 conv=fdatasync status=none' \
+		'dd if=$1 of=/dev/swupdate_bootdev bs=1M seek=5 conv=fsync status=none' \
 		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro'
 }
 

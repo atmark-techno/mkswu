@@ -79,7 +79,7 @@ reset_uboot_env() {
 	local rc
 	dd if=/dev/zero of="/dev/$env_dev" bs="$env_sz" count=1 \
 		seek="$env_offset" oflag=seek_bytes \
-		conv=fdatasync status=none
+		conv=fsync status=none
 	rc=$?
 	if [ -n "$force_ro" ]; then
 		echo 1 > "/sys/block/$env_dev/force_ro" \

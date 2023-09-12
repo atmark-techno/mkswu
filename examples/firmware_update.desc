@@ -13,4 +13,4 @@ swdesc_command_nochroot \
 swdesc_exec_nochroot "imx_lib.img" \
 	'dest=/dev/mmcblk2p4' \
 	'if [ -e /dev/mapper/mmcblk2p4 ]; then dest=/dev/mapper/mmcblk2p4; fi' \
-	'dd if=$1 of=$dest bs=1M conv=fdatasync status=none'
+	'dd if=$1 of=$dest bs=1M conv=fsync status=none'

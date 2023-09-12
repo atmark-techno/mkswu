@@ -53,7 +53,7 @@ copy_boot_boot() {
 	echo "Copying boot to $flash_dev"
 	bootdev_unlock
 	dd if="$cur_dev" of="/dev/$flash_dev" bs="$env_offset" count=1 \
-			conv=fdatasync status=none \
+			conv=fsync status=none \
 		|| return
 	bootdev_lock
 }
@@ -69,7 +69,7 @@ copy_boot_linux() {
 	echo "Copying boot_linux to $flash_dev"
 	bootdev_unlock
 	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M skip=5 seek=5 \
-			conv=fdatasync status=none || return
+			conv=fsync status=none || return
 	bootdev_lock
 }
 
