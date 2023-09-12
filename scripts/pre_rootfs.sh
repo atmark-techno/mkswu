@@ -221,9 +221,17 @@ mount_rootfs() {
         esac
 }
 
+cp_one_fs() {
+	local source="$1"
+
+	# shellcheck disable=SC2016 ## single quotes on purpose...
+	unshare -m sh -c 'mount --bind "$1" /mnt && cp -a /mnt/. /target/' \
+		-- "$source" || error "Could not copy $source to target"
+}
+
 mount_target_rootfs() {
 	local dev="${partdev}$((ab+1))"
-	local uptodate basemount
+	local uptodate
 	local tmp fail extlinux
 	local encrypted=""
 	local fstype=""
@@ -319,15 +327,12 @@ mount_target_rootfs() {
 	# if no update is required copy current fs over
 	stdout_info echo "No base os update: copying current os over"
 
+
 	if [ -e "/live/rootfs" ]; then
-		cp -ax /live/rootfs/. /target/ || error "Could not copy existing fs over"
+		cp_one_fs /live/rootfs
 	else
 		# support older version of overlayfs
-		basemount=$(mktemp -d -t root-mount.XXXXXX) || error "Could not create temp dir"
-		mount --bind / "$basemount" || error "Could not bind mount /"
-		cp -ax "$basemount"/. /target/ || error "Could not copy existing fs over"
-		umount "$basemount"
-		rmdir "$basemount"
+		cp_one_fs /
 	fi
 }
 
