@@ -261,9 +261,11 @@ umount_if_mountpoint() {
 	local dir="$1"
 
 	# nothing to do if not a mountpoint
-	is_mountpoint "$dir" || return
+	is_mountpoint "$dir" || return 0
 
-	umount -R "$dir" || error "Could not umount $dir"
+	# findmnt outputs in tree order, so umounting from
+	# last line first should always work
+	findmnt -nr -o TARGET -R "$dir" | tac | xargs -r umount --
 }
 
 remove_bootdev_link() {
@@ -447,7 +449,7 @@ post_action() {
 
 cleanup() {
 	remove_bootdev_link
-	umount_if_mountpoint /target
+	umount_if_mountpoint /target || error "Could not umount $dir"
 	luks_close_target
 }
 

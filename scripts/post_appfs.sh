@@ -41,9 +41,9 @@ swap_btrfs_snapshots() {
 	# so stop all countainers and restart them
 	podman_killall "Stopping containers to swap storage"
 
-	if ! umount -R /var/lib/containers/storage_readonly \
+	if ! umount_if_mountpoint /var/lib/containers/storage_readonly \
 	    || ! mount /var/lib/containers/storage_readonly \
-	    || ! umount /var/app/rollback/volumes \
+	    || ! umount_if_mountpoint /var/app/rollback/volumes \
 	    || ! mount /var/app/rollback/volumes \
 	    || ! podman_start -a; then
 		# hope rollback works...
@@ -110,7 +110,8 @@ cleanup_appfs() {
 	[ -z "$(podman ps --root /target/var/lib/containers/storage_readonly -qa)" ] \
 		|| error "podman state is not clean"
 	rm -f "/target/var/lib/containers/storage_readonly/libpod/bolt_state.db"
-	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay
+	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay \
+		|| error "could not umount /target/var/lib/containers/storage_readonly/overlay"
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true
 
 	# if new images were installed, check that we did not remove any of
