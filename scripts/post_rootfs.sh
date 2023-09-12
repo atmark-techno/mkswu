@@ -1,7 +1,7 @@
 update_running_versions() {
 	cp "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
 
-	[ "$(stat -f -c %T /etc/sw-versions)" = "overlayfs" ] || return
+	[ "$(findmnt -nr -o FSTYPE -T /etc/sw-versions)" = "overlay" ] || return
 
 	# bind-mount / somewhere else to write below it as well
 	mount --bind "$fsroot" /target || error "Could not bind mount rootfs"
