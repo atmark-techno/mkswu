@@ -21,7 +21,18 @@ overwrite_to_target() {
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"
-		rm -rf --one-file-system "${TARGET:-inval}/$f"
+
+		# busybox find -xdev -delete does not work as expected:
+		# https://bugs.busybox.net/show_bug.cgi?id=5756
+		# workaround with a bind mount
+		if [ -d "$TARGET/$f" ]; then
+			# shellcheck disable=SC2016 ## variable in single quote on purpose...
+			unshare -m sh -c 'mount --bind "$1" /mnt && rm -rf /mnt' -- "$TARGET/$f"
+			rmdir "$TARGET/$f"
+		else
+			rm -f "$TARGET/$f"
+		fi 2>/dev/null
+
 		cp -a "$fsroot$file" "$TARGET/$file" \
 			|| error "Failed to copy $file from previous rootfs"
 	done

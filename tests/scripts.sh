@@ -421,6 +421,17 @@ test_preserve_files_post() {
 	echo "POST $SRC" > "$FLIST"
 	echo "already" > "$TARGET/$SRC/copy"
 	echo "already" > "$TARGET/$SRC/also"
+	# cleanup implementation needs root (or at least unshare bind mount)
+	# to delete this directory.
+	# It might work with user unshare, but if it does not give up and
+	# delete it here to skip this part of the test
+	if [ "$(id -u)" != 0 ] && [ "$(unshare -Ur id -u 2>/dev/null)" = 0 ]; then
+		unshare() { command unshare -Ur "$@"; }
+	fi
+	if ! unshare -m sh -c 'mount --bind /tmp /mnt'; then
+		echo "skipping copy-post remove-before-copy test (no bind mount)"
+		rm -rf "${TARGET:?}/$SRC"
+	fi
 	post_copy_preserve_files
 	[ -e "$TARGET/$SRC/also" ] \
 		&& error "$SRC/also was not deleted"
@@ -480,8 +491,8 @@ EOF
 	cp busybox.static "$TARGET/bin/chown"
 
 	# we also need 'chroot' to work: try to wrap it if it helps...
-	if ! chroot "$TARGET" chown --help >/dev/null 2>&1; then
-		if podman unshare chroot "$TARGET" chown --help >/dev/null 2>&1; then
+	if ! chroot "$TARGET" chown user1 /file >/dev/null 2>&1; then
+		if podman unshare chroot "$TARGET" chown user1 /file >/dev/null 2>&1; then
 			chroot() { podman unshare chroot "$@"; }
 			uid=100122; gid=100233; rootuid="$(id -u)"
 		else
@@ -489,6 +500,8 @@ EOF
 			return 0
 		fi
 	fi
+	# revert file owner before test
+	chown --reference "$TARGET/file2" "$TARGET/file"
 
 	cat > "$FLIST" <<EOF
 CHOWN user1: /file*
