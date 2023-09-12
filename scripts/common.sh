@@ -271,7 +271,8 @@ umount_if_mountpoint() {
 remove_bootdev_link() {
 	local dev
 
-	if dev=$(readlink -e /dev/swupdate_bootdev) && [ "${dev#/dev/loop}" != "$dev" ]; then
+	if dev=$(readlink /dev/swupdate_bootdev) && [ -e "$dev" ] \
+	    && [ "${dev#/dev/loop}" != "$dev" ]; then
 		losetup -d "$dev" >/dev/null 2>&1
 	fi
 	rm -f /dev/swupdate_bootdev
