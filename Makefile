@@ -2,6 +2,7 @@ PREFIX ?= /usr
 BIN = $(PREFIX)/bin
 SHARE = $(PREFIX)/share/mkswu
 LOCALEDIR = $(PREFIX)/share/locale
+LIBEXEC = $(PREFIX)/libexec/mkswu
 BASH_COMPLETION_DIR = $(PREFIX)/share/bash-completion/completions
 
 # could be possible to handle wildcard of languages later
@@ -112,3 +113,21 @@ install: all $(install_docs_html)
 	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
 	install -d $(DESTDIR)$(SHARE)/docs
 	cp -t $(DESTDIR)$(SHARE)/docs $(install_docs_html)
+
+install_swupdate:
+	install -d $(DESTDIR)$(LIBEXEC)
+	cp -t $(DESTDIR)$(LIBEXEC) $(install_scripts)
+	cp scripts_post.sh $(DESTDIR)$(LIBEXEC)/post.sh
+	# remove self-decompress
+	sed -e '/BEGIN_ARCHIVE/d' scripts_pre.sh > $(DESTDIR)$(LIBEXEC)/pre.sh
+	chmod +x $(DESTDIR)$(LIBEXEC)/pre.sh
+	# modify skip install hook
+	sed -i -e 's/DEBUG_SKIP_SCRIPTS/DEBUG_SKIP_VENDORED_SCRIPTS/' $(DESTDIR)$(LIBEXEC)/common.sh
+	# modify scripts base directory
+	sed -i -e 's:^SCRIPTSDIR=.*:SCRIPTSDIR=$(LIBEXEC):' \
+		-e 's/^MKSWU_TMP=.*/&-vendored/' \
+		$(DESTDIR)$(LIBEXEC)/pre.sh \
+		$(DESTDIR)$(LIBEXEC)/post.sh \
+		$(DESTDIR)$(LIBEXEC)/cleanup.sh
+	# record version
+	echo "$(TAG)" > $(DESTDIR)$(LIBEXEC)/version
