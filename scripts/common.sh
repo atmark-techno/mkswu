@@ -126,6 +126,10 @@ stderr_info() {
 	esac
 }
 
+is_locked() {
+	[ "$(cat /tmp/.swupdate_lock/pid 2>/dev/null)" = "$PPID" ]
+}
+
 try_lock() {
 	local pid
 
