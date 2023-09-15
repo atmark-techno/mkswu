@@ -1480,8 +1480,7 @@ write_sw_desc() {
 	[ -n "$DESCRIPTION" ] || error "DESCRIPTION must be set"
 	cat <<EOF
 software = {
-  # Built with mkswu $MKSWU_VERSION
-  version = "0.1.0";
+  version = "$MKSWU_VERSION";
   description = "$DESCRIPTION";
 EOF
 
@@ -2397,8 +2396,14 @@ mkswu_show() {
 				$0 = gensub(/(^|[^\\])((\\\\)*)\\"/, "\\1\\2\"", "g");
 				gsub(/\\\\/, "\\")
 			}
+			# pre mkswu-5.0
 			/^ *# Built with mkswu/ {
-				print "# built with mkswu", $NF
+				print "# Built with mkswu", $NF
+			}
+			NR == 2 && /version = "/ {
+				sub(/.*version = "/, "")
+				dequote()
+				print "# Built with mkswu", $1
 			}
 			# pre mkswu-4.11
 			/^ *# swdesc/ {

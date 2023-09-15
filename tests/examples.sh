@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 
 # custom script: no prereq
 build_check ../examples/custom_script.desc -- "file zst.scripts_pre.sh" \
-	"swdesc custom_script_app.sh zst.scripts_pre.sh custom_script.app.sh 'POST_ACTION container' 'Built with mkswu [0-9]'"
+	"swdesc custom_script_app.sh zst.scripts_pre.sh custom_script.app.sh 'POST_ACTION container'"
 
 # sshd: build tar
 build_check ../examples/enable_sshd.desc -- "version extra_os.sshd '[^ ]+ higher'" \
