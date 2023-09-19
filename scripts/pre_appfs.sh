@@ -61,7 +61,7 @@ check_update_disk_encryption() {
 	[ "$(lsblk -n -o type "$dev")" = "crypt" ]  && return
 
 	# if swupdate runs in /var/tmp, we cannot reencrypt it
-	[ "${SCRIPTSDIR#/var/tmp}" = "$SCRIPTSDIR" ] \
+	[ "${MKSWU_TMP#/var/tmp}" = "$MKSWU_TMP" ] \
 		|| error "Disk reencryption was requested, but swupdate runs in /var/tmp so we cannot do it" \
 			 "Re-run with TMPDIR=/tmp swupdate ... to force installation"
 
@@ -170,7 +170,7 @@ prepare_appfs() {
 	mount -t btrfs -o "$mountopt=tmp" "$dev" /target/var/tmp \
 		|| error "Could not mount tmp subvol"
 
-	podman_list_images > "$SCRIPTSDIR/podman_images_pre"
+	podman_list_images > "$MKSWU_TMP/podman_images_pre"
 
 	# wait for subvolume deletion to complete to make sure we can use
 	# any reclaimed space

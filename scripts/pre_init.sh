@@ -58,15 +58,15 @@ init_vars_update() {
 }
 
 save_vars() {
-	printf "%s\n" "$rootdev" > "$SCRIPTSDIR/rootdev" \
-		&& printf "%s\n" "$ab" > "$SCRIPTSDIR/ab" \
+	printf "%s\n" "$rootdev" > "$MKSWU_TMP/rootdev" \
+		&& printf "%s\n" "$ab" > "$MKSWU_TMP/ab" \
 		|| error "Could not save local variables"
 	if needs_reboot; then
-		touch "$SCRIPTSDIR/needs_reboot" \
+		touch "$MKSWU_TMP/needs_reboot" \
 			|| error "Could not save need to reboot variable"
 	fi
 	if update_rootfs; then
-		echo "$update_rootfs" > "$SCRIPTSDIR/update_rootfs" \
+		echo "$update_rootfs" > "$MKSWU_TMP/update_rootfs" \
 			|| error "Could not save rootfs update variable"
 	fi
 }
@@ -77,17 +77,17 @@ fail_redundant_update() {
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
 		# create sw-versions if it didn't exist so diff doesn't complain
 		[ -e /etc/sw-versions ] || touch /etc/sw-versions
-		if ! diff -U0 /etc/sw-versions "$SCRIPTSDIR/sw-versions.merged" \
+		if ! diff -U0 /etc/sw-versions "$MKSWU_TMP/sw-versions.merged" \
 				| tail -n +3 | grep -qE "^[+-]"; then
-			rm -rf "$SCRIPTSDIR"
+			rm -rf "$MKSWU_TMP"
 			error "Nothing to do -- failing on purpose to save bandwidth"
 		fi
 		# also check B-side unless SW_ALLOW_ROLLBACK is set
 		local dev="${partdev#/dev/}$((ab+1))"
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
 		    && [ -n "$upgrade_available" ] \
-		    && cmp -s "/var/log/swupdate/$dev" "$SCRIPTSDIR/sw-versions.merged"; then
-			rm -rf "$SCRIPTSDIR"
+		    && cmp -s "/var/log/swupdate/$dev" "$MKSWU_TMP/sw-versions.merged"; then
+			rm -rf "$MKSWU_TMP"
 			error "Update looks like it already had been installed but rolled back, failing on purpose." \
 				"Set SW_ALLOW_ROLLBACK=1 environment variable to force installing anyway."
 		fi

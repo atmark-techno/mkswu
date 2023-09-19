@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: MIT
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-SCRIPTSDIR="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts"
+# SCRIPTSDIR is overridden for scripts embedded with swupdate
+SCRIPTSDIR="$MKSWU_TMP"
 
 . "$SCRIPTSDIR/common.sh"
 . "$SCRIPTSDIR/post_common.sh"
@@ -15,7 +17,7 @@ SCRIPTSDIR="$TMPDIR/scripts"
 
 # note we do not unlock after cleanup unless another update
 # is expected to run after this one, a fresh boot is needed.
-rm -rf "$SCRIPTSDIR"
+rm -rf "$MKSWU_TMP"
 
 POST_ACTION=$(post_action)
 case "$POST_ACTION" in

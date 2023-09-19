@@ -18,10 +18,10 @@ fi
 
 export TEST_SCRIPTS=1
 SWDESC=/dev/null
-SCRIPTSDIR=./out/scripts
-TMPDIR="$SCRIPTSDIR"
-rm -rf "$SCRIPTSDIR"
-mkdir -p "$SCRIPTSDIR"
+MKSWU_TMP=./out/scripts
+TMPDIR="$MKSWU_TMP"
+rm -rf "$MKSWU_TMP"
+mkdir -p "$MKSWU_TMP"
 touch "$TMPDIR/sw-description"
 
 setup_test_swupdate_fd() {
@@ -60,26 +60,26 @@ test_version_normalize() {
 }
 
 test_encrypt_sign() {
-	ENCRYPT_KEYFILE="$SCRIPTSDIR/aes-key"
+	ENCRYPT_KEYFILE="$MKSWU_TMP/aes-key"
 	echo "$(openssl rand -hex 32) $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
 	setup_encryption
 
 	iv=$(gen_iv)
-	dd if=/dev/urandom of="$SCRIPTSDIR/file" bs=1M count=1 status=none
-	cp "$SCRIPTSDIR/file" "$SCRIPTSDIR/file.copy"
-	encrypt_file "$SCRIPTSDIR/file" "$SCRIPTSDIR/file.enc" "$iv"
-	decrypt_file "$SCRIPTSDIR/file.enc" "$iv"
-	cmp "$SCRIPTSDIR/file" "$SCRIPTSDIR/file.copy" || error "file not identical after decryption"
+	dd if=/dev/urandom of="$MKSWU_TMP/file" bs=1M count=1 status=none
+	cp "$MKSWU_TMP/file" "$MKSWU_TMP/file.copy"
+	encrypt_file "$MKSWU_TMP/file" "$MKSWU_TMP/file.enc" "$iv"
+	decrypt_file "$MKSWU_TMP/file.enc" "$iv"
+	cmp "$MKSWU_TMP/file" "$MKSWU_TMP/file.copy" || error "file not identical after decryption"
 
 	PUBKEY=../swupdate-onetime-public.pem
 	PRIVKEY=../swupdate-onetime-public.key
-	OUTDIR="$SCRIPTSDIR" sign "file"
-	verify "$SCRIPTSDIR/file"
+	OUTDIR="$MKSWU_TMP" sign "file"
+	verify "$MKSWU_TMP/file"
 }
 
 test_common() {
-	SWDESC="$SCRIPTSDIR/swdesc"
-	BASEOS_CONF="$SCRIPTSDIR/baseos.conf"
+	SWDESC="$MKSWU_TMP/swdesc"
+	BASEOS_CONF="$MKSWU_TMP/baseos.conf"
 
 
 	echo "mkswu_var: unset both ways"
@@ -149,9 +149,9 @@ test_version_compare() {
 }
 
 test_version_update() {
-	SWDESC="$SCRIPTSDIR/swdesc"
-	system_versions="$SCRIPTSDIR/sw-versions"
-	merged="$SCRIPTSDIR/sw-versions.merged"
+	SWDESC="$MKSWU_TMP/swdesc"
+	system_versions="$MKSWU_TMP/sw-versions"
+	merged="$MKSWU_TMP/sw-versions.merged"
 	board="iot-g4-es1"
 	cp "scripts/sw-versions" "$system_versions" \
 		|| error "Source versions not found?"
@@ -218,31 +218,31 @@ test_version_update() {
 test_passwd_update() {
 	echo "passwd copy: test normal, OK copy, no extra user"
 	for f in passwd shadow group; do
-		cp ./scripts/$f "$SCRIPTSDIR/$f-target"
+		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
 	PASSWD=./scripts/passwd
-	NPASSWD="$SCRIPTSDIR/passwd-target"
+	NPASSWD="$MKSWU_TMP/passwd-target"
 	SHADOW=./scripts/shadow-set
-	NSHADOW="$SCRIPTSDIR/shadow-target"
+	NSHADOW="$MKSWU_TMP/shadow-target"
 	GROUP=./scripts/group
-	NGROUP="$SCRIPTSDIR/group-target"
+	NGROUP="$MKSWU_TMP/group-target"
 
 	( update_shadow; ) || error "Normal copy failed"
-	grep -qF 'root:$' "$SCRIPTSDIR/shadow-target" || error "root pass not copied"
-	grep -qF 'atmark:$' "$SCRIPTSDIR/shadow-target" || error "atmark pass not copied"
-	grep -qF 'abos-web-admin:$' "$SCRIPTSDIR/shadow-target" || error "abos-web-admin pass not copied"
+	grep -qF 'root:$' "$MKSWU_TMP/shadow-target" || error "root pass not copied"
+	grep -qF 'atmark:$' "$MKSWU_TMP/shadow-target" || error "atmark pass not copied"
+	grep -qF 'abos-web-admin:$' "$MKSWU_TMP/shadow-target" || error "abos-web-admin pass not copied"
 
 	echo "passwd copy: test not overriding passwd/uid already set"
-	cp ./scripts/passwd-shuffled "$SCRIPTSDIR/passwd-target"
-	sed -i -e 's/root:[^:]*/root:GREPMEFAKE/' "$SCRIPTSDIR/shadow-target"
+	cp ./scripts/passwd-shuffled "$MKSWU_TMP/passwd-target"
+	sed -i -e 's/root:[^:]*/root:GREPMEFAKE/' "$MKSWU_TMP/shadow-target"
 
 	( update_shadow; ) || error "copy already set failed"
-	grep -q 'root:GREPMEFAKE' "$SCRIPTSDIR/shadow-target" || error "password was overriden"
-	grep -q 'abos-web-admin:x:101' "$SCRIPTSDIR/passwd-target" || error "abos-web-admin uid was changed"
+	grep -q 'root:GREPMEFAKE' "$MKSWU_TMP/shadow-target" || error "password was overriden"
+	grep -q 'abos-web-admin:x:101' "$MKSWU_TMP/passwd-target" || error "abos-web-admin uid was changed"
 
 	echo "passwd copy: test leaving empty passwords fail"
 	for f in passwd shadow group; do
-		cp ./scripts/$f "$SCRIPTSDIR/$f-target"
+		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
 	SHADOW=./scripts/shadow
 	( update_shadow; ) && error "copy should have failed"
@@ -250,24 +250,24 @@ test_passwd_update() {
 
 	echo "passwd copy: test adding new user"
 	for f in passwd shadow group; do
-		cp ./scripts/$f "$SCRIPTSDIR/$f-extrauser"
-		cp ./scripts/$f "$SCRIPTSDIR/$f-target"
+		cp ./scripts/$f "$MKSWU_TMP/$f-extrauser"
+		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
-	cp ./scripts/shadow-set "$SCRIPTSDIR/shadow-extrauser"
-	echo 'newuser:x:1001:' >> "$SCRIPTSDIR/group-extrauser"
-	echo 'newtest:x:1002:newuser' >> "$SCRIPTSDIR/group-extrauser"
-	echo 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' >> "$SCRIPTSDIR/shadow-extrauser"
-	echo 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' >> "$SCRIPTSDIR/passwd-extrauser"
-	PASSWD="$SCRIPTSDIR/passwd-extrauser"
-	SHADOW="$SCRIPTSDIR/shadow-extrauser"
-	GROUP="$SCRIPTSDIR/group-extrauser"
+	cp ./scripts/shadow-set "$MKSWU_TMP/shadow-extrauser"
+	echo 'newuser:x:1001:' >> "$MKSWU_TMP/group-extrauser"
+	echo 'newtest:x:1002:newuser' >> "$MKSWU_TMP/group-extrauser"
+	echo 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' >> "$MKSWU_TMP/shadow-extrauser"
+	echo 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' >> "$MKSWU_TMP/passwd-extrauser"
+	PASSWD="$MKSWU_TMP/passwd-extrauser"
+	SHADOW="$MKSWU_TMP/shadow-extrauser"
+	GROUP="$MKSWU_TMP/group-extrauser"
 	( update_shadow; ) || error "copy with newuser failed"
 	grep -q 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' \
-			"$SCRIPTSDIR/passwd-target" || error "newuser not copied (passwd)"
+			"$MKSWU_TMP/passwd-target" || error "newuser not copied (passwd)"
 	grep -qF 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' \
-			"$SCRIPTSDIR/shadow-target" || error "newuser not copied (shadow)"
-	grep -q 'newuser:x:1001:' "$SCRIPTSDIR/group-target" || error "newuser not copied (group)"
-	grep -q 'newtest:x:1002:newuser' "$SCRIPTSDIR/group-target" || error "newuser not copied (group)"
+			"$MKSWU_TMP/shadow-target" || error "newuser not copied (shadow)"
+	grep -q 'newuser:x:1001:' "$MKSWU_TMP/group-target" || error "newuser not copied (group)"
+	grep -q 'newtest:x:1002:newuser' "$MKSWU_TMP/group-target" || error "newuser not copied (group)"
 
 	echo "passwd copy: test running again with new user already existing"
 	( update_shadow; ) || error "copy with newuser again failed"
@@ -275,18 +275,18 @@ test_passwd_update() {
 
 	echo "passwd copy: test leaving empty passwords is ok with debug set"
 	for f in passwd shadow group; do
-		cp ./scripts/$f "$SCRIPTSDIR/$f-target"
+		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
 	SHADOW=./scripts/shadow
-	echo "  # MKSWU_ALLOW_EMPTY_LOGIN 1" > "$SCRIPTSDIR/swdesc"
-	( SWDESC="$SCRIPTSDIR/swdesc" update_shadow; ) \
+	echo "  # MKSWU_ALLOW_EMPTY_LOGIN 1" > "$MKSWU_TMP/swdesc"
+	( SWDESC="$MKSWU_TMP/swdesc" update_shadow; ) \
 		|| error "should be no failure with allow empty login"
 }
 
 
 test_cert_update() {
-	SWUPDATE_PEM="$SCRIPTSDIR/swupdate.pem"
-	rm -rf "$SCRIPTSDIR/certs*"
+	SWUPDATE_PEM="$MKSWU_TMP/swupdate.pem"
+	rm -rf "$MKSWU_TMP/certs*"
 
 	echo "swupdate certificate: default setup fails"
 	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
@@ -294,21 +294,21 @@ test_cert_update() {
 
 	echo "swupdate certificate: default setup with allow OK"
 	cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem" > "$SWUPDATE_PEM"
-	echo "  # MKSWU_ALLOW_PUBLIC_CERT 1" > "$SCRIPTSDIR/swdesc"
-	( SWDESC="$SCRIPTSDIR/swdesc" update_swupdate_certificate; ) \
+	echo "  # MKSWU_ALLOW_PUBLIC_CERT 1" > "$MKSWU_TMP/swdesc"
+	( SWDESC="$MKSWU_TMP/swdesc" update_swupdate_certificate; ) \
 		|| error "should be ok with allow public cert"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
 		|| error "should not have removed public key"
 
 	echo "swupdate certificate: test with other key"
 	openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp256k1 \
-		-keyout "$SCRIPTSDIR/key" -out "$SCRIPTSDIR/pub" -subj "/O=SWUpdate/CN=test" \
+		-keyout "$MKSWU_TMP/key" -out "$MKSWU_TMP/pub" -subj "/O=SWUpdate/CN=test" \
 		-nodes || error "Could not generate new key"
 	{
 		echo "# onetime key";
 		cat "$SCRIPTS_SRC_DIR/../swupdate-onetime-public.pem"
 		echo "# own key"
-		cat "$SCRIPTSDIR/pub"
+		cat "$MKSWU_TMP/pub"
 	} > "$SWUPDATE_PEM"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok with new key"
@@ -325,8 +325,8 @@ test_cert_update() {
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
 		|| error "should have not changed anything"
 
-	mkdir "$SCRIPTSDIR/certs_atmark"
-	cp ../certs/atmark-[12].pem "$SCRIPTSDIR/certs_atmark"
+	mkdir "$MKSWU_TMP/certs_atmark"
+	cp ../certs/atmark-[12].pem "$MKSWU_TMP/certs_atmark"
 	echo "swupdate certificate: test atmark certs not added if not present"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and do nothing"
@@ -343,36 +343,36 @@ test_cert_update() {
 		|| error "certificate update should be ok to do nothing"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
 		|| error "should have not changed anything"
-	rm "$SCRIPTSDIR/certs_atmark/atmark-1.pem"
+	rm "$MKSWU_TMP/certs_atmark/atmark-1.pem"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and remove older atmark pem"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
 		|| error "should have removed one atmark pem"
 
-	mkdir "$SCRIPTSDIR/certs_user"
-	cp "$SCRIPTSDIR/pub" "$SCRIPTSDIR/certs_user"
+	mkdir "$MKSWU_TMP/certs_user"
+	cp "$MKSWU_TMP/pub" "$MKSWU_TMP/certs_user"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and do nothing"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
 		|| error "should have done nothing"
 
-	cp ../swupdate-onetime-public.pem "$SCRIPTSDIR/certs_user"
+	cp ../swupdate-onetime-public.pem "$MKSWU_TMP/certs_user"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and add onetime key"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
 		|| error "should have added onetime key back"
 
-	rm "$SCRIPTSDIR/certs_user/pub"
+	rm "$MKSWU_TMP/certs_user/pub"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and remove old pub"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
 		|| error "should have removed old pub"
 
-	rm -f "$SCRIPTSDIR/certs_user/swupdate-onetime-public.pem"
+	rm -f "$MKSWU_TMP/certs_user/swupdate-onetime-public.pem"
 	( update_swupdate_certificate; ) \
 		&& error "certificate update should fail (no extra key)"
 
-	cp "$SCRIPTSDIR/pub" "$SCRIPTSDIR/certs_user"
+	cp "$MKSWU_TMP/pub" "$MKSWU_TMP/certs_user"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and update user pub"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \
@@ -380,8 +380,8 @@ test_cert_update() {
 }
 
 test_preserve_files_post() {
-	TARGET=$(realpath "$SCRIPTSDIR/target")
-	SRC=$(realpath "$SCRIPTSDIR/src")
+	TARGET=$(realpath "$MKSWU_TMP/target")
+	SRC=$(realpath "$MKSWU_TMP/src")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
 	mkdir -p "$TARGET/etc" "$TARGET/$SRC" "$SRC"
@@ -434,7 +434,7 @@ test_preserve_files_post() {
 }
 
 test_preserve_files_chown() {
-	TARGET=$(realpath "$SCRIPTSDIR/target")
+	TARGET=$(realpath "$MKSWU_TMP/target")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
 	mkdir -p "$TARGET/etc" "$TARGET/bin"
@@ -504,8 +504,8 @@ EOF
 }
 
 test_preserve_files_pre() {
-	TARGET=$(realpath "$SCRIPTSDIR/target")
-	SRC=$(realpath "$SCRIPTSDIR/src")
+	TARGET=$(realpath "$MKSWU_TMP/target")
+	SRC=$(realpath "$MKSWU_TMP/src")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
 	rm -rf "$TARGET"
 	mkdir -p "$TARGET/etc" "$TARGET/$SRC" "$SRC"
@@ -587,9 +587,9 @@ test_preserve_files_pre() {
 }
 
 test_post_success() {
-	atlog="$SCRIPTSDIR/atlog"
-	old_versions="$SCRIPTSDIR/old_versions"
-	new_versions="$SCRIPTSDIR/new_versions"
+	atlog="$MKSWU_TMP/atlog"
+	old_versions="$MKSWU_TMP/old_versions"
+	new_versions="$MKSWU_TMP/new_versions"
 	partdev="/dev/mmcblk2p"
 	ab=1
 
@@ -647,7 +647,7 @@ test_post_success() {
 }
 
 test_update_preserve_files() {
-	file="$SCRIPTSDIR/swupdate_preserve_files"
+	file="$MKSWU_TMP/swupdate_preserve_files"
 
 	echo "preserve files normal remove/append"
 	printf "%s\n" "POST /removeme1" "/tmp/leaveme" "/removeme2" > "$file"
@@ -699,7 +699,7 @@ add2" ] || error "normal remove/append bad content: $(cat "$file")"
 }
 
 test_update_overlays() {
-	file="$SCRIPTSDIR/swupdate_overlays"
+	file="$MKSWU_TMP/swupdate_overlays"
 
 	echo "overlays files normal remove/append"
 	printf "fdt_overlays=test1.dtbo test2.dtbo\n" > "$file"
@@ -718,11 +718,11 @@ test_update_overlays() {
 	# check script was kept up to date and regen diff
 	diff -u ../examples/update_preserve_files.sh ../examples/update_overlays.sh \
 			| grep -vE '^@@' | tail -n +3 \
-		> "$SCRIPTSDIR/update_scripts_diff.diff"
+		> "$MKSWU_TMP/update_scripts_diff.diff"
 	FAIL=""
-	cmp -s "update_scripts_diff.diff" "$SCRIPTSDIR/update_scripts_diff.diff" \
+	cmp -s "update_scripts_diff.diff" "$MKSWU_TMP/update_scripts_diff.diff" \
 		|| FAIL=1
-	mv "$SCRIPTSDIR/update_scripts_diff.diff" "update_scripts_diff.diff"
+	mv "$MKSWU_TMP/update_scripts_diff.diff" "update_scripts_diff.diff"
 	[ -z "$FAIL" ] || error "update_preserve_files or overlays got modified without keeping in sync, check diff"
 }
 

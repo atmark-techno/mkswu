@@ -9,7 +9,7 @@ post_installer() {
 	update_shadow
 	# update swupdate certificate and versions
 	update_swupdate_certificate
-	cp "$SCRIPTSDIR/sw-versions.merged" "/target/etc/sw-versions" \
+	cp "$MKSWU_TMP/sw-versions.merged" "/target/etc/sw-versions" \
 		|| error "Could not set sw-versions"
 }
 
@@ -19,21 +19,21 @@ init() {
 		exit 0
 	fi
 
-	rootdev="$(cat "$SCRIPTSDIR/rootdev")" \
+	rootdev="$(cat "$MKSWU_TMP/rootdev")" \
 		|| error "Could not read rootdev from prepare step?!"
 	partdev="$rootdev"
 	[ "${partdev#/dev/mmcblk}" = "$partdev" ] \
 		|| partdev="${rootdev}p"
 
-	ab="$(cat "$SCRIPTSDIR/ab")" \
+	ab="$(cat "$MKSWU_TMP/ab")" \
 		|| error "Could not read ab from prepare step?!"
 
-	if [ -e "$SCRIPTSDIR/needs_reboot" ]; then
+	if [ -e "$MKSWU_TMP/needs_reboot" ]; then
 		needs_reboot=1
 	fi
 
-	if [ -f "$SCRIPTSDIR/update_rootfs" ]; then
-		update_rootfs=$(cat "$SCRIPTSDIR/update_rootfs") \
+	if [ -f "$MKSWU_TMP/update_rootfs" ]; then
+		update_rootfs=$(cat "$MKSWU_TMP/update_rootfs") \
 			|| error "Could not read update_rootfs variable but file existed?!"
 	fi
 }

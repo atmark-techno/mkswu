@@ -21,7 +21,7 @@ post_success_rootfs() {
 
 	echo "$newstate $(date +%s)" > "/var/log/swupdate/last_update" \
 		|| warning "Could not record last update partition"
-	cp "$SCRIPTSDIR/sw-versions.merged" "/var/log/swupdate/sw-versions-${newstate#/dev/}" \
+	cp "$MKSWU_TMP/sw-versions.merged" "/var/log/swupdate/sw-versions-${newstate#/dev/}" \
 		|| warning "Could not update latest sw-versions"
 }
 
@@ -35,8 +35,8 @@ post_success_atlog() {
 	local versions
 	# variables for tests
 	local atlog="${atlog:-/var/at-log/atlog}"
-	local old_versions="${old_versions:-$SCRIPTSDIR/sw-versions.old}"
-	local new_versions="${new_versions:-$SCRIPTSDIR/sw-versions.merged}"
+	local old_versions="${old_versions:-$MKSWU_TMP/sw-versions.old}"
+	local new_versions="${new_versions:-$MKSWU_TMP/sw-versions.merged}"
 
 	# if /var/at-log isn't mounted fallback to /var/log/swupdate/atlog
 	if [ "$atlog" = "/var/at-log/atlog" ] && ! mountpoint -q /var/at-log; then

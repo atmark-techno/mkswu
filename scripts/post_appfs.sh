@@ -61,26 +61,26 @@ check_warn_new_containers_removed() {
 			print $1;
 			x[$1]=1
 		}' \
-		"$SCRIPTSDIR/podman_images_pre" \
-		"$SCRIPTSDIR/podman_images_post" \
-		> "$SCRIPTSDIR/podman_images_new" \
+		"$MKSWU_TMP/podman_images_pre" \
+		"$MKSWU_TMP/podman_images_post" \
+		> "$MKSWU_TMP/podman_images_new" \
 		|| error "Could not compare list of podman images?"
 
-	[ -s "$SCRIPTSDIR/podman_images_new" ] || return
-	podman_list_images > "$SCRIPTSDIR/podman_images_cleaned"
+	[ -s "$MKSWU_TMP/podman_images_new" ] || return
+	podman_list_images > "$MKSWU_TMP/podman_images_cleaned"
 
 	while read -r added_image; do
-		grep -qw "$added_image" "$SCRIPTSDIR/podman_images_cleaned" \
+		grep -qw "$added_image" "$MKSWU_TMP/podman_images_cleaned" \
 			&& continue
 		image_name=$(awk -v img="$added_image" '
 			$1 == img {
 				print $2;
 				exit
-			}' "$SCRIPTSDIR/podman_images_post")
+			}' "$MKSWU_TMP/podman_images_post")
 		[ -n "$image_name" ] || image_name="$added_image"
 		warning "Container image $image_name was added in swu but immediately removed" \
 			"Please use it in /etc/atmark/containers if you would like to keep it"
-	done < "$SCRIPTSDIR/podman_images_new"
+	done < "$MKSWU_TMP/podman_images_new"
 }
 
 remove_unused_containers() {
@@ -92,7 +92,7 @@ remove_unused_containers() {
 cleanup_appfs() {
 	local dev basemount
 
-	podman_list_images > "$SCRIPTSDIR/podman_images_post"
+	podman_list_images > "$MKSWU_TMP/podman_images_post"
 
 	if grep -q 'graphroot = "/var/lib/containers/storage' /etc/containers/storage.conf 2>/dev/null; then
 		# make sure mount point exists in destination image
@@ -115,11 +115,11 @@ cleanup_appfs() {
 
 	# if new images were installed, check that we did not remove any of
 	# the new images during cleanup.
-	if ! cmp -s "$SCRIPTSDIR/podman_images_pre" "$SCRIPTSDIR/podman_images_post"; then
+	if ! cmp -s "$MKSWU_TMP/podman_images_pre" "$MKSWU_TMP/podman_images_post"; then
 		check_warn_new_containers_removed
-		rm -f "$SCRIPTSDIR/podman_images_new" "$SCRIPTSDIR/podman_images_cleaned"
+		rm -f "$MKSWU_TMP/podman_images_new" "$MKSWU_TMP/podman_images_cleaned"
 	fi
-	rm -f "$SCRIPTSDIR/podman_images_pre" "$SCRIPTSDIR/podman_images_post"
+	rm -f "$MKSWU_TMP/podman_images_pre" "$MKSWU_TMP/podman_images_post"
 
 
 	if ! needs_reboot; then

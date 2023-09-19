@@ -87,11 +87,11 @@ update_swupdate_certificate()  {
 	local SWUPDATE_PEM=${SWUPDATE_PEM:-/target/etc/swupdate.pem}
 
 	# what certificates were embedded into swu, if any?
-	for cert in "$SCRIPTSDIR/certs_atmark/"*; do
+	for cert in "$MKSWU_TMP/certs_atmark/"*; do
 		[ -e "$cert" ] && atmark_present=1
 		break
 	done
-	for cert in "$SCRIPTSDIR/certs_user/"*; do
+	for cert in "$MKSWU_TMP/certs_user/"*; do
 		[ -e "$cert" ] && user_present=1
 		break
 	done
@@ -99,7 +99,7 @@ update_swupdate_certificate()  {
 	# split swupdate.pem into something we can handle, then match
 	# with known certificates and update as appropriate
 
-	certsdir=$(mktemp -d "$SCRIPTSDIR/certs.XXXXXX") \
+	certsdir=$(mktemp -d "$MKSWU_TMP/certs.XXXXXX") \
 		|| error "Could not create temp dir"
 	awk '! outfile { idx++; outfile="'"$certsdir"'/cert." idx }
 	     outfile { print > outfile }
@@ -148,12 +148,12 @@ update_swupdate_certificate()  {
 		cat "$certsdir"/* 2>/dev/null
 		if [ -n "$atmark_seen" ]; then
 			# only add atmark certs if they're currently installed
-			for cert in "$SCRIPTSDIR/certs_atmark/"*; do
+			for cert in "$MKSWU_TMP/certs_atmark/"*; do
 				[ -e "$cert" ] || continue
 				cat "$cert" || exit 1
 			done
 		fi
-		for cert in "$SCRIPTSDIR/certs_user/"*; do
+		for cert in "$MKSWU_TMP/certs_user/"*; do
 			[ -e "$cert" ] || continue
 			# add comment to older certificates
 			grep -qE '^# ' "$cert" || echo "# ${cert##*/}"

@@ -35,13 +35,13 @@ post_copy_preserve_files() {
 	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
-		| sort -u > "$SCRIPTSDIR/preserve_files_post"
+		| sort -u > "$MKSWU_TMP/preserve_files_post"
 	while read -r f; do
 		# No quote to expand globs
 		overwrite_to_target $f
-	done < "$SCRIPTSDIR/preserve_files_post"
+	done < "$MKSWU_TMP/preserve_files_post"
 
-	rm -f "$SCRIPTSDIR/preserve_files_post"
+	rm -f "$MKSWU_TMP/preserve_files_post"
 }
 
 chown_to_target() {
@@ -74,7 +74,7 @@ post_chown_preserve_files() {
 	local IFS=' '
 
 	sed -ne 's:^CHOWN ::p' "$TARGET/etc/swupdate_preserve_files" \
-		| sort -u > "$SCRIPTSDIR/preserve_files_chown"
+		| sort -u > "$MKSWU_TMP/preserve_files_chown"
 	while read -r owner f; do
 		# we reset IFS everytime because we want IFS to be space for
 		# read to split the first word (owner); but we need it to be
@@ -84,9 +84,9 @@ post_chown_preserve_files() {
 		# No quote to expand globs
 		chown_to_target "$owner" $TARGET/$f
 		IFS=' '
-	done < "$SCRIPTSDIR/preserve_files_chown"
+	done < "$MKSWU_TMP/preserve_files_chown"
 
-	rm -f "$SCRIPTSDIR/preserve_files_chown"
+	rm -f "$MKSWU_TMP/preserve_files_chown"
 }
 
 check_update_log_encryption() {
@@ -193,8 +193,8 @@ post_rootfs() {
 				|| error "could not rewrite storage.conf"
 		fi
 		if update_baseos; then
-			if [ -e "$SCRIPTSDIR/post_rootfs_baseos.sh" ]; then
-				. "$SCRIPTSDIR/post_rootfs_baseos.sh"
+			if [ -e "$MKSWU_TMP/post_rootfs_baseos.sh" ]; then
+				. "$MKSWU_TMP/post_rootfs_baseos.sh"
 			fi
 			post_copy_preserve_files
 		fi
@@ -228,17 +228,17 @@ post_rootfs() {
 			|| error "Could not copy current sw-versions to other fs"
 		# updating current version with what is being installed:
 		# we should avoid failing from here on.
-		update_running_versions "$SCRIPTSDIR/sw-versions.merged"
+		update_running_versions "$MKSWU_TMP/sw-versions.merged"
 		soft_fail=1
 	else
-		cp "$SCRIPTSDIR/sw-versions.merged" "/target/etc/sw-versions" \
+		cp "$MKSWU_TMP/sw-versions.merged" "/target/etc/sw-versions" \
 			|| error "Could not set sw-versions"
 	fi
 
 	# free unused blocks at mmc level
 	fstrim /target
 
-	rm -f "$SCRIPTSDIR/sw-versions.present"
+	rm -f "$MKSWU_TMP/sw-versions.present"
 }
 
 [ -n "$TEST_SCRIPTS" ] && return

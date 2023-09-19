@@ -5,7 +5,7 @@ get_version() {
 		shift
 	fi
 	local component="$1"
-	local source="$SCRIPTSDIR/sw-versions.${2:-merged}"
+	local source="$MKSWU_TMP/sw-versions.${2:-merged}"
 
 	[ -e "$source" ] || return
 
@@ -91,7 +91,7 @@ needs_update_regex() {
 	local regex="$1"
 	local component
 
-	for component in $(awk '$1 ~ /^'"$regex"'$/ { print $1 }' "$SCRIPTSDIR/sw-versions.present"); do
+	for component in $(awk '$1 ~ /^'"$regex"'$/ { print $1 }' "$MKSWU_TMP/sw-versions.present"); do
 		needs_update "$component" && return
 	done
 	return 1
@@ -108,11 +108,11 @@ gen_newversion() {
 	[ -e "$system_versions" ] || system_versions=/dev/null
 
 	if [ -e "$system_versions" ]; then
-		cp "$system_versions" "$SCRIPTSDIR/sw-versions.old" \
+		cp "$system_versions" "$MKSWU_TMP/sw-versions.old" \
 			|| error "Could not copy existing versions"
 	fi
 
-	extract_swdesc_versions < "$SWDESC" > "$SCRIPTSDIR/sw-versions.present" \
+	extract_swdesc_versions < "$SWDESC" > "$MKSWU_TMP/sw-versions.present" \
 		|| error "Could not extract versions present in swdesc"
 
 	# Merge files, keeping order of original sw-versions,
@@ -136,7 +136,7 @@ gen_newversion() {
 				newvers="$oldvers"
 			fi
 			printf "%s\n" "$component $newvers"
-		done > "$SCRIPTSDIR/sw-versions.merged" \
+		done > "$MKSWU_TMP/sw-versions.merged" \
 		|| error "Version generation from current versions failed"
 	while read -r component newvers install_if newvers_board; do
 		case "$newvers_board" in
@@ -145,6 +145,6 @@ gen_newversion() {
 		esac
 		oldvers=$(get_version "$component" old)
 		[ -n "$oldvers" ] || printf "%s\n" "$component $newvers"
-	done < "$SCRIPTSDIR/sw-versions.present" >> "$SCRIPTSDIR/sw-versions.merged" \
+	done < "$MKSWU_TMP/sw-versions.present" >> "$MKSWU_TMP/sw-versions.merged" \
 		|| error "Version generation from new versions in swu failed"
 }

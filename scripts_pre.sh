@@ -5,23 +5,25 @@
 # archive we concatenate at the end of it, then rolls the pre steps.
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-SCRIPTSDIR="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts"
+# SCRIPTSDIR is overridden for scripts embedded with swupdate
+SCRIPTSDIR="$MKSWU_TMP"
 
-rm -rf "$SCRIPTSDIR"
-mkdir "$SCRIPTSDIR" || exit 1
-cd "$SCRIPTSDIR" || exit 1
+rm -rf "$MKSWU_TMP"
+mkdir "$MKSWU_TMP" || exit 1
+cd "$MKSWU_TMP" || exit 1
 
 # extract archive after script
 sed -e '1,/^BEGIN_ARCHIVE/d' "$0" | tar xv || exit 1
 
 # prepare update
-. "./common.sh"
-. "./versions.sh"
+. "$SCRIPTSDIR/common.sh"
+. "$SCRIPTSDIR/versions.sh"
 
-. "./pre_init.sh"
-. "./pre_boot.sh"
-. "./pre_rootfs.sh"
-. "./pre_appfs.sh"
+. "$SCRIPTSDIR/pre_init.sh"
+. "$SCRIPTSDIR/pre_boot.sh"
+. "$SCRIPTSDIR/pre_rootfs.sh"
+. "$SCRIPTSDIR/pre_appfs.sh"
 
 exit
 # This must be the last line!

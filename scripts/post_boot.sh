@@ -117,7 +117,7 @@ cleanup_boot() {
 	# installed on incompatible arch.
 	# This is not strictly enough but should prevent most complete
 	# bricks from installing an incompatible SWU...
-	if [ -e "$SCRIPTSDIR/boot_updated" ] \
+	if [ -e "$MKSWU_TMP/boot_updated" ] \
 	    && [ -z "$(mkswu_var NO_ARCH_CHECK)" ]; then
 		case "$(uname -m)" in
 		aarch64)

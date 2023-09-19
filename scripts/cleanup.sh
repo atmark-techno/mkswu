@@ -1,7 +1,9 @@
 #!/bin/sh
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-SCRIPTSDIR="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts"
+# SCRIPTSDIR is overridden for scripts embedded with swupdate
+SCRIPTSDIR="$MKSWU_TMP"
 
 . "$SCRIPTSDIR/common.sh"
 
@@ -11,5 +13,5 @@ if ! is_locked; then
 fi
 
 cleanup
-rm -rf "$SCRIPTSDIR"
+rm -rf "$MKSWU_TMP"
 unlock_update

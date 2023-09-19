@@ -59,7 +59,7 @@ fw_setenv_nowarn() {
 # FILTER: run grep -vE on filter and only print non-matches
 # NOSTDOUT: drop stdout and only consider stderr (for openssl cms-verify)
 info_if_not_empty() {
-	local output="$SCRIPTSDIR/cmd_output"
+	local output="$MKSWU_TMP/cmd_output"
 	local ret
 
 	if [ -n "$NOSTDOUT" ]; then

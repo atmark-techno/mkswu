@@ -87,7 +87,7 @@ prepare_boot() {
 	fi
 	if needs_update "boot"; then
 		setup_link=1
-		touch "$SCRIPTSDIR/boot_updated"
+		touch "$MKSWU_TMP/boot_updated"
 	else
 		copy_boot boot
 	fi
