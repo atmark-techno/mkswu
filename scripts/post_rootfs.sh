@@ -62,7 +62,7 @@ chown_to_target() {
 	for file; do
 		[ -L "$file" ] || [ -e "$file" ] || continue
 
-		chroot "$TARGET" chown -hR "$owner" "/${file#$TARGET}" \
+		chroot "$TARGET" chown -hR "$owner" "/${file#"$TARGET"}" \
 			|| error "Could not chown post files"
 	done
 }
