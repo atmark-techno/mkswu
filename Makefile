@@ -20,7 +20,7 @@ install_docs = $(wildcard docs/*md)
 install_docs_html = $(patsubst docs/%.md,docs/%.html,$(install_docs))
 
 
-.PHONY: all install check clean locales doc
+.PHONY: all install install_swupdate check clean locales doc
 
 all: locales
 
@@ -87,11 +87,12 @@ dist: all
 	git ls-files hawkbit-compose | \
 		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
 
-install: all $(install_docs_html)
+install: install_mkswu install_examples install_locales install_hawkbit_compose install_html
+
+install_mkswu:
 	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
 	sed -i -e "s/MKSWU_VERSION=\"/&$(TAG)/" $(DESTDIR)$(BIN)/mkswu
 	install -D -t $(DESTDIR)$(BIN) podman_partial_image
-	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
@@ -100,6 +101,8 @@ install: all $(install_docs_html)
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode
 	cp -t $(DESTDIR)$(SHARE)/scripts $(install_scripts)
+
+install_examples:
 	install -d $(DESTDIR)$(SHARE)/examples
 	cp -t $(DESTDIR)$(SHARE)/examples $(install_examples)
 	install -d $(DESTDIR)$(SHARE)/examples/nginx_start/etc/atmark/containers
@@ -108,12 +111,20 @@ install: all $(install_docs_html)
 	cp -t $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh examples/enable_sshd/root/.ssh/authorized_keys
 	install -d $(DESTDIR)$(SHARE)/examples/uboot_env
 	cp -t $(DESTDIR)$(SHARE)/examples/uboot_env examples/uboot_env/bootdelay
+
+install_locales: locales
+	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
+
+install_hawkbit_compose:
 	install -d $(DESTDIR)$(SHARE)/hawkbit-compose
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES hawkbit-compose/locale/ja/LC_MESSAGES/hawkbit_setup_container.mo
 	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
+
+install_html: $(install_docs_html)
 	install -d $(DESTDIR)$(SHARE)/docs
 	cp -t $(DESTDIR)$(SHARE)/docs $(install_docs_html)
 
+# this target is not part of normal install
 install_swupdate:
 	install -d $(DESTDIR)$(LIBEXEC)
 	cp -t $(DESTDIR)$(LIBEXEC) $(install_scripts)
