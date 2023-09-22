@@ -371,12 +371,12 @@ msgid "OS update must have an absolute dest (was: %s)"
 msgstr "OS アップデートの場合は絶対パスを使ってください (%s)"
 
 #: mkswu
-msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes. Use --extra-os."
-msgstr "%s はボリューム以外に書き込もうとしますが、base/extra_os のアップデート以外にできません。--extra-osを指定してください。"
-
-#: mkswu
 msgid ".. is not allowed in destination path for volume update"
 msgstr ".. は展開先として使えません。"
+
+#: mkswu
+msgid "OS is only writable for base/extra_os updates and dest (%s) is not within volumes. Use --extra-os."
+msgstr "%s はボリューム以外に書き込もうとしますが、base/extra_os のアップデート以外にできません。--extra-osを指定してください。"
 
 #: mkswu
 msgid "Warning: automatically setting --preserve-attributes for base_os update"
