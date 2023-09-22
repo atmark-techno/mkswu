@@ -4,7 +4,7 @@ copy_to_target() {
 
 	for file; do
 		# source file must exist... being careful of symlinks
-		[ -L "$file" ] || [ -e "$file" ] || continue
+		[ -L "$fsroot$file" ] || [ -e "$fsroot$file" ] || continue
 		# and destination file not (probably already copied)
 		# except directories which we'll copy into with no-cobbler
 		[ -e "$TARGET/$file" ] && [ ! -d "$TARGET/$file" ] && continue
