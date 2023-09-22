@@ -1,3 +1,21 @@
+4.15
+====
+fixes:
+ - swdesc_tar/swdesc_files: properly forbid .. in update paths without extra_os
+ - fix post script not erroring properly when uboot fw_env.config was incorrect
+ - fix swupdate_preserve_files copy error when a directory was copied multiple
+times with coreutils 9.2+ (alpine 3.18). coreutils' cp -n behaviour changed
+and now errors when files are skipped, requiring different handling.
+ - fix swupdate_preserve_files copy error when a file to be copied only exists
+in overlayfs (copy only should consider files that have been persisted)
+
+features:
+ - allow writing files to /tmp with swdesc_tar and swdesc_files even if the
+version component is not base_os or extra_os.*
+ - check coreutils is installed when running main script
+
+-- 2023-09-22
+
 4.14.1
 ======
 fixes:
