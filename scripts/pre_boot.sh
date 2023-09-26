@@ -74,7 +74,6 @@ copy_boot_linux() {
 }
 
 prepare_boot() {
-	local dev
 	local setup_link=""
 
 	# make sure we didn't leave a bootdev behind from previous update
@@ -106,27 +105,11 @@ prepare_boot() {
 	*) error "Cannot write boot image on $rootdev";;
 	esac
 
-	case "$(uname -m)" in
-	aarch64)
-		# probably G4 SD card: prepare a loop device 32k into
-		# sd card so swupdate can write directly
-		losetup -o $((32*1024)) -f "$rootdev" \
-			|| error "failed to setup loop device for "
-		dev=$(losetup -a | awk -F : "/${rootdev##*/}/ && /$((32*1024))/ { print \$1 }")
-		ln -s "$dev" /dev/swupdate_bootdev \
-			|| error "failed to create boot image link"
-		;;
-	armv7l)
-		# probable A6* SD card: we need to skip the first 1k
-		# so cannot leave write to swupdate, create an empty
-		# file to store data to copy in post_boot.sh
-		touch /dev/swupdate_bootdev \
-			|| error "failed to create boot image temporary file"
-		;;
-	*)
-		error "Cannot write boot image on this arch: $(uname -m)"
-		;;
-	esac
+	# probably a SD card:
+	# save boot image to a temporary file which will be written
+	# at proper offset in post boot.
+	touch /dev/swupdate_bootdev \
+		|| error "failed to create boot image temporary file"
 }
 
 prepare_boot

@@ -118,33 +118,40 @@ cleanup_boot() {
 	# This is not strictly enough but should prevent most complete
 	# bricks from installing an incompatible SWU...
 	if [ -e "$SCRIPTSDIR/boot_updated" ] \
-	    && [ -z "$encrypted_boot" ] \
 	    && [ -z "$(mkswu_var NO_ARCH_CHECK)" ]; then
 		case "$(uname -m)" in
 		aarch64)
-			dd if=/dev/swupdate_bootdev bs=1M count=4 status=none \
-					| grep -m 1 -q aarch64 \
-				|| error "Installed u-boot does not appear to be for aarch64, aborting!" \
+			[ "$(xxd -l 4 -p /dev/swupdate_bootdev)" = d1002041 ] \
+				|| error "Installed u-boot does not appear to be for i.MX8M, aborting!" \
 					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
 			;;
 		armv7*)
-			dd if=/dev/swupdate_bootdev bs=1M count=4 status=none \
-					| grep -m 1 -q armv7 \
+			[ "$(xxd -l 4 -p -s 1024 /dev/swupdate_bootdev)" = d1002040 ] \
 				|| error "Installed u-boot does not appear to be for armv7, aborting!" \
 					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
 			;;
 		esac
 	fi
 
-	# for A6* boot image, we stored uboot in a temporary file and need to copy it now
+	# for SD cards, we stored uboot in a temporary file and need to copy it now
 	if [ -f /dev/swupdate_bootdev ]; then
-		# sanity check image header before copying it.
-		[ "$(xxd -l 4 -p -s 1024 "/dev/swupdate_bootdev")" = d1002040 ] \
-			|| error "boot image written was not in the expected format, refusing to copy it to SD card"
+		local skip=0 seek=0
+		case "$(uname -m)" in
+		aarch64)
+			seek=$((32*1024))
+			;;
+		armv7*)
+			seek=1024
+			skip=1024
+			;;
+		*)
+			error "boot image updates is only supported on aarch64/armv7"
+			;;
+		esac
 
 		dd if=/dev/swupdate_bootdev of="$rootdev" bs=1M \
-				iflag=skip_bytes skip=1024 \
-				oflag=seek_bytes seek=1024 \
+				iflag=skip_bytes skip="$skip" \
+				oflag=seek_bytes seek="$seek" \
 				status=none conv=fsync \
 			|| error "Could not copy boot image, aborting! In case of partial copy the system might be unbootable!!"
 	fi
