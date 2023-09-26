@@ -136,6 +136,19 @@ cleanup_boot() {
 		esac
 	fi
 
+	# for A6* boot image, we stored uboot in a temporary file and need to copy it now
+	if [ -f /dev/swupdate_bootdev ]; then
+		# sanity check image header before copying it.
+		[ "$(xxd -l 4 -p -s 1024 "/dev/swupdate_bootdev")" = d1002040 ] \
+			|| error "boot image written was not in the expected format, refusing to copy it to SD card"
+
+		dd if=/dev/swupdate_bootdev of="$rootdev" bs=1M \
+				iflag=skip_bytes skip=1024 \
+				oflag=seek_bytes seek=1024 \
+				status=none conv=fsync \
+			|| error "Could not copy boot image, aborting! In case of partial copy the system might be unbootable!!"
+	fi
+
 	# reset uboot env from config everytime:
 	#  - we need to clear env after boot updates
 	#  - we want uboot_env.d updates immediately, always

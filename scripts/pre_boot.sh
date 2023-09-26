@@ -77,6 +77,9 @@ prepare_boot() {
 	local dev
 	local setup_link=""
 
+	# make sure we didn't leave a bootdev behind from previous update
+	rm -f /dev/swupdate_bootdev
+
 	if needs_update "boot_linux"; then
 		setup_link=1
 	elif [ -n "$(get_version boot_linux)" ]; then
@@ -91,18 +94,39 @@ prepare_boot() {
 	fi
 	[ -z "$setup_link" ] && return
 
+	# for eMMC just link to the right side, swupdate will write it out
 	if [ -e "${rootdev}boot${ab}" ]; then
 		ln -s "${rootdev}boot${ab}" /dev/swupdate_bootdev \
-			|| error "failed to create link"
-	else
-		# probably sd card: prepare a loop device 32k into sd card
-		# so swupdate can write directly
+			|| error "failed to create boot image link"
+		return
+	fi
+
+	case "$rootdev" in
+	/dev/mmcblk*) ;;
+	*) error "Cannot write boot image on $rootdev";;
+	esac
+
+	case "$(uname -m)" in
+	aarch64)
+		# probably G4 SD card: prepare a loop device 32k into
+		# sd card so swupdate can write directly
 		losetup -o $((32*1024)) -f "$rootdev" \
-			|| error "failed to setup loop device"
+			|| error "failed to setup loop device for "
 		dev=$(losetup -a | awk -F : "/${rootdev##*/}/ && /$((32*1024))/ { print \$1 }")
 		ln -s "$dev" /dev/swupdate_bootdev \
-			|| error "failed to create link"
-	fi
+			|| error "failed to create boot image link"
+		;;
+	armv7l)
+		# probable A6* SD card: we need to skip the first 1k
+		# so cannot leave write to swupdate, create an empty
+		# file to store data to copy in post_boot.sh
+		touch /dev/swupdate_bootdev \
+			|| error "failed to create boot image temporary file"
+		;;
+	*)
+		error "Cannot write boot image on this arch: $(uname -m)"
+		;;
+	esac
 }
 
 prepare_boot
