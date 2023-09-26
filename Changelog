@@ -1,3 +1,11 @@
+4.15.1
+======
+fixes:
+ - fix swdesc_boot on A6E and A600 series when booted to SD card: the boot
+image was previously written at a wrong offset.
+
+ -- 2023-09-26
+
 4.15
 ====
 fixes:
