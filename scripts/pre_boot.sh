@@ -45,7 +45,7 @@ copy_boot_boot() {
 		|| error "Could not get boot env location"
 
 	# already up to date?
-	if cmp -s -n "$env_offset" "$cur_dev" "/dev/$flash_dev"; then
+	if cmp -s -n "$env_offset" "$cur_dev" "/dev/$flash_dev" 2>/dev/null; then
 		echo "boot already up to date"
 		return
 	fi
