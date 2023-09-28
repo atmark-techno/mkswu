@@ -132,7 +132,7 @@ gen_newversion() {
 			install_if=${newvers##* }
 			newvers=${newvers% *}
 			if ! version_update "$install_if" "$oldvers" "$newvers"; then
-				info "Skipping install of component $component $newvers (has $oldvers)"
+				info "Skipping install of component $component $newvers (has $oldvers)" >/dev/null
 				newvers="$oldvers"
 			fi
 			printf "%s\n" "$component $newvers"
