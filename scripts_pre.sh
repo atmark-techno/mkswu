@@ -4,6 +4,9 @@
 # This script prepares the script environment by extracting the
 # archive we concatenate at the end of it, then rolls the pre steps.
 
+# Allow skipping from env
+[ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
+
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate

@@ -1,6 +1,9 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
 
+# Allow skipping from env
+[ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
+
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
