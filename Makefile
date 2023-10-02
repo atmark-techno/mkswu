@@ -15,7 +15,6 @@ locales = $(patsubst po/$(l)/%.po,locale/$(l)/LC_MESSAGES/%.mo,$(translations))
 install_scripts = $(wildcard scripts/*sh) $(wildcard scripts/podman_*)
 install_completions = $(wildcard bash_completion.d/*)
 install_examples = $(wildcard examples/*desc) $(wildcard examples/*sh)
-install_hawkbit = hawkbit-compose/setup_container.sh hawkbit-compose/fragments
 install_docs = $(wildcard docs/*md)
 install_docs_html = $(patsubst docs/%.md,docs/%.html,$(install_docs))
 
@@ -41,9 +40,6 @@ po/mkswu.pot: mkswu examples/enable_sshd.desc examples/hawkbit_register.desc
 	./po/update.sh $@ $^
 
 po/mkimage.pot: mkimage.sh
-	./po/update.sh $@ $^
-
-po/hawkbit_setup_container.pot: hawkbit-compose/setup_container.sh
 	./po/update.sh $@ $^
 
 po/mkswu_kernel_update_plain.pot: examples/kernel_update_plain.install.sh
@@ -84,10 +80,8 @@ dist: all
 	echo $(TAG) > .version
 	{ git ls-files --recurse-submodules; echo ".version"; } | \
 		tar -caJf $(TARNAME).orig.tar.xz --xform "s:^:$(TARNAME)/:S" --verbatim-files-from -T-
-	git ls-files hawkbit-compose | \
-		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
 
-install: install_mkswu install_examples install_locales install_hawkbit_compose install_html
+install: install_mkswu install_examples install_locales install_html
 
 install_mkswu:
 	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
@@ -114,11 +108,6 @@ install_examples:
 
 install_locales: locales
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
-
-install_hawkbit_compose:
-	install -d $(DESTDIR)$(SHARE)/hawkbit-compose
-	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES hawkbit-compose/locale/ja/LC_MESSAGES/hawkbit_setup_container.mo
-	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
 
 install_html: $(install_docs_html)
 	install -d $(DESTDIR)$(SHARE)/docs

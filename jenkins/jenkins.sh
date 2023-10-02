@@ -43,7 +43,7 @@ deb)
 	sudo apt install -y debhelper jq pandoc
 	VERSION=$(git describe | tr '-' '.')
 	# touch is required to make sure make dist re-runs locale check
-	touch mkswu mkimage.sh hawkbit-compose/setup_container.sh
+	touch mkswu mkimage.sh
 	make dist
 
 	rm -rf /tmp/mkswu && mkdir /tmp/mkswu

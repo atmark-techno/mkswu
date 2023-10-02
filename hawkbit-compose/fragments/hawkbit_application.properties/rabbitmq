@@ -1,2 +1,0 @@
-# Disable device management federation api (either that or configure rabbitmq)
-hawkbit.dmf.rabbitmq.enabled=false

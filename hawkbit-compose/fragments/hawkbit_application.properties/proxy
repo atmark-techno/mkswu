@@ -1,6 +1,0 @@
-# automatically re-use host/port from http headers
-server.forward-headers-strategy=NATIVE
-# .. but it doesn't work so set proto and hostname manually until fixed
-hawkbit.artifact.url.protocols.download-http.protocol=https
-hawkbit.artifact.url.protocols.download-http.hostname=CERT_DOMAIN
-hawkbit.artifact.url.protocols.download-http.ref={protocol}://{hostname}/{tenant}/controller/v1/{controllerId}/softwaremodules/{softwareModuleId}/artifacts/{artifactFileName}
