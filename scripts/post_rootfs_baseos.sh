@@ -114,6 +114,26 @@ EOF
 		fi
 		;;
 	esac
+
+	# schedule_ts is supposed to be compatible with date -d, but
+	# check to make sure (added in 3.18-at.5)
+	if [ "$(readlink /bin/date 2>/dev/null)" = "../usr/bin/coreutils" ] \
+	    && [ -e /target/usr/bin/schedule_ts ] \
+	    && [ -e /etc/conf.d/swupdate-url ]; then
+		(
+			. /etc/conf.d/swupdate-url
+			if [ -z "$schedule" ]; then exit 0; fi
+			if ! date=$(date -d "$schedule" +%s); then
+				# date already didn't work, no point in failing now...
+				exit 0
+			fi
+			if ! sched=$(chroot /target schedule_ts "$schedule") \
+			    || [ "$((sched > date ? sched - date : date - sched))" -ge 10 ]; then
+				echo "Schedule '$schedule' is not compatible with new update" >&2
+				exit 1
+			fi
+		) || error "Please change schedule in /etc/conf.d/swupdate-url to something 'schedule_ts' understands"
+	fi
 }
 
 baseos_upgrade_fixes
