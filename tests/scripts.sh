@@ -18,9 +18,9 @@ fi
 
 export TEST_SCRIPTS=1
 SWDESC=/dev/null
-MKSWU_TMP=./out/scripts
-TMPDIR="$MKSWU_TMP"
-rm -rf "$MKSWU_TMP"
+TMPDIR=./out/scripts
+MKSWU_TMP="$TMPDIR/scripts"
+rm -rf "$TMPDIR"
 mkdir -p "$MKSWU_TMP"
 touch "$TMPDIR/sw-description"
 
