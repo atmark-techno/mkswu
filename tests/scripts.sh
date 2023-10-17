@@ -242,6 +242,52 @@ test_version_update() {
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 }
 
+test_fail_atmark_new_container() {
+	SWDESC="$MKSWU_TMP/sw-description"
+	CONTAINER_CONF_DIR="$MKSWU_TMP/confdir"
+	mkdir -p "$CONTAINER_CONF_DIR"
+
+	echo "Testing atmark updates container addition prevention check"
+
+	# atmark key, container update, other container installed
+	openssl x509 -in ../certs/atmark-1.pem -outform DER -out "$SWDESC.sig"
+	echo "test 1" > "$MKSWU_TMP/sw-versions.present"
+	> "$MKSWU_TMP/sw-versions.old"
+	touch "$CONTAINER_CONF_DIR/container.conf"
+
+	( fail_atmark_new_container ) \
+		&& error "atmark key + container update + other container present allowed update"
+
+	# different key
+	openssl x509 -in ../swupdate-onetime-public.pem -outform DER -out "$SWDESC.sig"
+	( fail_atmark_new_container ) \
+		|| error "fail_atmark_new_container failed with user key"
+	openssl x509 -in ../certs/atmark-1.pem -outform DER -out "$SWDESC.sig"
+
+	# container_clear
+	CONTAINER_CLEAR=1
+	( fail_atmark_new_container ) \
+		|| error "fail_atmark_new_container failed with CONTAINER_CLEAR"
+	unset CONTAINER_CLEAR
+
+	# baseos update
+	echo "base_os 1" > "$MKSWU_TMP/sw-versions.present"
+	( fail_atmark_new_container ) \
+		|| error "fail_atmark_new_container failed for baseos"
+	echo "test 1" > "$MKSWU_TMP/sw-versions.present"
+
+	# container update
+	echo "test 1" > "$MKSWU_TMP/sw-versions.old"
+	( fail_atmark_new_container ) \
+		|| error "fail_atmark_new_container failed for update"
+	> "$MKSWU_TMP/sw-versions.old"
+
+	# no other container
+	rm -f "$CONTAINER_CONF_DIR/container.conf"
+	( fail_atmark_new_container ) \
+		|| error "fail_atmark_new_container failed with no container"
+}
+
 # test user copy on rootfs
 check_shadow_copied() {
 	local user="$1"
@@ -762,16 +808,6 @@ test_update_overlays() {
 	echo "overlays file from empty file"
 	main --file "$file" "test1.dtbo" "test1.dtbo"
 	[ "$(cat "$file")" = "fdt_overlays=test1.dtbo" ] || error "from empty file failed: $(cat "$file")"
-
-	# check script was kept up to date and regen diff
-	diff -u ../examples/update_preserve_files.sh ../examples/update_overlays.sh \
-			| grep -vE '^@@' | tail -n +3 \
-		> "$MKSWU_TMP/update_scripts_diff.diff"
-	FAIL=""
-	cmp -s "update_scripts_diff.diff" "$MKSWU_TMP/update_scripts_diff.diff" \
-		|| FAIL=1
-	mv "$MKSWU_TMP/update_scripts_diff.diff" "update_scripts_diff.diff"
-	[ -z "$FAIL" ] || error "update_preserve_files or overlays got modified without keeping in sync, check diff"
 }
 
 # run in subshell as we cannot source all at once
@@ -798,6 +834,8 @@ test_update_overlays() {
 	. "$SCRIPTS_SRC_DIR/versions.sh"
 	test_version_compare
 	test_version_update
+	. "$SCRIPTS_SRC_DIR/pre_init.sh"
+	test_fail_atmark_new_container
 ) || error "versions test failed"
 
 (

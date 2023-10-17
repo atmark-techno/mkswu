@@ -71,6 +71,37 @@ save_vars() {
 	fi
 }
 
+fail_atmark_new_container() {
+	local component
+	# for tests
+	local CONTAINER_CONF_DIR="${CONTAINER_CONF_DIR:-/etc/atmark/containers}"
+
+	# Only check updates signed with atmark keys.
+	# The binary public key is embedded in .sig (ASN1)
+	local ATMARK_KEYS="3056301006072a8648ce3d020106052b8104000a034200048e06dddd223cfa2a1fdd32cbf6a4c636540df3856a90448f6774d25246148138842f7062d50a18cc6586a9f766acb88db20257e10037829682d7d43e7d63a410
+3056301006072a8648ce3d020106052b8104000a0342000446444fe5e4d70531bbeb48049817c2073e1f5b261f531ddafac6321dee2e735b103766dabf17da065266c86238318fcf92387914355c75d65f8a5e79d9652859"
+	xxd -p "$SWDESC.sig" | tr -d '\n' \
+			| grep -qF "$ATMARK_KEYS" \
+		|| return 0
+
+	# we're clearing containers, so nothing to check
+	[ -n "$(mkswu_var CONTAINER_CLEAR)" ] && return
+
+	# base_os update: nothing to check
+	[ -n "$(get_version base_os present)" ] && return
+
+	# simple update? check if first version of swu had already been installed
+	read -r component _ < "$MKSWU_TMP/sw-versions.present"
+	[ -n "$(get_version "$component" old)" ] && return
+
+	# We're installing a new container: only allow if no other container
+	# is present
+	if stat "$CONTAINER_CONF_DIR/"*.conf >/dev/null 2>/dev/null; then
+		error "Refusing to install a new container from atmark official images" \
+			"Please remove existing containers first with 'abos-ctrl container-clear'"
+	fi
+}
+
 fail_redundant_update() {
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
@@ -170,6 +201,7 @@ init() {
 	gen_newversion
 	init_vars_update
 
+	fail_atmark_new_container
 	fail_redundant_update
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
 		"$(needs_reboot || echo " not")"
@@ -178,5 +210,7 @@ init() {
 
 	save_vars
 }
+
+[ -n "$TEST_SCRIPTS" ] && return
 
 init

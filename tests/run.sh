@@ -16,6 +16,7 @@ fi
 . ./common.sh
 ./examples.sh
 ./build_tests.sh
+./code_sanity.sh
 
 if command -v dash >/dev/null; then
 	dash ./scripts.sh
