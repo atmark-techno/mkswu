@@ -158,6 +158,7 @@ test_version_update() {
 
 	echo "Testing version merging works"
 	echo "  #VERSION extra_os.kernel 5.10.82-1 different *" > "$SWDESC"
+	echo "  #VERSION newitem 1 higher *" >> "$SWDESC"
 	gen_newversion
 	version=$(get_version extra_os.kernel old)
 	[ "$version" = "5.10.90-1" ] || error "Could not get system version"
@@ -167,6 +168,8 @@ test_version_update() {
 	[ "$version" = "5.10.82-1 different" ] || error "Could not get install-if"
 	version=$(get_version extra_os.kernel)
 	[ "$version" = "5.10.82-1" ] || error "Did not merge in new kernel version (different)"
+	version=$(get_version newitem)
+	[ "$version" = "1" ] || error "Did not add newitem to version"
 
 	echo "  #VERSION extra_os.kernel 5.10.82-1 higher *" > "$SWDESC"
 	gen_newversion
@@ -212,6 +215,26 @@ test_version_update() {
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
 	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
+
+	# check old formats work (required for new shared scripts)
+	echo "a 123" > "$system_versions"
+	echo "  #VERSION boot 2020.04-at4 different *" > "$SWDESC"
+	gen_newversion
+	version=$(get_version --install-if boot present)
+	[ "$version" = "2020.04-at4 different" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
+	version=$(get_version boot)
+	[ "$version" = "2020.04-at4" ] || error "version with 2 fields did not get merged (didn't add boot)"
+	version=$(get_version a)
+	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
+
+	echo "  #VERSION boot 2020.04-at5 different" > "$SWDESC"
+	gen_newversion
+	version=$(get_version --install-if boot present)
+	[ "$version" = "2020.04-at5 different" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
+	version=$(get_version boot)
+	[ "$version" = "2020.04-at5" ] || error "version with 2 fields did not get merged (didn't update boot)"
+	version=$(get_version a)
+	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 }
 
 # test user copy on rootfs

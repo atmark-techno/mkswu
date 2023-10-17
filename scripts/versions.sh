@@ -12,21 +12,32 @@ get_version() {
 	# We need to handle two different file syntaxes here:
 	# - installed version files, "component version"
 	# - versions from sw-description, "component version install_if board"
+	# - ... and versions from older sw-descriptions, "component version" where
+	#   we need to make up install_if if required
 	# If board is set we need to not print default version so this requires
 	# remembering all versions for this component and printing the right one
 	# It is an error to request install-if on installed version files
 	# (but we don't enforce that check)
 	# Lastly, swupdate ignores leading 0 and (trailing .0 in main version),
 	# so we need to filter that out too with simplify_version helper
-	awk '$1 == "'"$component"'" {
-			if (NF == 2) { print($2); exit; }
-			board[$4]=$2'"${install_if:+ \" \"  \$3}"'
+	awk -v "component=$component" -v "board=${board:-none}" \
+		-v "install_if=$install_if" \
+		'$1 == component {
+			if (!$4) { $4="*" }
+			found[$4]=$2
+			if (install_if) {
+				if (!$3) {
+					# use defaults: higher for all except boot
+					$3 = component == "boot" ? "different" : "higher"
+				}
+				found[$4]=found[$4] " " $3
+			}
 		}
 		END {
-			if (board["'"$board"'"]) {
-				print(board["'"$board"'"]);
-			} else if (board["*"]) {
-				print(board["*"]);
+			if (found[board]) {
+				print(found[board]);
+			} else if (found["*"]) {
+				print(found["*"]);
 			}
 		}' < "$source"
 }
@@ -144,7 +155,7 @@ gen_newversion() {
 		|| error "Version generation from current versions failed"
 	while read -r component newvers install_if newvers_board; do
 		case "$newvers_board" in
-		"*"|"$board") ;;
+		""|"*"|"$board") ;;
 		*) continue;;
 		esac
 		oldvers=$(get_version "$component" old)
