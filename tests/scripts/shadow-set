@@ -1,4 +1,4 @@
-root:$6$osj0LNDAOgHe8zt3$gYHK759Jjd0tag9csVMxcBnHu.0bl4ojRSopyP8.XnV0FM7dFzxRuVggs6/F2nSAIngvx.LSYDTL4QNm0BepN1:18911:0:::::
+root:$6$osj&\\0LNDAOgHe8zt3$gYHK759Jjd0tag9csVMxcBnHu.0bl4ojRSopyP8.XnV0FM7dFzxRuVggs6/F2nSAIngvx.LSYDTL4QNm0BepN1:18911:0:::::
 bin:!::0:::::
 daemon:!::0:::::
 adm:!::0:::::
@@ -30,4 +30,4 @@ avahi:!:19565:0:99999:7:::
 messagebus:!:19565:0:99999:7:::
 chrony:!:19565:0:99999:7:::
 dnsmasq:!:19565:0:99999:7:::
-atmark:$6$hQ7U1lUAUhyk/IB3$fXhtaqYj06i61gm3lh6xXDPadCvfND9OuHW6ux7mM6K.9ysaRcmnymp6PTFv9KfkuCb4.l5.1HORXIUKMk5FO.:18911:0:99999:7:::
+atmark:$6$hQ7U1lU\\&yk/IB3$fXhtaqYj06i61gm3lh6xXDPadCvfND9OuHW6ux7mM6K.9ysaRcmnymp6PTFv9KfkuCb4.l5.1HORXIUKMk5FO.:18911:0:99999:7:::

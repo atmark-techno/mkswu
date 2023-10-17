@@ -238,6 +238,13 @@ test_version_update() {
 }
 
 # test user copy on rootfs
+check_shadow_copied() {
+	local user="$1"
+
+	[ "$(grep -E "^$user:" "$NSHADOW")" = "$(grep -E "^$user:" "$SHADOW")" ] \
+		|| error "user $user not set as $SHADOW"
+}
+
 test_passwd_update() {
 	echo "passwd copy: test normal, OK copy, no extra user"
 	for f in passwd shadow group; do
@@ -251,16 +258,16 @@ test_passwd_update() {
 	NGROUP="$MKSWU_TMP/group-target"
 
 	( update_shadow; ) || error "Normal copy failed"
-	grep -qF 'root:$' "$MKSWU_TMP/shadow-target" || error "root pass not copied"
-	grep -qF 'atmark:$' "$MKSWU_TMP/shadow-target" || error "atmark pass not copied"
-	grep -qF 'abos-web-admin:$' "$MKSWU_TMP/shadow-target" || error "abos-web-admin pass not copied"
+	check_shadow_copied root
+	check_shadow_copied atmark
+	check_shadow_copied abos-web-admin
 
 	echo "passwd copy: test not overriding passwd/uid already set"
 	cp ./scripts/passwd-shuffled "$MKSWU_TMP/passwd-target"
-	sed -i -e 's/root:[^:]*/root:GREPMEFAKE/' "$MKSWU_TMP/shadow-target"
+	sed -i -e 's/root:[^:]*/root:GREPME\&\\FAKE/' "$MKSWU_TMP/shadow-target"
 
 	( update_shadow; ) || error "copy already set failed"
-	grep -q 'root:GREPMEFAKE' "$MKSWU_TMP/shadow-target" || error "password was overriden"
+	grep -qF 'root:GREPME&\FAKE' "$MKSWU_TMP/shadow-target" || error "password was overriden"
 	grep -q 'abos-web-admin:x:101' "$MKSWU_TMP/passwd-target" || error "abos-web-admin uid was changed"
 
 	echo "passwd copy: test leaving empty passwords fail"
@@ -279,7 +286,7 @@ test_passwd_update() {
 	cp ./scripts/shadow-set "$MKSWU_TMP/shadow-extrauser"
 	echo 'newuser:x:1001:' >> "$MKSWU_TMP/group-extrauser"
 	echo 'newtest:x:1002:newuser' >> "$MKSWU_TMP/group-extrauser"
-	echo 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' >> "$MKSWU_TMP/shadow-extrauser"
+	echo 'newuser:$6$KW\\&efP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' >> "$MKSWU_TMP/shadow-extrauser"
 	echo 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' >> "$MKSWU_TMP/passwd-extrauser"
 	PASSWD="$MKSWU_TMP/passwd-extrauser"
 	SHADOW="$MKSWU_TMP/shadow-extrauser"
@@ -287,14 +294,14 @@ test_passwd_update() {
 	( update_shadow; ) || error "copy with newuser failed"
 	grep -q 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' \
 			"$MKSWU_TMP/passwd-target" || error "newuser not copied (passwd)"
-	grep -qF 'newuser:$6$KWAyQefP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' \
-			"$MKSWU_TMP/shadow-target" || error "newuser not copied (shadow)"
+	check_shadow_copied newuser
 	grep -q 'newuser:x:1001:' "$MKSWU_TMP/group-target" || error "newuser not copied (group)"
 	grep -q 'newtest:x:1002:newuser' "$MKSWU_TMP/group-target" || error "newuser not copied (group)"
+	csum=$(sha256sum "$MKSWU_TMP/shadow-target")
 
 	echo "passwd copy: test running again with new user already existing"
 	( update_shadow; ) || error "copy with newuser again failed"
-
+	echo "$csum" | sha256sum -c - >/dev/null || error "shadow hash changed"
 
 	echo "passwd copy: test leaving empty passwords is ok with debug set"
 	for f in passwd shadow group; do
