@@ -44,8 +44,7 @@ swap_btrfs_snapshots() {
 	if ! umount_if_mountpoint /var/lib/containers/storage_readonly \
 	    || ! mount /var/lib/containers/storage_readonly \
 	    || ! umount_if_mountpoint /var/app/rollback/volumes \
-	    || ! mount /var/app/rollback/volumes \
-	    || ! podman_start -a; then
+	    || ! mount /var/app/rollback/volumes; then
 		# hope rollback works...
 		exchange_btrfs_snapshots
 		return 1
@@ -141,7 +140,6 @@ cleanup_appfs() {
 		fi
 		umount "$basemount"
 		rmdir "$basemount"
-		podman_start -a
 	fi
 }
 

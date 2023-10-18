@@ -7,6 +7,8 @@ error() {
 
 	# redefine error as no-op: this avoids looping if one of the cleanup operations fail
 	error() { warning "$@"; }
+	# also mark we're in error for cleanup (container restart check)
+	in_error=1
 
 	cleanup
 	if [ -n "$soft_fail" ]; then
@@ -397,6 +399,11 @@ luks_close_target() {
 
 
 needs_reboot() {
+	# if we're in an error, we'll reboot if soft_fail is set
+	if [ -n "$in_error" ]; then
+		[ -n "$soft_fail" ]
+		return
+	fi
 	[ -n "$needs_reboot" ]
 }
 
@@ -452,6 +459,10 @@ cleanup() {
 	remove_bootdev_link
 	umount_if_mountpoint /target || error "Could not umount $dir"
 	luks_close_target
+	if [ -e "$MKSWU_TMP/podman_containers_killed" ] && ! needs_reboot; then
+		info "Restarting containers"
+		podman_start -a
+	fi
 }
 
 init_common() {

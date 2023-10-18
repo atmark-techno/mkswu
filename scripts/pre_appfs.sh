@@ -47,6 +47,7 @@ podman_killall() {
 		podman_info stop -a
 		podman ps --format '{{.ID}}' \
 			| timeout 20s xargs -r podman_info wait
+		touch "$MKSWU_TMP/podman_containers_killed"
 	fi
 	podman_info pod rm -a -f
 	podman_info rm -a -f
