@@ -216,6 +216,11 @@ test_version_update() {
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
 	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
 
+	echo "  #VERSION zero 0 different *" > "$SWDESC"
+	gen_newversion
+	version=$(get_version zero present)
+	[ "$version" = "0" ] || error "Could not read '0' version"
+
 	# check old formats work (required for new shared scripts)
 	echo "a 123" > "$system_versions"
 	echo "  #VERSION boot 2020.04-at4 different *" > "$SWDESC"

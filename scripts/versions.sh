@@ -34,9 +34,9 @@ get_version() {
 			}
 		}
 		END {
-			if (found[board]) {
+			if (found[board] != "") {
 				print(found[board]);
-			} else if (found["*"]) {
+			} else if (found["*"] != "") {
 				print(found["*"]);
 			}
 		}' < "$source"
