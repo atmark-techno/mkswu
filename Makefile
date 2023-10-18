@@ -90,6 +90,8 @@ install_mkswu:
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
+	install -d $(DESTDIR)$(SHARE)/certs
+	install -D -m 0644 -t $(DESTDIR)$(SHARE)/certs certs/atmark*.pem
 	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) $(install_completions)
 	install -D -t $(DESTDIR)$(SHARE) scripts_pre.sh scripts_post.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
