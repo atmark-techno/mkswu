@@ -84,6 +84,7 @@ if command -v podman && command -v jq > /dev/null; then
 	fi
 	# ignore any error if podman cannot build in test environment
 	if [ -n "$id" ]; then
+		rm -f out/container.tar
 		podman save -o out/container.tar "$id"
 		echo 'swdesc_embed_container out/container.tar' \
 			| name="container_notag_warn" build_check - 2>&1 \
