@@ -28,6 +28,8 @@ Each item below contains an example of the full log message and an explanation o
   * `ERROR : Signature verification failed`
 * [ZSTD\_decompressStream failed](#bad_enc)
   * `ERROR : ZSTD_decompressStream failed: Unknown frame descriptor`
+* [no key provided for decryption](#no_encryption_key)
+  * `ERROR : no key provided for decryption!`
 * [No space left on device](#filesystem_full)
   * `ERROR : archive_write_data_block(): Write failed for '<file>': No space left on device`
   * `ERROR : cannot write 16384 bytes: No space left on device`
@@ -247,6 +249,37 @@ swdesc_files --extra-os --dest=/etc "$HOME/mkswu/swupdate.aes-key"
 [ATDE9 ~]$ mkswu update_encryption_key.desc
 Successfully generated update_encryption_key.swu
 ```
+
+## no key provided for decryption [↑](#index) {#no_encryption_key}
+
+### Full log messages
+
+```
+Oct  18 9:46:09 armadillo user.info swupdate: START Software Update started !
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : no key provided for decryption!
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : decrypt initialization failure, aborting
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : Error copying extracted file
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : Error streaming scripts_pre.sh.zst.enc
+Oct  18 9:46:09 armadillo user.err swupdate: FATAL_FAILURE Image invalid or corrupted. Not installing ...
+Oct  18 9:46:09 armadillo user.info swupdate: IDLE Waiting for requests...
+```
+
+### Cause of error
+
+The SWU has been encrypted, but no decryption key is configured on the device.
+For example, an encryption key has been generated after `initial_setup.swu` was first generated, and the key has not been installed as it should have been.
+
+### How to fix
+
+Install an `initial_setup.swu` with the appropriate keys.
+
+First update the SWU on ATDE to ensure the key is present:
+```
+[ATDE9 ~]$ mkswu ~/mkswu/initial_setup.desc
+Successfully generated /home/atmark/mkswu/initial_setup.swu
+```
+
+Then install it on armadillo as described in [reinstall another `initial_setup.swu`](#reinstall_initial_setup)
 
 ## No space left on device [↑](#index) {#filesystem_full}
 

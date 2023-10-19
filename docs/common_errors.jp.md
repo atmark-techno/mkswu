@@ -32,6 +32,8 @@ lang: ja-JP
   * `ERROR : Signature verification failed`
 * [ZSTD\_decompressStream failed: ZSTD 圧縮が展開できない場合](#bad_enc)
   * `ERROR : ZSTD_decompressStream failed: Unknown frame descriptor`
+* [no key provided for decryption!: Armadillo に暗号鍵がない場合](#no_encryption_key)
+  * `ERROR : no key provided for decryption!`
 * [No space left on device: ファイルシステムの容量が足りない場合](#filesystem_full)
   * `ERROR : archive_write_data_block(): Write failed for '<file>': No space left on device`
   * `ERROR : cannot write 16384 bytes: No space left on device`
@@ -251,6 +253,37 @@ swdesc_files --extra-os --dest=/etc "$HOME/mkswu/swupdate.aes-key"
 [ATDE9 ~]$ mkswu update_encryption_key.desc
 update_encryption_key.swu を作成しました。
 ```
+
+## no key provided for decryption!: Armadillo に暗号鍵がない場合 [↑](#index) {#no_encryption_key}
+
+### エラー発生時の/var/log/messagesの内容
+
+```
+Oct  18 9:46:09 armadillo user.info swupdate: START Software Update started !
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : no key provided for decryption!
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : decrypt initialization failure, aborting
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : Error copying extracted file
+Oct  18 9:46:09 armadillo user.err swupdate: FAILURE ERROR : Error streaming scripts_pre.sh.zst.enc
+Oct  18 9:46:09 armadillo user.err swupdate: FATAL_FAILURE Image invalid or corrupted. Not installing ...
+Oct  18 9:46:09 armadillo user.info swupdate: IDLE Waiting for requests...
+```
+
+### エラーの概要
+
+暗号化に使用した暗号鍵が Armadillo に保存されていません。
+例えば、`initial_setup.swu` をインストールした後に ATDE で暗号化の鍵を再生成した場合などにありえます。
+
+### 対処方法
+
+Armadillo に現在の鍵で作成した `initial_setup.swu` をインストールしてください。
+
+鍵の情報を更新するため、ATDE で SWU を更新します：
+```
+[ATDE9 ~]$ mkswu ~/mkswu/initial_setup.desc
+/home/atmark/mkswu/initial_setup.swu を作成しました。
+```
+
+インストールについては [`initial_setup.swu` を再インストールする](#reinstall_initial_setup)をご参照ください。
 
 ## No space left on device: ファイルシステムの容量が足りない場合 [↑](#index) {#filesystem_full}
 
