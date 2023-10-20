@@ -22,23 +22,31 @@ SCRIPTSDIR="$MKSWU_TMP"
 # is expected to run after this one, a fresh boot is needed.
 rm -rf "$MKSWU_TMP"
 
+kill_swupdate() {
+	# We do not want any other swupdate install to run after swupdate
+	# stopped
+	touch /tmp/.swupdate_rebooting
+	# Kill swupdate and wait to make sure it dies before stopping.
+	# This is mostly for hawkbit server, so we do not send success
+	# to hawkbit after this script stopped.
+	kill -9 $PPID
+	while [ -e "/proc/$PPID" ]; do
+		sleep 1
+	done
+}
+
 POST_ACTION=$(post_action)
 case "$POST_ACTION" in
 poweroff)
 	stdout_info_or_error echo "swupdate triggering poweroff!"
-	touch /tmp/.swupdate_rebooting
 	poweroff
-	pkill -9 swupdate
-	sleep infinity
+	kill_swupdate
 	;;
 wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# tell the world we're ready to be killed
 	touch /tmp/.swupdate_waiting
-	# also forbid other swupdate executions after we're killed
-	# while external shutdown happens
-	touch /tmp/.swupdate_rebooting
-	sleep infinity
+	kill_swupdate
 	;;
 container)
 	unlock_update
@@ -50,9 +58,7 @@ container)
 	;;
 *)
 	stdout_info_or_error echo "swupdate triggering reboot!"
-	touch /tmp/.swupdate_rebooting
 	reboot
-	pkill -9 swupdate
-	sleep infinity
+	kill_swupdate
 	;;
 esac
