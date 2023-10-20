@@ -2745,6 +2745,7 @@ local cmd="" preserve_attributes="" container=""
 	done
 
 	. "$SCRIPT_DIR/mkswu.conf.defaults"
+	[ -n "${MKSWU_CONFIG+1}" ] && CONFIG="$MKSWU_CONFIG"
 	if [ "$MODE" = "import" ] && ! [ -e "$CONFIG" ]; then
 		error "Could not find config file to import, specify it with --config"
 	fi
