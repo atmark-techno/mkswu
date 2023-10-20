@@ -106,10 +106,7 @@ fail_redundant_update() {
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
-		# create sw-versions if it didn't exist so diff doesn't complain
-		[ -e /etc/sw-versions ] || touch /etc/sw-versions
-		if ! diff -U0 /etc/sw-versions "$MKSWU_TMP/sw-versions.merged" \
-				| tail -n +3 | grep -qE "^[+-]"; then
+		if check_nothing_to_do; then
 			rm -rf "$MKSWU_TMP"
 			error "Nothing to do -- failing on purpose to save bandwidth"
 		fi

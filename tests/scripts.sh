@@ -226,18 +226,18 @@ test_version_update() {
 	echo "  #VERSION boot 2020.04-at4 different *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version --install-if boot present)
-	[ "$version" = "2020.04-at4 different" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
+	[ "$version" = "2020.4-at4 different" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
 	version=$(get_version boot)
-	[ "$version" = "2020.04-at4" ] || error "version with 2 fields did not get merged (didn't add boot)"
+	[ "$version" = "2020.4-at4" ] || error "version with 2 fields did not get merged (didn't add boot)"
 	version=$(get_version a)
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 
 	echo "  #VERSION boot 2020.04-at5 different" > "$SWDESC"
 	gen_newversion
 	version=$(get_version --install-if boot present)
-	[ "$version" = "2020.04-at5 different" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
+	[ "$version" = "2020.4-at5 different" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
 	version=$(get_version boot)
-	[ "$version" = "2020.04-at5" ] || error "version with 2 fields did not get merged (didn't update boot)"
+	[ "$version" = "2020.4-at5" ] || error "version with 2 fields did not get merged (didn't update boot)"
 	version=$(get_version a)
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 }

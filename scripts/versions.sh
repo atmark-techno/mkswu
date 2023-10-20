@@ -90,7 +90,6 @@ version_update() {
 needs_update() {
 	local component="$1"
 	local newvers oldvers install_if
-	local system_versions="${system_versions:-/etc/sw-versions}"
 
 	newvers=$(get_version --install-if "$component" present)
 	[ -n "$newvers" ] || return 1
@@ -113,8 +112,12 @@ needs_update_regex() {
 }
 
 extract_swdesc_versions() {
-	# extract version comments
-	sed -ne "s/.*#VERSION //p"
+	# normalize boot version and extract from #VERSION comments
+	sed -n -e 's/boot 2020.04/boot 2020.4/' -e "s/.*#VERSION //p"
+}
+
+check_nothing_to_do() {
+	cmp -s "$MKSWU_TMP/sw-versions.old" "$MKSWU_TMP/sw-versions.merged"
 }
 
 gen_newversion() {
@@ -122,10 +125,11 @@ gen_newversion() {
 	local system_versions="${system_versions:-/etc/sw-versions}"
 	[ -e "$system_versions" ] || system_versions=/dev/null
 
-	if [ -e "$system_versions" ]; then
-		cp "$system_versions" "$MKSWU_TMP/sw-versions.old" \
-			|| error "Could not copy existing versions"
-	fi
+	# If the system still contains an old boot version with 0-padding
+	# then remove padding here to avoid incorrect update detections
+	sed -e 's/^boot 2020.04/boot 2020.4/' < "$system_versions" \
+			> "$MKSWU_TMP/sw-versions.old" \
+		|| error "Could not copy existing versions"
 
 	extract_swdesc_versions < "$SWDESC" > "$MKSWU_TMP/sw-versions.present" \
 		|| error "Could not extract versions present in swdesc"
@@ -133,7 +137,7 @@ gen_newversion() {
 	# Merge files, keeping order of original sw-versions,
 	# then appending other lines from new one in order as well.
 	# Could probably do better but it works and files are small..
-	awk '!filter[$1] { filter[$1]=1; print }' "$system_versions" \
+	awk '!filter[$1] { filter[$1]=1; print }' "$MKSWU_TMP/sw-versions.old" \
 		| while read -r component oldvers; do
 			# drop other_boot / other_boot_linux: no longer used.
 			case "$component" in
