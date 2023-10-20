@@ -2517,7 +2517,7 @@ sw-description.sig"
 	# Note we do not define e.g. MKSWU_NOTIFY_STARTING_CMD to allow
 	# overriding the command with an empty command: in this case nothing
 	# will be run by mkswu scripts
-	local MKSWU_SWDESC_OPTS=""
+	local MKSWU_SWDESC_OPTS="${MKSWU_SWDESC_OPTS:-}"
 
 	# mode options
 	local GENKEY_PLAIN="" GENKEY_CN=""
