@@ -1,3 +1,45 @@
+5.0
+===
+fixes:
+ - ensure 'boot' version is compared properly by normalizing it specifically.
+mkswu 4.10 version normalization cannot be done on device easily, but version
+in sw-versions file could be incorrect. In case of boot this could lead to
+failed or incorrect updates (no bootloader installed), so make sure just this
+one is correct.
+ - fix copying of user passwd lines if they included & or backslashes (should
+never happen, this bug is theorical)
+ - fix version handling of the '0' version: it's possible to install something
+with version 0 if it wasn't installed before. This isn't recommended.
+ - fix containers not being restarted in case of error when using disk podman
+storage. Containers should now be restarted properly, but tmpfs mode is
+recommended.
+
+features:
+ - delay boot image copy on SD card for G4; this makes the script behave more
+like it does for A6* and limits the likelyhood of having a bad bootloader on
+failure.
+ - refuse to install container SWU updates provided by Atmark Techno if
+another container is present. This should avoid using official container
+images to break working armadillos.
+ - add /etc/chrony/conf.d to default swupdate_preserve_files
+ - remove scripts dependency on coreutils and utils-linux mount. Installs can
+now work without sort/mount/umount/date/cp/readlink/chown/dd/stat.
+ - mkswu version is now stored in the swu's main version; newer versions of
+swupdate will use this to decide whether to use scripts embedded in the swu or
+scripts installed on the system. Also:
+   - scripts compatibility have been improved to work with older SWUs (version
+   format change etc)
+   - allow working from an alternate script directory.
+ - add cleanup script that will be called by swupdate on error in non-script
+steps.
+
+misc:
+ - kill swupdate process on POST_ACTION=wait. Reboot is still not done, and
+swupdate lock is taken so further updates fail as they currently do.
+ - install atmark certificates in /usr/share/mkswu/certs/atmark*.pem
+
+ -- 2023-10-23
+
 4.15.1
 ======
 fixes:
