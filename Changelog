@@ -1,3 +1,10 @@
+5.0.1
+=====
+features:
+ - support notifications for Armadillo Twin
+
+  -- 2023-10-26
+
 5.0
 ===
 fixes:
@@ -38,7 +45,7 @@ misc:
 swupdate lock is taken so further updates fail as they currently do.
  - install atmark certificates in /usr/share/mkswu/certs/atmark*.pem
 
- -- 2023-10-23
+  -- 2023-10-23
 
 4.15.1
 ======
@@ -46,7 +53,7 @@ fixes:
  - fix swdesc_boot on A6E and A600 series when booted to SD card: the boot
 image was previously written at a wrong offset.
 
- -- 2023-09-26
+  -- 2023-09-26
 
 4.15
 ====
@@ -72,7 +79,7 @@ fixes:
  - also copy password for users whose name start with abos
 (this preserves abos-web-admin password despite uid being lower than 1000)
 
- -- 2023-07-27
+  -- 2023-07-27
 
 4.14
 ====
@@ -101,7 +108,7 @@ storage. Do not remove any tag as we do not know which images are used.
  - keep a copy of sw-versions around in /var/log/swupdate in order to
  print better messages
 
- -- 2023-07-25
+  -- 2023-07-25
 
 4.13
 ====
@@ -135,7 +142,7 @@ misc:
  - python3 command to generate a hashed password has been deprecated,
 suggest `openssl passwd -6` instead
 
- -- 2023-06-27
+  -- 2023-06-27
 
 4.12
 ====
@@ -162,7 +169,7 @@ misc:
  - refactor the uboot environment variable handling code. This should not have
 any impact.
 
- -- 2023-05-26
+  -- 2023-05-26
 
 4.11
 ====
@@ -215,7 +222,7 @@ that are difficult to do on Base OS (due to e.g. lack of dependencies).
 In this case, the partition being installed to is mounted as /target.
 This might go away in the future and should not be relied on yet.
 
- -- 2023-04-25
+  -- 2023-04-25
 
 4.10.1
 ======
@@ -224,7 +231,7 @@ fixes:
  - fix swdesc_* --opt=value invocations
  - add bash completion for --update-version
 
- -- 2023-03-27
+  -- 2023-03-27
 
 4.10
 ====
@@ -248,7 +255,7 @@ features:
 updates
  - handle --opt=value in swdesc_* commands (e.g. swdesc_files --dest=/dir)
 
- -- 2023-03-27
+  -- 2023-03-27
 
 4.9
 ===
@@ -256,7 +263,7 @@ fixes:
  - add /etc/containers/aiot_gw_container_hooks.d to preserve_files default
 paths for Armadillo-IoT Gateway A6E
 
- -- 2023-01-26
+  -- 2023-01-26
 
 4.8
 ===
@@ -279,7 +286,7 @@ features:
 Preserving files, enabling the service as required. wifi-recover and
 podman-atmark in /etc/conf.d are reserved as 'POST'.
 
- -- 2022-12-23
+  -- 2022-12-23
 
 4.7.1
 =====
@@ -287,7 +294,7 @@ fixes:
  - Fix 'Nothing to do' version check when rollback is disabled,
 the check was incorrectly disabled in this case in mkswu 4.7
 
- -- 2022-11-28
+  -- 2022-11-28
 
 4.7
 ===
@@ -332,7 +339,7 @@ but should help diagnostic if this was a mistake.
 multiple files were given. This is more consistent, in particular if an
 output filename was set that is different from the first desc file name.
 
- -- 2022-11-24
+  -- 2022-11-24
 
 4.6
 ===
@@ -367,7 +374,7 @@ as can be done when using multiple desc files that update preserve files
 technically possible with reboots, but we can now install extra swu
 directly at the end of install without extra reboot.
 
- -- 2022-10-20
+  -- 2022-10-20
 
 4.5
 ===
@@ -375,7 +382,7 @@ fixes:
  - fix script not waiting for podman containers to stop properly
 in podman-storage --disk mode
 
- -- 2022-09-26
+  -- 2022-09-26
 
 4.4
 ===
@@ -396,7 +403,7 @@ fixes:
  - remove a few referneces to mmcblk2, this fixes mkswu when eMMC is
 at a different index.
 
- -- 2022-08-26
+  -- 2022-08-26
 
 4.3
 ===
@@ -419,7 +426,7 @@ storage, leading to an extra reboot
  - post install script would sometimes fail to notice errors from podman
 commands (cleanup only)
 
- -- 2022-07-25
+  -- 2022-07-25
 
 4.2
 ===
@@ -439,7 +446,7 @@ if the first one was present
 /etc/iptables/rules{,6}-save, /etc/runlevels/default/ip{,6}tables
  - improve guidance messages for hawkbit-compose setup_container.sh
 
- -- 2022-06-24
+  -- 2022-06-24
 
 4.1
 ===
@@ -468,7 +475,7 @@ is currently encrypted
  - run fstrim on rootfs after install. This helps MMC performance a
 little bit.
 
- -- 2022-05-26
+  -- 2022-05-26
 
 4.0
 ===
@@ -484,7 +491,7 @@ this ensures the system should not be broken if power is cut immediately
 after boot switch/notification.
  - fix temporary cleanup of unused files
 
- -- 2022-04-27
+  -- 2022-04-27
 
 3.15-at.6
 =========
@@ -509,7 +516,7 @@ have net_raw permission to ping. use nc instead.
  - fix copying boot image over to other partition, the image was not always
 copied until the end
 
- -- 2022-04-25
+  -- 2022-04-25
 
 3.15-at.5
 =========
@@ -519,7 +526,7 @@ fixes:
  - fix sha256sum file not being updated properly sometimes (if zst archive
    changed without changing base file)
 
- -- 2022-04-08
+  -- 2022-04-08
 
 3.15-at.4
 =========
@@ -541,7 +548,7 @@ fixes:
  - PRIVKEY_PASS wasn't escaped properly
  - fix hawkbit service restart for POST=container updates with hawkbit
 
- -- 2022-03-24
+  -- 2022-03-24
 
 3.15-at.3
 =========
@@ -565,7 +572,7 @@ also now be removed.
 swdesc_exec or similar even if a base_os update is coming that would
 previously fail because /target is empty
 
- -- 2022-02-18
+  -- 2022-02-18
 
 3.15-at.2
 =========
@@ -607,7 +614,7 @@ to do it with plenty of failure messages
  - podman_cleanup: relax failure conditions when image is missing
 but container does not autostart or autopulls the image
 
- -- 2022-01-21
+  -- 2022-01-21
 
 3.15-at.1
 =========
@@ -628,7 +635,7 @@ reboot case, leading to double-swap
  - examples/initial_setup.desc: fix using wrong public key for
 /etc/swupdate.pem update
 
- -- 2021-12-21
+  -- 2021-12-21
 
 3.14-at.2
 =========
