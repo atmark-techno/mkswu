@@ -1,23 +1,21 @@
 post_success_rootfs() {
 	# record last updated partition for abos-ctrl
-	local newstate
+	local newpart oldpart
 
 	if needs_reboot; then
-		newstate="${partdev}$((ab+1))"
+		newpart="${partdev}$((ab+1))"
+		oldpart="${partdev}$((!ab+1))"
 	else
-		newstate="${partdev}$((!ab+1))"
-		# no reboot means we updated other partition to our's, first.
-		if [ -e "/var/log/swupdate/sw-versions-${newstate#/dev/}" ]; then
-			mv "/var/log/swupdate/sw-versions-${newstate#/dev/}" \
-					"/var/log/swupdate/sw-versions-${partdev#/dev/}$((ab+1))" \
-				|| warning "Could not update latest sw-versions"
-		fi
+		newpart="${partdev}$((!ab+1))"
+		oldpart="${partdev}$((ab+1))"
 	fi
 
-	echo "$newstate $(date +%s)" > "/var/log/swupdate/last_update" \
+	echo "$newpart $(date +%s)" > "/var/log/swupdate/last_update" \
 		|| warning "Could not record last update partition"
-	cp "$MKSWU_TMP/sw-versions.merged" "/var/log/swupdate/sw-versions-${newstate#/dev/}" \
+	cp "$MKSWU_TMP/sw-versions.merged" "/var/log/swupdate/sw-versions-${newpart#/dev/}" \
 		|| warning "Could not update latest sw-versions"
+	cp "$MKSWU_TMP/sw-versions.old" "/var/log/swupdate/sw-versions-${oldpart#/dev/}" \
+		|| warning "Could not update previous sw-versions"
 }
 
 post_success_atlog() {
