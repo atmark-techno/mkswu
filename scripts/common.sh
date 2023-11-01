@@ -421,7 +421,7 @@ mkswu_var() {
 	local val
 
 	# env var > desc file > baseos.conf
-	val=$(eval "echo \"\$$var\"")
+	val=$(eval "echo \"\$MKSWU_$var\"")
 	if [ -n "$val" ]; then
 		echo "$val"
 		return
@@ -473,11 +473,11 @@ clear_internal_variables() {
 	# This comment describes variables that can currently be used
 	# to override something, but might be subject to change.
 	# these variables are allowed through mkswu_var:
-	#     ALLOW_EMPTY_LOGIN ALLOW_PUBLIC_CERT
-	#     CONTAINER_CLEAR ENCRYPT_ROOTFS ENCRYPT_USERFS FORCE_VERSION
-	#     NOTIFY_FAIL_CMD NOTIFY_STARTING_CMD NOTIFY_SUCCESS_CMD
-	#     NO_ARCH_CHECK NO_PRESERVE_FILES POST_ACTION
-	#     ROOTFS_FSTYPE SKIP_APP_SUBVOL_SYNC
+	#     MKSWU_ALLOW_EMPTY_LOGIN MKSWU_ALLOW_PUBLIC_CERT
+	#     MKSWU_CONTAINER_CLEAR MKSWU_ENCRYPT_ROOTFS MKSWU_ENCRYPT_USERFS MKSWU_FORCE_VERSION
+	#     MKSWU_NOTIFY_FAIL_CMD MKSWU_NOTIFY_STARTING_CMD MKSWU_NOTIFY_SUCCESS_CMD
+	#     MKSWU_NO_ARCH_CHECK MKSWU_NO_PRESERVE_FILES MKSWU_POST_ACTION
+	#     MKSWU_ROOTFS_FSTYPE MKSWU_SKIP_APP_SUBVOL_SYNC
 	# these are used directly:
 	#     SW_ROLLBACK_ALLOWED SWUPDATE_FROM_INSTALLER
 	#     SWUPDATE_HAWKBIT SWUPDATE_USB_SWU SWUPDATE_ARMADILLO_TWIN

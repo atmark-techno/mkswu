@@ -265,10 +265,10 @@ test_fail_atmark_new_container() {
 	openssl x509 -in ../certs/atmark-1.pem -outform DER -out "$SWDESC.sig"
 
 	# container_clear
-	CONTAINER_CLEAR=1
+	MKSWU_CONTAINER_CLEAR=1
 	( fail_atmark_new_container ) \
 		|| error "fail_atmark_new_container failed with CONTAINER_CLEAR"
-	unset CONTAINER_CLEAR
+	unset MKSWU_CONTAINER_CLEAR
 
 	# baseos update
 	echo "base_os 1" > "$MKSWU_TMP/sw-versions.present"
