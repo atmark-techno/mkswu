@@ -47,8 +47,8 @@ init_vars_update() {
 	if update_rootfs || needs_update boot; then
 		needs_reboot=1
 	fi
-	POST_ACTION=$(post_action)
-	if [ "$POST_ACTION" != "container" ]; then
+	set_post_action
+	if [ "$post_action" != "container" ]; then
 		needs_reboot=1
 	fi
 	if [ -e "/etc/fw_env.config" ] \

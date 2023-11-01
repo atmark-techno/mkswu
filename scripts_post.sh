@@ -35,8 +35,7 @@ kill_swupdate() {
 	done
 }
 
-POST_ACTION=$(post_action)
-case "$POST_ACTION" in
+case "$post_action" in
 poweroff)
 	stdout_info_or_error echo "swupdate triggering poweroff!"
 	poweroff

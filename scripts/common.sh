@@ -438,20 +438,12 @@ mkswu_var() {
 	fi
 }
 
-post_action() {
-	# note this is in a subshell so caching only works if the caller
-	# assigns the variable
-	if [ -n "$POST_ACTION" ]; then
-		echo "$POST_ACTION"
-		return
-	fi
-
-	POST_ACTION=$(mkswu_var POST_ACTION)
+set_post_action() {
+	post_action=$(mkswu_var POST_ACTION)
 	# container only works if no reboot
-	if [ "$POST_ACTION" = "container" ] && needs_reboot; then
-		POST_ACTION=""
+	if [ "$post_action" = "container" ] && needs_reboot; then
+		post_action=""
 	fi
-	echo "$POST_ACTION"
 }
 
 

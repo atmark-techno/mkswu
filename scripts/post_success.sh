@@ -93,7 +93,7 @@ post_success_hawkbit() {
 
 post_success_armadillo_twin() {
 	# transmit install status on next boot -- skip if not rebooting
-	[ "$POST_ACTION" = container ] && return
+	[ "$post_action" = container ] && return
 	echo "$SWUPDATE_ARMADILLO_TWIN" > /var/log/swupdate/armadillo_twin_install_done \
 		|| warning "Could not create armadillo twin install marker file"
 }
@@ -103,7 +103,7 @@ post_success_usb() {
 	# we don't need to do this if the post action is poweroff, wait or container
 	# as these have no risk of looping
 	if [ -n "$(mkswu_var FORCE_VERSION)" ]; then
-		case "$POST_ACTION" in
+		case "$post_action" in
 		poweroff|container|wait) ;;
 		*) mv -v "$SWUPDATE_USB_SWU" "$SWUPDATE_USB_SWU.installed" \
 			|| warning "Could not rename force version usb install image, might have a reinstall loop"
@@ -136,7 +136,7 @@ post_success() {
 
 	post_success_rootfs
 	post_success_atlog
-	POST_ACTION=$(post_action)
+	set_post_action
 	[ -n "$SWUPDATE_HAWKBIT" ] && post_success_hawkbit
 	[ -n "$SWUPDATE_ARMADILLO_TWIN" ] && post_success_armadillo_twin
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
