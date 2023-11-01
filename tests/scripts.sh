@@ -822,6 +822,7 @@ test_update_overlays() {
 (
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
+	export TEST_SCRIPTS=1
 	cleanup() { :; }
 	test_common
 ) || error "common tests failed"
@@ -830,6 +831,7 @@ test_update_overlays() {
 	set -e
 	setup_test_swupdate_fd
 	. "$SCRIPTS_SRC_DIR/common.sh"
+	export TEST_SCRIPTS=1
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/versions.sh"
 	test_version_compare
@@ -841,6 +843,7 @@ test_update_overlays() {
 (
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
+	export TEST_SCRIPTS=1
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/post_common.sh"
 	test_passwd_update
@@ -853,6 +856,7 @@ test_update_overlays() {
 (
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
+	export TEST_SCRIPTS=1
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/pre_rootfs.sh"
 	test_preserve_files_pre
@@ -861,6 +865,7 @@ test_update_overlays() {
 (
 	set -e
 	. "$SCRIPTS_SRC_DIR/common.sh"
+	export TEST_SCRIPTS=1
 	needs_reboot() { return 0; }
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/post_success.sh"

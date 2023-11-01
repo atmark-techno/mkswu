@@ -457,7 +457,38 @@ cleanup() {
 	fi
 }
 
+clear_internal_variables() {
+	# these variables should be set before calling this
+	#     TMPDIR MKSWU_TMP SCRIPTSDIR
+	# these variables should always be set before use
+	#     rootdev partdev ab post_action
+	# these variables are used accross scripts and should not depend on env
+	unset needs_reboot update_rootfs upgrade_available
+	unset FILTER NOSTDOUT
+	# these variables are used for tests, but should not be used when
+	# invoking mkswu externally
+	unset CONTAINER_CONF_DIR TARGET SWUPDATE_PEM
+	unset PASSWD NPASSWD SHADOW NSHADOW GROUP NGROUP
+	unset system_versions BASEOS_CONF TEST_SCRIPTS
+	# This comment describes variables that can currently be used
+	# to override something, but might be subject to change.
+	# these variables are allowed through mkswu_var:
+	#     ALLOW_EMPTY_LOGIN ALLOW_PUBLIC_CERT
+	#     CONTAINER_CLEAR ENCRYPT_ROOTFS ENCRYPT_USERFS FORCE_VERSION
+	#     NOTIFY_FAIL_CMD NOTIFY_STARTING_CMD NOTIFY_SUCCESS_CMD
+	#     NO_ARCH_CHECK NO_PRESERVE_FILES POST_ACTION
+	#     ROOTFS_FSTYPE SKIP_APP_SUBVOL_SYNC
+	# these are used directly:
+	#     SW_ROLLBACK_ALLOWED SWUPDATE_FROM_INSTALLER
+	#     SWUPDATE_HAWKBIT SWUPDATE_USB_SWU SWUPDATE_ARMADILLO_TWIN
+	#     CONTAINER_CONF/CONTAINER_STORAGE_CONF/CONTAINERS_REGISTRIES_CONF
+	# these come from swupdate
+	#     SWUDPATE_WARN_FD SWUPDATE_INFO_FD
+}
+
 init_common() {
+	clear_internal_variables
+
 	if [ -e "$TMPDIR/sw-description" ]; then
 		SWDESC="$TMPDIR/sw-description"
 	elif [ -e "/var/tmp/sw-description" ]; then
@@ -468,7 +499,7 @@ init_common() {
 		error "sw-description not found!"
 	fi
 
-	# debug tests
+	# debug tests... or swupdate overriding this in favor of ABOS scripts
 	grep -q "DEBUG_SKIP_SCRIPTS" "$SWDESC" && exit 0
 
 	true
