@@ -20,6 +20,18 @@ btrfs_subvol_create() {
 	btrfs subvolume create "$basemount/$new"
 }
 
+btrfs_subvol_recursive_delete() {
+	local vol="$1"
+	[ -e "$basemount/$vol" ] || return 1
+	# delete subvolumes by id to avoid dealing with paths.
+	# subvol list -o prints something like "ID 123 gen..." for child subvolumes.
+	btrfs subvol list -o "$basemount/$vol" \
+		| while read -r _ id _; do
+			btrfs subvol delete -i "$id" "$basemount"
+		done
+	btrfs subvolume delete "$basemount/$vol"
+}
+
 btrfs_subvol_delete() {
 	local vol="$1"
 
@@ -132,7 +144,8 @@ prepare_appfs() {
 		btrfs_subvol_delete "boot_0/volumes"
 		btrfs_subvol_delete "boot_1/containers_storage"
 		btrfs_subvol_delete "boot_1/volumes"
-		btrfs_subvol_delete "volumes"
+		# A6E uses subvolumes for device-local data
+		btrfs_subvol_recursive_delete "volumes"
 		if btrfs_subvol_delete "containers_storage"; then
 			btrfs_subvol_create "containers_storage"
 		fi
