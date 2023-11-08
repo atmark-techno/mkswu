@@ -457,5 +457,5 @@ If the first message is present but not the later make sure the SWU file is pres
 If an install fails for a reason not listed above please ask for advice on [the armadillo forum][armadillo_forum] or [github issues][github_issues], including a full debug log as obtained from:
 
 ```
-armadillo:~# swupdate -d -i file.swu
+armadillo:~# swupdate -v -i file.swu
 ```

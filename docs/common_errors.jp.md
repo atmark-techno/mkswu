@@ -457,5 +457,5 @@ Mar 24 10:52:13 armadillo user.notice swupdate-auto-update: Trying update /mnt/u
 
 この資料を読んでも問題が解決しない場合は、 [Armadillo フォーラム][armadillo_forum] または [github issues][github_issues] に連絡してください。その際、以下のコマンドの出力を提供してください：
 ```
-armadillo:~# swupdate -d -i file.swu
+armadillo:~# swupdate -v -i file.swu
 ```
