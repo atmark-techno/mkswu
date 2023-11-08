@@ -36,6 +36,8 @@ Each item below contains an example of the full log message and an explanation o
 * [Could not load/pull container](#bad_container)
   * `ERROR : /!\ Could not load /var/tmp//.....`
   * `ERROR : /!\ Could not pull ....`
+* [Hardware is not compatible](#hw_compat_not_found)
+  * `ERROR : HW compatibility not found`
 * [Container image immediately removed](#image_removed)
   * `WARNING: Container image docker.io/library/nginx:alpine was added in swu but immediately removed`
 * [Swupdate stuck](#stuck)
@@ -385,6 +387,38 @@ It is important to read the 'info' messages above the error in this case, as pod
 
 Double-check the arguments of `swdesc_*_container` commands are valid.  
 In doubt try to call `podman load` or `podman pull` manually to check.
+
+## Hardware is not compatible [↑](#index) {#hw_compat_not_found}
+
+### Full log messages
+
+```
+Jan  1 09:30:11 armadillo user.info swupdate: START Software Update started !
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : HW compatibility not found
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : Found nothing to install
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : JSON File corrupted
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : no parser available to parse sw-description!
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : Compatible SW not found
+```
+
+### Cause of error
+
+swupdate checks that the swu file has been built with the current hardware in mind through /etc/hwrevision.
+
+For example, Armadillo IoT G4 will have this content:
+```
+armadillo:~# cat /etc/hwrevision
+AGX4500 at1
+```
+
+With the above, swupdate checks two things:
+
+* That mkswu's config `HW_COMPAT` matches `at1`. The default value is a regex allowing `at1` or `at1-*`, this might change if we provide incompatible updates in the future.
+* That the update is compatible with `AGX4500`. By default, any value here are allowed, but updates provided by atmark force some values to avoid installing updates on incompatible hardware, so that for example someone will not be able to install an update meant for Armadillo IoT G4 on an Armadillo IoT A6E. This is specified with the mkswu `swdesc_* --board` option in desc files.
+
+### How to fix
+
+Check you are installing an update on the correct device. If this is an update you generated, check your `HW_COMPAT` and usage of `--board` options.
 
 ## Container image immediately removed [↑](#index) {#image_removed}
 

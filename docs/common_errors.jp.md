@@ -40,6 +40,8 @@ lang: ja-JP
 * [Could not load/pull image: コンテナイメージのインストールが失敗する場合](#bad_container)
   * `ERROR : /!\ Could not load /var/tmp//.....`
   * `ERROR : /!\ Could not pull ....`
+* [HW compatibility not found: ハードウェア適合性不一致の場合](#hw_compat_not_found)
+  * `ERROR : HW compatibility not found`
 * [Container image immediately removed: イメージがインストールされない場合](#image_removed)
   * `WARNING: Container image docker.io/library/nginx:alpine was added in swu but immediately removed`
 * [Swupdate が終了しない場合](#stuck)
@@ -390,6 +392,39 @@ Apr  4 13:25:56 armadillo user.info swupdate: IDLE Waiting for requests...
 
 `swdesc_*_container` コマンドの引数を確認してください。   
 与えた引数に不安がある場合は、 `podman load` や `podman pull` コマンドを手動で実行してみてください。
+
+## HW compatibility not found: ハードウェア適合性不一致の場合 [↑](#index) {#hw_compat_not_found}
+
+### エラー発生時の/var/log/messagesの内容
+
+```
+Jan  1 09:30:11 armadillo user.info swupdate: START Software Update started !
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : HW compatibility not found
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : Found nothing to install
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : JSON File corrupted
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : no parser available to parse sw-description!
+Jan  1 09:30:11 armadillo user.err swupdate: FAILURE ERROR : Compatible SW not found
+```
+
+### エラーの概要
+
+swupdate コマンドはアップデートと Armadillo のハードウェア適合性を確認します。
+
+Armadillo のハードウェア適合性の情報は /etc/hwrevision に記載されています。例えば、Armadillo IoT G4 は以下のとおりになります：
+```
+armadillo:~# cat /etc/hwrevision
+AGX4500 at1
+```
+
+この値を元に、以下 2 点の確認を行います：
+
+* mkswu のコンフィグ内の `HW_COMPAT` が `at1` と一致すること。初期値では `at1` と `at1-*` を許可します。古い Armadillo でインストールできなくなるアップデートを適用することになった場合は、この値を変更することで対応可能です。
+* アップデートが `AGX4500` と適合性があること。デフォルトではチェックしません。Armadilloサイトで提供しているアップデートの場合は、別のハードウェアにインストールできないようにしています。例えば、Armadillo IoT G4 向けのアップデートは Armadillo IoT A6E でインストールできません。desc ファイルの `swdesc_* --board` オプションでインストール可能な型番を設定できます。
+
+### 対処方法
+
+Armadillo に正しいアップデートをインストールしているかを確認してください。
+生成した swu の場合はコンフィグの `HW_COMPAT` と desc ファイルの `--board` オプションを確認してください。
 
 ## Container image immediately removed: イメージがインストールされない場合 [↑](#index) {#image_removed}
 
