@@ -1,3 +1,21 @@
+5.1
+===
+fixes:
+ - fix CONTAINER_CLEAR on a6e: CONTAINER_CLEAR would fail to remove
+/var/app/volumes because of subvolumes present.
+
+misc:
+ - also re-copy old versions for version comparison banner; this ensures the
+banner is always shown after updates (it would currently not be shown on very
+first update)
+ - improve environment variables handling in swupdate script. In particular,
+variables users might want to set have all been prefixed by MKSWU_ to be more
+coherent and lower risk of collision.
+ - improve `mkswu --show` to be more faithful to the source desc when using
+the underdocumented --board option. This is mostly for official images.
+
+  -- 2023-11-24
+
 5.0.1
 =====
 features:
