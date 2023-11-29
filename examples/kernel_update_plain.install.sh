@@ -45,11 +45,15 @@ preinstall_checks() {
 	case "$arch" in
 	arm64)
 		image=arch/arm64/boot/Image
+		version_check_prefix=""
 		dtb_prefix=arch/arm64/boot/dts/freescale/armadillo_
 		cross=${CROSS_COMPILE:-aarch64-linux-gnu-}
 		;;
 	arm)
 		image=arch/arm/boot/uImage
+		# actual uname -r can be garbled by uImage packing,
+		# use Linux-XXX in uImage headers instead
+		version_check_prefix=Linux-
 		dtb_prefix=arch/arm/boot/dts/armadillo-
 		cross=${CROSS_COMPILE:-arm-linux-gnueabihf-}
 		;;
@@ -113,7 +117,7 @@ postinstall_checks() {
 	[ "$(stat -c %s "$modalias")" -gt 1000 ] \
 		|| error $"module alias $modalias is suspiciously small, assuming depmod failed to parse modules" \
 			 $"Please check CONFIG_MODULE_COMPRESS is unset"
-	strings "$image" | grep -qxF "$kver" \
+	strings "$image" | grep -qxF "$version_check_prefix$kver" \
 		|| error $"Could not find exact version $kver in $image, is build up to date?"
 
 }
