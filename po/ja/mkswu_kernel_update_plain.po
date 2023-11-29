@@ -7,8 +7,8 @@ msgid "Could not get script dir"
 msgstr ""
 
 #: examples/kernel_update_plain.install.sh
-msgid "Usage: $0 [DEST]"
-msgstr "使用法: $0 [DEST]"
+msgid "Usage: $0 [--force] [DEST]"
+msgstr "使用方法: $0 [--force] [DEST]"
 
 #: examples/kernel_update_plain.install.sh
 msgid "DEST defaults to ~/mkswu/kernel-[arch].desc"
@@ -17,6 +17,10 @@ msgstr "DEST のデフォルトは ~/mkswu/kernel-[arch].desc"
 #: examples/kernel_update_plain.install.sh
 msgid "Must run from linux build directory"
 msgstr "Linux カーネルのビルドディレクトリから実行してください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Use --force to disable build sanity checks"
+msgstr "--force を付与するとカーネルのビルドチェックを行いません。"
 
 #: examples/kernel_update_plain.install.sh
 msgid "Destination $desc should end in .desc"
@@ -47,10 +51,6 @@ msgid "Build incomplete: missing $image"
 msgstr "$image ファイルにアクセスできません：ビルドされていますか？"
 
 #: examples/kernel_update_plain.install.sh
-msgid "vmlinux should not be newer than $image, did you rebuild everything ?"
-msgstr "vmlinux が $image より古いです。リビルドは完了していますか？"
-
-#: examples/kernel_update_plain.install.sh
 msgid "Please create destination directory ${desc%/*}"
 msgstr "出力ディレクトリ ${desc%/*} を作ってください。"
 
@@ -61,6 +61,10 @@ msgstr "出力ファイル $desc は編集できません。あらかじめ削�
 #: examples/kernel_update_plain.install.sh
 msgid "adjust version after installing if required"
 msgstr "必要な場合に作成後のバージョンも修正してください。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "vmlinux should not be newer than $image, did you rebuild everything ?"
+msgstr "vmlinux が $image より古いです。リビルドは完了していますか？"
 
 #: examples/kernel_update_plain.install.sh
 msgid "Purging $dest ..."

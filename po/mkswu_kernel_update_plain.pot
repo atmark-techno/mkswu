@@ -6,13 +6,16 @@ msgstr ""
 msgid "Could not get script dir"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
-msgid "Usage: $0 [DEST]"
+msgid "Usage: $0 [--force] [DEST]"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
 msgid "DEST defaults to ~/mkswu/kernel-[arch].desc"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
 msgid "Must run from linux build directory"
+msgstr ""
+#: examples/kernel_update_plain.install.sh
+msgid "Use --force to disable build sanity checks"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
 msgid "Destination $desc should end in .desc"
@@ -36,9 +39,6 @@ msgstr ""
 msgid "Build incomplete: missing $image"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
-msgid "vmlinux should not be newer than $image, did you rebuild everything ?"
-msgstr ""
-#: examples/kernel_update_plain.install.sh
 msgid "Please create destination directory ${desc%/*}"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
@@ -46,6 +46,9 @@ msgid "Existing .desc file $desc is too old, please remove it and"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
 msgid "adjust version after installing if required"
+msgstr ""
+#: examples/kernel_update_plain.install.sh
+msgid "vmlinux should not be newer than $image, did you rebuild everything ?"
 msgstr ""
 #: examples/kernel_update_plain.install.sh
 msgid "Purging $dest ..."

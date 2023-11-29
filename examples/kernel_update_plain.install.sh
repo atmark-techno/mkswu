@@ -18,17 +18,21 @@ error() {
 }
 
 usage() {
-	echo $"Usage: $0 [DEST]"
+	echo $"Usage: $0 [--force] [DEST]"
 	echo
 	echo $"DEST defaults to ~/mkswu/kernel-[arch].desc"
 	echo $"Must run from linux build directory"
+	echo
+	echo $"Use --force to disable build sanity checks"
 	exit
 }
 
 preinstall_checks() {
 	[ -n "$desc" ] && [ "${desc%.desc}" = "$desc" ] \
 		&& error $"Destination $desc should end in .desc"
-	[ -e Kbuild ] || error $"Please run from linux build directory"
+	# (for out of tree build Kbuild might not exist, this is fine)
+	[ -e Kbuild ] || [ -e vmlinux ] \
+		|| error $"Please run from linux build directory"
 	[ -e vmlinux ] || error $"Please build kernel first"
 	if [ -x "$examples_dir/../mkswu" ]; then
 		mkswu="$examples_dir/../mkswu"
@@ -64,9 +68,6 @@ preinstall_checks() {
 
 	[ -e "$image" ] \
 		|| error $"Build incomplete: missing $image"
-	# shellcheck disable=SC3013 # -nt available in dash
-	[ "$image" -nt vmlinux ] \
-		|| error $"vmlinux should not be newer than $image, did you rebuild everything ?"
 
 	# We need desc to contain a / for ${desc%/*} and similar substitutions
 	case "$desc" in
@@ -82,6 +83,13 @@ preinstall_checks() {
 		error $"Existing .desc file $desc is too old, please remove it and" \
 			$"adjust version after installing if required"
 	fi
+
+	# Optional checks from here
+	[ -n "$nocheck" ] && return
+
+	# shellcheck disable=SC3013 # -nt available in dash
+	[ "$image" -nt vmlinux ] \
+		|| error $"vmlinux should not be newer than $image, did you rebuild everything ?"
 }
 
 install_files() {
@@ -104,6 +112,7 @@ install_files() {
 }
 
 postinstall_checks() {
+	[ -n "$nocheck" ] && return
 	# get version and sanity checks
 	kver=""
 	for modalias in "$dest"/lib/modules/*/modules.alias.bin; do
@@ -149,11 +158,17 @@ update_desc() {
 }
 
 install() {
-	local desc="$1" arch cross
+	local desc arch cross
 	local dest image dtb_prefix modalias kver
-	local examples_dir mkswu
+	local examples_dir mkswu nocheck=""
 	examples_dir="$(dirname "$(realpath "$0")")"
 	local desc_template="$examples_dir/kernel_update_plain.desc"
+
+	case "$1" in
+	--force) nocheck=1; shift;;
+	--help|-h) usage;;
+	esac
+	desc="$1"
 
 	[ "$#" -le 1 ] || error $"Extra argument: $2"
 
