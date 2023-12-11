@@ -731,8 +731,8 @@ msgid "Could not copy initial_setup.desc from example dir"
 msgstr "initial_setup.descをコピーできませんでした。"
 
 #: mkswu
-msgid "Enable auto-update of BaseOS image from armadillo.atmark-techno.com servers? (N/y)"
-msgstr "BaseOSイメージのarmadillo.atmark-techno.comサーバーからの自動アップデートを行いますか？ (N/y)"
+msgid "Enable auto-updates (BaseOS / pre-installed containers) from armadillo.atmark-techno.com servers? (N/y)"
+msgstr "BaseOS/プリインストールコンテナを armadillo.atmark-techno.com サーバーから自動アップデートしますか？ (N/y)"
 
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"
