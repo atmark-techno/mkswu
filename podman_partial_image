@@ -13,29 +13,43 @@ usage() {
 	echo "Usage: $0 [-b base [-b base...]] [-o out.tar] archive [archive..]"
 	echo "base = image name recognizable by podman image inspect, to be removed from archive"
 	echo "archive = image name recognizable by podman save"
+	echo
+	echo "By default intermediate copies are stored in /var/tmp,"
+	echo "set TMPDIR to change that directory"
 }
 
 inspect_image() {
 	local image="$1"
 
 	podman inspect --format "{{.RootFS.Layers}}" "$image" |
-		sed -e 's/^\[//g' -e 's/\]$//g' -e 's/\<sha256://g' -e 's/ /\n/g' >> "$tmpdir/known_hashs"
+		sed -e 's/^\[//g' -e 's/\]$//g' -e 's/\<sha256://g' -e 's/ /\n/g' >> "$TMPDIR/known_hashs"
 }
 
 trim_archives() {
 	local hash tar_options="" file
 
-	podman save -m --format=docker-archive "$@" | tar -C "$tmpdir/archive" -x || error "Could not extract images: $*"
+	if ! podman save -m --format=docker-archive "$@" | tar -C "$TMPDIR/archive" -x; then
+		local avail warning=""
+		avail="$(findmnt -nr --bytes -o AVAIL --target "$TMPDIR")"
+		if [ -n "$avail" ] && [ "$avail" -lt "$((1024*1024))" ]; then
+			warning="
+
+Filesystem looks full: try setting TMPDIR to an USB device mount point or free up space first"
+		fi
+		error "Could not extract images: $*$warning"
+	fi
 
 	while read -r hash; do
-		file="$tmpdir/archive/$hash.tar"
+		file="$TMPDIR/archive/$hash.tar"
 		[ -e "$file" ] || continue
 		# podman verifies the archive contains a tar for all layers even if they're not used
-		rm -f "$file" && touch -d "@0" "$file" && chmod 444 "$file" || error "Could not truncate layer in archive"
-	done < "$tmpdir/known_hashs"
+		rm -f "$file" && touch -d "@0" "$file" && chmod 444 "$file" \
+			|| error "Could not truncate layer in archive"
+	done < "$TMPDIR/known_hashs"
 
 	if [ -n "$RENAME" ]; then
-		sed -i $RENAME "$tmpdir/archive/manifest.json" "$tmpdir/archive/repositories"
+		# shellcheck disable=SC2086 # split RENAME on purpose
+		sed -i $RENAME "$TMPDIR/archive/manifest.json" "$TMPDIR/archive/repositories"
 	fi
 
 	# podman generates archives in which owner is set to root,
@@ -44,19 +58,23 @@ trim_archives() {
 		tar_options="--owner root --group root --numeric-owner"
 	fi
 
-	( cd "$tmpdir/archive"; tar ${tar_options} -c [0-9a-z]*; ) > "$OUTPUT" \
+	# shellcheck disable=SC2086 # split tar_options on purpose
+	( cd "$TMPDIR/archive"; tar ${tar_options} -c [0-9a-z]*; ) > "$OUTPUT" \
 		|| error "Could not create new archive"
 }
 
 main() {
 	local OUTPUT=image.tar
 	local RENAME
-	local tmpdir
+	local tmp
 
-	tmpdir=$(mktemp -d -t make_partial_image.XXXXXX) || error "Could not create temp dir"
-	trap "rm -rf \"$tmpdir\"" EXIT
-	mkdir "$tmpdir/archive"
-	touch "$tmpdir/known_hashs"
+	tmp=$(mktemp -d "${TMPDIR:-/var/tmp}/make_partial_image.XXXXXX") \
+		|| error "Could not create temp dir"
+	export TMPDIR="$tmp"
+	# shellcheck disable=SC2064 # expand TMPDIR now
+	trap "rm -rf \"$TMPDIR\"" EXIT
+	mkdir "$TMPDIR/archive"
+	touch "$TMPDIR/known_hashs"
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
