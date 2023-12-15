@@ -6,11 +6,11 @@ allow_upgrade_available() {
 	[ -z "$encrypted_boot" ] || return
 
 	# Cannot fw_setenv without this...
-	[ -s /etc/fw_env.config ] || return
+	[ -s /target/etc/fw_env.config ] || return
 
 	# Do not set upgrade_available if it is not set in default
 	# configuration.
-	cat /boot/uboot_env.d/* 2>/dev/null | awk -F= '
+	cat /target/boot/uboot_env.d/* 2>/dev/null | awk -F= '
 		$1 == "upgrade_available" {
 			set=$2
 		}
@@ -108,7 +108,7 @@ cleanup_boot() {
 		return
 	fi
 
-	if [ -e /etc/fw_env.config ] \
+	if [ -e /target/etc/fw_env.config ] \
 	    && fw_printenv dek_spl_offset | grep -q dek_spl_offset=0x; then
 		encrypted_boot=1
 	fi
@@ -173,7 +173,7 @@ cleanup_boot() {
 			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
 				|| error "Could not flip mmc boot flag"
 		fi
-	elif [ -s /etc/fw_env.config ]; then
+	elif [ -s /target/etc/fw_env.config ]; then
 		cleanup_target
 		# if uboot env is supported, use it (e.g. sd card)
 		fw_setenv_nowarn mmcpart $((ab+1)) \
