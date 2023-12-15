@@ -256,7 +256,7 @@ is_mountpoint() {
 	# util-linux mountpoint parses /proc/self/mountinfo correctly though so we
 	# could use it if installed, but it is simpler to always reuse our
 	# implementation instead
-	! awk '$5 == "'"$dir"'" { exit 1 }' < /proc/self/mountinfo
+	! awk -v dir="$dir" '$5 == dir { exit 1 }' < /proc/self/mountinfo
 }
 
 umount_if_mountpoint() {
