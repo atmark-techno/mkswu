@@ -130,8 +130,19 @@ podman_load() {
 	done; fi
 }
 
+cleanup() {
+	if [ -n "$PODMAN_ROOT" ]; then
+		# cleanup again afterwards for whoever comes next
+		rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+	fi
+	if [ -n "$TMPDIR" ] && [ "$TMPDIR" != "/var/tmp" ]; then
+		rm -rf "$TMPDIR"
+	fi
+	trap - EXIT INT QUIT TERM
+}
+
 update_containers() {
-	local uri
+	local uri tmp
 
 	# find which db to use: we prefer persistent development storage
 	# over readonly one as images in ro storage won't be visible
@@ -154,6 +165,13 @@ update_containers() {
 		|| error "podman state not clean"
 	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
 
+	# podman sometimes leaves lots of data in /var/tmp on errors:
+	# force a different TMPDIR and clean up after podman
+	tmp=$(mktemp -d "${TMPDIR:-/var/tmp}/mkswu_podman_target.XXXXXX") \
+		|| error "Could not create tmpdir in ${TMPDIR:-/var/tmp}"
+	export TMPDIR="$tmp"
+	trap cleanup EXIT INT QUIT TERM
+
 	local CMD="$1"
 	shift
 	case "$CMD" in
@@ -174,8 +192,7 @@ update_containers() {
 		;;
 	esac
 
-	# cleanup again afterwards for whoever comes next
-	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+	cleanup
 }
 
 [ $# -lt 1 ] && usage && exit 1
