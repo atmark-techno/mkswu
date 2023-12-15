@@ -2,6 +2,8 @@
 
 PODMAN_ROOT=
 PUB_KEY=
+SHOW_DF=
+SHOW_DU=
 if [ -z "$SWUPDATE_USB_SWU" ]; then
 	ARCHIVE_DIR=/mnt
 else
@@ -23,6 +25,17 @@ error() {
 	printf -- "----------------------------------------------\n" >&2
 	printf -- "/!\ %s\n" "$@" >&2
 	printf -- "----------------------------------------------\n" >&2
+	cleanup
+	if [ -n "$SHOW_DF" ]; then
+		# btrfs only updates df in background or on sync
+		sync -f /var/app/volumes
+		stdout_info echo "Free space available:"
+		stdout_info df -h /var/app/volumes
+	fi
+	if [ -n "$SHOW_DU" ]; then
+		stdout_info echo "Installing this file:"
+		stdout_info du -h "$SHOW_DU"
+	fi
 	exit 1
 }
 
@@ -98,7 +111,7 @@ podman_pull() {
 	local uri="$1"
 
 	podman_in_root pull -q "$uri" \
-		|| error "Could not pull $uri"
+		|| SHOW_DF=1 error "Could not pull $uri"
 }
 
 check_sig() {
@@ -116,7 +129,7 @@ podman_load() {
 
 	if [ $# -eq 0 ]; then
 		podman_in_root load \
-			|| error "Could not load archive"
+			|| SHOW_DF=1 error "Could not load archive"
 	else for archive; do
 		case "$archive" in
 		/*) ;;
@@ -126,7 +139,8 @@ podman_load() {
 			check_sig "$archive"
 		fi
 		podman_in_root load -i "$archive" \
-			|| error "Could not load $archive"
+			|| SHOW_DF=1 SHOW_DU="$archive" \
+				error "Could not load $archive"
 	done; fi
 }
 
