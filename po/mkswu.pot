@@ -516,19 +516,19 @@ msgstr ""
 msgid "A root password is required"
 msgstr ""
 #: mkswu
+msgid "abos-web password (empty = service disabled):"
+msgstr ""
+#: mkswu
 msgid "%s user password (empty = locks account):"
 msgstr ""
 #: mkswu
-msgid "%s user password (confirm):"
+msgid "%s password (confirm):"
 msgstr ""
 #: mkswu
 msgid "Could not generate password"
 msgstr ""
 #: mkswu
 msgid "Please set the password to log into abos-web."
-msgstr ""
-#: mkswu
-msgid "Not setting a password will disable the service after initial setup."
 msgstr ""
 #: mkswu
 msgid "Could not update %s"

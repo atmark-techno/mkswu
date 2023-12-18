@@ -2090,10 +2090,12 @@ geninitdesc_promptpass() {
 				info "A root password is required"
 				continue
 			fi
+		elif [ "$user" = "abos-web" ]; then
+			PASS=1 prompt password "abos-web password (empty = service disabled):"
 		else
 			PASS=1 prompt password "%s user password (empty = locks account):" "$user"
 		fi
-		PASS=1 prompt confirm "%s user password (confirm):" "$user"
+		PASS=1 prompt confirm "%s password (confirm):" "$user"
 		if [ "$password" != "$confirm" ]; then
 			info "Passwords do not match"
 			continue
@@ -2115,7 +2117,6 @@ geninitdesc_prompt_abosweb() {
 	local PASSWD
 
 	info "Please set the password to log into abos-web."
-	info "Not setting a password will disable the service after initial setup."
 	geninitdesc_promptpass abos-web
 	if [ "$PASSWD" != "-L" ]; then
 		sed -i -e 's:setting passwords.*:&\

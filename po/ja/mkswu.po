@@ -687,12 +687,16 @@ msgid "A root password is required"
 msgstr "rootパスワードが必要です。"
 
 #: mkswu
+msgid "abos-web password (empty = service disabled):"
+msgstr "abos-web のパスワード（空の場合はサービスを無効にします）:"
+
+#: mkswu
 msgid "%s user password (empty = locks account):"
 msgstr "%sユーザのパスワード（空の場合はアカウントをロックします）:"
 
 #: mkswu
-msgid "%s user password (confirm):"
-msgstr "%s ユーザのパスワード（確認）:"
+msgid "%s password (confirm):"
+msgstr "%s のパスワード（確認）:"
 
 #: mkswu
 msgid "Could not generate password"
@@ -701,10 +705,6 @@ msgstr "パスワードを作成できませんでした。"
 #: mkswu
 msgid "Please set the password to log into abos-web."
 msgstr "abos-web のパスワードを設定してください。"
-
-#: mkswu
-msgid "Not setting a password will disable the service after initial setup."
-msgstr "パスワードを設定しない場合 abos-web は使用できなくなります。"
 
 #: mkswu
 msgid "Could not update %s"
@@ -901,3 +901,6 @@ msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてくださ�
 #: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
+
+#~ msgid "Not setting a password will disable the service after initial setup."
+#~ msgstr "パスワードを設定しない場合 abos-web は使用できなくなります。"
