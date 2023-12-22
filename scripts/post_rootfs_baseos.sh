@@ -134,6 +134,21 @@ EOF
 			fi
 		) || error "Please change schedule in /etc/conf.d/swupdate-url to something 'schedule_ts' understands"
 	fi
+
+	# power-utils.conf moved in abos 3.18-at.3,
+	# try to preserve old config if it exists and new one had not been created yet
+	if [ -e /etc/conf.d/power-utils.conf ] \
+	    && ! [ -e /target/etc/atmark/power-utils.conf ]; then
+		[ -d /target/etc/atmark ] \
+			|| mkdir -p /target/etc/atmark \
+			|| error "Could not create /etc/atmark"
+		cp /etc/conf.d/power-utils.conf /target/etc/atmark/power-utils.conf \
+			|| error "Could not copy power-utils.conf"
+		# make sure we remove the old config if it was migrated
+		# in theory we'll want to cleanup swupdate_preserve_files
+		# as well but that'll wait for next month...
+		rm -f /target/etc/conf.d/power-utils.conf
+	fi
 }
 
 baseos_upgrade_fixes
