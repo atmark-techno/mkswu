@@ -1,3 +1,19 @@
+5.2
+===
+fixes:
+ - try to recover old power-utils.conf file on a6e upgraded from very old
+versions
+ - examples/kernel_update_plain.install.sh: fix to check version properly on
+arm32 (a6e, a6x0)
+
+misc:
+ - improve mkswu --init wording for auto-updates (includes gw container) and
+abos-web
+ - swdesc_*container: print more information if update fails, in particular
+free space and container size
+
+  -- 2023-12-25
+
 5.1
 ===
 fixes:
