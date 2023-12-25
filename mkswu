@@ -122,9 +122,9 @@ usage() {
 	info "  - swdesc_boot <bootfile>"
 	info "  - swdesc_tar <tar_file> [--dest <dest>]"
 	info "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
-	info "  - swdesc_command '<cmd>'"
-	info "  - swdesc_script <script>"
-	info "  - swdesc_exec <file> '<cmd>' (file is \$1 in command)"
+	info "  - swdesc_command [--stdout-info] '<cmd>'"
+	info "  - swdesc_script [--stdout-info] <script>"
+	info "  - swdesc_exec [--stdout-info] <file> '<cmd>' (file is \$1 in command)"
 	info "  - swdesc_embed_container <image_archive>"
 	info "  - swdesc_usb_container <image_archive>"
 	info "  - swdesc_pull_container <image_url>"
@@ -614,6 +614,7 @@ parse_swdesc() {
 	fi
 
 	local SKIP=0
+	local stdout_info=""
 	for ARG; do
 		# skip previously used argument
 		# using a for loop means we can't shift ahead
@@ -710,6 +711,13 @@ parse_swdesc() {
 			container="$1"
 			SKIP=1
 			;;
+		"--stdout-info")
+			case "$CMD" in
+			exec|exec_nochroot|command|command_nochroot|script|script_nochroot) ;;
+			*) error "%s only allowed for %s" "$ARG" "swdesc_exec/swdesc_command/swdesc_script";;
+			esac
+			stdout_info=1
+			;;
 		--)
 			# stop parsing
 			SKIP=-1
@@ -758,6 +766,7 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
+		cmd="sh -c $(shell_quote "$cmd") ${stdout_info:+">&\${SWUPDATE_INFO_FD:-1} "}--"
 		;;
 	script*)
 		if [ $# -eq 0 ] && [ -n "$file" ]; then
@@ -771,6 +780,7 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd }$(shell_quote "$ARG")"
 		done
+		cmd="sh -c $(shell_quote "$cmd") ${stdout_info:+">&\${SWUPDATE_INFO_FD:-1} "}--"
 		;;
 	exec*)
 		[ $# -eq 0 ] && [ -n "$cmd" ] && [ -n "$file" ] && return
@@ -781,6 +791,7 @@ parse_swdesc() {
 		for ARG; do
 			cmd="${cmd:+$cmd && }$ARG"
 		done
+		cmd="sh -c $(shell_quote "$cmd") ${stdout_info:+">&\${SWUPDATE_INFO_FD:-1} "}--"
 		;;
 	*container)
 		[ $# -eq 0 ] && [ -n "$image" ] && return
@@ -1061,8 +1072,6 @@ swdesc_exec_nochroot() {
 		link "$orig_file" "$file"
 	fi
 
-	cmd="sh -c $(shell_quote "$cmd") --"
-
 	write_entry files "$file" "type = \"exec\";" \
 		"properties: {" \
 		"  cmd: \"$(conf_quote "$cmd")\"" \
@@ -1111,7 +1120,7 @@ swdesc_exec() {
 		chroot_cmd="$chroot_cmd -v /target:/target:ro $container"
 		;;
 	esac
-	chroot_cmd="$chroot_cmd sh -c $(shell_quote "$cmd") -- "
+	chroot_cmd="$chroot_cmd $cmd "
 
 	# allow multiple execs with same file if command changes
 	# don't rename if no arguments for easier debugging

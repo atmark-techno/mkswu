@@ -70,6 +70,10 @@ build_check swdesc_script_nochroot.desc --
 build_check two_scripts.desc -- \
 	"swdesc 'one' 'two'"
 
+# replace ' with regular expression dots since they cannot be escaped
+build_check stdout_info.desc -- \
+	"swdesc 'sh -c .echo message to info. >&\\\$\{SWUPDATE_INFO_FD:-1\} --' \
+		'sh -c .echo message to debug. --'"
 
 echo 'swdesc_embed_container doesnotexist' \
 	| name="container_enoent_fail" build_fail -

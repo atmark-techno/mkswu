@@ -122,6 +122,17 @@ Common options for all helpers:
   Alternate text that will be printed when swu is installing this step
 
 
+Additionally, these options can be used on "command-running commands"
+(e.g. swdesc_command, swdesc_script and swdesc_exec):
+
+--stdout-info
+  Redirect command stdout to info fd if available; this allows displaying
+  command outputs more easily
+
+--container
+  Run the command in given container image instead of install target chroot.
+  In this case the install target is mounted as /target
+
 Images are then built progressively by calling the following helpers:
 
 swdesc_boot <bootfile>

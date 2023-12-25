@@ -129,6 +129,17 @@ line2 with space and ! \ @" ] || error "updated content does not match (nochroot
 two" ] || error "updated content does not match (two scripts)"
 	rm -rf /tmp/swupdate-test
 
+	mkdir /tmp/swupdate-test
+	"$SWUPDATE" -i ./out/stdout_info.swu -l 3 -k ../swupdate.pem > /tmp/swupdate-test/stdout \
+		|| error "swupdate failed"
+	grep -q "message to info" /tmp/swupdate-test/stdout \
+		|| error "stdout_info didn't display message to info:" \
+			"----" "$(cat /tmp/swupdate-test/stdout)" "----"
+	grep -q "message to debug" /tmp/swupdate-test/stdout \
+		&& error "stdout_info incorrectly displayed message to debug:" \
+			"----" "$(cat /tmp/swupdate-test/stdout)" "----"
+	rm -rf /tmp/swupdate-test
+
 	"$SWUPDATE" -i ./out/cmd_description.swu -l 3 -k ../swupdate.pem \
 			> out/cmd_description_stdout \
 			2> out/cmd_description_stderr \

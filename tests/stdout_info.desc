@@ -1,0 +1,7 @@
+FORCE_VERSION=1
+DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+
+swdesc_command_nochroot --description "debug message" \
+	"echo message to debug"
+swdesc_command_nochroot --description "info message" \
+	--stdout-info "echo message to info"
