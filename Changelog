@@ -1,3 +1,14 @@
+5.2.2
+=====
+fixes:
+ - fix setting upgrade_available back on old side that just installed the
+update
+ - fix corruption on old Armadillo 640 (with old MMC as can be checked
+by: cat /sys/class/block/mmcblk0/device/name = Q2J55L), where bootpart
+change is not safe except immediately after a fw_setenv call
+
+  -- 2024-01-12
+
 5.2.1
 =====
 fixes:
