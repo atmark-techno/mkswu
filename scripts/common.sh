@@ -397,6 +397,9 @@ luks_close_target() {
 	cryptsetup luksClose "rootfs_$ab" >/dev/null 2>&1
 }
 
+get_mmc_name() {
+	cat "/sys/class/block/${rootdev#/dev/}/device/name" 2>/dev/null
+}
 
 needs_reboot() {
 	# if we're in an error, we'll reboot if soft_fail is set

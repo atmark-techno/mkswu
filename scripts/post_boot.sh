@@ -29,6 +29,10 @@ cleanup_target() {
 	if allow_upgrade_available; then
 		fw_setenv_nowarn upgrade_available 1 \
 			|| warn "could not restore rollback"
+	elif [ "$(get_mmc_name)" = Q2J55L ]; then
+		# old Armadillo 640 eMMC is broken and issuing a bootpart change without
+		# a write to mmcblk0bootX partition is known to cause corruptions
+		fw_setenv_nowarn dummyvaluethatshouldnotbeset
 	fi
 }
 
