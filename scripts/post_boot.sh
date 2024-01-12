@@ -31,8 +31,9 @@ cleanup_target() {
 			|| warn "could not restore rollback"
 	elif [ "$(get_mmc_name)" = Q2J55L ]; then
 		# old Armadillo 640 eMMC is broken and issuing a bootpart change without
-		# a write to mmcblk0bootX partition is known to cause corruptions
-		fw_setenv_nowarn dummyvaluethatshouldnotbeset
+		# a switch to mmcblk0bootX partition is known to cause corruptions
+		# This forces the hardware to issue such a switch
+		dd if="${rootdev}boot0" of=/dev/null bs=4k count=1 iflag=direct status=none
 	fi
 }
 
