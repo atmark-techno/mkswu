@@ -6,11 +6,12 @@ allow_upgrade_available() {
 	[ -z "$encrypted_boot" ] || return
 
 	# Cannot fw_setenv without this...
-	[ -s /target/etc/fw_env.config ] || return
+	# Note we're setting current's env after target has been unmounted!
+	[ -s /etc/fw_env.config ] || return
 
 	# Do not set upgrade_available if it is not set in default
 	# configuration.
-	cat /target/boot/uboot_env.d/* 2>/dev/null | awk -F= '
+	cat /boot/uboot_env.d/* 2>/dev/null | awk -F= '
 		$1 == "upgrade_available" {
 			set=$2
 		}
