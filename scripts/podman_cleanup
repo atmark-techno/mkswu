@@ -182,7 +182,7 @@ cleanup_images() {
 
 	# storage directory cannot be moved if that file is kept around
 	# it only contains state data that is safe to delete
-	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+	rm -f "$PODMAN_ROOT/libpod/bolt_state.db" "$PODMAN_ROOT/db.sql"
 }
 
 while [ $# -ge 1 ]; do

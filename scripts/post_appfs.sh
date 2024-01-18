@@ -108,7 +108,8 @@ cleanup_appfs() {
 	# cleanup readonly storage
 	[ -z "$(podman ps --root /target/var/lib/containers/storage_readonly -qa)" ] \
 		|| error "podman state is not clean"
-	rm -f "/target/var/lib/containers/storage_readonly/libpod/bolt_state.db"
+	rm -f "/target/var/lib/containers/storage_readonly/libpod/bolt_state.db" \
+		"/target/var/lib/containers/storage_readonly/db.sql"
 	umount_if_mountpoint /target/var/lib/containers/storage_readonly/overlay \
 		|| error "could not umount /target/var/lib/containers/storage_readonly/overlay"
 	btrfs property set -ts /target/var/lib/containers/storage_readonly ro true

@@ -147,7 +147,7 @@ podman_load() {
 cleanup() {
 	if [ -n "$PODMAN_ROOT" ]; then
 		# cleanup again afterwards for whoever comes next
-		rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+		rm -f "$PODMAN_ROOT/libpod/bolt_state.db" "$PODMAN_ROOT/db.sql"
 	fi
 	if [ -n "$TMPDIR" ] && [ "$TMPDIR" != "/var/tmp" ]; then
 		rm -rf "$TMPDIR"
@@ -177,7 +177,7 @@ update_containers() {
 	# cleanup podman silly location-binding db before/after using directory.
 	[ -z "$(podman ps --root "$PODMAN_ROOT" -qa)" ] \
 		|| error "podman state not clean"
-	rm -f "$PODMAN_ROOT/libpod/bolt_state.db"
+	rm -f "$PODMAN_ROOT/libpod/bolt_state.db" "$PODMAN_ROOT/db.sql"
 
 	# podman sometimes leaves lots of data in /var/tmp on errors:
 	# force a different TMPDIR and clean up after podman
