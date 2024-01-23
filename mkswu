@@ -112,6 +112,8 @@ usage() {
 	info "                          update version in desc file"
 	info "                          if base is given, restart from base or fail if that would"
 	info "                          lower the version"
+	info "  --version-cmp <base_version> <version> [<version...>]"
+	info "                          compare versions given with base version"
 	info "  --version               print version and exit"
 	info "  desc                    image description file(s), if multiple are given"
 	info "                          then the generated image will merge all the contents"
@@ -2324,6 +2326,35 @@ update_one_version() {
 	info "Updated %s version from %s to %s" "$desc" "$old_version" "$version"
 }
 
+mkswu_version_cmp() {
+	[ "$#" -ge 2 ] \
+		|| error "Usage: mkswu --version-cmp <base_version> <version> [<version...>]"
+	local base="$1"
+	local rc=0
+	shift
+
+	# for version_higher
+	[ -e "$SCRIPT_DIR/scripts/versions.sh" ] \
+		|| error "Required file not found: %s" "$SCRIPT_DIR/scripts/versions.sh"
+	. "$SCRIPT_DIR/scripts/versions.sh"
+
+	check_version_higher "$base"
+
+	for version in "$@"; do
+		if ! ( check_version_higher "$version" ); then
+			[ "$rc" -lt 3 ] && rc=3
+			continue
+		fi
+		if version_higher "$base" "$version"; then
+			info "%s < %s" "$base" "$version"
+		else
+			info "%s < %s" "$version" "$base"
+			[ "$rc" -lt 2 ] && rc=2
+		fi
+	done
+	return $rc
+}
+
 mkswu_update_version() {
 	local desc
 	local status=0
@@ -2694,6 +2725,10 @@ local cmd="" preserve_attributes="" container=""
 		"--internal")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=internal
+			;;
+		"--version-cmp")
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
+			MODE=version_cmp
 			;;
 		"--update-version")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
