@@ -1,3 +1,16 @@
+5.3
+===
+misc:
+ - fix podman upgrade script with podman 4.8+ (in alpine 3.19) that has a new
+db format by default
+ - make old Armadillo 640 workaround a bit simpler
+
+features:
+ - add swdesc_command/exec/script --info-stdout option
+ - add mkswu --version-cmp subcommand
+
+   -- 2024-01-26
+
 5.2.2
 =====
 fixes:

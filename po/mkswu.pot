@@ -45,6 +45,12 @@ msgstr ""
 msgid "                          lower the version"
 msgstr ""
 #: mkswu
+msgid "  --version-cmp <base_version> <version> [<version...>]"
+msgstr ""
+#: mkswu
+msgid "                          compare versions given with base version"
+msgstr ""
+#: mkswu
 msgid "  --version               print version and exit"
 msgstr ""
 #: mkswu
@@ -72,13 +78,13 @@ msgstr ""
 msgid "  - swdesc_files [--basedir <basedir>] [--dest <dest>] <files>"
 msgstr ""
 #: mkswu
-msgid "  - swdesc_command '<cmd>'"
+msgid "  - swdesc_command [--stdout-info] '<cmd>'"
 msgstr ""
 #: mkswu
-msgid "  - swdesc_script <script>"
+msgid "  - swdesc_script [--stdout-info] <script>"
 msgstr ""
 #: mkswu
-msgid "  - swdesc_exec <file> '<cmd>' (file is \\$1 in command)"
+msgid "  - swdesc_exec [--stdout-info] <file> '<cmd>' (file is \\$1 in command)"
 msgstr ""
 #: mkswu
 msgid "  - swdesc_embed_container <image_archive>"
@@ -583,6 +589,15 @@ msgid "Warning: Desc %s previous version %s is higher than base %s-0, refusing t
 msgstr ""
 #: mkswu
 msgid "Updated %s version from %s to %s"
+msgstr ""
+#: mkswu
+msgid "Usage: mkswu --version-cmp <base_version> <version> [<version...>]"
+msgstr ""
+#: mkswu
+msgid "Required file not found: %s"
+msgstr ""
+#: mkswu
+msgid "%s < %s"
 msgstr ""
 #: mkswu
 msgid "--version-base %s must not include a dash"
