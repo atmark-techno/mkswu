@@ -6,7 +6,7 @@ db format by default
  - make old Armadillo 640 workaround a bit simpler
 
 features:
- - add swdesc_command/exec/script --info-stdout option
+ - add swdesc_command/exec/script --stdout-info option
  - add mkswu --version-cmp subcommand
 
    -- 2024-01-26
