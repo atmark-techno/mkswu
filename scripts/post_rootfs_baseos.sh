@@ -149,6 +149,31 @@ EOF
 		# as well but that'll wait for next month...
 		rm -f /target/etc/conf.d/power-utils.conf
 	fi
+
+	# use the tz in /usr/share if present
+	local tz newtz
+	tz=$(readlink /target/etc/localtime 2>/dev/null)
+	case "$tz" in
+	/etc/zoneinfo/*|zoneinfo/*)
+		newtz="/usr/share/${tz#/etc/}"
+		if [ -e "/target/$newtz" ]; then
+			rm -rf /target/etc/zoneinfo
+			ln -sf "$newtz" /target/etc/localtime \
+				|| error "Could not fixup /etc/localtime"
+			tz="$newtz"
+		fi
+		;;
+	esac
+	# ... also make sure that the timezone exists, keeping the old file
+	# from old rootfs if required.
+	[ "${tz#/}" != "$tz" ] || tz="/etc/$tz"
+	if ! [ -e "/target$tz" ]; then
+		if [ -e "$tz" ]; then
+			overwrite_to_target "$tz"
+		else
+			error "/etc/localtime is set to $tz but the file was not found"
+		fi
+	fi
 }
 
 baseos_upgrade_fixes
