@@ -113,6 +113,9 @@ install_examples:
 	cp -t $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh examples/enable_sshd/root/.ssh/authorized_keys
 	install -d $(DESTDIR)$(SHARE)/examples/uboot_env
 	cp -t $(DESTDIR)$(SHARE)/examples/uboot_env examples/uboot_env/bootdelay
+	install -d $(DESTDIR)$(SHARE)/examples/armadillo-twin
+	cp -t $(DESTDIR)$(SHARE)/examples/armadillo-twin \
+		examples/armadillo-twin/*.desc
 
 install_locales: locales
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
