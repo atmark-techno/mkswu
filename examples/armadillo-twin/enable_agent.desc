@@ -1,0 +1,4 @@
+swdesc_option component=extra_os.twin_enable_agent
+swdesc_option version=1
+
+swdesc_command "rc-update add armadillo-twin-agentd default"
