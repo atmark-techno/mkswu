@@ -1,0 +1,358 @@
+# header
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8"
+#: hawkbit-compose/setup_container.sh
+msgid "Could not get script dir"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Usage: $0 [opts]"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "    Prompt questions if required and setup hawkBit docker-compose container"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Options:"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --dir <dir>         directory to use for docker-compose root"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --domain <domain>   domain name to use for https certificate"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --letsencrypt       enable letsencrypt container"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --reset-proxy       reset proxy-related settings"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --reset-users       reset hawkBit users"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --add-user <user>   add extra hawkBit admin user"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "  --del-user <user>   delete hawkBit user with given name"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not create directory"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "realpath failed"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$fragment_pattern did not match anything in $name source fragments"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Failed aggregating fragments ${fragments[*]} to $tmpdest"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Failed moving $tmpdest to $dest"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not generate $file fragment"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Empty passwords are not allowed"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Confirm password: "
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Password mismatch"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "A value is required."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Invalid value $confirm for $prompt_id used with no prompt!"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Invalid default $default for $prompt"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Please answer with y or n"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Certificate domain name:"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "The reverse proxy needs a domain name for the certificate"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "This MUST be the domain name as reachable from devices, so if the"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "url will be https://hawkbit.domain.tld it should be hawkbit.domain.tld"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "and if your url is https://10.1.1.1 then it should be 10.1.1.1"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Certificate domain name changed (found $current_domain, expected $REVERSE_PROXY_CERT_DOMAIN), regenerating"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "How long should the certificate be valid (days)?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "TLS certificate have a lifetime that must be set. If you plan to use"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "let's encrypt, this value will only be used until the new certificate"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "is generated and can be left to its default value. Best practice would"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "require generating a new certificate every few years."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "certificate validity must be a number of days (only digits)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Continue?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not verify that this host is suitable for let's encrypt"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Please check the machine is reachable at $REVERSE_PROXY_CERT_DOMAIN"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Continuing without let's encrypt. Run again with --letsencrypt if you want to add it later."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Email to use for let's encrypt registration"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "letsencrypt setup requires running containers once for configuration, run now?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "nginx container not coming up!"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "certbot invocation failed"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not remove old certificates"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not make symlink to new certificates"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Start containers once and run the following commands:"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Allow user to handle rollouts? (trigger installation requests)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Password for user $user"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "htpasswd failed for given password - missing command?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Removing users:"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not update user id in hawkBit application.properties"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "hawkBit had no user defined, create one first"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not copy file"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "HawkBit admin user name"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Extra admin user name (empty to stop): "
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$user already exists!"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Create hawkBit device user? (for autoregistration)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Create hawkBit mkswu user? (for automated image upload)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Stop $service service?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$service is running and conflicts with the reverse proxy setup."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Please stop $service manually"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not stop $service service"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Disable $service service?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$service is enabled and conflicts with the reverse proxy setup."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not disable $service service"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Setup TLS reverse proxy?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "CA file path (leave empty to disable client TLS authentication)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "If you would like to setup client certificate authenication a ca is required."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "ca file $REVERSE_PROXY_CLIENT_CERT does not exist. Reset proxy settings with --reset-proxy"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Also disallow token authentication?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Setup certbot container to obtain certificate?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "If the host is directly accessible over internet, it it possible to setup a let's"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "encrypt certificate instead of the self-signed one. Accepting means you agree to the TOS:"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "The generated certificate needs to be registered on device."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "The recommended way of doing this is to use the examples' hawkbit_register swu:"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Copy /usr/share/mkswu/examples/hawkbit_register.* and fill in required variables"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "(HAWKBIT_URL with server URL, HAWKBIT_PASSWORD with device user password,"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "and copy-paste the certificate from BEGIN CERTIFICATE and up to END CERTIFICATE"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "into SSL_CA_CONTENT), then generate its swu (mkswu hawkbit_register.desc),"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "and install hawkbit_register.swu on the device"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Should you want to use a let's encrypt certificate, you can run $SCRIPT_BASE again with --letsencrypt"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Docker is not installed. Install it?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Please check https://docs.docker.com/get-docker/ and install docker"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Install failed, please check https://docs.docker.com/get-docker/ and install manually"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "docker-compose is not installed. Install it?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Please install docker-compose"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Install failed, please install docker-compose manually"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "htpasswd is required for password generation. Install it?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Please install htpasswd (apache2-utils)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Install failed, please install apache2-utils manually"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "MYSQL_ROOT_PASSWORD was set but not MYSQL_PASSWORD"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Warning: recent hawkBit container requires a newer mysql version"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "but update is not transparent."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Backing up $CONFIG_DIR/data/mysql to $CONFIG_DIR/data/mysql.backup..."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "In case it this fails, move the data back and you upgrade manually"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "(or keep using the old hawkbit-update-server:0.3.0M7-mysql instead)"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Trying to upgrade the db..."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Ok. You will need to upgrade container before restarting."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$CONFIG_DIR/data/mysql.backup can be deleted after confirming hawkBit works."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "$arg requires an argument"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Unhandled arguments: $@"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Where should we store docker-compose configuration and hawkBit data?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Creating link to $SCRIPT_BASE in $CONFIG_DIR"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not create script link"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not enter config dir"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not use docker, is the service running?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not connect to docker daemon, trying with sudo... "
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "ok!"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Checking if container is running... ${SUDO:+(this requires sudo)}"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Stop hawkBit containers?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "hawkBit containers seem to be running, updating config files"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "might not work as expected."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Could not stop containers"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Setup finished! Use docker-compose now to manage the containers"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Update hawkBit containers?"
+msgstr ""
+#: hawkbit-compose/setup_container.sh
+msgid "Start hawkBit containers?"
+msgstr ""

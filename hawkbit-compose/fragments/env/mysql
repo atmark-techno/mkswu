@@ -1,0 +1,4 @@
+# note mysql container will not update password if changed,
+# you need to enter the mysql container manually to adjust it.
+MYSQL_PASSWORD=
+MYSQL_ROOT_PASSWORD=

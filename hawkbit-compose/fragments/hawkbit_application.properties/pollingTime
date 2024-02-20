@@ -1,0 +1,3 @@
+# At which interval should clients poll the server?
+# must be between 00:30:00 and 23:59:59
+hawkbit.controller.pollingTime=00:05:00
