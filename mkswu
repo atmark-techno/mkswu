@@ -365,6 +365,17 @@ normalize_version() {
 check_version_valid() {
 	[ -n "$MKSWU_TEST_ALLOW_BOGUS_VERSION" ] && return
 
+	case "$component" in
+	*" "*) error "component must not contain spaces (%s)" "$component";;
+	extraos.*)
+		warning "Warning: component '%s' starts with extraos, did you mean extra_os ?" \
+			"$component"
+		;;
+	esac
+	case "$version" in
+	*" "*) error "version must not contain spaces (%s = %s)" "$component" "$version"
+	esac
+
 	case "$install_if" in
 	higher)
 		check_version_higher "$version"
@@ -382,9 +393,6 @@ check_version_valid() {
 		warning "Warning: %s version %s has been simplified to %s" \
 			"$component" "$orig_version" "$version"
 	fi
-
-	[ "${component#* }" = "$component" ] || error "component must not contain spaces (%s)" "$component"
-	[ "${version#* }" = "$version" ] || error "version must not contain spaces (%s = %s)" "$component" "$version"
 }
 
 compress() {
