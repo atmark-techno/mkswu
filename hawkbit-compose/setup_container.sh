@@ -901,7 +901,7 @@ main() {
 	$SUDO docker-compose down
 	RUN_COMPOSE=""
 	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Update hawkBit containers?"; then
-		$SUDO docker-compose pull -d
+		$SUDO docker-compose pull
 	fi
 	RUN_COMPOSE=""
 	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Start hawkBit containers?"; then
