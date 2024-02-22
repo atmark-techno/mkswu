@@ -11,12 +11,8 @@ l = ja
 translations = $(wildcard po/$(l)/*.po)
 locales = $(patsubst po/$(l)/%.po,locale/$(l)/LC_MESSAGES/%.mo,$(translations))
 
-# XXX install example data more cleanly
-install_scripts = $(wildcard scripts/*sh) $(wildcard scripts/podman_*)
-install_completions = $(wildcard bash_completion.d/*)
-install_examples = $(wildcard examples/*desc) $(wildcard examples/*sh)
-install_hawkbit = hawkbit-compose/setup_container.sh hawkbit-compose/fragments
-install_docs = $(wildcard docs/*md)
+install_scripts = $(wildcard scripts/*.sh) $(wildcard scripts/podman_*)
+install_docs = $(wildcard docs/*.md)
 install_docs_html = $(patsubst docs/%.md,docs/%.html,$(install_docs))
 
 
@@ -98,7 +94,9 @@ install_mkswu:
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.pem
 	install -d $(DESTDIR)$(SHARE)/certs
 	install -D -m 0644 -t $(DESTDIR)$(SHARE)/certs certs/atmark*.pem
-	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) $(install_completions)
+	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) \
+		bash_completion.d/mkswu bash_completion.d/hawkbit_push_update \
+		bash_completion.d/podman_partial_image
 	install -D -t $(DESTDIR)$(SHARE) scripts_pre.sh scripts_post.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode
@@ -106,11 +104,14 @@ install_mkswu:
 
 install_examples:
 	install -d $(DESTDIR)$(SHARE)/examples
-	cp -t $(DESTDIR)$(SHARE)/examples $(install_examples)
+	cp -t $(DESTDIR)$(SHARE)/examples \
+		examples/*.desc examples/*.sh
 	install -d $(DESTDIR)$(SHARE)/examples/nginx_start/etc/atmark/containers
-	cp -t $(DESTDIR)$(SHARE)/examples/nginx_start/etc/atmark/containers examples/nginx_start/etc/atmark/containers/nginx.conf
+	cp -t $(DESTDIR)$(SHARE)/examples/nginx_start/etc/atmark/containers \
+		examples/nginx_start/etc/atmark/containers/nginx.conf
 	install -d $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh
-	cp -t $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh examples/enable_sshd/root/.ssh/authorized_keys
+	cp -t $(DESTDIR)$(SHARE)/examples/enable_sshd/root/.ssh \
+		examples/enable_sshd/root/.ssh/authorized_keys
 	install -d $(DESTDIR)$(SHARE)/examples/uboot_env
 	cp -t $(DESTDIR)$(SHARE)/examples/uboot_env examples/uboot_env/bootdelay
 	install -d $(DESTDIR)$(SHARE)/examples/armadillo-twin
