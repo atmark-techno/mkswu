@@ -116,7 +116,7 @@ install_examples:
 	cp -t $(DESTDIR)$(SHARE)/examples/uboot_env examples/uboot_env/bootdelay
 	install -d $(DESTDIR)$(SHARE)/examples/armadillo-twin
 	cp -t $(DESTDIR)$(SHARE)/examples/armadillo-twin \
-		examples/armadillo-twin/*.desc
+		examples/armadillo-twin/*.desc examples/armadillo-twin/*.sh
 
 install_locales: locales
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
