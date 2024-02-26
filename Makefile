@@ -83,7 +83,7 @@ dist: all
 	git ls-files hawkbit-compose | \
 		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
 
-install: install_mkswu install_examples install_locales install_hawkbit_compose install_html
+install: install_mkswu install_examples install_locales install_html
 
 install_mkswu:
 	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
@@ -120,11 +120,6 @@ install_examples:
 
 install_locales: locales
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo
-
-install_hawkbit_compose:
-	install -d $(DESTDIR)$(SHARE)/hawkbit-compose
-	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES hawkbit-compose/locale/ja/LC_MESSAGES/hawkbit_setup_container.mo
-	cp -rt $(DESTDIR)$(SHARE)/hawkbit-compose $(install_hawkbit)
 
 install_html: $(install_docs_html)
 	install -d $(DESTDIR)$(SHARE)/docs
