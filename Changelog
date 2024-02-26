@@ -1,3 +1,12 @@
+5.4
+===
+features:
+ - add twin agent settings/enable examples
+ - support upgrading with a custom timezone
+ - warn on 'extraos.*' versions (should be 'extra_os.*')
+
+  -- 2024-02-26
+
 5.3
 ===
 misc:
@@ -9,7 +18,7 @@ features:
  - add swdesc_command/exec/script --stdout-info option
  - add mkswu --version-cmp subcommand
 
-   -- 2024-01-26
+  -- 2024-01-26
 
 5.2.2
 =====
