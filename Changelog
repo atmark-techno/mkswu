@@ -1,3 +1,10 @@
+5.4.1
+=====
+fix:
+ - add missing .sh script in armadillo-twin agent example directory
+
+  -- 2024-02-26
+
 5.4
 ===
 features:
