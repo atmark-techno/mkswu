@@ -2,8 +2,8 @@
         image: "hawkbit/hawkbit-update-server:latest-mysql"
         restart: always
         volumes:
-            - ./data/hawkbit_application.properties:/opt/hawkbit/application.properties
-            - ./data/hawkbit_artifactrepo:/opt/hawkbit/artifactrepo
+            - ./data/hawkbit_application.properties:/application.properties
+            - ./data/hawkbit_artifactrepo:/artifactrepo
         environment:
             SPRING_APPLICATION_JSON: '{
                 "spring.datasource.url": "jdbc:mariadb://mysql:3306/hawkbit",

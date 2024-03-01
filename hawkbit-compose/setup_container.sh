@@ -483,7 +483,26 @@ fix_hawkbit_users_id() {
 finalize_hawkbit() {
 	fix_hawkbit_users_id
 	assemble_fragments "$CONFIG_DIR/data/hawkbit_application.properties" \
-			pollingTime update_size rabbitmq "auth_*"
+			00_defaults pollingTime update_size rabbitmq "auth_*"
+}
+
+fix_hawkbit_artifactrepo_owner() {
+	local repo="$CONFIG_DIR/data/hawkbit_artifactrepo"
+
+	# newer version of hawkbit containers no longer run as root and
+	# don't have chown code at this point.
+	# This must be run after docker pull if any, so is not part of
+	# finalize_hawkbit.
+	$SUDO docker run --rm -u root --entrypoint "" \
+		-v "$repo:/repo" \
+		hawkbit/hawkbit-update-server:latest-mysql \
+		sh -c '
+			# get real /artifactrepo owner.
+			# If this fails this was an old image: just quit.
+			uid=$(stat -c %u /artifactrepo 2>/dev/null) || exit 0
+			gid=$(stat -c %g /artifactrepo 2>/dev/null) || exit 0
+			find /repo -user $uid -a -group $gid -o -exec chown $uid:$gid {} +
+		'
 }
 
 ##########################
@@ -903,6 +922,8 @@ main() {
 	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Update hawkBit containers?"; then
 		$SUDO docker-compose pull
 	fi
+	fix_hawkbit_artifactrepo_owner
+
 	RUN_COMPOSE=""
 	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Start hawkBit containers?"; then
 		$SUDO docker-compose up -d
