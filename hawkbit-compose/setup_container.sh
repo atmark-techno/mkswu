@@ -917,7 +917,6 @@ main() {
 	echo $"Setup finished! Use docker-compose now to manage the containers"
 	echo $"or run $CONFIG_DIR/$SCRIPT_BASE again to change configuration."
 
-	$SUDO docker-compose down
 	RUN_COMPOSE=""
 	if NOSAVE=1 prompt_yesno RUN_COMPOSE $"Update hawkBit containers?"; then
 		$SUDO docker-compose pull
