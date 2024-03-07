@@ -54,10 +54,7 @@ init() {
 	[ -n "$HAWKBIT_PASSWORD" ] && [ -n "$HAWKBIT_URL" ] || error "Variables top of script must be set"
 	HAWKBIT_LOGIN="$HAWKBIT_USER:$HAWKBIT_PASSWORD"
 
-	# DEVICE_ID="1234-1234-1234" with model-id, lot, serial in this order
-	DEVICE_ID=$(dd if=/sys/bus/nvmem/devices/imx-ocotp0/nvmem bs=4 skip=56 count=2 status=none \
-			| xxd -p \
-			| sed -e 's/\(..\)\(..\)....\(..\)\(..\)\(..\)\(..\)/\2\1-\6\5-\4\3/')
+	DEVICE_ID=$(device-info -s) || error "Please install device-info"
 
 	[ -n "$SSL_NO_CHECK_CERT" ] && CURLOPT="$CURLOPT -k"
 	if [ -n "$SSL_CAFILE" ]; then
