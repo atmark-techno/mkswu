@@ -117,6 +117,9 @@ install_examples:
 	install -d $(DESTDIR)$(SHARE)/examples/armadillo-twin
 	cp -t $(DESTDIR)$(SHARE)/examples/armadillo-twin \
 		examples/armadillo-twin/*.desc examples/armadillo-twin/*.sh
+	install -d $(DESTDIR)$(SHARE)/examples/node-red
+	cp -t $(DESTDIR)$(SHARE)/examples/node-red \
+		examples/node-red/*.desc
 
 install_locales: locales
 	install -D -m 0644 -t $(DESTDIR)$(LOCALEDIR)/$(l)/LC_MESSAGES locale/ja/LC_MESSAGES/mkswu.mo

@@ -1,0 +1,4 @@
+swdesc_option component=node-red.update_flows
+swdesc_option version=1
+
+swdesc_files --dest /var/app/rollback/volumes/node-red/root/.node-red/ flows.json
