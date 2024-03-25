@@ -285,25 +285,25 @@ remove_bootdev_link() {
 luks_unlock() {
 	# modifies dev if unlocked
 	local target="$1"
-	[ -z "$encrypted" ] && return
+	[ -z "$encrypted" ] && return 0
 	[ -n "$dev" ] || error "\$dev must be set"
 
 	if [ -e "/dev/mapper/$target" ]; then
 		# already unlocked, use it
 		dev="/dev/mapper/$target"
-		return
+		return 0
 	fi
 
 	# skip if no cryptsetup
 	command -v cryptsetup > /dev/null \
-		|| return 0
+		|| return 1
 
-	# not luks? nothing to do!
+	# 'encrypted' was set, but not luks?
 	cryptsetup isLuks "$dev" \
-		|| return 0
+		|| return 1
 
 	command -v caam-decrypt > /dev/null \
-		|| return 0
+		|| return 1
 
 	local index offset
 	case "$dev" in
@@ -337,7 +337,7 @@ luks_unlock() {
 			$KEYFILE.luks >/dev/null 2>&1 \
 		&& cryptsetup luksOpen --key-file $KEYFILE.luks \
 			--allow-discards $dev $target >/dev/null 2>&1" \
-		|| return 0
+		|| return
 
 	dev="/dev/mapper/$target"
 }
