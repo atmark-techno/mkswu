@@ -1,3 +1,14 @@
+5.5
+===
+fix:
+ - fix rare condition where an encrypted rootfs could be reverted to plain
+text on update following first encryption if there was no change to rootfs
+
+features:
+ - add node-red flow update example
+
+  -- 2024-03-25
+
 5.4.1
 =====
 fix:
