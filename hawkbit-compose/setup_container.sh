@@ -495,7 +495,7 @@ fix_hawkbit_artifactrepo_owner() {
 	# finalize_hawkbit.
 	$SUDO docker run --rm -u root --entrypoint "" \
 		-v "$repo:/repo" \
-		hawkbit/hawkbit-update-server:latest-mysql \
+		hawkbit/hawkbit-update-server:0.4.1-mysql \
 		sh -c '
 			# get real /artifactrepo owner.
 			# If this fails this was an old image: just quit.

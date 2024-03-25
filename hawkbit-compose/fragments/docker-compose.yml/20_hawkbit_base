@@ -1,5 +1,5 @@
     hawkbit:
-        image: "hawkbit/hawkbit-update-server:latest-mysql"
+        image: "hawkbit/hawkbit-update-server:0.4.1-mysql"
         restart: always
         volumes:
             - ./data/hawkbit_application.properties:/application.properties
