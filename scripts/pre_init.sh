@@ -114,7 +114,7 @@ fail_redundant_update() {
 		local dev="${partdev#/dev/}$((ab+1))"
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
 		    && [ -n "$upgrade_available" ] \
-		    && cmp -s "/var/log/swupdate/$dev" "$MKSWU_TMP/sw-versions.merged"; then
+		    && cmp -s "/var/log/swupdate/sw-versions-$dev" "$MKSWU_TMP/sw-versions.merged"; then
 			rm -rf "$MKSWU_TMP"
 			error "Update looks like it already had been installed but rolled back, failing on purpose." \
 				"Set SW_ALLOW_ROLLBACK=1 environment variable to force installing anyway."
