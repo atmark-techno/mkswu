@@ -849,8 +849,16 @@ test_update_overlays() {
 	test_passwd_update
 	test_cert_update
 	. "$SCRIPTS_SRC_DIR/post_rootfs.sh"
-	test_preserve_files_post
 	test_preserve_files_chown
+) || error "post test failed"
+
+(
+	set -e
+	. "$SCRIPTS_SRC_DIR/common.sh"
+	export TEST_SCRIPTS=1
+	cleanup() { :; }
+	. "$SCRIPTS_SRC_DIR/post_rootfs_baseos.sh"
+	test_preserve_files_post
 ) || error "post test failed"
 
 (

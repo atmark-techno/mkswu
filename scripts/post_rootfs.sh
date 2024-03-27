@@ -11,49 +11,6 @@ update_running_versions() {
 	umount /target || error "Could not umount rootfs rw copy"
 }
 
-overwrite_to_target() {
-	local file
-	local dir
-
-	for file; do
-		# source file must exist... being careful of symlinks
-		[ -L "$file" ] || [ -e "$file" ] || continue
-
-		dir="${file%/*}"
-		mkdir_p_target "$dir"
-
-		# busybox find -xdev -delete does not work as expected:
-		# https://bugs.busybox.net/show_bug.cgi?id=5756
-		# workaround with a bind mount
-		if [ -d "$TARGET/$file" ]; then
-			# shellcheck disable=SC2016 ## variable in single quote on purpose...
-			unshare -m sh -c 'mount --bind "$1" /mnt && rm -rf /mnt' -- "$TARGET/$file"
-			rmdir "$TARGET/$file"
-		else
-			rm -f "$TARGET/$file"
-		fi 2>/dev/null
-
-		cp -a "$fsroot$file" "$TARGET/$file" \
-			|| error "Failed to copy $file from previous rootfs"
-	done
-}
-
-post_copy_preserve_files() {
-	local f
-	local IFS='
-'
-	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
-
-	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
-		| sort -u > "$MKSWU_TMP/preserve_files_post"
-	while read -r f; do
-		# No quote to expand globs
-		overwrite_to_target $f
-	done < "$MKSWU_TMP/preserve_files_post"
-
-	rm -f "$MKSWU_TMP/preserve_files_post"
-}
-
 chown_to_target() {
 	local file
 	local owner="$1"
@@ -204,10 +161,7 @@ post_rootfs() {
 				|| error "could not rewrite storage.conf"
 		fi
 		if update_baseos; then
-			if [ -e "$MKSWU_TMP/post_rootfs_baseos.sh" ]; then
-				. "$MKSWU_TMP/post_rootfs_baseos.sh"
-			fi
-			post_copy_preserve_files
+			. "$SCRIPTSDIR/post_rootfs_baseos.sh"
 		fi
 	fi
 
