@@ -967,6 +967,13 @@ swdesc_tar() {
 		"path = \"$target$dest\";" \
 		"properties: {" "  create-destination = \"true\";" "};" \
 		"${preserve_attributes:+preserve-attributes = true;}"
+
+	# re-expose variables to preserve version etc
+	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
+	if [ "$MKSWU_component" = base_os ]; then
+		swdesc_command_nochroot --description "base_os post fixups" \
+			'${TMPDIR:-/var/tmp}/scripts/post_rootfs_baseos.sh'
+	fi
 }
 
 set_file_from_content() {

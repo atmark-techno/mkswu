@@ -27,6 +27,7 @@ overwrite_to_target() {
 
 post_copy_preserve_files() {
 	local f
+	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
 	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
@@ -219,8 +220,74 @@ EOF
 	fi
 }
 
-[ -n "$TEST_SCRIPTS" ] && return
+baseos_upgrade() {
+	# only run once
+	if [ -e "$MKSWU_TMP/baseos_upgrade_done" ]; then
+		return
+	fi
+	touch "$MKSWU_TMP/baseos_upgrade_done"
 
-baseos_upgrade_fixes
-# copy files as per swupdate_preserve_files after baseos fixes
-post_copy_preserve_files
+	baseos_upgrade_fixes
+	# copy files as per swupdate_preserve_files after baseos fixes
+	post_copy_preserve_files
+}
+
+rerun_vendored() {
+	# This script is first run from the SWU's embedded 'scripts'
+	# dir, but the 'vendored' scripts might be newer in which case
+	# the embedded script could be outdated, and more importantly
+	# common.sh would just exit on us.
+	# Check if we should run the vendored version by the presence
+	# of state files saved in pre_init.sh:
+	# - if they exist in scripts dir we're running the embedded
+	# version, and can just keep running
+	# - otherwise scripts-vendored should contain state and we
+	# need to run installed scripts
+	# ... and if neither do, we're lost and should error -- but
+	# post_rootfs_baseos itself will be processed at end of update,
+	# so do not fail the update.
+	TMPDIR="${TMPDIR:-/var/tmp}"
+
+	# already checked, running from vendored dir!
+	if [ -n "$RUNNING_VENDORED" ]; then
+		MKSWU_TMP="$TMPDIR/scripts-vendored"
+		SCRIPTSDIR="/usr/libexec/mkswu"
+		return
+	fi
+
+	# embedded version
+	if [ -e "$TMPDIR/scripts/rootdev" ]; then
+		MKSWU_TMP="$TMPDIR/scripts"
+		SCRIPTSDIR="$MKSWU_TMP"
+		return
+	fi
+	# vendored version
+	if [ -e "$TMPDIR/scripts-vendored/rootdev" ]; then
+		export RUNNING_VENDORED=1
+		exec /usr/libexec/mkswu/post_rootfs_baseos.sh
+		echo "Could not execute embedded post_rootfs_baseos, will be processed at end of update" >&2
+		exit 0
+	fi
+	echo "Could not decide where to run, will be processed at end of update" >&2
+	exit 0
+}
+
+standalone() {
+	rerun_vendored
+
+	. "$SCRIPTSDIR/common.sh"
+
+	baseos_upgrade
+}
+
+# handle being executed directly... in ash we can only check $0
+case "$0" in
+*post_rootfs_baseos.sh)
+	standalone
+	;;
+*)
+	[ -n "$TEST_SCRIPTS" ] && return
+	baseos_upgrade
+	;;
+esac
+
