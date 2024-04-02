@@ -1,4 +1,4 @@
-FORCE_VERSION=1
+swdesc_option FORCE_VERSION
 DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
 
 cat > "$OUTDIR/echo.sh" <<EOF

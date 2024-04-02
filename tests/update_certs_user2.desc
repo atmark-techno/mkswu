@@ -1,2 +1,2 @@
 swdesc_option UPDATE_CERTS=1
-FORCE_VERSION=1
+swdesc_option FORCE_VERSION

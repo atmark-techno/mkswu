@@ -1391,115 +1391,12 @@ $opt";;
 	done
 }
 
-fix_swdesc_option_vars() {
-	if [ -n "$POST_ACTION" ] && [ -z "$MKSWU_POST_ACTION" ]; then
-		warning "%s was set directly, please use swdesc_option %s instead." \
-			"POST_ACTION" "POST_ACTION=$POST_ACTION"
-		warning "This will stop working in %s update" "2024/04"
-		swdesc_option "POST_ACTION=$POST_ACTION"
-	fi
-	if [ -n "$NOTIFY_STARTING_CMD" ] && [ -z "$MKSWU_NOTIFY_STARTING_CMD" ]; then
-		warning "%s was set directly, please use swdesc_option %s instead." \
-			"NOTIFY_STARTING_CMD" "NOTIFY_STARTING_CMD=..."
-		warning "This will stop working in %s update" "2024/04"
-		swdesc_option "NOTIFY_STARTING_CMD=$NOTIFY_STARTING_CMD"
-	fi
-	if [ -n "$NOTIFY_FAIL_CMD" ] && [ -z "$MKSWU_NOTIFY_FAIL_CMD" ]; then
-		warning "%s was set directly, please use swdesc_option %s instead." \
-			"NOTIFY_FAIL_CMD" "NOTIFY_FAIL_CMD=..."
-		warning "This will stop working in %s update" "2024/04"
-		swdesc_option "NOTIFY_FAIL_CMD=$NOTIFY_FAIL_CMD"
-	fi
-	if [ -n "$NOTIFY_SUCCESS_CMD" ] && [ -z "$MKSWU_NOTIFY_SUCCESS_CMD" ]; then
-		warning "%s was set directly, please use swdesc_option %s instead." \
-			"NOTIFY_SUCCESS_CMD" "NOTIFY_SUCCESS_CMD=..."
-		warning "This will stop working in %s update" "2024/04"
-		swdesc_option "NOTIFY_SUCCESS_CMD=$NOTIFY_SUCCESS_CMD"
-	fi
-	if [ -n "$ROOTFS_FSTYPE" ] && [ -z "$MKSWU_ROOTFS_FSTYPE" ]; then
-		warning "%s was set directly, please use swdesc_option %s instead." \
-			"ROOTFS_FSTYPE" "ROOTFS_FSTYPE=$ROOTFS_FSTYPE"
-		warning "This will stop working in %s update" "2024/04"
-		swdesc_option "ROOTFS_FSTYPE=$ROOTFS_FSTYPE"
-	fi
-	if [ -n "$CONTAINER_CLEAR" ]; then
-		case "$MKSWU_SWDESC_OPTS" in
-		*CONTAINER_CLEAR*) ;;
-		*)
-			warning "%s was set directly, please use swdesc_option %s instead." \
-				"CONTAINER_CLEAR" "CONTAINER_CLEAR"
-			warning "This will stop working in %s update" "2024/04"
-			swdesc_option CONTAINER_CLEAR
-			;;
-		esac
-	fi
-	if [ -n "$NO_PRESERVE_FILE" ]; then
-		case "$MKSWU_SWDESC_OPTS" in
-		*NO_PRESERVE_FILE*) ;;
-		*)
-			warning "%s was set directly, please use swdesc_option %s instead." \
-				"NO_PRESERVE_FILE" "NO_PRESERVE_FILE"
-			warning "This will stop working in %s update" "2024/04"
-			swdesc_option NO_PRESERVE_FILE
-			;;
-		esac
-	fi
-}
-
-fix_swdesc_parse_vars() {
-	[ -n "$MKSWU_ran_fixvars_stanza" ] && return
-	MKSWU_ran_fixvars_stanza=1
-
-	if [ -n "$component" ]; then
-		MKSWU_component="$component"
-		component=""
-		if [ -z "$MKSWU_WARN_component" ]; then
-			warning "%s was set directly, please use swdesc_option %s instead." \
-				"component" "component=$component"
-			warning "This will stop working in %s update" "2024/04"
-			MKSWU_WARN_component=1
-		fi
-	fi
-	if [ -n "$FORCE_VERSION" ]; then
-		swdesc_option FORCE_VERSION
-		FORCE_VERSION=""
-		if [ -z "$MKSWU_WARN_FORCE_VERSION" ]; then
-			warning "%s was set directly, please use swdesc_option %s instead." \
-				"FORCE_VERSION" "FORCE_VERSION"
-			warning "This will stop working in %s update" "2024/04"
-			MKSWU_WARN_FORCE_VERSION=1
-		fi
-	fi
-	if [ -n "$version" ]; then
-		MKSWU_version="$version"
-		version=""
-		if [ -z "$MKSWU_WARN_version" ]; then
-			warning "%s was set directly, please use swdesc_option %s instead." \
-				"version" "version=$version"
-			warning "This will stop working in %s update" "2024/04"
-			MKSWU_WARN_version=1
-		fi
-	fi
-	if [ -n "$install_if" ]; then
-		MKSWU_install_if="$install_if"
-		install_if=""
-		if [ -z "$MKSWU_WARN_install_if" ]; then
-			warning "%s was set directly, please use swdesc_option %s instead." \
-				"install_if" "install_if=$MKSWU_install_if"
-			warning "This will stop working in %s update" "2024/04"
-			MKSWU_WARN_install_if=1
-		fi
-	fi
-}
-
 write_sw_desc() {
 	local indent=4
 	local file line section board=""
 	local board_hwcompat board_normalize
 	local IFS="
 "
-
-	fix_swdesc_option_vars
 
 	track_used "$OUTDIR/sw-description"
 
@@ -2594,7 +2491,6 @@ sw-description.sig"
 	local compress=1
 	local MKSWU_declare_swdesc_cmd_vars_stanza='
 local MKSWU_ran_fixvars_stanza="$MKSWU_ran_fixvars_stanza"
-fix_swdesc_parse_vars
 local component="$MKSWU_component" version="$MKSWU_version"
 local board="$MKSWU_board" main_version="$MKSWU_main_version"
 local install_if="$MKSWU_install_if" cmd_description="$MKSWU_cmd_description"
@@ -2871,8 +2767,6 @@ local cmd="" preserve_attributes="" container=""
 		# shellcheck disable=SC2034 ## MKSWU_version is used, yes...
 		MKSWU_version=""; MKSWU_install_if=""
 		MKSWU_FORCE_VERSION="";
-		# until 2024/4...
-		version=""; install_if=""; component=""; FORCE_VERSION=""
 
 		if [ "$desc" = "-" ]; then
 			MKSWU_component="stdin"
