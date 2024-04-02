@@ -2138,18 +2138,11 @@ mkinit_geninitdesc() {
 				AUTOUPDATE="tomorrow"; break;;
 			esac
 		done
-		# a6e swupdate.watch wart to be removed 2024/04
 		cat >> "$desc.tmp" <<EOF \
 			|| error "Could not update %s" "$desc.tmp"
 
 # autoupdate
 swdesc_command 'rc-update add swupdate-url default' \
-	'if ! [ -e /etc/swupdate.watch ]; then
-		case "\$(cat /etc/hwrevision)" in
-		iot-a6e*) echo https://download.atmark-techno.com/armadillo-iot-a6e/image/baseos-6e-latest.swu > /etc/swupdate.watch;;
-		*) echo "swupdate.watch should already have content" >&2 ; exit 1;;
-		esac;
-	fi' \
 	'echo -e "schedule=\"0 $AUTOUPDATE\"\nrdelay=21600" > /etc/conf.d/swupdate-url'
 EOF
 	fi
