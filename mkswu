@@ -924,7 +924,13 @@ swdesc_tar() {
 	*DEBUG_SKIP_SCRIPTS*) target="";;
 	esac
 	case "$component" in
-	base_os|extra_os*)
+	base_os)
+		if [ "${dest:-/}" != "/" ]; then
+			error "base_os upgrade must go to / (was: %s)" "$dest"
+		fi
+		dest="/"
+		;;
+	extra_os*)
 		dest="${dest:-/}"
 		if [ "${dest#/}" = "$dest" ]; then
 			error "OS update must have an absolute dest (was: %s)" "$dest"
