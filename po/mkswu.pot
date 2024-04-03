@@ -321,6 +321,9 @@ msgstr ""
 msgid "you might want to keep the archive as simple .tar"
 msgstr ""
 #: mkswu
+msgid "Required file not found: %s"
+msgstr ""
+#: mkswu
 msgid "Invalid value for %s: %s"
 msgstr ""
 #: mkswu
@@ -595,9 +598,6 @@ msgid "Updated %s version from %s to %s"
 msgstr ""
 #: mkswu
 msgid "Usage: mkswu --version-cmp <base_version> <version> [<version...>]"
-msgstr ""
-#: mkswu
-msgid "Required file not found: %s"
 msgstr ""
 #: mkswu
 msgid "%s < %s"

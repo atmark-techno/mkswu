@@ -1268,7 +1268,8 @@ append_certificates() {
 	case "$UPDATE_CERTS" in
 	[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
 		for cert in $USER_PUBKEYS; do
-			[ -e "$cert" ] || continue
+			[ -e "$cert" ] || error "Required file not found: %s" \
+				"$(realpath -m "$cert")"
 			# compare cert's pubkey with known onetime-public key
 			if [ "$(openssl x509 -noout -in "$cert" -pubkey \
 					| sed -e '/-----/d' | tr -d '\n')" \

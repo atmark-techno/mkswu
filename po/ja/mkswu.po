@@ -427,6 +427,10 @@ msgid "you might want to keep the archive as simple .tar"
 msgstr "普通のtarアーカイブにした方が効率的です。"
 
 #: mkswu
+msgid "Required file not found: %s"
+msgstr "%s が存在しません。"
+
+#: mkswu
 msgid "Invalid value for %s: %s"
 msgstr "%s 変数を認識できません: %s"
 
@@ -792,10 +796,6 @@ msgstr "%s のバージョンを %s から %s に変更しました。"
 
 #: mkswu
 msgid "Usage: mkswu --version-cmp <base_version> <version> [<version...>]"
-msgstr ""
-
-#: mkswu
-msgid "Required file not found: %s"
 msgstr ""
 
 #: mkswu
