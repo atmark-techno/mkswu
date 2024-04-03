@@ -2679,7 +2679,7 @@ local cmd="" preserve_attributes="" container=""
 			;;
 		"--config-dir")
 			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
-			CONFIG_DIR="$1"
+			CONFIG_DIR="$(realpath -m "$1")"
 			CONFIG="$1/mkswu.conf"
 			SKIP=1
 			;;
