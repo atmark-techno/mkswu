@@ -201,7 +201,24 @@ prepare_appfs() {
 	# also, skip on test
 	if [ -z "$(mkswu_var SKIP_APP_SUBVOL_SYNC)" ]; then
 		info "Waiting for btrfs to flush deleted subvolumes"
-		timeout 30m btrfs subvolume sync "$basemount"
+		if ! timeout 30m btrfs subvolume sync "$basemount"; then
+			warning "Could not wait for btrfs subvolumes to be deleted." \
+				"There might be a problem with current mount points, but update can continue."
+			info "Listing current mount points for reporting:"
+			# get mount points for all mount namespaces
+			# stat output and awk variables (we double-check $4 is pure digit):
+			# '/proc/10/ns/mnt' -> 'mnt:[4026531840]'
+			# 123    4  5  6   7    8                9
+			stat -c %N /proc/[0-9]*/ns/mnt \
+				| awk -F"['/]" '!seen[$8] && $4 ~ /^[0-9]+$/ {
+						seen[$8]=1; print $4;
+					}' \
+				| while read -r pid; do
+					# shellcheck disable=SC2016 ## don't expand $1 here..
+					ps x | stdout_info awk -v "pid=$pid" '$1 == pid'
+					stdout_info findmnt -N "$pid" -t btrfs,ext4
+				done
+		fi
 	fi
 	umount "$basemount"
 	rmdir "$basemount"
