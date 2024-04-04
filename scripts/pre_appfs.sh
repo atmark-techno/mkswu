@@ -20,8 +20,8 @@ btrfs_subvol_create() {
 	btrfs subvolume create "$basemount/$new"
 }
 
-btrfs_subvol_recursive_delete() {
-	local vol="$1"
+btrfs_subvol_recursive_recreate() {
+	local vol="$1" mntpoint="$2"
 	[ -e "$basemount/$vol" ] || return 1
 	# delete subvolumes by id to avoid dealing with paths.
 	# subvol list -o prints something like "ID 123 gen..." for child subvolumes.
@@ -29,23 +29,36 @@ btrfs_subvol_recursive_delete() {
 		| while read -r _ id _; do
 			btrfs subvol delete -i "$id" "$basemount"
 		done
-	btrfs subvolume delete "$basemount/$vol"
+	btrfs_subvol_recreate "$vol" "$mntpoint"
 }
 
-btrfs_subvol_delete() {
-	local vol="$1"
+btrfs_subvol_recreate() {
+	local vol="$1" mntpoint="$2"
 
 	[ -e "$basemount/$vol" ] || return 1
-	btrfs subvolume delete "$basemount/$vol"
+
+	btrfs subvolume delete "$basemount/$vol" \
+		|| error "Could not remove $vol"
+
+	# Recreate subvol immediately so things work after reboot
+	btrfs subvol create "$basemount/$vol" \
+		|| error "Could not re-create $vol"
+
+	# ... and also try to remount it now if mounted:
+	# - umount so `btrfs subvol sync` does not hang
+	# - remount so podman commands work as expected
+	# (in particular 'containers_storage' is required swupdate itself
+	# if in disk mode)
+	remount_or_reboot "$mntpoint"
 }
 
-umount_or_reboot() {
+remount_or_reboot() {
 	local dir="$1"
 
 	is_mountpoint "$dir" || return
 
-	if ! umount "$dir"; then
-		echo "Could not unmount $dir but we really want the space back: reboot and hope swupdate will run again." >&2
+	if ! umount_if_mountpoint "$dir" || ! mount "$dir"; then
+		echo "Could not unmount/mount $dir but we really want the space back: reboot and hope swupdate will run again." >&2
 		echo "Note containers will not be able to run after reboot." >&2
 		reboot
 		# reboot returns immediately but takes time: wait for it.
@@ -117,9 +130,8 @@ check_update_disk_encryption() {
 }
 
 prepare_appfs() {
-	local dev
+	local dev basemount
 	local mountopt="compress=zstd:3,subvol"
-	local basemount
 
 	basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
 	mkdir -p /target/var/lib/containers/storage_readonly
@@ -138,30 +150,23 @@ prepare_appfs() {
 		podman_killall "Persistent storage is used for podman, stopping all containers before updating"
 	fi
 
+	[ -d "$basemount/boot_0" ] || mkdir "$basemount/boot_0"
+	[ -d "$basemount/boot_1" ] || mkdir "$basemount/boot_1"
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		podman_killall "CONTAINER_CLEAR requested: stopping all containers first"
 		info "Destroying all container data (CONTAINER_CLEAR)"
-		btrfs_subvol_delete "boot_0/containers_storage"
-		btrfs_subvol_delete "boot_0/volumes"
-		btrfs_subvol_delete "boot_1/containers_storage"
-		btrfs_subvol_delete "boot_1/volumes"
+
+		btrfs_subvol_recreate "boot_$((!ab))/containers_storage" \
+			"/var/lib/containers/storage_readonly"
+		btrfs_subvol_recreate "boot_$((!ab))/volumes" \
+			"/var/app/rollback/volumes"
 		# A6E uses subvolumes for device-local data
-		btrfs_subvol_recursive_delete "volumes"
-		if btrfs_subvol_delete "containers_storage"; then
-			btrfs_subvol_create "containers_storage"
-		fi
-		# we need to unmount volumes or btrfs subvolume sync below will hang
-		# (and not be able to free space)
-		umount_or_reboot /var/lib/containers/storage_readonly/overlay
-		umount_or_reboot /var/lib/containers/storage_readonly
-		umount_or_reboot /var/lib/containers/storage/overlay
-		umount_or_reboot /var/lib/containers/storage
-		umount_or_reboot /var/app/rollback/volumes
-		umount_or_reboot /var/app/volumes
+		btrfs_subvol_recursive_recreate "volumes" \
+			"/var/app/volumes"
+		btrfs_subvol_recreate "containers_storage" \
+			"/var/lib/containers/storage"
 	fi
 
-	[ -d "$basemount/boot_0" ] || mkdir "$basemount/boot_0"
-	[ -d "$basemount/boot_1" ] || mkdir "$basemount/boot_1"
 	btrfs_snapshot_or_create "boot_$((!ab))/containers_storage" "boot_${ab}/containers_storage" \
 		|| error "Could not create containers_storage subvol"
 	btrfs_snapshot_or_create "boot_$((!ab))/volumes" "boot_${ab}/volumes" \
