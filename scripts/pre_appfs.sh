@@ -52,17 +52,47 @@ btrfs_subvol_recreate() {
 	remount_or_reboot "$mntpoint"
 }
 
+remount_failed() {
+	echo "Could not unmount/mount $dir but we really want the space back: reboot and hope swupdate will run again." >&2
+	echo "Note containers will not be able to run after reboot." >&2
+	reboot
+	# reboot returns immediately but takes time: wait for it.
+	sleep infinity
+}
+
+remount_pid1_ns() {
+	local dir="$1"
+
+	# if we're in the same namespace as pid 1 just skip this,
+	# normal processing is enough
+	[ "$(readlink /proc/1/ns/mnt)" = "$(readlink /proc/self/ns/mnt)" ] && return
+
+	# check dir is mounted in init namespace
+	is_mountpoint "$dir" 1
+
+	# we cannot use internal functions in nsenter, fall back to either
+	# `umount -R` (util-linux) or `abos-ctrl umount` depending on version...
+	if umount --version 2>dev/null | grep -q util-linux; then
+		set -- umount -R
+	else
+		set -- abos-ctrl umount
+	fi
+
+	if ! nsenter -t 1 -m "$@" "$dir" \
+	    || ! nsenter -t 1 -m mount "$dir"; then
+		remount_failed
+	fi
+}
+
 remount_or_reboot() {
 	local dir="$1"
+
+	remount_pid1_ns "$dir"
 
 	is_mountpoint "$dir" || return
 
 	if ! umount_if_mountpoint "$dir" || ! mount "$dir"; then
-		echo "Could not unmount/mount $dir but we really want the space back: reboot and hope swupdate will run again." >&2
-		echo "Note containers will not be able to run after reboot." >&2
-		reboot
-		# reboot returns immediately but takes time: wait for it.
-		sleep infinity
+		remount_failed
 	fi
 }
 

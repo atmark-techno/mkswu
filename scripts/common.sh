@@ -249,14 +249,15 @@ mkdir_p_target() {
 
 is_mountpoint() {
 	local dir="$1"
+	local tid="${2:-self}"
 
 	# busybox 'mountpoint' stats target and checks for device change, so
 	# bind mounts like /var/lib/containers/overlay are not properly detected
 	# as mountpoint by it.
 	# util-linux mountpoint parses /proc/self/mountinfo correctly though so we
 	# could use it if installed, but it is simpler to always reuse our
-	# implementation instead
-	! awk -v dir="$dir" '$5 == dir { exit 1 }' < /proc/self/mountinfo
+	# implementation instead, which also allows checking other namespaces
+	! awk -v dir="$dir" '$5 == dir { exit 1 }' < "/proc/$tid/mountinfo"
 }
 
 umount_if_mountpoint() {
