@@ -82,7 +82,7 @@ info_if_not_empty() {
 	fi
 
 	if [ -s "$output" ]; then
-		stdout_info echo "Command '$*' output:"
+		info "Command '$*' output:"
 		stdout_info cat "$output"
 	fi
 	rm -f "$output"

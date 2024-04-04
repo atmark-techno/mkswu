@@ -83,7 +83,7 @@ check_warn_new_containers_removed() {
 }
 
 remove_unused_containers() {
-	stdout_info echo "Removing unused containers"
+	info "Removing unused containers"
 	stdout_info "$SCRIPTSDIR/podman_cleanup" "$@" \
 		|| error "cleanup of old images failed: mismatching configuration/container update?"
 }

@@ -300,7 +300,7 @@ mount_target_rootfs() {
 		if [ ! -e /target/.created ] \
 		    && [ -s /etc/.rootfs_update_timestamp ] \
 		    && cmp -s /etc/.rootfs_update_timestamp /target/etc/.rootfs_update_timestamp; then
-			stdout_info echo "Other fs up to date, skipping copy"
+			info "Other fs up to date, skipping copy"
 			return
 		fi
 		umount "/target"
@@ -335,14 +335,14 @@ mount_target_rootfs() {
 	touch /target/.created
 
 	if needs_update "base_os"; then
-		stdout_info echo "Updating base os: copying swupdate_preserve_files"
+		info "Updating base os: copying swupdate_preserve_files"
 		update_preserve_list
 		copy_preserve_files
 		return
 	fi
 
 	# if no update is required copy current fs over
-	stdout_info echo "No base os update: copying current os over"
+	info "No base os update: copying current os over"
 
 
 	if [ -e "/live/rootfs" ]; then

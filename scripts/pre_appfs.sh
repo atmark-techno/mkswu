@@ -139,7 +139,8 @@ prepare_appfs() {
 	fi
 
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
-		podman_killall "CONTAINER_CLEAR requested: stopping and destroying all container data first"
+		podman_killall "CONTAINER_CLEAR requested: stopping all containers first"
+		info "Destroying all container data (CONTAINER_CLEAR)"
 		btrfs_subvol_delete "boot_0/containers_storage"
 		btrfs_subvol_delete "boot_0/volumes"
 		btrfs_subvol_delete "boot_1/containers_storage"
@@ -194,7 +195,7 @@ prepare_appfs() {
 	# add an unreasonably long timeout just in case.
 	# also, skip on test
 	if [ -z "$(mkswu_var SKIP_APP_SUBVOL_SYNC)" ]; then
-		stdout_info echo "Waiting for btrfs to flush deleted subvolumes"
+		info "Waiting for btrfs to flush deleted subvolumes"
 		timeout 30m btrfs subvolume sync "$basemount"
 	fi
 	umount "$basemount"
