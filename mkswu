@@ -203,8 +203,9 @@ encrypt_file() {
 
 decrypt_file() {
 	local src="$1"
-	local dest="${src%.enc}"
-	[ "$dest" != "$src" ] || error "File must end in .enc"
+	local dest="${src#enc.}"
+	[ "$dest" != "$src" ] || dest="${src%.enc}"
+	[ "$dest" != "$src" ] || error "File must start or end in .enc"
 	local iv="${2-}"
 
 	if [ -z "$iv" ]; then
@@ -1912,7 +1913,7 @@ mkswu_internal() {
 		local file
 		for file; do
 			iv=$(gen_iv)
-			encrypt_file "$file" "$file.enc" "$iv"
+			encrypt_file "$file" "enc.$file" "$iv"
 			echo "$file iv: $iv"
 		done
 		;;
