@@ -122,11 +122,7 @@ fail_redundant_update() {
 	fi
 }
 
-init_really_starting() {
-	# if we got here we're really updating:
-	# - signal we're starting an update if instructed
-	# - handle a fail command if there is one
-	# - mark the other partition as unbootable for rollback
+init_custom_commands() {
 	local action
 
 	rm -f "$TMPDIR/swupdate_post_fail_action"
@@ -152,6 +148,14 @@ init_really_starting() {
 		sh "$TMPDIR/swupdate_post_fail_action"
 		rm -f "$TMPDIR/swupdate_post_fail_action"
 	) &
+}
+
+init_really_starting() {
+	# if we got here we're really updating:
+	# - signal we're starting an update if instructed
+	# - handle a fail command if there is one
+	# - mark the other partition as unbootable for rollback
+	init_custom_commands
 
 	# we won't be able to reboot into other partition until installer
 	# finished; disable rollback
