@@ -123,9 +123,12 @@ fail_redundant_update() {
 }
 
 init_custom_commands() {
-	local action
+	local action fail_file="$TMPDIR/.swupdate_post_fail_action.$PPID"
 
-	rm -f "$TMPDIR/swupdate_post_fail_action"
+	if [ -e "$fail_file" ]; then
+		echo "previous NOTIFY_FAIL script $fail_file was still here, bug?"
+		rm -f "$fail_file"
+	fi
 
 	action="$(mkswu_var NOTIFY_STARTING_CMD)"
 	( eval "$action"; ) || error "NOTIFY_STARTING_CMD failed"
@@ -133,7 +136,13 @@ init_custom_commands() {
 	action="$(mkswu_var NOTIFY_FAIL_CMD)"
 	[ -z "$action" ] && return
 
-	echo "$action" > "$TMPDIR/swupdate_post_fail_action"
+	(
+		umask 0077
+		tmpfile=$(mktemp "$fail_file.XXXXXX") \
+			&& echo "$action" > "$tmpfile" \
+			&& mv "$tmpfile" "$fail_file"
+	) || error "Could not record NOTIFY_FAIL command"
+
 	# swupdate does not provide any generic way of executing a command
 	# after swupdate failure, or when it is over. . . But we can
 	# rely on the fact that swupdate cleans up the scripts dir when
@@ -144,9 +153,13 @@ init_custom_commands() {
 		# we need to chdir out of it first...
 		cd / || exit
 		inotifyd - "$TMPDIR/scripts":x >/dev/null || exit
-		[ -e "$TMPDIR/swupdate_post_fail_action" ] || exit 0
-		sh "$TMPDIR/swupdate_post_fail_action"
-		rm -f "$TMPDIR/swupdate_post_fail_action"
+		[ -e "$fail_file" ] || exit 0
+		if [ "$(stat -c "%u.%a" "$fail_file")" != 0.600 ]; then
+			warning "NOTIFY FAIL script was not root owned/0600! refusing to run it"
+		else
+			sh "$fail_file"
+		fi
+		rm -f "$fail_file"
 	) &
 }
 

@@ -112,7 +112,7 @@ post_success_usb() {
 
 post_success_custom() {
 	local action
-	rm -f "$TMPDIR/swupdate_post_fail_action"
+	rm -f "$TMPDIR/.swupdate_post_fail_action.$PPID"
 	action="$(mkswu_var NOTIFY_SUCCESS_CMD)"
 	( eval "$action"; ) || error "NOTIFY_SUCCESS_CMD failed"
 }
