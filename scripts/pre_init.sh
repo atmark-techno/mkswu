@@ -122,16 +122,13 @@ fail_redundant_update() {
 	fi
 }
 
-init_custom_commands() {
+init_fail_command() {
 	local action fail_file="$TMPDIR/.swupdate_post_fail_action.$PPID"
 
 	if [ -e "$fail_file" ]; then
 		echo "previous NOTIFY_FAIL script $fail_file was still here, bug?"
 		rm -f "$fail_file"
 	fi
-
-	action="$(mkswu_var NOTIFY_STARTING_CMD)"
-	( eval "$action"; ) || error "NOTIFY_STARTING_CMD failed"
 
 	action="$(mkswu_var NOTIFY_FAIL_CMD)"
 	[ -z "$action" ] && return
@@ -165,10 +162,13 @@ init_custom_commands() {
 
 init_really_starting() {
 	# if we got here we're really updating:
-	# - signal we're starting an update if instructed
 	# - handle a fail command if there is one
+	# - signal we're starting an update if instructed
 	# - mark the other partition as unbootable for rollback
-	init_custom_commands
+	init_fail_command
+
+	action="$(mkswu_var NOTIFY_STARTING_CMD)"
+	( eval "$action"; ) || error "NOTIFY_STARTING_CMD failed"
 
 	# we won't be able to reboot into other partition until installer
 	# finished; disable rollback
