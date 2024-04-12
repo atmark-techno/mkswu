@@ -130,6 +130,19 @@ init_fail_command() {
 		rm -f "$fail_file"
 	fi
 
+	# Older swupdate did not provide any generic way of executing a
+	# command after swupdate failure, or when it is over. . .
+	# - for old swupdate, it will remove the scripts dir and we can
+	# watch this here: if $fail_file still exists this was a failure
+	# and we should run it.
+	# - for newer swupdate, cleanup.sh will be run immediately on
+	# failure; so we can skip this.
+	# SWUPDATE_VERSION was first added in 2023.12, so don't bother
+	# checking value.
+	if [ -n "$SWUPDATE_VERSION" ]; then
+		return
+	fi
+
 	action="$(mkswu_var NOTIFY_FAIL_CMD)"
 	[ -z "$action" ] && return
 
@@ -140,11 +153,6 @@ init_fail_command() {
 			&& mv "$tmpfile" "$fail_file"
 	) || error "Could not record NOTIFY_FAIL command"
 
-	# swupdate does not provide any generic way of executing a command
-	# after swupdate failure, or when it is over. . . But we can
-	# rely on the fact that swupdate cleans up the scripts dir when
-	# done, and that we will have removed post_fail_action file on
-	# success, so we wait for that directory to disappear in a subprocess.
 	(
 		# inotifyd exits when it cannot watch anymore, but
 		# we need to chdir out of it first...

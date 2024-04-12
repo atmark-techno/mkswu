@@ -15,6 +15,13 @@ if ! is_locked; then
 	exit 0
 fi
 
+# run post hook if present
+if [ -n "$SWUPDATE_VERSION" ] \
+    && action="$(mkswu_var NOTIFY_FAIL_CMD)" \
+    && [ -n "$action" ]; then
+	eval "$action"
+fi
+
 cleanup
 rm -rf "$MKSWU_TMP"
 unlock_update
