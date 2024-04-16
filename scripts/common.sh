@@ -38,6 +38,7 @@ podman_info() {
 
 podman_list_images() {
 	local store="/target/var/lib/containers/storage_readonly"
+	# shellcheck disable=SC2016 # (don't expand dollars)
 	local format='{{$id := .Id}}{{range .Names}}{{$id}} {{.}}{{println}}{{end}}{{.Id}}'
 	# temporary podman root cannot be in overlayfs due to podman
 	# restrictions (in particular /tmp would not work), so use /run
@@ -432,6 +433,7 @@ mkswu_var() {
 	fi
 
 	if val=$(grep -F "# MKSWU_$var " "$SWDESC"); then
+		# shellcheck disable=SC2001 # can't use simple replacement here for multiline
 		echo "$val" | sed -e "s/ *# MKSWU_$var //"
 		return
 	fi

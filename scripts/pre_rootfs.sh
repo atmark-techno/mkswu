@@ -202,7 +202,7 @@ copy_preserve_files() {
 	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$MKSWU_TMP/preserve_files_pre"
 	while read -r f; do
-		# No quote to expand globs
+		# shellcheck disable=SC2086 # No quote to expand globs
 		copy_to_target $f
 	done < "$MKSWU_TMP/preserve_files_pre"
 
@@ -249,10 +249,7 @@ cp_one_fs() {
 
 mount_target_rootfs() {
 	local dev="${partdev}$((ab+1))"
-	local uptodate
-	local tmp fail extlinux
-	local encrypted=""
-	local fstype=""
+	local extlinux="" encrypted="" fstype=""
 
 	# support older version of overlayfs
 	local fsroot=/live/rootfs/
@@ -275,6 +272,7 @@ mount_target_rootfs() {
 	if ! [ -d /target ]; then
 		[ -e /target ] && error "/target exists but is not a directory, update failing"
 		if ! mkdir /target 2>/dev/null; then
+			local tmp fail=""
 			# read-only filesystem, remount somewhere else as rw
 			# to not impact current fs
 			tmp=$(mktemp -d) \

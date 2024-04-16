@@ -1,3 +1,5 @@
+#!/bin/sh
+
 overwrite_to_target() {
 	local file
 	local dir
@@ -35,7 +37,7 @@ post_copy_preserve_files() {
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$MKSWU_TMP/preserve_files_post"
 	while read -r f; do
-		# No quote to expand globs
+		# shellcheck disable=SC2086 # No quote to expand globs
 		overwrite_to_target $f
 	done < "$MKSWU_TMP/preserve_files_post"
 
@@ -149,6 +151,7 @@ EOF
 		local gw_container_conf="/target/etc/atmark/containers/a6e-gw-container.conf"
 		local target_for_a6e_baseos="https://download.atmark-techno.com/armadillo-iot-a6e/image/baseos-6e-latest.swu"
 		local target_for_a6e_gw_container="https://download.atmark-techno.com/armadillo-iot-a6e/image/a6e-gw-container-latest.swu"
+		# shellcheck disable=SC2016 # don't expand $image here
 		if grep -qE '^image="a6e-gw-container[:"]' "$gw_container_conf" 2>/dev/null \
 		    && grep -qxF 'set_image "$image"' "$gw_container_conf" \
 		    && grep -qxF "$target_for_a6e_baseos" /target/etc/swupdate.watch 2>/dev/null \

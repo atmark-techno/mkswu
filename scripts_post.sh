@@ -1,6 +1,8 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
 
+# shellcheck source-path=SCRIPTDIR/scripts
+
 # Allow skipping from env
 [ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
 

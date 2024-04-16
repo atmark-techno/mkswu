@@ -1,6 +1,8 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
 
+# shellcheck source-path=SCRIPTDIR/scripts
+
 # This script prepares the script environment by extracting the
 # archive we concatenate at the end of it, then rolls the pre steps.
 
@@ -30,4 +32,5 @@ sed -e '1,/^BEGIN_ARCHIVE/d' "$0" | tar xv || exit 1
 
 exit
 # This must be the last line!
+# shellcheck disable=SC2317 # (unreachable after exit)
 BEGIN_ARCHIVE
