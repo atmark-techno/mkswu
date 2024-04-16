@@ -171,6 +171,17 @@ try_lock() {
 		[ -e /tmp/.swupdate_lock ] \
 			|| error "Could not create our script install lock, aborting"
 	fi
+
+	# for /tmp, we need to check it's root owned to avoid denial of service
+	# if stat failed, directory didn't exist and other might be unlocking,
+	# retry will work
+	local owner
+	if owner="$(stat -c %u /tmp/.swupdate_lock 2>/dev/null)" && [ "$owner" != "0" ]; then
+		rm -rf "/tmp/.swupdate_lock"
+		try_lock
+		return
+	fi
+
 	return 1
 }
 
@@ -205,9 +216,10 @@ lock_update() {
 	# single update vector? and even if they use multiple this should not
 	# happen unless the updates are bogus.
 	#
-	# tl;dr: move this lock within swupdate itself eventually or accept
-	# very rare deadlocks when mixing e.g. USB and hawkbit updates after
-	# failures.
+	# This lock is now redundant with the lock taken in swupdate itself:
+	# it is kept for backwards compatibility until a later update,
+	# at which point we can either keep this conditionally to
+	# SWUPDATE_VERSION (>= 2023.12)
 	if try_lock; then
 		# recheck for reboot after we've locked in case of race.
 		lock_check_rebooting unlock
