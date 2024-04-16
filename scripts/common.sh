@@ -176,7 +176,7 @@ try_lock() {
 lock_check_rebooting() {
 	local unlock="$1"
 
-	if [ -e "/tmp/.swupdate_rebooting" ]; then
+	if [ -e "/run/swupdate_rebooting" ]; then
 		if [ -n "$unlock" ]; then
 			unlock_update
 		fi

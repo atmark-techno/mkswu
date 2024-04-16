@@ -25,7 +25,9 @@ rm -rf "$MKSWU_TMP"
 kill_swupdate() {
 	# We do not want any other swupdate install to run after swupdate
 	# stopped
-	touch /tmp/.swupdate_rebooting
+	# markers in /tmp are kept for compatibility until next cutoff
+	touch -h /run/swupdate_rebooting /tmp/.swupdate_rebooting
+
 	# Kill swupdate and wait to make sure it dies before stopping.
 	# This is mostly for hawkbit server, so we do not send success
 	# to hawkbit after this script stopped.
@@ -44,7 +46,7 @@ poweroff)
 wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# tell the world we're ready to be killed
-	touch /tmp/.swupdate_waiting
+	touch -h /run/swupdate_waiting /tmp/.swupdate_waiting
 	kill_swupdate
 	;;
 container)
