@@ -29,12 +29,23 @@ cleanup_target() {
 	if allow_upgrade_available; then
 		fw_setenv_nowarn upgrade_available 1 \
 			|| warn "could not restore rollback"
-	elif [ "$(get_mmc_name)" = Q2J55L ]; then
-		# old Armadillo 640 eMMC is broken and issuing a bootpart change without
-		# a switch to mmcblk0bootX partition is known to cause corruptions
-		# This forces the hardware to issue such a switch
-		dd if="${rootdev}boot0" of=/dev/null bs=4k count=1 iflag=direct status=none
 	fi
+}
+
+workaround_a600_mmc() {
+	# old Armadillo 640 eMMC is broken and issuing a bootpart change without
+	# a switch to mmcblk0bootX partition is known to cause corruptions
+	# The dd forces the hardware to issue such a switch, and fsfreeze ensures
+	# no other writes are done in between
+	[ "$(get_mmc_name)" = Q2J55L ] || return
+
+	if command -v fsfreeze >/dev/null; then
+		fsfreeze=1
+		fsfreeze -f /var/app/volumes
+		fsfreeze -f /var/log
+	fi
+
+	dd if="${rootdev}boot0" of=/dev/null bs=4k count=1 iflag=direct status=none
 }
 
 reset_uboot_env() {
@@ -107,7 +118,7 @@ reset_uboot_env() {
 }
 
 cleanup_boot() {
-	local encrypted_boot=""
+	local encrypted_boot="" fsfreeze="" fail=""
 
 	if ! needs_reboot; then
 		cleanup_target
@@ -175,9 +186,17 @@ cleanup_boot() {
 			mmc bootpart enable "$((!ab+1))" 0 "$rootdev"
 			fw_setenv_nowarn encrypted_update_available 1
 		else
+			workaround_a600_mmc
 			echo "setting mmc bootpart enable $((ab+1))"
-			mmc bootpart enable "$((ab+1))" 0 "$rootdev" \
-				|| error "Could not flip mmc boot flag"
+			mmc bootpart enable "$((ab+1))" 0 "$rootdev" || fail=1
+			if [ -n "$fsfreeze" ]; then
+				# there apparently can still be problems if we write immediately
+				# after bootpart as well, 1s seems to be enough to avoid issues.
+				sleep 1
+				fsfreeze -u /var/app/volumes
+				fsfreeze -u /var/log
+			fi
+			[ -z "$fail" ] || error "Could not flip mmc boot flag"
 		fi
 	elif [ -s /target/etc/fw_env.config ]; then
 		cleanup_target
