@@ -277,6 +277,9 @@ rerun_vendored() {
 
 standalone() {
 	rerun_vendored
+	# support older version of overlayfs
+	local fsroot=/live/rootfs/
+	[ -e "$fsroot" ] || fsroot=/
 
 	. "$SCRIPTSDIR/common.sh"
 
