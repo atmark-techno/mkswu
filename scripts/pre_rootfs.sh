@@ -24,8 +24,6 @@ update_preserve_list() {
 
 	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
-	mkdir_p_target /etc
-
 	if [ -e "/etc/swupdate_preserve_files" ]; then
 		cp /etc/swupdate_preserve_files "$list" \
 			|| error "Could not copy swupdate_preserve_files over"
@@ -333,6 +331,7 @@ mount_target_rootfs() {
 	touch /target/.created
 
 	if needs_update "base_os"; then
+		mkdir_p_target /etc
 		info "Updating base os: copying swupdate_preserve_files"
 		update_preserve_list
 		copy_preserve_files
