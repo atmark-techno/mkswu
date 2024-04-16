@@ -22,11 +22,14 @@ SCRIPTSDIR="$MKSWU_TMP"
 # is expected to run after this one, a fresh boot is needed.
 rm -rf "$MKSWU_TMP"
 
-kill_swupdate() {
+kill_old_swupdate() {
 	# We do not want any other swupdate install to run after swupdate
 	# stopped
 	# markers in /tmp are kept for compatibility until next cutoff
 	touch -h /run/swupdate_rebooting /tmp/.swupdate_rebooting
+
+	# swupdate >= 2023.12 has better locking, skip this to preserve return status
+	[ -n "$SWUPDATE_VERSION" ] && return
 
 	# Kill swupdate and wait to make sure it dies before stopping.
 	# This is mostly for hawkbit server, so we do not send success
@@ -41,13 +44,13 @@ case "$post_action" in
 poweroff)
 	stdout_info_or_error echo "swupdate triggering poweroff!"
 	poweroff
-	kill_swupdate
+	kill_old_swupdate
 	;;
 wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# tell the world we're ready to be killed
 	touch -h /run/swupdate_waiting /tmp/.swupdate_waiting
-	kill_swupdate
+	kill_old_swupdate
 	;;
 container)
 	unlock_update
@@ -60,6 +63,6 @@ container)
 *)
 	stdout_info_or_error echo "swupdate triggering reboot!"
 	reboot
-	kill_swupdate
+	kill_old_swupdate
 	;;
 esac
