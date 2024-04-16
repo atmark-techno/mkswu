@@ -22,8 +22,6 @@ update_preserve_list() {
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
-	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
-
 	if [ -e "/etc/swupdate_preserve_files" ]; then
 		cp /etc/swupdate_preserve_files "$list" \
 			|| error "Could not copy swupdate_preserve_files over"
@@ -195,8 +193,6 @@ copy_preserve_files() {
 	local TARGET="${TARGET:-/target}"
 	local IFS='
 '
-	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
-
 	grep -E '^/' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$MKSWU_TMP/preserve_files_pre"
 	while read -r f; do
@@ -332,6 +328,10 @@ mount_target_rootfs() {
 
 	if needs_update "base_os"; then
 		mkdir_p_target /etc
+		if [ -n "$(mkswu_var NO_PRESERVE_FILES)" ]; then
+			info "Updating base os (without swupdate_preserve_files)"
+			return
+		fi
 		info "Updating base os: copying swupdate_preserve_files"
 		update_preserve_list
 		copy_preserve_files
