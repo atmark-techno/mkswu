@@ -126,7 +126,7 @@ cleanup_appfs() {
 	if ! needs_reboot; then
 		dev=$(findmnt -nr --nofsroot -o SOURCE /var/tmp)
 		[ -n "$dev" ] || error "Could not find appfs source device"
-		basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
+		basemount=/target/mnt
 		mount -t btrfs "$dev" "$basemount" || error "Could not mount app root"
 
 		# We're not rebooting, since we got here there was something
@@ -135,12 +135,10 @@ cleanup_appfs() {
 		if ! swap_btrfs_snapshots; then
 			stdout_warn echo "Could not swap btrfs subvolumes, forcing reboot"
 			umount "$basemount"
-			rmdir "$basemount"
 			needs_reboot=1
 			return
 		fi
 		umount "$basemount"
-		rmdir "$basemount"
 	fi
 }
 

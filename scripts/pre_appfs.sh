@@ -163,11 +163,11 @@ prepare_appfs() {
 	local dev basemount
 	local mountopt="compress=zstd:3,subvol"
 
-	basemount=$(mktemp -d -t btrfs-root.XXXXXX) || error "Could not create temp dir"
 	mkdir -p /target/var/lib/containers/storage_readonly
 	mkdir -p /target/var/lib/containers/storage
 	mkdir -p /target/var/app/rollback/volumes
 	mkdir -p /target/var/app/volumes /target/var/tmp
+	basemount=/target/mnt
 
 	dev=$(findmnt -nr --nofsroot -o SOURCE /var/tmp)
 	[ -n "$dev" ] || error "Could not find appfs source device"
@@ -251,7 +251,6 @@ prepare_appfs() {
 		fi
 	fi
 	umount "$basemount"
-	rmdir "$basemount"
 }
 
 prepare_appfs
