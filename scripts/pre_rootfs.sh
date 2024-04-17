@@ -209,32 +209,32 @@ copy_preserve_files() {
 
 # mount helper for rootfs
 mount_rootfs_btrfs() {
-        mount -t btrfs -o compress-force=zstd,discard=async,noatime \
-                "$src" "$dst" >/dev/null 2>&1
+	mount -t btrfs -o compress-force=zstd,discard=async,noatime \
+		"$src" "$dst" >/dev/null 2>&1
 }
 
 mount_rootfs_ext4() {
-        mount -t ext4 -o noatime "$src" "$dst" >/dev/null 2>&1
+	mount -t ext4 -o noatime "$src" "$dst" >/dev/null 2>&1
 }
 
 mount_rootfs() {
-        local src="$1" dst="$2" hint_fstype="${3-}"
+	local src="$1" dst="$2" hint_fstype="${3-}"
 
-        [ -n "$hint_fstype" ] \
+	[ -n "$hint_fstype" ] \
 		|| hint_fstype="$(findmnt -nr -o FSTYPE /live/rootfs)" \
-                || error "Could not get rootfs fstype"
+		|| error "Could not get rootfs fstype"
 
-        case "$hint_fstype" in
-        btrfs)
-                mount_rootfs_btrfs || mount_rootfs_ext4
-                ;;
-        ext4)
-                mount_rootfs_ext4 || mount_rootfs_btrfs
-                ;;
-        *)
-                error "Unsupported filesystem for rootfs: $hint_fstype"
-                ;;
-        esac
+	case "$hint_fstype" in
+	btrfs)
+		mount_rootfs_btrfs || mount_rootfs_ext4
+		;;
+	ext4)
+		mount_rootfs_ext4 || mount_rootfs_btrfs
+		;;
+	*)
+		error "Unsupported filesystem for rootfs: $hint_fstype"
+		;;
+	esac
 }
 
 cp_one_fs() {

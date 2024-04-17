@@ -40,10 +40,10 @@ error() {
 }
 
 warning() {
-        case "$SWUPDATE_WARN_FD" in
-        4) printf "%s\n" "$@" >&4;;
-        *) printf "%s\n" "$@" >&2;;
-        esac
+	case "$SWUPDATE_WARN_FD" in
+	4) printf "%s\n" "$@" >&4;;
+	*) printf "%s\n" "$@" >&2;;
+	esac
 }
 
 # info commands duplicated from scripts/common
