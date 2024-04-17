@@ -181,7 +181,8 @@ update_containers() {
 
 	# podman sometimes leaves lots of data in /var/tmp on errors:
 	# force a different TMPDIR and clean up after podman
-	tmp=$(mktemp -d "${TMPDIR:-/var/tmp}/mkswu_podman_target.XXXXXX") \
+	mkdir -p "${TMPDIR:-/var/tmp}/scripts"
+	tmp=$(mktemp -d "${TMPDIR:-/var/tmp}/scripts/mkswu_podman_target.XXXXXX") \
 		|| error "Could not create tmpdir in ${TMPDIR:-/var/tmp}"
 	export TMPDIR="$tmp"
 	trap cleanup EXIT INT QUIT TERM

@@ -173,8 +173,9 @@ podman_prune() {
 cleanup_images() {
 	local tmpdir
 
-	tmpdir=$(mktemp -d -t podman_cleanup.XXXXXX) \
-		|| error "Could not create temporary directory"
+	mkdir -p "${TMPDIR:-/var/tmp}/scripts"
+	tmpdir=$(mktemp -d "${TMPDIR:-/var/tmp}/scripts/mkswu_podman_cleanup.XXXXXX") \
+		|| error "Could not create tmpdir in ${TMPDIR:-/var/tmp}"
 	trap "rm -rf '$tmpdir'" EXIT
 
 	trim_tags
