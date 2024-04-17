@@ -171,8 +171,8 @@ msgid "failed to encrypt %s"
 msgstr "%s を暗号化できませんでした。"
 
 #: mkswu
-msgid "File must end in .enc"
-msgstr "%s は「.enc」で終わらせてください。"
+msgid "'%s' must start with 'enc.' or end in '.enc'"
+msgstr "%s は先頭に enc. または末尾に .enc を付けてください。"
 
 #: mkswu
 msgid "ivs file %s does not exist"
@@ -379,6 +379,10 @@ msgid "swdesc_boot_linux image must be at most 26MB big"
 msgstr "swdesc_boot_linux は 26MB までです。"
 
 #: mkswu
+msgid "base_os upgrade must go to / (was: %s)"
+msgstr ""
+
+#: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr "OS アップデートの場合は絶対パスを使ってください (%s)"
 
@@ -447,12 +451,20 @@ msgid "BOOT_SIZE is no longer used and has been ignored"
 msgstr "BOOT_SIZE は使用されません。無視されます。"
 
 #: mkswu
-msgid "Unknown option for swdesc_option: %s"
-msgstr "swdesc_option の %s オプションを認識できません。"
+msgid "NO_PRESERVE_FILE is not officially supported and might stop working in the future."
+msgstr "NO_PRESERVE_FILE は正式に対応していません。"
 
 #: mkswu
-msgid "%s was set directly, please use swdesc_option %s instead."
-msgstr "%s が直接指定されました。代わりに swdesc_option %s を使用してください。"
+msgid "Please consider updating swupdate_preserve_files or removing specific files"
+msgstr "swupdate_preserve_files の更新か、特定なファイルを swdesc_command での削除を"
+
+#: mkswu
+msgid "through explicit swdesc_command instead."
+msgstr "考慮してください。"
+
+#: mkswu
+msgid "Unknown option for swdesc_option: %s"
+msgstr "swdesc_option の %s オプションを認識できません。"
 
 #: mkswu
 msgid "DESCRIPTION must be set"
@@ -925,6 +937,3 @@ msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてくださ�
 #: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
-
-#~ msgid "Not setting a password will disable the service after initial setup."
-#~ msgstr "パスワードを設定しない場合 abos-web は使用できなくなります。"

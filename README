@@ -59,6 +59,8 @@ swdesc_option CONTAINER_CLEAR
 swdesc_option NO_PRESERVE_FILES
     if set, swupdate will not copy files listed in
     /etc/swupdate_preserve_files when base_os is updated
+    This option is deprecated until a proper way of running
+    'first boot'-style scripts is available.
 swdesc_option ROOTFS_FSTYPE={ext4,btrfs}
     filesystem to use for /
     By default the same as current fs is reused.

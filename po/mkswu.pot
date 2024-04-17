@@ -129,7 +129,7 @@ msgstr ""
 msgid "failed to encrypt %s"
 msgstr ""
 #: mkswu
-msgid "File must end in .enc"
+msgid "'%s' must start with 'enc.' or end in '.enc'"
 msgstr ""
 #: mkswu
 msgid "ivs file %s does not exist"
@@ -285,6 +285,9 @@ msgstr ""
 msgid "swdesc_boot_linux image must be at most 26MB big"
 msgstr ""
 #: mkswu
+msgid "base_os upgrade must go to / (was: %s)"
+msgstr ""
+#: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
 msgstr ""
 #: mkswu
@@ -336,10 +339,16 @@ msgstr ""
 msgid "BOOT_SIZE is no longer used and has been ignored"
 msgstr ""
 #: mkswu
-msgid "Unknown option for swdesc_option: %s"
+msgid "NO_PRESERVE_FILE is not officially supported and might stop working in the future."
 msgstr ""
 #: mkswu
-msgid "%s was set directly, please use swdesc_option %s instead."
+msgid "Please consider updating swupdate_preserve_files or removing specific files"
+msgstr ""
+#: mkswu
+msgid "through explicit swdesc_command instead."
+msgstr ""
+#: mkswu
+msgid "Unknown option for swdesc_option: %s"
 msgstr ""
 #: mkswu
 msgid "DESCRIPTION must be set"
