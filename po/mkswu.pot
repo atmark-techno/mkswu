@@ -693,6 +693,12 @@ msgstr ""
 msgid "No command could be found in desc files"
 msgstr ""
 #: mkswu
+msgid "Warning: 'swdesc_option %s' was not used, did you"
+msgstr ""
+#: mkswu
+msgid "place it before the commands you want to run?"
+msgstr ""
+#: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
 msgstr ""
 #: mkswu

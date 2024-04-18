@@ -534,6 +534,7 @@ write_entry_stdout() {
 	# special handling for 'extra_os.': this is the no-version variant of extra-os,
 	# so we just unset component here.
 	[ "$component" = "extra_os." ] && component=""
+	MKSWU_version_last_set=""
 	if [ -n "$component" ] && [ -z "$version" ]; then
 		warning "Warning: item was set without version:\n%s" \
 				"$show_desc"
@@ -1386,9 +1387,15 @@ swdesc_option() {
 		PRIVKEY=*) PRIVKEY="${opt#PRIVKEY=}";;
 		PRIVKEY_PASS=*) PRIVKEY_PASS="${opt#PRIVKEY_PASS=}";;
 		DESCRIPTION=*) DESCRIPTION="${opt#DESCRIPTION=}";;
-		component=*) MKSWU_component="${opt#component=}";;
-		version=*) MKSWU_version="${opt#version=}";;
-		install_if=*) MKSWU_install_if="${opt#install_if=}";;
+		component=*)
+			MKSWU_version_last_set="$*"
+			MKSWU_component="${opt#component=}";;
+		version=*)
+			MKSWU_version_last_set="$*"
+			MKSWU_version="${opt#version=}";;
+		install_if=*)
+			MKSWU_version_last_set="$*"
+			MKSWU_install_if="${opt#install_if=}";;
 		NO_PRESERVE_FILE)
 			warning "NO_PRESERVE_FILE is not officially supported and might stop working in the future."
 			warning "Please consider updating swupdate_preserve_files or removing specific files"
@@ -2522,7 +2529,7 @@ local cmd="" preserve_attributes="" container=""
 '
 	local main_cwd desc desc_file
 	local MKSWU_version="" MKSWU_component="" MKSWU_install_if=""
-	local MKSWU_install_first=""
+	local MKSWU_install_first="" MKSWU_version_last_set=""
 
 	# (busybox realpath does not have --version and errors)
 	realpath --version >/dev/null 2>&1 \
@@ -2800,6 +2807,11 @@ local cmd="" preserve_attributes="" container=""
 	[ -z "$FIRST_SWDESC_INIT" ] \
 		|| error "No command could be found in desc files"
 
+	if [ -n "$MKSWU_version_last_set" ]; then
+		warning "Warning: 'swdesc_option %s' was not used, did you" \
+			"$MKSWU_version_last_set"
+		warning "place it before the commands you want to run?"
+	fi
 	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"
 	# XXX debian's libconfig is obsolete and does not allow
