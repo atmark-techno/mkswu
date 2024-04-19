@@ -112,7 +112,12 @@ post_success_usb() {
 
 post_success_custom() {
 	local action
-	rm -f "$TMPDIR/.swupdate_post_fail_action.$PPID"
+
+	if [ -z "$SWUPDATE_VERSION" ]; then
+		# file was not created on swupdate >= 2023.12
+		rm -f "$TMPDIR/.swupdate_post_fail_action.$PPID"
+	fi
+
 	action="$(mkswu_var NOTIFY_SUCCESS_CMD)"
 	( eval "$action"; ) || error "NOTIFY_SUCCESS_CMD failed"
 }
