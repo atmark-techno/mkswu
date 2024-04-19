@@ -1,3 +1,9 @@
+mkswu (6.0) experimental; urgency=medium
+
+  * upstream update (see changelog)
+
+ -- Dominique Martinet <dominique.martinet@atmark-techno.com>  Fri, 19 Apr 2024 09:19:31 +0900
+
 mkswu (5.5) experimental; urgency=low
 
   * upstream update (see changelog)

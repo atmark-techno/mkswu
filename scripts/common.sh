@@ -217,9 +217,9 @@ lock_update() {
 	# happen unless the updates are bogus.
 	#
 	# This lock is now redundant with the lock taken in swupdate itself:
-	# it is kept for backwards compatibility until a later update,
-	# at which point we can either keep this conditionally to
-	# SWUPDATE_VERSION (>= 2023.12)
+	# it is kept for backwards compatibility.
+	# In 2024/07, it will only be created if SWUPDATE_VERSION is not set
+	# (swupdate < 2023.12)
 	if try_lock; then
 		# recheck for reboot after we've locked in case of race.
 		lock_check_rebooting unlock

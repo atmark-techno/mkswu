@@ -27,7 +27,7 @@ rm -rf "$MKSWU_TMP"
 kill_old_swupdate() {
 	# We do not want any other swupdate install to run after swupdate
 	# stopped
-	# markers in /tmp are kept for compatibility until next cutoff
+	# marker in /tmp are kept for compatibility until 2025/04
 	touch -h /run/swupdate_rebooting /tmp/.swupdate_rebooting
 
 	# swupdate >= 2023.12 has better locking, skip this to preserve return status
@@ -51,6 +51,7 @@ poweroff)
 wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# tell the world we're ready to be killed
+	# marker in /tmp are kept for compatibility until 2025/04
 	touch -h /run/swupdate_waiting /tmp/.swupdate_waiting
 	kill_old_swupdate
 	;;

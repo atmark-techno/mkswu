@@ -1,3 +1,58 @@
+6.0
+===
+security fixes:
+ - do not run fail action if file is not root-owned (possible if
+pre-created by attacker as regular file)
+ - do not overwrite arbitrary files when saving fail action (write
+follows symbolic links)
+ - do not deny update if lock directory has not been created by root
+
+deprecation notice:
+ - fail updates setting version/component environment variables directly
+instead of using swdesc_option; this emitted a warning since 2023/04
+ - stop fixing /etc/swupdate.watch on the very first versions of A6E
+which had no watch URL (ABOS installed in < 3.17.2-at4 / 2023/04)
+ - /tmp/.swupdate_rebooting, /tmp/.swupdate_waiting are now also created
+in /run/swupdate_rebooting, /run/swupdate_waiting; the /tmp file will be
+removed in 2025/04
+ - the /tmp/.swupdate_lock directory lock has been replaced by flock on
+/var/lock/swupdate.lock inside swupdate itself; the /tmp directory will
+no longer be created on recent swupdate in 2024/07. The lock will be kept
+if swupdate is too old while update of old devices are supported.
+These old files in /tmp have no way of issuing a warning when used, so
+applications relying on these will break with no warning if not updated
+
+fix:
+ - fix clearing upgrade_available at install start when no fail
+command is set (Armadillo G4 default)
+ - complete workaround for Armadillo 640 old eMMCs by using fsfreeze
+when it is available
+ - CONTAINER_CLEAR: fix waiting when installed from usb (different
+mount namespace)
+ - CONTAINER_CLEAR: fix usage in podman-storage --disk mode
+ - avoid leaking appfs mountpoint behind in /tmp/btrfs-root.XXXXX if
+update is forcefully killed while using it
+ - usage with NO_PRESERVE_FILES was broken (since the begining?),
+fixed basic usage and added a warning that this is not recommended
+ - fix anti-rollback check (prevent installing an update after the
+it had already failed and the system rolled back), set the
+SW_ALLOW_ROLLBACK environment variable to disable if required
+ - fix appending the user PUBKEY to the swu when swu is built
+with --config-dir. This was problematic for the initial_setup swu
+
+features:
+ - do not kill the swupdate parent process if it is recent enough
+ - run fail action immediately on failure instead of relying on inotify
+if swupdate supports it
+ - run swupdate_preserve_files POST copy and other base_os specific
+fixups immediately after writing the base_os archive. This allows an
+update to contain both base_os and extra_os components, and have the
+extra_os components keep priority over the POST copy.
+ - add a new warning if the user set swdesc_option version/install_if
+or component and no swdesc_* command used it afterwards.
+
+  -- 2024-04-19
+
 5.5
 ===
 fix:
