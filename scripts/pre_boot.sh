@@ -73,11 +73,25 @@ copy_boot_linux() {
 	bootdev_lock
 }
 
+workaround_ax2_mmc() {
+	# older firmware for Armadillo X2/IoT G4 can brick the MMC if power is lost
+	# while writing to boot partitions with >= 16KB blocks:
+	# limit to 8KB if required.
+	[ "$(get_mmc_name)" = G1M15L ] || return
+	# affected version: ECQT00HS
+	[ "$(cat "/sys/class/block/${rootdev#/dev/}/device/fwrev")" = 0x4543515430304853 ] || return
+
+	echo 8 > "/sys/class/block/${rootdev#/dev/}boot0/queue/max_sectors_kb"
+	echo 8 > "/sys/class/block/${rootdev#/dev/}boot1/queue/max_sectors_kb"
+}
+
 prepare_boot() {
 	local setup_link=""
 
 	# make sure we didn't leave a bootdev behind from previous update
 	rm -f /dev/swupdate_bootdev
+
+	workaround_ax2_mmc
 
 	if needs_update "boot_linux"; then
 		setup_link=1
