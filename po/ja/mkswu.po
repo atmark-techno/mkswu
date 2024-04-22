@@ -395,8 +395,8 @@ msgid "OS is only writable for base/extra_os updates and dest (%s) is not within
 msgstr "%s はボリューム以外に書き込もうとしますが、base/extra_os のアップデート以外にできません。--extra-osを指定してください。"
 
 #: mkswu
-msgid "Warning: automatically setting --preserve-attributes for base_os update"
-msgstr "Warning: base_osアップデートで--preserve-attributesを自動的に設定しました。"
+msgid "Info: automatically setting --preserve-attributes for base_os update"
+msgstr "Info: base_osアップデートで--preserve-attributesを自動的に設定しました。"
 
 #: mkswu
 msgid "%s is not inside %s"

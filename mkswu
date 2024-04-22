@@ -961,7 +961,7 @@ swdesc_tar() {
 	# for base_os updates: fix it
 	if [ "$component" = "base_os" ] \
 	    && [ -z "$preserve_attributes" ]; then
-		info "Warning: automatically setting --preserve-attributes for base_os update" >&2
+		info "Info: automatically setting --preserve-attributes for base_os update" >&2
 		preserve_attributes=1
 	fi
 	write_entry images "$file" "type = \"archive\";" \
