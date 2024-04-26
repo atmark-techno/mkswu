@@ -107,7 +107,7 @@ update_swupdate_certificate()  {
 	awk '! outfile { idx++; outfile="'"$certsdir"'/cert." idx }
 	     outfile { print > outfile }
 	     /END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
-	for cert in "$certsdir"/*; do
+	for cert in "$certsdir"/cert.*; do
 		[ -e "$cert" ] || continue
 		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
 		case "$pubkey" in
@@ -148,7 +148,7 @@ update_swupdate_certificate()  {
 	fi
 	(
 		# ignore errors, might not be any cert left here
-		cat "$certsdir"/* 2>/dev/null
+		cat "$certsdir"/cert.* 2>/dev/null
 		if [ -n "$atmark_seen" ]; then
 			# only add atmark certs if they're currently installed
 			for cert in "$MKSWU_SWU_TMP/certs_atmark/"*; do
