@@ -25,7 +25,7 @@ allow_upgrade_available() {
 cleanup_target() {
 	local val
 	sync
-	cleanup
+	cleanup success
 
 	# Mark other fs as usable again unless encrypted boot is used
 	if val=$(allow_upgrade_available); then

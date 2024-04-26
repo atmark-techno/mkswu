@@ -464,8 +464,44 @@ set_post_action() {
 	fi
 }
 
+clear_b_side() {
+	# free up appfs space after update failure
+	# (we could rollback-clone, but that's best left up to users to re-do on
+	# next boot if required)
+
+	# if /target isn't mounted then B side wasn't touched yet
+	if ! is_mountpoint /target; then
+		return
+	fi
+
+	# might be unset if called from cleanup
+	if [ -z "$ab" ]; then
+		ab="$(cat "$MKSWU_TMP/ab" 2> /dev/null)" \
+			|| return
+	fi
+
+	# remove snapshots
+	appdev=$(findmnt -nr --nofsroot -o SOURCE /var/tmp)
+	[ -n "$appdev" ] || return
+	if is_mountpoint /target/mnt; then
+		umount /target/mnt || return
+	fi
+	mount -t btrfs "$appdev" /target/mnt || return
+	if [ -e "/target/mnt/boot_$ab/volumes" ]; then
+		btrfs subvol delete "/target/mnt/boot_$ab/volumes"
+	fi
+	if [ -e "/target/mnt/boot_$ab/containers_storage" ]; then
+		btrfs subvol delete "/target/mnt/boot_$ab/containers_storage"
+	fi
+	umount /target/mnt
+}
 
 cleanup() {
+	local status="$1"
+
+	if [ "$status" != success ]; then
+		clear_b_side
+	fi
 	remove_bootdev_link
 	if is_mountpoint "/target/var/tmp"; then
 		# cannot delete a subvolume by its mount point directly: use id
