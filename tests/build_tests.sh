@@ -101,6 +101,14 @@ build_fail files_dotdot_fail.desc
 echo 'swdesc_command true' | name="no version" build_fail -
 echo 'swdesc_option CONTAINER_CLEAR' | name="no command" build_fail -
 
+printf "%s\n" "swdesc_option version=1" "swdesc_command true" "swdesc_option PUBLIC" \
+	| name="public after swdesc_xxx" build_fail -
+printf "%s\n" "swdesc_option version=1 PUBLIC" "swdesc_command true" \
+	| MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key name="public" build_check - -- \
+	"swdesc_absent 'ivt ='"
+MKSWU_PUBKEY=../swupdate-onetime-public.pem "$MKSWU" \
+	--internal verify out/.public/sw-description \
+	|| error "public was not signed with onetime key"
 
 version_fail() {
 	printf "%s\n" "swdesc_command --version ${*@Q} 'echo ok'" \

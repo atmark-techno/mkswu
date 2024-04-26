@@ -1419,6 +1419,18 @@ swdesc_option() {
 		install_if=*)
 			MKSWU_version_last_set="$*"
 			MKSWU_install_if="${opt#install_if=}";;
+		PUBLIC)
+			[ -n "$FIRST_SWDESC_INIT" ] \
+				|| error "%s must be set before the first swdesc_* action" \
+					"PUBLIC"
+			info "Building SWU with public-onetime certificate"
+			PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
+			PRIVKEY="$SCRIPT_DIR/swupdate-onetime-public.key"
+			ENCRYPT_KEYFILE=""
+			# note public certificate is removed if users certs are
+			# present regardless of ALLOW_PUBLIC_CERT
+			swdesc_option ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN
+			;;
 		NO_PRESERVE_FILE)
 			warning "NO_PRESERVE_FILE is not officially supported and might stop working in the future."
 			warning "Please consider updating swupdate_preserve_files or removing specific files"

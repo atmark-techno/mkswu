@@ -60,6 +60,13 @@ check() {
 				|| error "$regex not found in $dir/sw-description"
 		done
 		;;
+	swdesc_absent)
+		[ $# -gt 0 ] || error "swdesc_absent check needs argument"
+		for regex; do
+			! grep -q -E "$regex" "$dir/sw-description" \
+				|| error "$regex found in $dir/sw-description"
+		done
+		;;
 	*) error "Unknown check type: $type" ;;
 	esac
 }
