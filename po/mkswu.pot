@@ -339,6 +339,9 @@ msgstr ""
 msgid "BOOT_SIZE is no longer used and has been ignored"
 msgstr ""
 #: mkswu
+msgid "%s must be set before the first swdesc_* action"
+msgstr ""
+#: mkswu
 msgid "NO_PRESERVE_FILE is not officially supported and might stop working in the future."
 msgstr ""
 #: mkswu

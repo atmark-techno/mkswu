@@ -1381,10 +1381,33 @@ swdesc_option() {
 		NOTIFY_SUCCESS_CMD=*) MKSWU_NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
 		ROOTFS_FSTYPE=*) MKSWU_ROOTFS_FSTYPE="${opt#ROOTFS_FSTYPE=}";;
 		BOOT_SIZE=*) warning "BOOT_SIZE is no longer used and has been ignored";;
-		ENCRYPT_KEYFILE=*) ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}";;
-		PUBKEY=*) PUBKEY="${opt#PUBKEY=}";;
+		ENCRYPT_KEYFILE=*) 
+			[ -n "$FIRST_SWDESC_INIT" ] \
+				|| error "%s must be set before the first swdesc_* action" \
+					"ENCRYPT_KEYFILE"
+			ENCRYPT_KEYFILE="${opt#ENCRYPT_KEYFILE=}"
+			if [ -n "$ENCRYPT_KEYFILE" ]; then
+				ENCRYPT_KEYFILE="$(realpath -e "$ENCRYPT_KEYFILE")" \
+					|| error "%s does not exist" "${opt#ENCRYPT_KEYFILE=}"
+			fi
+			;;
+		PUBKEY=*)
+			# signing is normally done at the end, but swdesc_container_usb
+			# also uses it
+			[ -n "$FIRST_SWDESC_INIT" ] \
+				|| error "%s must be set before the first swdesc_* action" \
+					"PUBKEY"
+			PUBKEY="$(realpath -e "${opt#PUBKEY=}")" \
+				|| error "%s does not exist" "${opt#PUBKEY=}"
+			;;
 		UPDATE_CERTS=*) UPDATE_CERTS="${opt#UPDATE_CERTS=}";;
-		PRIVKEY=*) PRIVKEY="${opt#PRIVKEY=}";;
+		PRIVKEY=*)
+			[ -n "$FIRST_SWDESC_INIT" ] \
+				|| error "%s must be set before the first swdesc_* action" \
+					"PRIVKEY"
+			PRIVKEY="$(realpath -e "${opt#PRIVKEY=}")" \
+				|| error "%s does not exist" "${opt#PRIVKEY=}"
+			;;
 		PRIVKEY_PASS=*) PRIVKEY_PASS="${opt#PRIVKEY_PASS=}";;
 		DESCRIPTION=*) DESCRIPTION="${opt#DESCRIPTION=}";;
 		component=*)
