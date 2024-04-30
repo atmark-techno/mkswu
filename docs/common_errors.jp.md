@@ -197,7 +197,11 @@ update_cert.swu を作成しました。
 
 #### `initial_setup.swu` を再インストールする [↑](#index) {#reinstall_initial_setup}
 
-鍵をなくした等の理由で `initial_setup.swu` を再インストールするためには、以下の二つのファイルを編集してください：
+鍵をなくした等の理由で `initial_setup.swu` を再インストールするには、
+
+Armadillo 3.19.1-at.4 以降では、 `abos-ctrl certificates reset` コマンドを実行し Armadillo の証明書をリセットすることで `initial_setup.swu` を再インストールできるようになります。
+
+それ以前のバージョンでは、以下の 2 つのファイルを編集してください：
 
 * `/etc/swupdate.pem` に `/usr/share/mkswu/swupdate-onetime-public.pem` の内容を追加してください。
 * `/etc/sw-versions` にある `extra_os.initial_setup` の行を削除してください。

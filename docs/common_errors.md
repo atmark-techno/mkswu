@@ -192,7 +192,11 @@ If the update is only required for a single device, you can also directly copy/p
 
 #### Reinstall another `initial_setup.swu` [↑](#index) {#reinstall_initial_setup}
 
-Should you need to reinstall the initial setup, for example if you lost your old key files, there are two files to modify on your device:
+Should you need to reinstall the initial setup, for example if you lost your old key files, it is possible to install it again.
+
+On Armadillo 3.19.1-at.4 and later, run `abos-ctrl certificates reset` to restore swupdate's allowed certificates factory defaults then just install the SWU again.
+
+On earlier versions, you will need to modify these two files:
 
 * Add `/usr/share/mkswu/swupdate-onetime-public.pem` back to your device's `/etc/swupdate.pem`
 * Remove the `extra_os.initial_setup` version from `/etc/sw-versions`
