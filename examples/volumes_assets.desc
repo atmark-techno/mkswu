@@ -1,5 +1,10 @@
 # relative paths are placed in /var/app/rollback/volumes by default
+# e.g., these two lines are equivalent:
 swdesc_files --version assets 1 --dest assets volumes_assets.desc
+# swdesc_files --version assets 1 --dest /var/app/rollback/volumes/assets volumes_assets.desc
 
-# can use absolute path for /var/app/volumes as well
+# can use absolute path for /var/app/volumes, but /var/app/volumes is not
+# snapshotted so updating its content is dangerous:
+# - files accessed during update might be inconsistent
+# - partial update failing will leave partially updated files behind
 swdesc_files --version data 1 --dest /var/app/volumes/data enable_sshd

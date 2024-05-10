@@ -1,3 +1,3 @@
 #!/bin/sh
 
-date > /var/app/volumes/custom_script_app
+date > /var/app/rollback/volumes/custom_script_app
