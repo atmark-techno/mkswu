@@ -1,3 +1,73 @@
+update_shadow_user() {
+	local user="$1"
+	local oldpass
+
+	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' "$SHADOW" \
+			| sed -e 's/[\\:&]/\\&/g')
+	# password was never set: skip
+	[ -n "$oldpass" ] || return
+	# password already set on target: also skip
+	grep -qE "^$user:[^!:]" "$NSHADOW" && return
+
+	if grep -qE "^$user:" "$NSHADOW"; then
+		sed -i -e 's:^'"$user"'\:.*:'"$oldpass"':' "$NSHADOW"
+	else
+		echo "$oldpass" | sed -e 's/\\\([\\:&]\)/\1/g' >> "$NSHADOW"
+	fi || error "Could not update shadow for $user"
+}
+
+update_user_groups() {
+	local user="$1"
+	local group
+
+	awk -F: '$4 ~ /(,|^)'"$user"'(,|$)/ { print $1 }' < "$GROUP" |
+		while read -r group; do
+			# already set
+			grep -qE "^$group:.*[:,]$user(,|$)" "$NGROUP" \
+				&& continue
+
+			if grep -qE "^$group:.*:$" "$NGROUP"; then
+				sed -i -e 's/^'"$group"':.*:/&'"$user"'/' "$NGROUP"
+			else
+				sed -i -e 's/^'"$group"':.*/&,'"$user"'/' "$NGROUP"
+			fi || error "Could not update group $group / $user"
+		done
+}
+
+update_shadow() {
+	local user group
+	# test constants
+	local PASSWD="${PASSWD:-$fsroot/etc/passwd}"
+	local NPASSWD="${NPASSWD:-/target/etc/passwd}"
+	local SHADOW="${SHADOW:-$fsroot/etc/shadow}"
+	local NSHADOW="${NSHADOW:-/target/etc/shadow}"
+	local GROUP="${GROUP:-$fsroot/etc/group}"
+	local NGROUP="${NGROUP:-/target/etc/group}"
+
+	# "$PASSWD", group and shadow have to be part of rootfs as
+	# rootfs updates can change system users, but we want to keep
+	# "real" users as well so copy them over manually:
+	# - copy non-existing "real" groups (gid >= 1000)
+	# - for each real user (root, abos* or uid >= 1000), copy its password
+	# if the old one not set and add it to groups it had been added to
+	awk -F: '$3 >= 1000 && $3 < 65500 { print $1 }' < "$GROUP" |
+		while read -r group; do
+			grep -qE "^$group:" "$NGROUP" \
+				|| grep -E "^$group:" "$GROUP" >> "$NGROUP"
+		done
+
+	awk -F: '$1 == "root" || $1 ~ /^abos/ \
+			|| ( $3 >= 1000 && $3 < 65500 ) {
+				print $1
+			}' < "$PASSWD" |
+		while read -r user; do
+			grep -qE "^$user:" "$NPASSWD" \
+				|| grep -E "^$user:" "$PASSWD" >> "$NPASSWD"
+			update_shadow_user "$user"
+			update_user_groups "$user"
+		done
+}
+
 update_running_versions() {
 	cp "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
 
@@ -166,20 +236,23 @@ post_rootfs() {
 	fi
 
 	# extra fixups on update
-	# in theory we should also check shadow/cert if no update, but the system
-	# needs extra os update to start containers so this is enough for safety check
-	if update_rootfs; then
-		# keep passwords around, and make sure there are no open access user left
+	if update_baseos; then
+		# keep passwords around
 		update_shadow
 
-		# remove open access swupdate certificate or complain
-		update_swupdate_certificate
-	fi
-
-	if update_baseos; then
 		# update preserve_files owners when required
 		# (after update_shadow)
 		post_chown_preserve_files
+	fi
+
+	# in theory we should also check shadow/cert if no update, but the system
+	# needs extra os update to start containers so this is enough for safety check
+	if update_rootfs; then
+		# check there are no empty passwords left behind
+		check_shadow_empty_password
+
+		# remove open access swupdate certificate or complain
+		update_swupdate_certificate
 	fi
 
 	# mark filesystem as ready for reuse if something failed

@@ -326,7 +326,7 @@ test_passwd_update() {
 		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
 	SHADOW=./scripts/shadow
-	( update_shadow; ) && error "copy should have failed"
+	( update_shadow; check_shadow_empty_password; ) && error "copy should have failed"
 
 
 	echo "passwd copy: test adding new user"
@@ -360,7 +360,7 @@ test_passwd_update() {
 	done
 	SHADOW=./scripts/shadow
 	echo "  # MKSWU_ALLOW_EMPTY_LOGIN 1" > "$MKSWU_TMP/swdesc"
-	( SWDESC="$MKSWU_TMP/swdesc" update_shadow; ) \
+	( SWDESC="$MKSWU_TMP/swdesc" check_shadow_empty_password; ) \
 		|| error "should be no failure with allow empty login"
 }
 
@@ -846,9 +846,9 @@ test_update_overlays() {
 	export TEST_SCRIPTS=1
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/post_common.sh"
-	test_passwd_update
 	test_cert_update
 	. "$SCRIPTS_SRC_DIR/post_rootfs.sh"
+	test_passwd_update
 	test_preserve_files_chown
 ) || error "post test failed"
 

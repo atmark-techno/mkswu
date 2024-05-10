@@ -5,8 +5,8 @@ post_installer() {
 	# for update_shadow compat, always mounted in installer
 	local fsroot=/live/rootfs
 
-	# update_shadow checks user password has been set unless made optional
-	update_shadow
+	# check passwords have been set if required
+	check_shadow_empty_password
 	# update swupdate certificate and versions
 	update_swupdate_certificate
 	cp "$MKSWU_TMP/sw-versions.merged" "/target/etc/sw-versions" \
