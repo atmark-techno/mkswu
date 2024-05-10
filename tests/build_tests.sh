@@ -101,6 +101,15 @@ build_fail files_dotdot_fail.desc
 echo 'swdesc_command true' | name="no version" build_fail -
 echo 'swdesc_option CONTAINER_CLEAR' | name="no command" build_fail -
 
+printf "%s\n" "swdesc_command --version boot 1 true" \
+	| name="special_versions" build_fail -
+# note: ../imx-boot_armadillo_x2 is created by tests/examples.sh,
+# which should have run before this
+if [ -e ../imx-boot_armadillo_x2 ]; then
+	printf "%s\n" "swdesc_boot --version test 1 ../imx-boot_armadillo_x2" \
+		| name="special_versions" build_fail -
+fi
+
 printf "%s\n" "swdesc_option version=1" "swdesc_command true" "swdesc_option PUBLIC" \
 	| name="public after swdesc_xxx" build_fail -
 printf "%s\n" "swdesc_option version=1 PUBLIC" "swdesc_command true" \

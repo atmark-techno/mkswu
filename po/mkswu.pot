@@ -228,6 +228,12 @@ msgstr ""
 msgid "%s is not a known %s argument"
 msgstr ""
 #: mkswu
+msgid "%s: Version component for swdesc_%s must be set to %s"
+msgstr ""
+#: mkswu
+msgid "%s: Version component '%s' is reserved for swdesc_%s"
+msgstr ""
+#: mkswu
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr ""
 #: mkswu
@@ -264,9 +270,6 @@ msgstr ""
 msgid "Unrecognized boot image format for %s"
 msgstr ""
 #: mkswu
-msgid "Version component for swdesc_boot must be set to boot"
-msgstr ""
-#: mkswu
 msgid "Could not guess boot version in %s"
 msgstr ""
 #: mkswu
@@ -274,9 +277,6 @@ msgid "Version must be set for swdesc_boot_encrypted"
 msgstr ""
 #: mkswu
 msgid "dek offset file %s was not readable or empty"
-msgstr ""
-#: mkswu
-msgid "Version component for swdesc_boot_linux must be set to boot_linux"
 msgstr ""
 #: mkswu
 msgid "Version must be set for swdesc_boot_linux"

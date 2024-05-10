@@ -303,6 +303,14 @@ msgid "%s is not a known %s argument"
 msgstr "%s は %s の有効な引数ではありません。"
 
 #: mkswu
+msgid "%s: Version component for swdesc_%s must be set to %s"
+msgstr "%s: swdesc_%sのバージョンコンポーネントを「%s」にしてください。"
+
+#: mkswu
+msgid "%s: Version component '%s' is reserved for swdesc_%s"
+msgstr "%s: 「%s」のバージョンコンポーネントはswdesc_%sにしか利用できません。"
+
+#: mkswu
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr "swdesc_boot に引数が必要です。\\nUsage: swdesc_boot [options] boot_file"
 
@@ -351,10 +359,6 @@ msgid "Unrecognized boot image format for %s"
 msgstr "%s ブートイメージフォーマットを認識できませんでした。"
 
 #: mkswu
-msgid "Version component for swdesc_boot must be set to boot"
-msgstr "swdesc_bootのバージョンコンポーネントを「boot」にしてください。"
-
-#: mkswu
 msgid "Could not guess boot version in %s"
 msgstr "ブートバージョン %s を認識できませんでした。"
 
@@ -365,10 +369,6 @@ msgstr "swdesc_boot_encrypted にバージョンが必要です。swdesc_option 
 #: mkswu
 msgid "dek offset file %s was not readable or empty"
 msgstr "DEK オフセット %s を読み取りできませんでした。"
-
-#: mkswu
-msgid "Version component for swdesc_boot_linux must be set to boot_linux"
-msgstr "swdesc_boot_linuxのバージョンコンポーネントを「boot_linux」にしてください。"
 
 #: mkswu
 msgid "Version must be set for swdesc_boot_linux"
