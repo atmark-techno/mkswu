@@ -768,6 +768,45 @@ parse_swdesc() {
 					"$cmd_description" boot_linux boot_linux
 			;;
 		esac
+		# base_os cannot be updated after running a command
+		case "$component" in
+		base_os)
+			# can only be set for swdesc_tar
+			case "$CMD,$MKSWU_component_baseos_seen" in
+			tar,) MKSWU_component_baseos_seen="archive";;
+			tar,done)
+				warning "Warning: 'base_os' has been used multiple times."
+				warning "post-baseos extraction (e.g. swupdate_preserve_files POST step) will run after"
+				warning "the first occurence so the result might be unexpected."
+				MKSWU_component_baseos_seen="warned"
+				;;
+			tar,archive|tar,warned) ;;
+			tar,forbidden) error "'base_os' update must be first in desc file";;
+			*) error "%s: Version component '%s' is reserved for swdesc_%s" \
+				"$cmd_description" base_os tar;;
+			esac
+			;;
+		boot|boot_enc)
+			# these don't interfere with base_os update
+			;;
+		extra_os.*)
+			# base_os cannot be installed after extra_os updates
+			if [ -z "$MKSWU_component_baseos_seen" ]; then
+				MKSWU_component_baseos_seen="forbidden"
+			fi
+			;;
+		*)
+			# container updates could be ok, but exec in target container
+			# is not allowed before base_os
+			case "$CMD,$container" in
+			exec,|script,|command,)
+				if [ -z "$MKSWU_component_baseos_seen" ]; then
+					MKSWU_component_baseos_seen="forbidden"
+				fi
+				;;
+			esac
+			;;
+		esac
 	fi
 
 	case "$CMD" in
@@ -991,7 +1030,8 @@ swdesc_tar() {
 
 	# re-expose variables to preserve version etc
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	if [ "$MKSWU_component" = base_os ]; then
+	if [ "$MKSWU_component_baseos_seen" = archive ]; then
+		MKSWU_component_baseos_seen="done"
 		swdesc_command_nochroot --description "base_os post fixups" \
 			'${TMPDIR:-/var/tmp}/scripts/post_rootfs_baseos.sh'
 	fi
@@ -2532,6 +2572,7 @@ mkimage() {
 sw-description.sig"
 	local FILES=""
 	local FIRST_SWDESC_INIT=1
+	local MKSWU_component_baseos_seen=""
 	local COPY_USB=""
 	local MODE=""
 	local VERBOSE=2

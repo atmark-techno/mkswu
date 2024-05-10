@@ -311,6 +311,22 @@ msgid "%s: Version component '%s' is reserved for swdesc_%s"
 msgstr "%s: 「%s」のバージョンコンポーネントはswdesc_%sにしか利用できません。"
 
 #: mkswu
+msgid "Warning: 'base_os' has been used multiple times."
+msgstr "Warning: 「base_os」のバージョンコンポーネントを複数回使用しています。"
+
+#: mkswu
+msgid "post-baseos extraction (e.g. swupdate_preserve_files POST step) will run after"
+msgstr "baseos 展開後の処理(swupdate_preserve_files の POST 処理等)は展開直後"
+
+#: mkswu
+msgid "the first occurence so the result might be unexpected."
+msgstr "に実行されますので、複数回または先頭以外で指定すると予想外の結果になる恐れがあります。"
+
+#: mkswu
+msgid "'base_os' update must be first in desc file"
+msgstr "「base_os」の更新は最初に指定してください。"
+
+#: mkswu
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr "swdesc_boot に引数が必要です。\\nUsage: swdesc_boot [options] boot_file"
 
@@ -380,7 +396,7 @@ msgstr "swdesc_boot_linux は 26MB までです。"
 
 #: mkswu
 msgid "base_os upgrade must go to / (was: %s)"
-msgstr ""
+msgstr "「base_os」のアップデート先は / にしてください（%sでした）"
 
 #: mkswu
 msgid "OS update must have an absolute dest (was: %s)"
@@ -953,3 +969,6 @@ msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてくださ�
 #: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
+
+#~ msgid "%s: Version component 'base_os' can only be used once"
+#~ msgstr "%s: 「base_os」のバージョンコンポーネントは一回しか利用できません。"

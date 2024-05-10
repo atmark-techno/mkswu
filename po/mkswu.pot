@@ -234,6 +234,18 @@ msgstr ""
 msgid "%s: Version component '%s' is reserved for swdesc_%s"
 msgstr ""
 #: mkswu
+msgid "Warning: 'base_os' has been used multiple times."
+msgstr ""
+#: mkswu
+msgid "post-baseos extraction (e.g. swupdate_preserve_files POST step) will run after"
+msgstr ""
+#: mkswu
+msgid "the first occurence so the result might be unexpected."
+msgstr ""
+#: mkswu
+msgid "'base_os' update must be first in desc file"
+msgstr ""
+#: mkswu
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
 msgstr ""
 #: mkswu
