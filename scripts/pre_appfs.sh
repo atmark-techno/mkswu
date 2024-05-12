@@ -215,8 +215,21 @@ prepare_appfs() {
 	mount -t btrfs -o "$mountopt=boot_${ab}/volumes" \
 			"$dev" /target/var/app/rollback/volumes \
 		|| error "Could not mount rollback/volume subvol"
-	mount -t btrfs -o "$mountopt=volumes" "$dev" /target/var/app/volumes \
-		|| error "Could not mount volume subvol"
+	# ignore swdesc_exec "chroot" lines...
+	if sed -e 's@-v /target/var/app/volumes:/var/app/volumes@@g' "$SWDESC" 2>/dev/null \
+			| grep -qF "/var/app/volumes"; then
+		warning "Mounting /var/app/volumes for target" \
+			"This partition is not safe to modify from update while in use," \
+			"consider using /var/app/rollback/volumes for updates instead."
+		mount -t btrfs -o "$mountopt=volumes" "$dev" /target/var/app/volumes \
+			|| error "Could not mount volume subvol"
+	else
+		echo "Skipping /var/app/volumes mount"
+		# mount an empty tmpfs instead so any write there will fail
+		# tmpfs size cannot be 0: set 1 (one page in practice) and make ro
+		mount -t tmpfs -o size=1,ro=1 tmpfs /target/var/app/volumes \
+			|| error "Could not mount tmpfs on /var/app/volumes"
+	fi
 	mount -t btrfs -o "$mountopt=tmp" "$dev" /target/var/tmp \
 		|| error "Could not mount tmp subvol"
 

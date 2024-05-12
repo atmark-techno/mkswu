@@ -726,6 +726,15 @@ msgstr ""
 msgid "place it before the commands you want to run?"
 msgstr ""
 #: mkswu
+msgid "Warning: update is using /var/app/volumes"
+msgstr ""
+#: mkswu
+msgid "It is not safe to modify /var/app/volumes while the system uses it,"
+msgstr ""
+#: mkswu
+msgid "consider using /var/app/rollback/volumes instead"
+msgstr ""
+#: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
 msgstr ""
 #: mkswu

@@ -1192,24 +1192,25 @@ swdesc_exec() {
 	local chroot_cmd="run --net=host --rm -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
 	case "$container,$component" in
 	,base_os|,extra_os*)
+		# run in target "chroot", writable OS
 		chroot_cmd="podman $chroot_cmd --rootfs /target"
 		;;
 	*,base_os|*,extra_os*)
+		# run in container, writable OS
 		# use podman_target to use newly installed images
 		chroot_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target '"$chroot_cmd"
 		chroot_cmd="$chroot_cmd --root /target/var/lib/containers"
 		chroot_cmd="$chroot_cmd -v /target:/target $container"
 		;;
 	,*)
-		# If target is read-only we need special handling to run (silly podman tries
-		# to write to / otherwise) but keep volumes and tmp writable
+		# run in target "chroot", read-only OS, RW volumes
 		chroot_cmd="podman $chroot_cmd --read-only -v /target/tmp:/tmp"
 		chroot_cmd="$chroot_cmd -v /target/var/app/volumes:/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/var/app/rollback/volumes"
 		chroot_cmd="$chroot_cmd --rootfs /target"
 		;;
 	*)
-		# likewise, keep only /target read-only
+		# run in container, read-only OS, RW volumes
 		chroot_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target '"$chroot_cmd"
 		chroot_cmd="$chroot_cmd -v /target/var/app/volumes:/target/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/target/var/app/rollback/volumes"
@@ -1261,6 +1262,10 @@ swdesc_script() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 
 	parse_swdesc script "$@"
+
+	if grep -q /var/app/volumes "$file"; then
+		write_line '# script has /var/app/volumes'
+	fi
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec
@@ -2923,6 +2928,14 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	fi
 	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"
+	# ignore swdesc_exec "chroot" lines...
+	if sed -e 's@-v /target/var/app/volumes:/var/app/volumes@@g' "$OUTDIR/sw-description" \
+			| grep -qF "/var/app/volumes"; then
+		warning "Warning: update is using /var/app/volumes"
+		warning "It is not safe to modify /var/app/volumes while the system uses it,"
+		warning "consider using /var/app/rollback/volumes instead"
+	fi
+
 	# XXX debian's libconfig is obsolete and does not allow
 	# trailing commas at the end of lists (allowed from 1.7.0)
 	# probably want to sed these out at some point for compatibility

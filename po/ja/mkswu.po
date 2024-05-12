@@ -967,6 +967,18 @@ msgid "place it before the commands you want to run?"
 msgstr "設定するコマンドの前に実行してください。"
 
 #: mkswu
+msgid "Warning: update is using /var/app/volumes"
+msgstr "Warning: /var/app/volumes をアップデートしているようです。"
+
+#: mkswu
+msgid "It is not safe to modify /var/app/volumes while the system uses it,"
+msgstr "アップデート中に /var/app/volumes を使用すると故障の恐れがありますので、"
+
+#: mkswu
+msgid "consider using /var/app/rollback/volumes instead"
+msgstr "代わりに /var/app/rollback/volumes をご利用ください。"
+
+#: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
 msgstr "以下のファイルをUSBメモリにコピーしてください："
 
