@@ -22,7 +22,10 @@
 *.img
 imx-boot*
 # debian files
-debian/debhelper-build-stamp
-debian/files
-debian/mkswu
-debian/mkswu.substvars
+/debian/debhelper-build-stamp
+/debian/files
+/debian/mkswu
+/debian/mkswu.substvars
+# built locales
+/locale
+/hawkbit-compose/locale

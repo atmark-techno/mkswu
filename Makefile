@@ -55,6 +55,9 @@ locale/$(l)/LC_MESSAGES/%.mo: po/$(l)/%.po
 		echo "$< has had fuzzy updates, please fix before updating!"; \
 		false; \
 	fi
+	@if ! [ -d locale/$(l)/LC_MESSAGES ]; then \
+		mkdir -p locale/$(l)/LC_MESSAGES; \
+	fi
 	msgfmt -o $@ $<
 
 docs/%.html: docs/%.md
@@ -78,9 +81,12 @@ dist: all
 		false; \
 	fi
 	echo $(TAG) > .version
-	{ git ls-files --recurse-submodules; echo ".version"; } | \
+	{ git ls-files --recurse-submodules; printf "%s\n" ".version" "locale"; } | \
 		tar -caJf $(TARNAME).orig.tar.xz --xform "s:^:$(TARNAME)/:S" --verbatim-files-from -T-
-	git ls-files hawkbit-compose | \
+	@mkdir -p hawkbit-compose/locale/$(l)/LC_MESSAGES
+	@cp -a locale/$(l)/LC_MESSAGES/hawkbit_setup_container.mo \
+		hawkbit-compose/locale/$(l)/LC_MESSAGES/hawkbit_setup_container.mo
+	{ git ls-files hawkbit-compose; echo hawkbit-compose/locale; } | \
 		tar -caJf hawkbit-compose-$(TAG).tar.xz --xform "s:^hawkbit-compose:hawkbit-compose-$(TAG):S" --verbatim-files-from -T-
 
 install: install_mkswu install_examples install_locales install_html
