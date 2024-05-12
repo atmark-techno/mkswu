@@ -25,7 +25,8 @@ btrfs_subvol_recursive_recreate() {
 	[ -e "$basemount/$vol" ] || return 1
 	# delete subvolumes by id to avoid dealing with paths.
 	# subvol list -o prints something like "ID 123 gen..." for child subvolumes.
-	btrfs subvol list -o "$basemount/$vol" \
+	# delete backwards in case of nested subvolumes
+	btrfs subvol list -o "$basemount/$vol" | tac \
 		| while read -r _ id _; do
 			btrfs subvol delete -i "$id" "$basemount"
 		done
