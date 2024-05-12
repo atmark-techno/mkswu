@@ -203,6 +203,10 @@ prepare_appfs() {
 		|| error "Could not create rollback/volumes subvol"
 	btrfs_subvol_create "volumes" \
 		|| error "Could not create volumes subvol"
+	btrfs_subvol_create "tmp" \
+		|| error "Could not create tmp subvol"
+	btrfs_subvol_create "updates_tmp" \
+		|| error "Could not create updates_tmp subvol"
 
 	if mountpoint -q /var/lib/containers/storage; then
 		mount --bind /var/lib/containers/storage \
@@ -230,7 +234,7 @@ prepare_appfs() {
 		mount -t tmpfs -o size=1,ro=1 tmpfs /target/var/app/volumes \
 			|| error "Could not mount tmpfs on /var/app/volumes"
 	fi
-	mount -t btrfs -o "$mountopt=tmp" "$dev" /target/var/tmp \
+	mount -t btrfs -o "$mountopt=updates_tmp" "$dev" /target/var/tmp \
 		|| error "Could not mount tmp subvol"
 
 	podman_list_images > "$MKSWU_TMP/podman_images_pre"

@@ -467,6 +467,18 @@ set_post_action() {
 
 cleanup() {
 	remove_bootdev_link
+	if is_mountpoint "/target/var/tmp"; then
+		# cannot delete a subvolume by its mount point directly: use id
+		# - `subvol list` prints something ID 123 gen 456 top level 789 path foo/bar
+		# - match updates_tmp volume
+		# - it shouldn't have any subvolume but tac/loop just in case
+		btrfs subvol list /target/var/tmp \
+			| grep -F 'path updates_tmp' \
+			| tac \
+			| while read -r _ id _; do
+				btrfs subvol delete -i "$id" /target/var/tmp;
+			done
+	fi
 	umount_if_mountpoint /target || error "Could not umount $dir"
 	luks_close_target
 	if [ -e "$MKSWU_TMP/podman_containers_killed" ] && ! needs_reboot; then
