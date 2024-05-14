@@ -104,9 +104,10 @@ update_swupdate_certificate()  {
 
 	certsdir=$(mktemp -d "$MKSWU_TMP/certs.XXXXXX") \
 		|| error "Could not create temp dir"
-	awk '! outfile { idx++; outfile="'"$certsdir"'/cert." idx }
-	     outfile { print > outfile }
-	     /END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
+	awk -v certsdir="$certsdir" '
+		! outfile { idx++; outfile=certsdir "/cert." idx }
+		outfile { print > outfile }
+		/END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
 	for cert in "$certsdir"/cert.*; do
 		[ -e "$cert" ] || continue
 		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
