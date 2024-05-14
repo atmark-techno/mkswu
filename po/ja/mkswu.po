@@ -199,8 +199,20 @@ msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers
 msgstr "%s のバージョンは x.y.z.t (65536 未満の数字のみ)か x.y.z-t (x-z は数字のみ）にしてください。"
 
 #: mkswu
-msgid "base_os version %s must be in x[.y[.z]]-t format"
-msgstr "base_os のバージョン %s の書式は x[.y[.z]]-t にしてください。"
+msgid "base_os version %s was not in x[.y[.z]]-t format"
+msgstr "base_os のバージョン %s の書式は x[.y[.z]]-t 形式ではありません。"
+
+#: mkswu
+msgid "Please note that %s > %s-at.1, so if installing atmark-provided updates"
+msgstr "%s > %s-at.1 となりますので、今後アットマークテクノ提供のアップデートを"
+
+#: mkswu
+msgid "later then ensure upgrades stay possible."
+msgstr "適用する際はご注意ください。"
+
+#: mkswu
+msgid "This warning can be disabled by setting '%s' in '%s'"
+msgstr "この警告は '%s' を '%s' に追加することで無効化できます。"
 
 #: mkswu
 msgid "version check failed for %s: %s must be <= %s"
@@ -969,6 +981,3 @@ msgstr "enable_sshd/root/.ssh/authorized_keys に公開鍵を入れてくださ�
 #: examples/hawkbit_register.desc
 msgid "You must configure HAWKBIT_URL and HAWKBIT_PASSWORD in examples/hawkbit_register.sh"
 msgstr "HAWKBIT_URL と HAWKBIT_PASSWORD を設定してください。"
-
-#~ msgid "%s: Version component 'base_os' can only be used once"
-#~ msgstr "%s: 「base_os」のバージョンコンポーネントは一回しか利用できません。"

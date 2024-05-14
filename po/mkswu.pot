@@ -150,7 +150,16 @@ msgstr ""
 msgid "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)"
 msgstr ""
 #: mkswu
-msgid "base_os version %s must be in x[.y[.z]]-t format"
+msgid "base_os version %s was not in x[.y[.z]]-t format"
+msgstr ""
+#: mkswu
+msgid "Please note that %s > %s-at.1, so if installing atmark-provided updates"
+msgstr ""
+#: mkswu
+msgid "later then ensure upgrades stay possible."
+msgstr ""
+#: mkswu
+msgid "This warning can be disabled by setting '%s' in '%s'"
 msgstr ""
 #: mkswu
 msgid "version check failed for %s: %s must be <= %s"

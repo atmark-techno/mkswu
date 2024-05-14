@@ -1,3 +1,5 @@
+swdesc_option version=3.14.3-at.2
+
 # boot image can be generated with atmark imx-boot script
 swdesc_boot imx-boot-2020.04-at1_armadillo_x2
 
@@ -7,6 +9,4 @@ swdesc_boot imx-boot-2020.04-at1_armadillo_x2
 # OS updates are only installed if version is greater than previous update
 # so if you install your own updates atmark-techno provided Armadillo Base OS
 # updates might not get installed
-swdesc_tar "baseos-x2-3.14.2-at.2.tar.zst" \
-           --version base_os 3.14.3-at.2 \
-           --preserve-attributes
+swdesc_tar --base-os "baseos-x2-3.14.2-at.2.tar.zst"

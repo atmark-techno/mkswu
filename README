@@ -98,6 +98,9 @@ Common options for all helpers:
   read-write. This is not required if version is set explicitly,
   and has no effect if set before version.
 
+--base-os
+  set component to 'base_os'. This is intended for OS updates only.
+
 --install-if <mode>
   mode can be one of higher or different.
   Can also set the "install_if" environment variable.

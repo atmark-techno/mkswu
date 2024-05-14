@@ -275,10 +275,18 @@ check_version_higher() {
 		else
 			max=2147483647
 		fi
-		# base_os must be x.y.z-t format to avoid surprises
+		# base_os should be x.y.z-t format to avoid surprises
 		# with semver prerelease field filtering
-		[ "$component" = "base_os" ] \
-			&& error "base_os version %s must be in x[.y[.z]]-t format" "$version"
+		if [ "$component" = "base_os" ] \
+		    && [ -z "$WARNING_ACK_BASEOS_PRERELEASE" ]; then
+			warning "base_os version %s was not in x[.y[.z]]-t format" "$version"
+			warning "Please note that %s > %s-at.1, so if installing atmark-provided updates" \
+				"$version" "$version"
+			warning "later then ensure upgrades stay possible."
+			warning "This warning can be disabled by setting '%s' in '%s'" \
+				"WARNING_ACK_BASEOS_PRERELEASE=1" "$CONFIG"
+			WARNING_ACK_BASEOS_PRERELEASE=1
+		fi
 	else
 		# semver, signed int
 		max=2147483647
@@ -668,6 +676,9 @@ parse_swdesc() {
 			*) component="";;
 			esac
 			version=""
+			;;
+		"--base-os")
+			component=base_os
 			;;
 		"--extra-os")
 			case "$component" in

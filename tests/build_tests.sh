@@ -114,7 +114,8 @@ printf "%s\n" "swdesc_command --version base_os 3.19.1-at.1 true" \
 printf "%s\n" "swdesc_tar --version base_os 3.19.1-at.1 build_tests.sh" \
 	| name="special_versions" build_check -
 printf "%s\n" "swdesc_tar --version base_os 3.19.1-at.1 build_tests.sh" \
-	"swdesc_tar --version base_os 3.19.1-at.1 run.sh" \
+	"swdesc_option version=3.19.1-at.1" \
+	"swdesc_tar --base-os run.sh" \
 	| name="special_versions" build_check - 2> out/special_versions.stderr
 grep Warning out/special_versions.stderr \
 	|| error "no warning on multiple base_os"
