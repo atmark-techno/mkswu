@@ -44,6 +44,8 @@ lang: ja-JP
   * `ERROR : /!\ Could not pull ....`
 * [HW compatibility not found: ハードウェア適合性不一致の場合](#hw_compat_not_found)
   * `ERROR : HW compatibility not found`
+* [/var/app/volumes が読み取り専用でエラーになる場合](#volumes_ro)
+  * `ERROR : .... /var/app/volumes/...: Read-only file system`
 * [Container image immediately removed: イメージがインストールされない場合](#image_removed)
   * `WARNING: Container image docker.io/library/nginx:alpine was added in swu but immediately removed`
 * [Swupdate が終了しない場合](#stuck)
@@ -462,6 +464,40 @@ AGX4500 at1
 
 Armadillo に正しいアップデートをインストールしているかを確認してください。
 生成した swu の場合はコンフィグの `HW_COMPAT` と desc ファイルの `--board` オプションを確認してください。
+
+## /var/app/volumes が読み取り専用でエラーになる場合 [↑](#index) {#volumes_ro}
+
+### エラー発生時の/var/log/messagesの内容
+
+```
+May 24 14:23:56 armadillo user.info swupdate: START Software Update started !
+May 24 14:23:56 armadillo user.info swupdate: RUN [install_single_image] : Installing pre_script
+May 24 14:23:57 armadillo user.info swupdate: RUN [read_lines_notify] : No base os update: copying current os over
+May 24 14:24:01 armadillo user.info swupdate: RUN [install_single_image] : Installing swdesc_command 'a=/var/app/vol; echo foo > ${a}umes/test2'
+May 24 14:24:02 armadillo user.err swupdate: FAILURE ERROR : --: line 0: can't create /var/app/volumes/test2: Read-only file system
+May 24 14:24:02 armadillo user.err swupdate: FAILURE ERROR : Command failed: podman run --net=host --rm -v ${TMPDIR:-/var/tmp}:${TMPDIR:-/var/tmp} --read-only -v /target/tmp:/tmp -v /target/var/app/volumes:/var/app/volumes -v /target/var/app/rollback/volumes:/var/app/rollback/volumes --rootfs /target sh -c 'a=/var/app/vol; echo foo > ${a}umes/test2' --  /var/tmp/sh__c__a__var_app_vo..____a_umes_test2_____ffc90829c01f6d735745a24a72d978528fa5c550
+May 24 14:24:02 armadillo user.err swupdate: FAILURE ERROR : Error streaming _home_atmark_code_..____a_umes_test2_____8921f25e1eaff3d0f78ebb6b8c9c766e3df250e7
+May 24 14:24:02 armadillo user.err swupdate: FATAL_FAILURE Image invalid or corrupted. Not installing ...
+May 24 14:24:03 armadillo user.info swupdate: IDLE Waiting for requests...
+May 24 14:24:03 armadillo user.err swupdate: FAILURE ERROR : SWUpdate *failed* !
+```
+
+### エラーの概要
+
+mkswu バージョン 6.1 以降では、 /var/app/volumes が未使用だと判断した場合はマウントしないようになりました。
+
+スクリプトからアクセスする場合は古い mkswu で生成された SWU イメージでエラーすることがあります。
+
+また、/var/app/volumes の文字列が記載されていない場合も失敗します。
+
+### 対処方法
+
+新しい mkswu バージョンで SWU を再生成してみてください。 /var/app/volumes に関するワーニングが出力された場合にマウントされるようになります。
+
+ワーニングが出力されなかった場合はどこかに「/var/app/volumes」の文字列を追加してください。
+
+ただし、ワーニングに記載されているとおりに /var/app/volumes の内容を本機能でアップデートすることは危険ですので、 /var/app/rollback/volumes のみにアクセスするようにしてください。  
+/var/app/volumes は起動されたアプリケーションからアクセスしてください。
 
 ## Container image immediately removed: イメージがインストールされない場合 [↑](#index) {#image_removed}
 

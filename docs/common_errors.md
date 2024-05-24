@@ -40,6 +40,8 @@ Each item below contains an example of the full log message and an explanation o
   * `ERROR : /!\ Could not pull ....`
 * [Hardware is not compatible](#hw_compat_not_found)
   * `ERROR : HW compatibility not found`
+* [/var/app/volumes is read-only](#volumes_ro)
+  * `ERROR : <program/details> /var/app/volumes/<file>: Read-only file system`
 * [Container image immediately removed](#image_removed)
   * `WARNING: Container image docker.io/library/nginx:alpine was added in swu but immediately removed`
 * [Swupdate stuck](#stuck)
@@ -456,6 +458,37 @@ With the above, swupdate checks two things:
 ### How to fix
 
 Check you are installing an update on the correct device. If this is an update you generated, check your `HW_COMPAT` and usage of `--board` options.
+
+## /var/app/volumes is read-only [↑](#index) {#volumes_ro}
+
+### Full log messages
+
+```
+May 24 14:23:56 armadillo user.info swupdate: START Software Update started !
+May 24 14:23:56 armadillo user.info swupdate: RUN [install_single_image] : Installing pre_script
+May 24 14:23:57 armadillo user.info swupdate: RUN [read_lines_notify] : No base os update: copying current os over
+May 24 14:24:01 armadillo user.info swupdate: RUN [install_single_image] : Installing swdesc_command 'a=/var/app/vol; echo foo > ${a}umes/test2'
+May 24 14:24:02 armadillo user.err swupdate: FAILURE ERROR : --: line 0: can't create /var/app/volumes/test2: Read-only file system
+May 24 14:24:02 armadillo user.err swupdate: FAILURE ERROR : Command failed: podman run --net=host --rm -v ${TMPDIR:-/var/tmp}:${TMPDIR:-/var/tmp} --read-only -v /target/tmp:/tmp -v /target/var/app/volumes:/var/app/volumes -v /target/var/app/rollback/volumes:/var/app/rollback/volumes --rootfs /target sh -c 'a=/var/app/vol; echo foo > ${a}umes/test2' --  /var/tmp/sh__c__a__var_app_vo..____a_umes_test2_____ffc90829c01f6d735745a24a72d978528fa5c550
+May 24 14:24:02 armadillo user.err swupdate: FAILURE ERROR : Error streaming _home_atmark_code_..____a_umes_test2_____8921f25e1eaff3d0f78ebb6b8c9c766e3df250e7
+May 24 14:24:02 armadillo user.err swupdate: FATAL_FAILURE Image invalid or corrupted. Not installing ...
+May 24 14:24:03 armadillo user.info swupdate: IDLE Waiting for requests...
+May 24 14:24:03 armadillo user.err swupdate: FAILURE ERROR : SWUpdate *failed* !
+```
+
+### Cause of error
+
+Since version 6.1, mkswu no longer mounts /var/app/volumes if it thinks it is not used.
+
+This can be the case if the scripts does not reference the path directly, or for SWUs generated with an older version of mkswu and using /var/app/volumes only in a script.
+
+### How to fix
+
+Try to regenerate the SWU with a newer version of mkswu; if you get a warning about /var/app/volumes it was detected properly.
+
+If you did not get a warning, you can force detection by adding '/var/app/volumes' somewhere directly.
+
+It is however not recommended to write to /var/app/volumes through swupdate: please consider writing to /var/app/rollback/volumes instead and only write to /var/app/volumes from your containers.
 
 ## Container image immediately removed [↑](#index) {#image_removed}
 
