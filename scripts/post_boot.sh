@@ -13,21 +13,23 @@ allow_upgrade_available() {
 	# configuration.
 	cat /boot/uboot_env.d/* 2>/dev/null | awk -F= '
 		$1 == "upgrade_available" {
-			set=$2
+			val=$2;
 		}
 		END {
-			if (set != "1")
-				exit(1)
+			if (val == "")
+				exit(1);
+			print val;
 		}'
 }
 
 cleanup_target() {
+	local val
 	sync
 	cleanup
 
 	# Mark other fs as usable again unless encrypted boot is used
-	if allow_upgrade_available; then
-		fw_setenv_nowarn upgrade_available 1 \
+	if val=$(allow_upgrade_available); then
+		fw_setenv_nowarn upgrade_available "$val" \
 			|| warn "could not restore rollback"
 	fi
 }

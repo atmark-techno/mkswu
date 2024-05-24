@@ -52,7 +52,7 @@ init_vars_update() {
 		needs_reboot=1
 	fi
 	if [ -e "/etc/fw_env.config" ] \
-	    && fw_printenv upgrade_available | grep -qx 'upgrade_available=1'; then
+	    && fw_printenv upgrade_available | grep -qxE 'upgrade_available=[012]'; then
 		upgrade_available=1
 	fi
 }
