@@ -1,3 +1,49 @@
+6.1
+===
+security fix/breaking change:
+ - do not mount /var/app/volumes if it is not used.
+The detection is not perfect so this might break some existing SWU, but we
+should avoid mounting this single-copy partition as it can be modified by
+swdesc_files/swdesc_tar whose --dest contains /var/app/volumes (e.g. rootfs
+updates targets /, which contains /var/app/volumes)
+ - mount a different /tmp from the host: this should not matter, but might
+break updates that used _nochroot and normal commands
+
+deprecation notice:
+ - fail updates that contain items with no version set, this emitted a
+warning since 2023/05
+
+fixes:
+ - For Armadillo IoT G4 and Armadillo X2, power loss shortly after writing to
+the boot partition could rarely result in failures of the eMMC. Reduce the
+maximum IO size to the boot partition to 8KB to work around the failure.
+This slows down updates on affected systems (0.1s to 2s for bootloader,
+1s to up to 20s for encrypted linux images)
+ - fix container clear removal of /var/app/volumes if nested subvolumes are
+present
+ - only update rootfs users from current rootfs on base os updates: this
+allows commands like userdel to work
+ - fix typo making mkswu try to use newer abos-ctrl umount command on older
+systems when installing a container_clear SWU from usb
+
+features:
+ - add --base-os option to swdesc_tar for base_os updates. This only sets the
+version component.
+ - relax the check for base_os version being x.y.z-t, but warn if it is not
+ - ensure 'boot' and 'boot_linux' versions are only used where allowed
+ - ensure 'base_os' version is used appropriately (first-ish in image)
+ - soften the "automatically set preserve-attributes" message for base_os
+archives
+ - add `swdesc_option PUBLIC` option to build updates with the public one-time
+key; this is mostly intended for atmark developers to provide swu signed with
+the one-time key to users who can then temporarily add the public certificate
+to install it.
+ - handle more upgrade_availables values (preparation for next month release)
+ - free B-side volumes/container images on failure, this avoids problems if
+update failed due to FS being full
+
+  -- 2024-05-24
+
 6.0
 ===
 security fixes:
