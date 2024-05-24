@@ -544,11 +544,8 @@ write_entry_stdout() {
 	[ "$component" = "extra_os." ] && component=""
 	MKSWU_version_last_set=""
 	if [ -n "$component" ] && [ -z "$version" ]; then
-		warning "Warning: item was set without version:\n%s" \
+		error "item was set without version:\n%s\nPlease set a version (e.g. global swdesc_option version=...)" \
 				"$show_desc"
-		warning "This will stop working in %s update" "2024/05"
-		warning "Please set a version (e.g. global swdesc_option version=...)"
-		component=""
 	fi
 	if [ -n "$version" ] && [ -z "$component" ]; then
 		error "version %s was set without associated component:\n%s" \
@@ -1603,9 +1600,6 @@ EOF
 			|| error "above component used multiple times with different versions or install-if mode"
 		sort -u -k 1,1 -k 4,4 -k 1 < "$OUTDIR/sw-description-versions" \
 				| sed -e 's/^/  #VERSION /'
-	elif [ -z "$MKSWU_FORCE_VERSION" ]; then
-		# can remove in 2024/05
-		error "No versions found: use '--version x y' or 'swdesc_option version=y'"
 	fi
 	MKSWU_SWDESC_OPTS="${MKSWU_SWDESC_OPTS:+$MKSWU_SWDESC_OPTS
 }${MKSWU_FORCE_VERSION:+FORCE_VERSION}"

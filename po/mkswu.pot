@@ -204,13 +204,7 @@ msgstr ""
 msgid "Checksumming %s failed"
 msgstr ""
 #: mkswu
-msgid "Warning: item was set without version:\\n%s"
-msgstr ""
-#: mkswu
-msgid "This will stop working in %s update"
-msgstr ""
-#: mkswu
-msgid "Please set a version (e.g. global swdesc_option version=...)"
+msgid "item was set without version:\\n%s\\nPlease set a version (e.g. global swdesc_option version=...)"
 msgstr ""
 #: mkswu
 msgid "version %s was set without associated component:\\n%s"
@@ -388,9 +382,6 @@ msgid "HW_COMPAT must be set"
 msgstr ""
 #: mkswu
 msgid "above component used multiple times with different versions or install-if mode"
-msgstr ""
-#: mkswu
-msgid "No versions found: use '--version x y' or 'swdesc_option version=y'"
 msgstr ""
 #: mkswu
 msgid "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs"
