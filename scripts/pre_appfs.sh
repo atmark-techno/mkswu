@@ -73,7 +73,7 @@ remount_pid1_ns() {
 
 	# we cannot use internal functions in nsenter, fall back to either
 	# `umount -R` (util-linux) or `abos-ctrl umount` depending on version...
-	if umount --version 2>dev/null | grep -q util-linux; then
+	if umount --version 2>/dev/null | grep -q util-linux; then
 		set -- umount -R
 	else
 		set -- abos-ctrl umount
