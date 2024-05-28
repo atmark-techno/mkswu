@@ -53,7 +53,8 @@ update_shadow() {
 	awk -F: '$3 >= 1000 && $3 < 65500 { print $1 }' < "$GROUP" |
 		while read -r group; do
 			grep -qE "^$group:" "$NGROUP" \
-				|| grep -E "^$group:" "$GROUP" >> "$NGROUP"
+				|| grep -E "^$group:" "$GROUP" >> "$NGROUP" \
+				|| return
 		done
 
 	awk -F: '$1 == "root" || $1 ~ /^abos/ \
@@ -62,7 +63,8 @@ update_shadow() {
 			}' < "$PASSWD" |
 		while read -r user; do
 			grep -qE "^$user:" "$NPASSWD" \
-				|| grep -E "^$user:" "$PASSWD" >> "$NPASSWD"
+				|| grep -E "^$user:" "$PASSWD" >> "$NPASSWD" \
+				|| return
 			update_shadow_user "$user"
 			update_user_groups "$user"
 		done
@@ -238,7 +240,7 @@ post_rootfs() {
 	# extra fixups on update
 	if update_baseos; then
 		# keep passwords around
-		update_shadow
+		update_shadow || error "Could not update user list"
 
 		# update preserve_files owners when required
 		# (after update_shadow)
