@@ -8,11 +8,15 @@ _mkswu()
 		_filedir
 		return
 		;;
-	--version-base)
+	--version-base|--version-cmp|--version|--help|-h)
 		return
 		;;
 	-c|--config)
 		_filedir 'conf'
+		return
+		;;
+	--config-dir)
+		_filedir -d
 		return
 		;;
 	esac
@@ -27,13 +31,13 @@ _mkswu()
 		esac
 	done
 
-	options="-c --config -v --verbose -q --quiet -h --help --version"
+	options="-c --config --config-dir -v --verbose -q --quiet -h --help --version"
 	case "$mode" in
 	genkey) options+=" --aes --cn --plain";;
 	genkey_aes|init|import) :;;
 	show) options+=" --raw";;
 	update_version) options+=" --version-base";;
-	"") options+=" -o --out --init --import --genkey --show --update-version";;
+	"") options+=" -o --out --init --import --genkey --show --update-version --version-cmp";;
 	esac
 	COMPREPLY=($(compgen -W "$options" -- "$cur"))
 	case "$mode" in
