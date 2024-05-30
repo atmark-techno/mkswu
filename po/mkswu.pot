@@ -411,6 +411,12 @@ msgstr ""
 msgid "Could not sign %s"
 msgstr ""
 #: mkswu
+msgid "File signature failed, was the password correct?"
+msgstr ""
+#: mkswu
+msgid "Retrying %s more time(s)."
+msgstr ""
+#: mkswu
 msgid "Signature verification failed for $file"
 msgstr ""
 #: mkswu

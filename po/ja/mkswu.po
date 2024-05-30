@@ -547,6 +547,14 @@ msgid "Could not sign %s"
 msgstr "%s に署名できませんでした。"
 
 #: mkswu
+msgid "File signature failed, was the password correct?"
+msgstr "ファイルの署名に失敗しました。パスワードは間違っていませんか？"
+
+#: mkswu
+msgid "Retrying %s more time(s)."
+msgstr "あと %s 回再試行できます。"
+
+#: mkswu
 msgid "Signature verification failed for $file"
 msgstr "%s の証明確認が失敗しました"
 

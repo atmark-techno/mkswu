@@ -1674,11 +1674,19 @@ sign() {
 	[ -r "$PRIVKEY" ] || error "Cannot read PRIVKEY: %s" "$PRIVKEY"
 	[ -r "$PUBKEY" ] || error "Cannot read PUBKEY: %s" "$PUBKEY"
 
-	openssl cms -sign -in "$file" -out "$file.sig.tmp" \
-		-signer "$PUBKEY" -inkey "$PRIVKEY" \
-		-outform DER -nosmimecap -binary \
-		${PRIVKEY_PASS:+-passin "$PRIVKEY_PASS"} \
-		|| error "Could not sign %s" "$file"
+	# allow some retries for password failures
+	local retries=0
+	while ! openssl cms -sign -in "$file" -out "$file.sig.tmp" \
+			-signer "$PUBKEY" -inkey "$PRIVKEY" \
+			-outform DER -nosmimecap -binary \
+			${PRIVKEY_PASS:+-passin "$PRIVKEY_PASS"}; do
+		retries=$((retries + 1))
+		if [ -n "$PRIVKEY_PASS" ] || [ "$retries" -ge 3 ]; then
+			error "Could not sign %s" "$file"
+		fi
+		info "File signature failed, was the password correct?"
+		info "Retrying %s more time(s)." "$((3 - retries))"
+	done
 
 	mv "$file.sig.tmp" "$file.sig" \
 		|| error "Could not rename %s" "$file.sig"
