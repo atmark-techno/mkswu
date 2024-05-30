@@ -1,4 +1,5 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+# don't extract to /target for tests
+MKSWU_DEBUG_TARGET=""
 swdesc_option FORCE_VERSION
 
 echo "test content" > zoo/test\ space

@@ -1,5 +1,4 @@
 swdesc_option FORCE_VERSION
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
 
 swdesc_command_nochroot --description "debug message" \
 	"echo message to debug"

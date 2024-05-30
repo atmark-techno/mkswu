@@ -13,6 +13,7 @@ cd "$(dirname "$0")"
 SWUPDATE="${SWUPDATE:-swupdate}"
 command -v "$SWUPDATE" > /dev/null || error "Need swupdate for this"
 HWREV="${HWREV:-/etc/hwrevision}"
+export MKSWU_SKIP_SCRIPTS=1
 
 # setup/cleanup
 cp "$HWREV" /tmp/orig-hwrev
@@ -23,7 +24,6 @@ echo "iot-g4-es1 at1" > "$HWREV"
 # helper
 test_install() {
 	printf "%s\n" \
-			'DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"' \
 			'swdesc_option FORCE_VERSION' \
 			"$@" \
 		| name=exec_install build_check - \

@@ -1,4 +1,6 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+# don't extract to /target for tests
+MKSWU_DEBUG_TARGET=""
+
 swdesc_files --version test 1 --board iot-g4-es1 \
 	--dest /tmp/swupdate-test zoo/test\ space
 swdesc_files --version test 2 \

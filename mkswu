@@ -985,13 +985,10 @@ swdesc_boot_linux() {
 
 swdesc_tar() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
-	local target="/target"
+	local target="${MKSWU_DEBUG_TARGET-/target}"
 
 	parse_swdesc tar "$@"
 
-	case "$DEBUG_SWDESC" in
-	*DEBUG_SKIP_SCRIPTS*) target="";;
-	esac
 	case "$component" in
 	base_os)
 		if [ "${dest:-/}" != "/" ]; then

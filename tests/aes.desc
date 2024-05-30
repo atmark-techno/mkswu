@@ -1,3 +1,5 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+# don't extract to /target for tests
+MKSWU_DEBUG_TARGET=""
+
 swdesc_option FORCE_VERSION
 swdesc_files --dest /tmp/swupdate-test zoo/test\ space zoo/test\ space.tar

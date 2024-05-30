@@ -43,6 +43,7 @@ if command -v "$SWUPDATE" > /dev/null; then
 	if [ -w "$HWREV" ]; then
 		echo "iot-g4-es1 at1" > "$HWREV"
 	fi
+
 	# tests/install_files
 	rm -rf /tmp/swupdate-test /target/tmp/swupdate-test
 	"$SWUPDATE" -i ./out/install_files.swu -v -k ../swupdate.pem \
@@ -59,6 +60,17 @@ if command -v "$SWUPDATE" > /dev/null; then
 	[ "$(cat "/tmp/swupdate-test/subdir space/test space")" = "test content" ] \
 		|| error "subdir extraction with space failed"
 	rm -rf /tmp/swupdate-test
+
+	# this one should fail (mkswu scripts cannot run here)
+	mkdir /tmp/swupdate-test
+	"$SWUPDATE" -i ./out/stdout_info.swu -k ../swupdate.pem \
+		&& error "Should not have succeeded"
+	rm -rf /tmp/swupdate-test
+
+	# always skip scripts from here on - this does not run on ABOS
+	# Note the above two installs test DEBUG_SKIP_SCRIPTS so this should
+	# not be set earlier.
+	export MKSWU_SKIP_SCRIPTS=1
 
 	# tests/aes
 	mkdir /tmp/swupdate-test

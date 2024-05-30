@@ -14,6 +14,7 @@ SWUPDATE="${SWUPDATE:-swupdate}"
 command -v "$SWUPDATE" > /dev/null || error "Need swupdate for this"
 SW_VERSIONS="${SW_VERSIONS:-/etc/sw-versions}"
 HWREV="${HWREV:-/etc/hwrevision}"
+export MKSWU_SKIP_SCRIPTS=1
 [ -w "$SW_VERSIONS" ] || error "sw-versions didn't exist (or not writable), bad path?"
 
 # setup/cleanup
@@ -48,7 +49,6 @@ $oldvers"
 	fi
 
 	printf "%s\n" \
-			'DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"' \
 			"$@" \
 			"swdesc_command_nochroot --version testcomp '$newvers' \\" \
 			"	'touch \"$canary\"'" \

@@ -1,4 +1,3 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
 swdesc_option FORCE_VERSION
 
 swdesc_command 'touch "/fail"'

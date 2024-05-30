@@ -1,4 +1,13 @@
-DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+# tests now normally use MKSWU_SKIP_SCRIPTS=1; but we need to ensure
+# DEBUG_SKIP_SCRIPTS still works for swupdate-mkswu integration so
+# this test swu only still uses the old variables. Set both in case
+# the tested mkswu is older than package for some reason.
+DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS
+# DEBUG_SKIP_VENDORED_SCRIPTS"
+
+# don't extract to /target for tests
+MKSWU_DEBUG_TARGET=""
+
 swdesc_option FORCE_VERSION
 swdesc_files --basedir . --dest /tmp/swupdate-test \
 	zoo/test\ space zoo/test\ space.tar
