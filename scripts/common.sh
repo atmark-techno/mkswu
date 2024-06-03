@@ -432,6 +432,17 @@ update_baseos() {
 	[ "$update_rootfs" = "baseos" ]
 }
 
+update_rootfs_timestamp() {
+	date +%s > /target/etc/.rootfs_update_timestamp \
+		|| error "Could not update rootfs timestamp"
+	# in the unlikely chance we somehow got the same date, add something...
+	if cmp -s /etc/.rootfs_update_timestamp /target/etc/.rootfs_update_timestamp; then
+		echo "(differentiator for identical timestamps)" \
+				>> /target/etc/.rootfs_update_timestamp \
+			|| error "Could not update rootfs timestamp"
+	fi
+}
+
 mkswu_var() {
 	local BASEOS_CONF="${BASEOS_CONF:-/etc/atmark/baseos.conf}"
 	local var="$1"

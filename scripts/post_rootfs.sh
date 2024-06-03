@@ -247,14 +247,23 @@ post_rootfs() {
 		post_chown_preserve_files
 	fi
 
-	# in theory we should also check shadow/cert if no update, but the system
-	# needs extra os update to start containers so this is enough for safety check
-	if update_rootfs; then
-		# check there are no empty passwords left behind
-		check_shadow_empty_password
+	# remove open access swupdate certificate or complain
+	# This has to be done even if rootfs isn't modified because we
+	# need to remove one-time cert added through 'abos-ctrl certificates'
+	update_swupdate_certificate
 
-		# remove open access swupdate certificate or complain
-		update_swupdate_certificate
+	# in theory we should also check shadow if no update, but shadow can
+	# only be updated if rootfs changed so we trust the old system
+	# (this might miss a password removal if done through persist_file)
+	if update_rootfs; then
+		check_shadow_empty_password
+	else
+		# if certificates changed we ended up updating os,
+		# update timestamp
+		if ! cmp -s /etc/swupdate.pem /target/etc/swupdate.pem; then
+			update_rootfs_timestamp
+		fi
+
 	fi
 
 	# mark filesystem as ready for reuse if something failed
