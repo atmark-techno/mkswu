@@ -12,25 +12,20 @@ allow_upgrade_available() {
 	# Do not set upgrade_available if it is not set in default
 	# configuration.
 	cat /boot/uboot_env.d/* 2>/dev/null | awk -F= '
-		$1 == "upgrade_available" {
-			val=$2;
-		}
-		END {
-			if (val == "")
-				exit(1);
-			print val;
-		}'
+		/^upgrade_available=/ { val=$2 }
+		END { if (val == "") exit(1); }'
 }
 
 cleanup_target() {
-	local val
 	sync
 	cleanup success
 
 	# Mark other fs as usable again unless encrypted boot is used
-	if val=$(allow_upgrade_available); then
-		fw_setenv_nowarn upgrade_available "$val" \
-			|| warn "could not restore rollback"
+	if allow_upgrade_available; then
+		# always set 0: we don't know if what we just installed works,
+		# so it's available, but not a target for auto rollback.
+		fw_setenv_nowarn upgrade_available 0 \
+			|| warn "could not restore upgrade_available"
 	fi
 }
 
