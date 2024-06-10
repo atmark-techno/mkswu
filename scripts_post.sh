@@ -27,8 +27,11 @@ rm -rf "$MKSWU_TMP"
 kill_old_swupdate() {
 	# We do not want any other swupdate install to run after swupdate
 	# stopped
+	touch /run/swupdate_rebooting
 	# marker in /tmp are kept for compatibility until 2025/04
-	touch -h /run/swupdate_rebooting /tmp/.swupdate_rebooting
+	# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
+	local tmp
+	tmp=$(mktemp /tmp/.swupdate_rebooting.XXXXXX) && mv "$tmp" /tmp/.swupdate_rebooting
 
 	# swupdate >= 2023.12 has better locking, skip this to preserve return status
 	[ -n "$SWUPDATE_VERSION" ] && return
@@ -51,8 +54,11 @@ poweroff)
 wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# tell the world we're ready to be killed
+	touch /run/swupdate_waiting
 	# marker in /tmp are kept for compatibility until 2025/04
-	touch -h /run/swupdate_waiting /tmp/.swupdate_waiting
+	# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
+	local tmp
+	tmp=$(mktemp /tmp/.swupdate_waiting.XXXXXX) && mv "$tmp" /tmp/.swupdate_waiting
 	kill_old_swupdate
 	;;
 container)
