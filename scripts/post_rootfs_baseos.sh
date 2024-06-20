@@ -27,6 +27,26 @@ overwrite_to_target() {
 	done
 }
 
+post_copy_fixups() {
+	local found kernel=""
+
+	case "$(uname -m)" in
+	aarch64) kernel=Image;;
+	armv7*) kernel=uImage;;
+	esac
+
+	if found=$(grep -m 1 -xE "/boot(|/$kernel)" "$MKSWU_TMP/preserve_files_post") \
+	    && ! grep -qxF /lib/modules "$MKSWU_TMP/preserve_files_post" \
+	    && ! grep -qF "# no copy /lib/modules" "$TARGET/etc/swupdate_preserve_files"; then
+		warning "'POST $found' was in /etc/swupdate_preserve_files without /lib/modules," \
+			"this would likely result in a non-working setup: also forcing copy" \
+			"of /lib/modules." \
+			"Please add either 'POST /lib/modules' or '# no copy /lib/modules'" \
+			"to /etc/swupdate_preserve_files to remove this warning."
+		echo /lib/modules >> "$MKSWU_TMP/preserve_files_post"
+	fi
+}
+
 post_copy_preserve_files() {
 	local f
 	local TARGET="${TARGET:-/target}"
@@ -36,6 +56,9 @@ post_copy_preserve_files() {
 
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
 		| sort -u > "$MKSWU_TMP/preserve_files_post"
+
+	post_copy_fixups
+
 	while read -r f; do
 		# shellcheck disable=SC2086 # No quote to expand globs
 		overwrite_to_target $f
