@@ -1,3 +1,25 @@
+6.2
+===
+fixes:
+ - avoid 'touch -h' printing an error with coreutils
+ - fix 'upgrade_available' handling of installing side: the newly written side
+   has not been booted yet, so consider it "present but not eligible for auto
+   rollback". This ensure that in case of rollback for the new version the
+   system does not keep alternating between the two.
+ - update system swupdate certificates even if extra-os/base-os was not
+   specified. This is important to remove the public one-time certificate
+   immediately on installing any SWU, even one updating only containers, when
+   a user certificate is present.
+
+features:
+ - automatically copy /lib/modules if the kernel image was copied
+   (with a warning explaining what we're doing)
+ - retry signing sw-description up to 3 times: this can be useful if
+   e.g. the password was not entered correctly.
+ - add missing --version-cmp, --config-dir to bash completion
+
+  -- 2024-06-21
+
 6.1
 ===
 security fix/breaking change:
