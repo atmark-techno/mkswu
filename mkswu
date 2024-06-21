@@ -910,7 +910,11 @@ check_pad_boot() {
 	header=$(xxd -l 4 -p "$boot_file")
 	case "$header" in
 	d1002041)
-		# imx8 boot image, ok
+		# imx8mp boot image, ok
+		return
+		;;
+	00200287)
+		# imx8ulp boot image, ok
 		return
 		;;
 	d1002040)

@@ -135,8 +135,23 @@ cleanup_boot() {
 	    && [ -z "$(mkswu_var NO_ARCH_CHECK)" ]; then
 		case "$(uname -m)" in
 		aarch64)
-			[ "$(xxd -l 4 -p /dev/swupdate_bootdev)" = d1002041 ] \
-				|| error "Installed u-boot does not appear to be for i.MX8M, aborting!" \
+			local expect="" board
+			case "$(tr -d '\0' < /sys/firmware/devicetree/base/compatible 2>/dev/null)" in
+			*imx8ulp*)
+				expect=00200287
+				board=i.MX8ULP
+				;;
+			*imx8mp*)
+				expect=d1002041
+				board=i.MX8MP
+				;;
+			*)
+				warning "Did not recognize board, not checking u-boot validity"
+				;;
+			esac
+			[ -z "$expect" ] \
+				|| [ "$(xxd -l 4 -p /dev/swupdate_bootdev)" = "$expect" ] \
+				|| error "Installed u-boot does not appear to be for $board, aborting!" \
 					"In case of false positive, set MKSWU_NO_ARCH_CHECK=1"
 			;;
 		armv7*)
