@@ -596,6 +596,10 @@ write_entry_stdout() {
 		|| write_line "properties: {" \
 			"  description: \"$show_desc\";" "};"
 
+	if [ -n "$MKSWU_desc_extra_text" ]; then
+		write_line "$MKSWU_desc_extra_text"
+	fi
+
 	indent=$((indent-2))
 	write_line "},"
 }
@@ -1258,7 +1262,7 @@ swdesc_script() {
 	parse_swdesc script "$@"
 
 	if grep -q /var/app/volumes "$file"; then
-		write_line '# script has /var/app/volumes'
+		local MKSWU_desc_extra_text='# script has /var/app/volumes'
 	fi
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
@@ -1414,6 +1418,8 @@ embedded_preinstall_script() {
 	local MKSWU_install_first=1
 	local EMBEDDED_SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 	local PRE_SCRIPT="$SCRIPT_DIR/scripts_pre.sh"
+	# avoid duplicating extra text if it was on first entry
+	local MKSWU_desc_extra_text=""
 
 	local file="$OUTDIR/scripts.tar" basedir=""
 	local tarfiles_src="$EMBEDDED_SCRIPTS_DIR"

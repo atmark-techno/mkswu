@@ -54,8 +54,12 @@ printf "%s\n" "swdesc_files build_tests.sh --version stdin 1" \
 		"swdesc 'touch /tmp/swupdate-test'" \
 		"swdesc 'build_tests.sh'" \
 
-build_check swdesc_script.desc --
+build_check swdesc_script.desc -- \
+	'swdesc_absent "script has /var/app/volumes"'
 build_check swdesc_script_nochroot.desc --
+
+build_check script_volumes.desc -- \
+	'swdesc "script has /var/app/volumes"'
 
 build_check two_scripts.desc -- \
 	"swdesc 'one' 'two'"
