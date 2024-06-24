@@ -297,6 +297,12 @@ msgstr ""
 msgid "Unhandled command %s"
 msgstr ""
 #: mkswu
+msgid "%s did not contain '%s'\\nThis check can be disabled by setting MKSWU_NO_ARCH_CHECK=1"
+msgstr ""
+#: mkswu
+msgid "%s contained '%s', is it encrypted?\\nThis check can be disabled by setting MKSWU_NO_ARCH_CHECK=1"
+msgstr ""
+#: mkswu
 msgid "Unrecognized boot image format for %s"
 msgstr ""
 #: mkswu
@@ -306,6 +312,9 @@ msgstr ""
 msgid "Version must be set for swdesc_boot_encrypted"
 msgstr ""
 #: mkswu
+msgid "%s did not have expected content, is it a .dek_offsets file?"
+msgstr ""
+#: mkswu
 msgid "dek offset file %s was not readable or empty"
 msgstr ""
 #: mkswu
@@ -313,6 +322,12 @@ msgid "Version must be set for swdesc_boot_linux"
 msgstr ""
 #: mkswu
 msgid "swdesc_boot_linux image must be at most 26MB big"
+msgstr ""
+#: mkswu
+msgid "Encrypted linux image not yet supported"
+msgstr ""
+#: mkswu
+msgid "Unrecognized linux kernel format for %s"
 msgstr ""
 #: mkswu
 msgid "base_os upgrade must go to / (was: %s)"

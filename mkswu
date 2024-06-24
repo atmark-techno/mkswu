@@ -959,18 +959,41 @@ parse_swdesc() {
 	esac
 }
 
+check_enc_boot() {
+	local key="$1"
+
+	[ -n "$MKSWU_NO_ARCH_CHECK" ] && return
+
+	if [ -z "$MKSWU_encrypted_boot" ]; then
+		# plain boot, we should find the keys
+		grep -q "$key" "$boot_file" \
+			|| error "%s did not contain '%s'\nThis check can be disabled by setting MKSWU_NO_ARCH_CHECK=1" \
+				"$boot_file" "$key"
+	else
+		# .. but not if encrypted
+		! grep -q "$key" "$boot_file" \
+			|| error "%s contained '%s', is it encrypted?\nThis check can be disabled by setting MKSWU_NO_ARCH_CHECK=1" \
+				"$boot_file" "$key"
+	fi
+}
+
 check_pad_boot() {
 	local header
 	[ -e "$boot_file" ] || error "%s does not exist" "$boot_file"
+
+	# common to all images
+	check_enc_boot u-boot
 
 	header=$(xxd -l 4 -p "$boot_file")
 	case "$header" in
 	d1002041)
 		# imx8mp boot image, ok
+		check_enc_boot aarch64
 		return
 		;;
 	00200287)
 		# imx8ulp boot image, ok
+		check_enc_boot aarch64
 		return
 		;;
 	d1002040)
@@ -980,6 +1003,7 @@ check_pad_boot() {
 				seek=1024 oflag=seek_bytes \
 			|| error "Could not copy %s to %s" "$boot_file" "$dest"
 		boot_file="$dest"
+		check_enc_boot armv7
 		return
 		;;
 	esac
@@ -987,6 +1011,7 @@ check_pad_boot() {
 	case "$header" in
 	d1002040)
 		# padded imx6ull/imx7d, ok
+		check_enc_boot armv7
 		return
 		;;
 	esac
@@ -1038,25 +1063,32 @@ swdesc_boot() {
 swdesc_boot_enc() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local boot_file="" dek_offsets_file="" offsets
+	local MKSWU_encrypted_boot=1
 	component=boot
 
 	parse_swdesc boot_enc "$@"
 
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_encrypted"
-	check_pad_boot
 
 	offsets=$(cat "$dek_offsets_file")
+	case "$offsets" in
+	"dek_spl_offset 0x"*" dek_fit_offset 0x"*)
+		# G4/"old" offset format
+		offsets="fw_setenv $offsets"
+		;;
+	*)
+		error "%s did not have expected content, is it a .dek_offsets file?" \
+			"$dek_offsets_file"
+	esac
 	[ -n "$offsets" ] \
 		|| error "dek offset file %s was not readable or empty" "$dek_offsets_file"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_exec_nochroot "$boot_file" \
-		'[ -e /dev/swupdate_bootdev ]' \
-		"fw_setenv $offsets" \
-		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
-		'dd if=$1 of=/dev/swupdate_bootdev bs=1M conv=fsync status=none' \
-		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro'
+	swdesc_command_nochroot --description "Setting up encryption offsets" \
+		"$offsets"
+
+	swdesc_boot "$boot_file"
 }
 
 
@@ -1072,6 +1104,24 @@ swdesc_boot_linux() {
 		|| error "Version must be set for swdesc_boot_linux"
 	[ "$(stat -L -c %s "$image")" -lt "$((26 * 1024 * 1024))" ] \
 		|| error "swdesc_boot_linux image must be at most 26MB big"
+
+	case "$(xxd -l 4 -p "$image")" in
+	d00dfeed)
+		# FIT image, OK for imx8mp
+		# we unfortunately cannot check if it's encrypted, but since
+		# it's linux the worst that can happen is a rollback...
+		;;
+	00c00287)
+		# signed imx8ulp image
+		;;
+	00080387)
+		# encrypted imx8ulp image
+		error "Encrypted linux image not yet supported"
+		;;
+	*)
+		error "Unrecognized linux kernel format for %s" "$image"
+		;;
+	esac
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$image" \

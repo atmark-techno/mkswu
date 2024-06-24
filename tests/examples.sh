@@ -26,7 +26,7 @@ build_check ../examples/pull_container_nginx.desc -- \
 
 # boot: bundle boot image
 if ! [ -e ../imx-boot_armadillo_x2 ] \
-    || [ "$(xxd -l 4 -p ../imx-boot_armadillo_x2)" != d1002041 ]; then
+    || ! grep -q u-boot ../imx-boot_armadillo_x2; then
 	{
 		# create file with proper signature...
 		echo '0: d1002041' | xxd -r
@@ -34,6 +34,8 @@ if ! [ -e ../imx-boot_armadillo_x2 ] \
 		dd if=/dev/zero bs=1M count=1 status=none
 		# and with version recognizable
 		echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e'
+		echo u-boot
+		echo aarch64
 	} > ../imx-boot_armadillo_x2
 fi
 build_check ../examples/boot.desc -- "file zst.imx-boot_armadillo_x2.*" "version boot '202.* higher'" "swdesc imx-boot_armadillo_x2"
@@ -47,15 +49,32 @@ build_check ../examples/kernel_update_plain.desc -- \
 	"swdesc update_preserve_files"
 
 # encrypted linux
-touch ../examples/Image.signed
+if ! [ -e ../examples/Image.signed ] \
+    || ! [ "$(xxd -l 4 -p ../examples/Image.signed)" != d00dfeed ]; then
+	rm -f ../examples/Image.signed
+	{
+		# create file with proper signature...
+		echo '0: d00dfeed' | xxd -r
+		# big enough to be compressed...
+		dd if=/dev/zero bs=1M count=1 status=none
+	} > ../examples/Image.signed
+fi
 build_check ../examples/encrypted_rootfs_linux_update.desc -- \
 	"swdesc swupdate_bootdev"
 
 # encrypted boot
-if ! [ -e ../examples/imx-boot_armadillo_x2.enc ]; then
-	ln -s ../imx-boot_armadillo_x2 ../examples/imx-boot_armadillo_x2.enc
+if ! [ -e ../examples/imx-boot_armadillo_x2.enc ] \
+    || [ "$(xxd -l 4 -p ../examples/imx-boot_armadillo_x2.enc)" != d1002041 ] \
+    || grep -q u-boot ../examples/imx-boot_armadillo_x2.enc; then
+	{
+		# create file with proper signature...
+		echo '0: d1002041' | xxd -r
+		# big enough to be compressed...
+		dd if=/dev/zero bs=1M count=1 status=none
+		# and no trailers
+	} > ../examples/imx-boot_armadillo_x2.enc
 fi
-echo "123 version" > ../examples/armadillo_x2.dek_offsets
+echo "dek_spl_offset 0x123 dek_fit_offset 0x123" > ../examples/armadillo_x2.dek_offsets
 build_check ../examples/encrypted_imxboot_update.desc -- \
 	"swdesc swupdate_bootdev" "swdesc 123 version"
 

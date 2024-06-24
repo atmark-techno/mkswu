@@ -395,6 +395,14 @@ msgid "Unhandled command %s"
 msgstr "%s コマンドを実行できません。"
 
 #: mkswu
+msgid "%s did not contain '%s'\\nThis check can be disabled by setting MKSWU_NO_ARCH_CHECK=1"
+msgstr "%s に '%s' の文字列を確認できませんでした。\\nこのチェックは MKSWU_NO_ARCH_CHECK=1 で無効化可能です。"
+
+#: mkswu
+msgid "%s contained '%s', is it encrypted?\\nThis check can be disabled by setting MKSWU_NO_ARCH_CHECK=1"
+msgstr "%s に '%s' の文字列を確認できましたので、暗号化されてない可能性が高いです。\\nこのチェックは MKSWU_NO_ARCH_CHECK=1 で無効化可能です。"
+
+#: mkswu
 msgid "Unrecognized boot image format for %s"
 msgstr "%s ブートイメージフォーマットを認識できませんでした。"
 
@@ -407,6 +415,10 @@ msgid "Version must be set for swdesc_boot_encrypted"
 msgstr "swdesc_boot_encrypted にバージョンが必要です。swdesc_option version=X で指定してください"
 
 #: mkswu
+msgid "%s did not have expected content, is it a .dek_offsets file?"
+msgstr "%s を処理できませんでした。 .dek_offsets ファイルですか？"
+
+#: mkswu
 msgid "dek offset file %s was not readable or empty"
 msgstr "DEK オフセット %s を読み取りできませんでした。"
 
@@ -417,6 +429,14 @@ msgstr "swdesc_boot_linux にバージョンが必要です。swdesc_option vers
 #: mkswu
 msgid "swdesc_boot_linux image must be at most 26MB big"
 msgstr "swdesc_boot_linux は 26MB までです。"
+
+#: mkswu
+msgid "Encrypted linux image not yet supported"
+msgstr "暗号化されたカーネルは未対応です。"
+
+#: mkswu
+msgid "Unrecognized linux kernel format for %s"
+msgstr "%s ブートイメージフォーマットを認識できませんでした。"
 
 #: mkswu
 msgid "base_os upgrade must go to / (was: %s)"
