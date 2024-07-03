@@ -57,7 +57,6 @@ wait)
 	touch /run/swupdate_waiting
 	# marker in /tmp are kept for compatibility until 2025/04
 	# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
-	local tmp
 	tmp=$(mktemp /tmp/.swupdate_waiting.XXXXXX) && mv "$tmp" /tmp/.swupdate_waiting
 	kill_old_swupdate
 	;;
