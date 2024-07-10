@@ -148,7 +148,7 @@ save_prompt() {
 	case "$reply" in
 	"$value") return;;
 	"") echo "$prompt_id=$value" >> "$PROMPT_FILE";;
-	*) 	if [[ -n "$value" ]]; then
+	*)	if [[ -n "$value" ]]; then
 			sed -i -e 's/^\('"$prompt_id"'=\).*/\1'"$value"'/' "$PROMPT_FILE"
 		else
 			sed -i -e '/^'"$prompt_id"'=/d' "$PROMPT_FILE"

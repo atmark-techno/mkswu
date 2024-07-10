@@ -1457,7 +1457,7 @@ swdesc_option() {
 		NOTIFY_SUCCESS_CMD=*) MKSWU_NOTIFY_SUCCESS_CMD="${opt#NOTIFY_SUCCESS_CMD=}";;
 		ROOTFS_FSTYPE=*) MKSWU_ROOTFS_FSTYPE="${opt#ROOTFS_FSTYPE=}";;
 		BOOT_SIZE=*) warning "BOOT_SIZE is no longer used and has been ignored";;
-		ENCRYPT_KEYFILE=*) 
+		ENCRYPT_KEYFILE=*)
 			[ -n "$FIRST_SWDESC_INIT" ] \
 				|| error "%s must be set before the first swdesc_* action" \
 					"ENCRYPT_KEYFILE"
@@ -1798,7 +1798,7 @@ update_mkswu_conf() {
 			    -e 's/^# to date with mkimage.conf\(.defaults\)\? changes!/# if you remove it the file will not be edited again./' \
 			    -e '/^\. .*mkimage.conf.defaults/d' \
 			    "$CONFIG" > "$NEW_CONFIG.new" \
-			    || error "Could not update config %s" "$CONFIG"
+				|| error "Could not update config %s" "$CONFIG"
 		else
 			cat > "$NEW_CONFIG.new" <<EOF \
 				|| error "Could not update config %s" "$CONFIG"
@@ -2556,7 +2556,7 @@ mkswu_show() {
 					if (! orig_cmd) {
 						# only add version/install-if found if we did not record the original command
 						if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
-						        sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
+							sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
 						}
 						if (!(cmd[filename] ~ /--install-if/) && install_if[filename]) {
 							sub(/ /, "  --install-if " install_if[filename] " ", cmd[filename])

@@ -27,7 +27,7 @@ build_check ../examples/pull_container_nginx.desc -- \
 # boot: bundle boot image
 if ! [ -e ../imx-boot_armadillo_x2 ] \
     || [ "$(xxd -l 4 -p ../imx-boot_armadillo_x2)" != d1002041 ]; then
-    	{
+	{
 		# create file with proper signature...
 		echo '0: d1002041' | xxd -r
 		# big enough to be compressed...

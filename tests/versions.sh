@@ -28,7 +28,7 @@ check 0 '1-2.3 < 1-2.3.4' 1-2.3 1-2.3.4
 
 # bogus input
 check 3 'ERROR: Version 1.2.3.4.5 must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)' \
-       	1 1.2.3.4.5
+	1 1.2.3.4.5
 
 # multiple input
 check 0 $'1 < 2\n1 < 3' 1 2 3
