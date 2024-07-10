@@ -269,6 +269,8 @@ usage() {
 	echo "  --no-rollout: only upload the file without creating a rollout"
 	echo "  --new: create new rollout even if there already is an existing one"
 	echo "  --failed: Apply rollout only to nodes that previously failed update"
+	echo "  --filter: Apply filter when creating rollout, e.g."
+	echo "            --filter 'id == armadillo-xxxx-yyyy-zzzz'"
 	echo
 	echo "post action:"
 	echo "  --start: start rollout immediately after creation"
@@ -302,6 +304,10 @@ main() {
 		"--failed")
 			filter="updatestatus == error"
 			variant="failed"
+			;;
+		"--filter")
+			filter="$2"
+			shift
 			;;
 		"--start")
 			start_rollout=1
