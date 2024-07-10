@@ -793,7 +793,18 @@ parse_swdesc() {
 				MKSWU_component_baseos_seen="warned"
 				;;
 			tar,archive|tar,warned) ;;
-			tar,forbidden) error "'base_os' update must be first in desc file";;
+			tar,extra_os*)
+				if [ -z "$WARNING_ACK_BASEOS_ORDER" ]; then
+					# re-ordering done in append_file with FILES_FIRST
+					warning "Warning: 'base_os' update listed after '%s'" "$MKSWU_component_baseos_seen"
+					warning "The 'base_os' archive will be extracted first to ensure installation"
+					warning "succeeds, please check this does not impact file extraction order."
+					warning "This warning can be disabled by setting '%s' in '%s'" \
+						"WARNING_ACK_BASEOS_ORDER=1" "$CONFIG"
+					WARNING_ACK_BASEOS_ORDER=1
+				fi
+				MKSWU_component_baseos_seen="archive"
+				;;
 			*) error "%s: Version component '%s' is reserved for swdesc_%s" \
 				"$cmd_description" base_os tar;;
 			esac
@@ -802,21 +813,13 @@ parse_swdesc() {
 			# these don't interfere with base_os update
 			;;
 		extra_os.*)
-			# base_os cannot be installed after extra_os updates
+			# warn that order changed if a later base_os update comes
 			if [ -z "$MKSWU_component_baseos_seen" ]; then
-				MKSWU_component_baseos_seen="forbidden"
+				MKSWU_component_baseos_seen="$component"
 			fi
 			;;
 		*)
-			# container updates could be ok, but exec in target container
-			# is not allowed before base_os
-			case "$CMD,$container" in
-			exec,|script,|command,)
-				if [ -z "$MKSWU_component_baseos_seen" ]; then
-					MKSWU_component_baseos_seen="forbidden"
-				fi
-				;;
-			esac
+			# not touching base-os so not impacted by order change
 			;;
 		esac
 	fi

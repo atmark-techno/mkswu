@@ -246,7 +246,13 @@ msgstr ""
 msgid "the first occurence so the result might be unexpected."
 msgstr ""
 #: mkswu
-msgid "'base_os' update must be first in desc file"
+msgid "Warning: 'base_os' update listed after '%s'"
+msgstr ""
+#: mkswu
+msgid "The 'base_os' archive will be extracted first to ensure installation"
+msgstr ""
+#: mkswu
+msgid "succeeds, please check this does not impact file extraction order."
 msgstr ""
 #: mkswu
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"

@@ -125,10 +125,14 @@ grep Warning out/special_versions.stderr \
 	|| error "no warning on multiple base_os"
 printf "%s\n" "swdesc_files --version cont 1 build_tests.sh" \
 		"swdesc_tar --version base_os 3.19.1-at.1 build_tests.sh" \
-	| name="special_versions" build_check -
-printf "%s\n" "swdesc_command --version cont 1 true" \
+	| name="special_versions" build_check - 2> out/special_versions.stderr
+grep Warning out/special_versions.stderr \
+	&& error "Should be no warning for cont+base_os"
+printf "%s\n" "swdesc_command --version extra_os.cont 1 true" \
 		"swdesc_tar --version base_os 3.19.1-at.1 build_tests.sh" \
-	| name="special_versions" build_fail -
+	| name="special_versions" build_check - 2> out/special_versions.stderr
+grep Warning out/special_versions.stderr \
+	|| error "no warning on extra_os + base_os"
 
 printf "%s\n" "swdesc_option version=1" "swdesc_command true" "swdesc_option PUBLIC" \
 	| name="public after swdesc_xxx" build_fail -

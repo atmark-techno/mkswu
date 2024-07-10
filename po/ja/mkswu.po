@@ -327,8 +327,16 @@ msgid "the first occurence so the result might be unexpected."
 msgstr "に実行されますので、複数回または先頭以外で指定すると予想外の結果になる恐れがあります。"
 
 #: mkswu
-msgid "'base_os' update must be first in desc file"
-msgstr "「base_os」の更新は最初に指定してください。"
+msgid "Warning: 'base_os' update listed after '%s'"
+msgstr "Warning: 「base_os」アップデートが「%s」の後に記載されています。"
+
+#: mkswu
+msgid "The 'base_os' archive will be extracted first to ensure installation"
+msgstr "アップデートを成功させるために「base_os」の展開を先に実行"
+
+#: mkswu
+msgid "succeeds, please check this does not impact file extraction order."
+msgstr "します。ファイル展開の順序が変わることに問題がないか確認してください。"
 
 #: mkswu
 msgid "swdesc_boot requires an argument\\nUsage: swdesc_boot [options] boot_file"
