@@ -2654,8 +2654,6 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	realpath --version >/dev/null 2>&1 \
 		|| error "Please install coreutils first."
 
-	set -e
-
 	if [ "${SCRIPT_DIR%/usr/bin}" != "$SCRIPT_DIR" ]; then
 		SCRIPT_DIR=${SCRIPT_DIR%/bin}/share/mkswu
 		TEXTDOMAINDIR="${SCRIPT_DIR%/mkswu}/locale"
@@ -2873,7 +2871,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	if [ -n "$MODE" ]; then
 		[ -n "$OUT" ] && error "%s is incompatible with --%s" "out" "$(mode_to_opt "$MODE")"
 		"mkswu_$MODE" "$@"
-		exit 0
+		exit
 	fi
 
 	if [ "$#" = "0" ]; then
@@ -2895,7 +2893,8 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 
 	main_cwd="$PWD"
 	absolutize_file_paths
-	# build sw-desc fragments
+	# build sw-desc fragments with set -e to catch user errors in desc files
+	set -e
 	for desc; do
 		# shellcheck disable=SC2034 ## MKSWU_version is used, yes...
 		MKSWU_version=""; MKSWU_install_if=""
@@ -2922,6 +2921,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 		cd "$main_cwd" || error "Cannot return to %s we were in before" "$main_cwd"
 		[ "$#" -gt 1 ] && info "Successfully included %s contents" "$desc"
 	done
+	set +e
 
 	[ -z "$FIRST_SWDESC_INIT" ] \
 		|| error "No command could be found in desc files"
