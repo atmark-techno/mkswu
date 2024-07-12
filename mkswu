@@ -1740,9 +1740,9 @@ track_used() {
 		[ "${file#"$OUTDIR"}" = "$file" ] && continue
 
 		if [ -d "$file" ]; then
-			find "$file" -type f
+			find "$file" -type f -print0
 		else
-			printf "%s\n" "$file"
+			printf "%s\0" "$file"
 		fi >> "$OUTDIR/used_files"
 	done
 }
@@ -1750,10 +1750,10 @@ track_used() {
 cleanup_outdir() {
 	local file
 
-	sort < "$OUTDIR/used_files" > "$OUTDIR/used_files.sorted"
-	find "$OUTDIR" -not -type d | sort \
-		| join -v 1 - "$OUTDIR/used_files.sorted" \
-		| xargs -r rm -f
+	sort -z < "$OUTDIR/used_files" > "$OUTDIR/used_files.sorted"
+	find "$OUTDIR" -not -type d -print0 | sort -z \
+		| join -z -t '\0' -v 1 - "$OUTDIR/used_files.sorted" \
+		| xargs -0 -r rm -f
 
 	# also remove any empty dir
 	# busybox find does not have find -empty, but we have
