@@ -93,7 +93,7 @@ install: install_mkswu install_examples install_locales install_html
 
 install_mkswu:
 	install -D -t $(DESTDIR)$(BIN) mkswu hawkbit_push_update
-	sed -i -e "s/MKSWU_VERSION=\"/&$(TAG)/" $(DESTDIR)$(BIN)/mkswu
+	sed -i -e "s/MKSWU_VERSION=\"\"/MKSWU_VERSION=\"$(TAG)\"/" $(DESTDIR)$(BIN)/mkswu
 	install -D -t $(DESTDIR)$(BIN) podman_partial_image
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) mkswu.conf.defaults
 	install -D -m 0644 -t $(DESTDIR)$(SHARE) swupdate-onetime-public.key
