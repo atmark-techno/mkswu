@@ -1,3 +1,18 @@
+6.3
+===
+fixes:
+ - re-allow base_os updates that aren't first (print warning instead of the
+   error that was added in 6.1) - this is necessary to have combo updates such
+   as initial_setup+base_os to work
+ - fix POST_ACTION=wait printing an error message at the very end after
+   install finished (broke in 6.2)
+ - fix mkswu SWU generation when building an image in a directory whose path
+   contains single quotes or new lines. That used to fail in the cleanup step,
+   which will also no longer fail the SWU generation if it happens to fail for
+   another reason.
+
+  -- 2024-07-19
+
 6.2.1
 =====
 fixes:
