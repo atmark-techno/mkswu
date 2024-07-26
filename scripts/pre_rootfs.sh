@@ -249,11 +249,17 @@ mount_target_rootfs() {
 	local fsroot=/live/rootfs/
 	[ -e "$fsroot" ] || fsroot="/"
 
-	cryptsetup isLuks "$dev" >/dev/null 2>&1 && encrypted=1
+	# check encryption of the current partition (and not target's)
+	cryptsetup isLuks "${partdev}$((!ab+1))" >/dev/null 2>&1 && encrypted=1
 
 	if [ -n "$(mkswu_var ENCRYPT_ROOTFS)" ]; then
 		[ -n "$(get_version "boot_linux")" ] \
 			|| error "encrypting rootfs requires having swdesc_boot_linux installed"
+		# We want to bump timestamp if we didn't have encryption before
+		# note we don't care about preserving this for post scripts
+		if [ -z "$encrypted" ] && [ -z "$update_rootfs" ]; then
+			update_rootfs=1
+		fi
 		encrypted=1
 	fi
 
