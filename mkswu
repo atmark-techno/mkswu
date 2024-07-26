@@ -2141,6 +2141,30 @@ geninitdesc_hashpw() {
 	printf "%s" "$plain" | openssl passwd -6 -stdin
 }
 
+check_password_strength() {
+	local password="$1"
+
+	# sbin not in default debian PATH, add it temporarily for cracklib-check
+	local PATH="$PATH:/usr/sbin"
+
+	if command -v cracklib-check >/dev/null; then
+		if ! echo "$password" | cracklib-check | grep -qE ': OK$'; then
+			warning "password not strong enough:"
+			# cracklib-check output is already localized; remove password
+			# from output though...
+			echo "$password" | cracklib-check | sed -e 's/.*: /    /'
+			return 1
+		fi
+	fi
+
+	# check password length
+	local PASSWORD_MIN_LEN=8
+	if [ "${#password}" -lt "$PASSWORD_MIN_LEN" ]; then
+		warning "Password is too short, please set at least %s characters." "$PASSWORD_MIN_LEN"
+		return 1
+	fi
+}
+
 geninitdesc_promptpass() {
 	local user="$1"
 	local password
@@ -2158,6 +2182,7 @@ geninitdesc_promptpass() {
 		else
 			PASS=1 prompt password "%s user password (empty = locks account):" "$user"
 		fi
+		[ -z "$password" ] || check_password_strength "$password" || continue
 		PASS=1 prompt confirm "%s password (confirm):" "$user"
 		if [ "$password" != "$confirm" ]; then
 			info "Passwords do not match"

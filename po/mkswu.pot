@@ -561,6 +561,12 @@ msgstr ""
 msgid "Generated %s"
 msgstr ""
 #: mkswu
+msgid "password not strong enough:"
+msgstr ""
+#: mkswu
+msgid "Password is too short, please set at least %s characters."
+msgstr ""
+#: mkswu
 msgid "%s user password:"
 msgstr ""
 #: mkswu

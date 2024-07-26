@@ -747,6 +747,14 @@ msgid "Generated %s"
 msgstr "%s を作成しました。"
 
 #: mkswu
+msgid "password not strong enough:"
+msgstr "パスワードの強度が十分でありません:"
+
+#: mkswu
+msgid "Password is too short, please set at least %s characters."
+msgstr "パスワードが短すぎます。 %s文字以上のパスワードを設定してください。"
+
+#: mkswu
 msgid "%s user password:"
 msgstr "%sパスワード:"
 
