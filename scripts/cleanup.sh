@@ -23,5 +23,4 @@ if [ -n "$SWUPDATE_VERSION" ] \
 fi
 
 cleanup
-rm -rf "$MKSWU_TMP"
 unlock_update

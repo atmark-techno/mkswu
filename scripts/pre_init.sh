@@ -107,7 +107,6 @@ fail_redundant_update() {
 	# downloading the rest of the image
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
 		if check_nothing_to_do; then
-			rm -rf "$MKSWU_TMP"
 			error "Nothing to do -- failing on purpose to save bandwidth"
 		fi
 		# also check B-side unless SW_ALLOW_ROLLBACK is set
@@ -115,7 +114,6 @@ fail_redundant_update() {
 		if [ -z "$SW_ALLOW_ROLLBACK" ] \
 		    && [ -n "$upgrade_available" ] \
 		    && cmp -s "/var/log/swupdate/sw-versions-$dev" "$MKSWU_TMP/sw-versions.merged"; then
-			rm -rf "$MKSWU_TMP"
 			error "Update looks like it already had been installed but rolled back, failing on purpose." \
 				"Set SW_ALLOW_ROLLBACK=1 environment variable to force installing anyway."
 		fi

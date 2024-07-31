@@ -20,10 +20,6 @@ SCRIPTSDIR="$MKSWU_TMP"
 . "$SCRIPTSDIR/post_boot.sh"
 . "$SCRIPTSDIR/post_success.sh"
 
-# note we do not unlock after cleanup unless another update
-# is expected to run after this one, a fresh boot is needed.
-rm -rf "$MKSWU_TMP"
-
 kill_old_swupdate() {
 	# We do not want any other swupdate install to run after swupdate
 	# stopped
