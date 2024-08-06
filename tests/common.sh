@@ -67,6 +67,13 @@ check() {
 				|| error "$regex found in $dir/sw-description"
 		done
 		;;
+	sbom)
+		if ! command -v make_sbom.sh >/dev/null; then return; fi
+		for regex; do
+			grep -q -E "$regex" "$swu.spdx.json" \
+				|| error "$regex found in $swu.spdx.json"
+		done
+		;;
 	*) error "Unknown check type: $type" ;;
 	esac
 }

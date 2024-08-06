@@ -74,6 +74,13 @@ swdesc_option ALLOW_PUBLIC_CERT
     installed, in which case public cert is left enabled
 
 
+swdesc_option BUILD_SBOM=<mode>
+    - no (default): do not create sbom
+    - auto: create sbom if make_sbom.sh command is present
+    - yes: create sbom
+swdesc_option sbom_config_yaml=<path>
+    Specify config.yaml to use for create sbom. Default use /usr/share/make-sbom/config/config.yaml.
+
 Common options for all helpers:
 
 --version <component> <version>
@@ -192,6 +199,8 @@ swdesc_usb_container <image archive>
 swdesc_pull_container <image url>
   Pull container from network into storage
 
+swdesc_sbom_source_file <path>
+  Specify source file to add to sbom.
 
 ## podman_partial_image
 

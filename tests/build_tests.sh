@@ -6,6 +6,8 @@ cd "$(dirname "$0")"
 
 . ./common.sh
 
+build_check make_sbom.desc -- "sbom 'mirror.gcr.io/alpine' 'test\ space' 'test\ space.tar'"
+
 build_check spaces.desc -- "file zst.test\ space.tar" \
 	"file zst\..*test_space_tar.*target_load.*" \
 	"swdesc 'path = \"/tmp/test space\"'"

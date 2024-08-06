@@ -845,6 +845,7 @@ parse_swdesc() {
 		[ $# -eq 0 ] && [ -n "$file" ] && return
 		[ $# -eq 1 ] || error "swdesc_tar requires an argument\nUsage: swdesc_tar [options] file.tar"
 		file="$1"
+		sbom_input "$file"
 		;;
 	files)
 		[ $# -eq 0 ] && [ -n "$file" ] && [ -n "$tarfiles_src" ] && return
@@ -889,6 +890,12 @@ parse_swdesc() {
 		[ $# -eq 0 ] && [ -n "$image" ] && return
 		[ $# -eq 1 ] || error "%s requires an argument\nUsage: %s [options] image" "swdesc_$CMD" "swdesc_$CMD"
 		image="$1"
+		sbom_input "$image"
+		;;
+	sbom_source_file)
+		source="$1"
+		MKSWU_SBOM_SOURCE_FILE="${MKSWU_SBOM_SOURCE_FILE:+$MKSWU_SBOM_SOURCE_FILE }-f $(shell_quote "$(realpath -e "$source")")" \
+			|| error "%s does not exist" "${opt#sbom_source_file=}"
 		;;
 	*)
 		error "Unhandled command %s" "$CMD"
@@ -1092,6 +1099,7 @@ create_archive() {
 		# tarfile is relative, renormalize it...
 		[ "$tarfile" = "." ]  && tarfile=""
 		track_used "$basedir/$tarfile"
+		sbom_input "$basedir/$tarfile"
 	done
 
 	if [ -z "$file" ]; then
@@ -1341,6 +1349,11 @@ swdesc_usb_container() {
 	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target --pubkey /etc/swupdate.pem load '"$image_usb"
 }
 
+swdesc_sbom_source_file() {
+	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
+	parse_swdesc sbom_source_file "$@"
+}
+
 append_certificates() {
 	# USER_PUBKEYS is comma-separated unlike other tar sources
 	local IFS="," cert user_certs=""
@@ -1498,6 +1511,12 @@ swdesc_option() {
 		install_if=*)
 			MKSWU_version_last_set="$*"
 			MKSWU_install_if="${opt#install_if=}";;
+		BUILD_SBOM=*)
+			MKSWU_BUILD_SBOM="${opt#BUILD_SBOM=}";;
+		sbom_config_yaml=*)
+			MKSWU_SBOM_CONFIG_YAML="$(realpath -e "${opt#sbom_config_yaml=}")" \
+				|| error "%s does not exist" "${opt#sbom_config_yaml=}"
+			;;
 		PUBLIC)
 			[ -n "$FIRST_SWDESC_INIT" ] \
 				|| error "%s must be set before the first swdesc_* action" \
@@ -1747,6 +1766,17 @@ track_used() {
 		else
 			printf "%s\0" "$file"
 		fi >> "$OUTDIR/used_files"
+	done
+}
+
+sbom_input() {
+	local file
+	for file; do
+		if [ -e "$file" ]; then
+			MKSWU_SBOM_INPUT="${MKSWU_SBOM_INPUT:+$MKSWU_SBOM_INPUT }-f $(shell_quote "$(realpath "$file")")"
+		else
+			MKSWU_SBOM_INPUT="${MKSWU_SBOM_INPUT:+$MKSWU_SBOM_INPUT }-f $(shell_quote "$file")"
+		fi
 	done
 }
 
@@ -2678,6 +2708,11 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	local MKSWU_version="" MKSWU_component="" MKSWU_install_if=""
 	local MKSWU_install_first="" MKSWU_version_last_set=""
 
+	# use make-sbom scan file
+	local MKSWU_SBOM_CONFIG_YAML="/usr/share/make-sbom/config/config.yaml"
+	local MKSWU_SBOM_INPUT=""
+	local MKSWU_SBOM_SOURCE_FILE=""
+	local MKSWU_BUILD_SBOM="$MKSWU_BUILD_SBOM"
 	# (busybox realpath does not have --version and errors)
 	realpath --version >/dev/null 2>&1 \
 		|| error "Please install coreutils first."
@@ -2976,6 +3011,42 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	#  not for image generation)
 	mkcpio
 
+	# create make-sbom
+	local MKSWU_RETVAL=0
+	case "$MKSWU_BUILD_SBOM" in
+		[Yy]|[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)
+			if ! command -v make_sbom.sh >/dev/null; then
+				warning "make_sbom.sh command not found. Install python3-make-sbom package to create sbom."
+				MKSWU_BUILD_SBOM=no
+				MKSWU_RETVAL=1
+			else
+				MKSWU_BUILD_SBOM=yes
+			fi
+			;;
+		[Aa][Uu][Tt][Oo])
+			if command -v make_sbom.sh >/dev/null; then
+				MKSWU_BUILD_SBOM=yes
+			else
+				trace "skipping sbom creation."
+			fi
+			;;
+		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
+			trace "skipping sbom creation."
+			;;
+		*)
+			error "set BUILD_SBOM value is invalid."
+	esac
+
+	if [ "$MKSWU_BUILD_SBOM" = yes ]; then
+		if ! eval make_sbom.sh -i "$(shell_quote "$OUT")" \
+				-o "$(shell_quote "$OUT")" \
+				-c "$(shell_quote "$MKSWU_SBOM_CONFIG_YAML")" \
+				$MKSWU_SBOM_INPUT $MKSWU_SBOM_SOURCE_FILE; then
+			warning "Could not create sbom."
+			MKSWU_RETVAL=1
+		fi
+	fi
+
 	if [ -n "$COPY_USB" ]; then
 		info "You have sideloaded containers, copy all these files to USB drive:"
 		info "%s" "$(shell_quote "$(realpath "$OUT")") $COPY_USB"
@@ -2985,6 +3056,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	cleanup_outdir
 
 	info "Successfully generated %s" "$OUT"
+	return $MKSWU_RETVAL
 }
 
 
