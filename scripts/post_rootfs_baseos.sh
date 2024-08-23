@@ -244,6 +244,16 @@ EOF
 			error "/etc/localtime is set to $tz but the file was not found"
 		fi
 	fi
+
+	# ABOS < 3.20.2-at.1 could add these while manipulating NAT/port forwarding
+	# in ABOS web, but manual operations could also do it so just always check
+	local file
+	for file in rules-save rules6-save; do
+		if grep -q NETAVARK "/target/etc/iptables/$file" 2>/dev/null; then
+			sed -i -e '/NETAVARK/d' "/target/etc/iptables/$file" \
+				|| error "Could not modify /etc/iptables/$file"
+		fi
+	done
 }
 
 baseos_upgrade() {
