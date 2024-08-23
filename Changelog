@@ -1,3 +1,25 @@
+6.4
+===
+fixes:
+ - do not remove swupdate's script dir, this makes a harmless error message
+   go away at the end of installs with the latest swupdate.
+ - ensure fail action is run during pre-script fail after update has really
+   started. That used to be the case until mkswu 6.0 (Apr 2024)
+ - fix rootfs encryption logic that could make the encryption disable itself
+   if the other side had not been encrypted yet.
+ - fix install of non-base_os SWU on Armadillo Base OS 3.14, due to change in
+   overlayfs handling. This was broken in mkswu 4.11 (Apr 2023)
+
+features:
+ - add password strength check for mkswu --init
+ - fix any previously broken iptables rules saved in /etc/iptables
+   if they contained NETAVARK: container rules should not be saved
+   to disk. This is a follow-up of a previous ABOS Web update that
+   could have saved bad rules.
+ - add an option to build sbom (off by default)
+
+  -- 2024-08-26
+
 6.3
 ===
 fixes:
