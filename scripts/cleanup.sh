@@ -10,13 +10,13 @@ SCRIPTSDIR="$MKSWU_TMP"
 
 . "$SCRIPTSDIR/common.sh"
 
-if ! is_locked; then
-	# already cleaned up (happens if e.g. pre script failed)
-	exit 0
-fi
-
 # run post hook if present
+# (we check SWUPDATE_VERSION here to avoid overlapping with
+#  the async failure mechanism in scripts/pre_init.sh, and
+#  check update_started to avoid running fail script on early
+#  version check failures)
 if [ -n "$SWUPDATE_VERSION" ] \
+    && [ -e "$MKSWU_TMP/update_started" ] \
     && action="$(mkswu_var NOTIFY_FAIL_CMD)" \
     && [ -n "$action" ]; then
 	eval "$action"

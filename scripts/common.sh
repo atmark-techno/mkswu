@@ -480,7 +480,7 @@ clear_b_side() {
 	# (we could rollback-clone, but that's best left up to users to re-do on
 	# next boot if required)
 
-	# if /target isn't mounted then B side wasn't touched yet
+	# if /target isn't mounted then B side wasn't touched yet (or already done)
 	if ! is_mountpoint /target; then
 		return
 	fi

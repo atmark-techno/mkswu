@@ -168,16 +168,10 @@ init_fail_command() {
 
 init_really_starting() {
 	# if we got here we're really updating:
-	# - handle a fail command if there is one
-	# - signal we're starting an update if instructed
 	# - mark the other partition as unbootable for rollback
-	init_fail_command
-
-	action="$(mkswu_var NOTIFY_STARTING_CMD)"
-	( eval "$action"; ) || error "NOTIFY_STARTING_CMD failed"
-
-	# we won't be able to reboot into other partition until installer
-	# finished; disable rollback
+	# - mark update as started in MKSWU_TMP (for cleanup)
+	# - handle a fail command if there is one (older swupdate only)
+	# - signal we're starting an update if instructed
 	if [ -e "/etc/fw_env.config" ]; then
 		fw_setenv_nowarn upgrade_available
 		case "$?" in
@@ -198,6 +192,12 @@ init_really_starting() {
 			error "Could not set u-boot environment variable, refusing to run"
 		esac
 	fi
+
+	touch "$MKSWU_TMP/update_started"
+	init_fail_command
+
+	action="$(mkswu_var NOTIFY_STARTING_CMD)"
+	( eval "$action"; ) || error "NOTIFY_STARTING_CMD failed"
 }
 
 # when run in installer environment we skip most of the scripts
