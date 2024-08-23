@@ -3034,7 +3034,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 			trace "skipping sbom creation."
 			;;
 		*)
-			error "set BUILD_SBOM value is invalid."
+			error "Invalid BUILD_SBOM \"%s\", must be yes, no or auto."
 	esac
 
 	if [ "$MKSWU_BUILD_SBOM" = yes ]; then

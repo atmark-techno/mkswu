@@ -375,12 +375,12 @@ msgid "%s requires an argument\\nUsage: %s [options] image"
 msgstr "%s に引数が必要です。\\nUsage: %s [options] image"
 
 #: mkswu
-msgid "Unhandled command %s"
-msgstr "%s コマンドを実行できません。"
-
-#: mkswu
 msgid "%s does not exist"
 msgstr "%s が存在しません。"
+
+#: mkswu
+msgid "Unhandled command %s"
+msgstr "%s コマンドを実行できません。"
 
 #: mkswu
 msgid "Unrecognized boot image format for %s"
@@ -989,6 +989,18 @@ msgstr "アップデート中に /var/app/volumes を使用すると故障の恐
 #: mkswu
 msgid "consider using /var/app/rollback/volumes instead"
 msgstr "代わりに /var/app/rollback/volumes をご利用ください。"
+
+#: mkswu
+msgid "make_sbom.sh command not found. Install python3-make-sbom package to create sbom."
+msgstr "make_sbom.sh コマンドが見つかりません。\\nSBOM を生成する場合は python3-make-sbom パッケージをインストールしてください。"
+
+#: mkswu
+msgid "Invalid BUILD_SBOM \"%s\", must be yes, no or auto."
+msgstr "BUILD_SBOM %s が間違ってます。（yes, no, autoのどれかにしてください）"
+
+#: mkswu
+msgid "Could not create sbom."
+msgstr "SBOM ファイル %s を作成できませんでした。"
 
 #: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"

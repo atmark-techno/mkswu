@@ -282,10 +282,10 @@ msgstr ""
 msgid "%s requires an argument\\nUsage: %s [options] image"
 msgstr ""
 #: mkswu
-msgid "Unhandled command %s"
+msgid "%s does not exist"
 msgstr ""
 #: mkswu
-msgid "%s does not exist"
+msgid "Unhandled command %s"
 msgstr ""
 #: mkswu
 msgid "Unrecognized boot image format for %s"
@@ -742,6 +742,15 @@ msgid "It is not safe to modify /var/app/volumes while the system uses it,"
 msgstr ""
 #: mkswu
 msgid "consider using /var/app/rollback/volumes instead"
+msgstr ""
+#: mkswu
+msgid "make_sbom.sh command not found. Install python3-make-sbom package to create sbom."
+msgstr ""
+#: mkswu
+msgid "Invalid BUILD_SBOM \"%s\", must be yes, no or auto."
+msgstr ""
+#: mkswu
+msgid "Could not create sbom."
 msgstr ""
 #: mkswu
 msgid "You have sideloaded containers, copy all these files to USB drive:"
