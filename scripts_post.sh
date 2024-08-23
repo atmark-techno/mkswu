@@ -41,6 +41,12 @@ kill_old_swupdate() {
 	done
 }
 
+if [ "$MKSWU_TMP" != "$TMPDIR/scripts" ]; then
+	# swupdate removes TMPDIR/scripts itself, but we still
+	# need to remove the -vendored dir if it was used...
+	rm -rf "$MKSWU_TMP"
+fi
+
 case "$post_action" in
 poweroff)
 	stdout_info_or_error echo "swupdate triggering poweroff!"

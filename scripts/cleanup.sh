@@ -23,4 +23,9 @@ if [ -n "$SWUPDATE_VERSION" ] \
 fi
 
 cleanup
+if [ "$MKSWU_TMP" != "$TMPDIR/scripts" ]; then
+	# swupdate removes TMPDIR/scripts itself, but we still
+	# need to remove the -vendored dir if it was used...
+	rm -rf "$MKSWU_TMP"
+fi
 unlock_update
