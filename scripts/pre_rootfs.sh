@@ -217,7 +217,7 @@ mount_rootfs() {
 	local src="$1" dst="$2" hint_fstype="${3-}"
 
 	[ -n "$hint_fstype" ] \
-		|| hint_fstype="$(findmnt -nr -o FSTYPE /live/rootfs)" \
+		|| hint_fstype="$(findmnt -nr -o FSTYPE "${fsroot:-/live/rootfs}")" \
 		|| error "Could not get rootfs fstype"
 
 	case "$hint_fstype" in
