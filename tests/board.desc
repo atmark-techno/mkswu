@@ -1,7 +1,8 @@
 # don't extract to /target for tests
 MKSWU_DEBUG_TARGET=""
 
+# out/zoo created by build_tests.sh
 swdesc_files --version test 1 --board iot-g4-es1 \
-	--dest /tmp/swupdate-test zoo/test\ space
+	--dest /tmp/swupdate-test out/zoo/test\ space
 swdesc_files --version test 2 \
-	--dest /tmp/swupdate-test zoo/test\ space.tar
+	--dest /tmp/swupdate-test out/zoo/test\ space.tar

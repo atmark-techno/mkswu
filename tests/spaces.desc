@@ -2,13 +2,11 @@
 MKSWU_DEBUG_TARGET=""
 swdesc_option FORCE_VERSION
 
-echo "test content" > zoo/test\ space
-echo "test content" > zoo/test\ space2
-tar -C zoo -cf zoo/test\ space.tar test\ space
-swdesc_files "zoo" --version extra_os 1 --dest="/tmp/test space"
-swdesc_tar "zoo/test space.tar" --version extra_os 1 --dest /tmp
+# out/zoo created by build_tests.sh
+swdesc_files "out/zoo" --version extra_os 1 --dest="/tmp/test space"
+swdesc_tar "out/zoo/test space.tar" --version extra_os 1 --dest /tmp
 swdesc_pull_container "docker.io/tag with spaces" --version spaces 1
-swdesc_embed_container "zoo/test space.tar"
-swdesc_usb_container "zoo/test space.tar"
-swdesc_script "zoo/test space"
-swdesc_exec "zoo/test space2" 'echo $1'
+swdesc_embed_container "out/zoo/test space.tar"
+swdesc_usb_container "out/zoo/test space.tar"
+swdesc_script "out/zoo/test space"
+swdesc_exec "out/zoo/test space2" 'echo $1'

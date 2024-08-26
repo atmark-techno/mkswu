@@ -3,5 +3,6 @@ swdesc_option version=1
 swdesc_option BUILD_SBOM=auto
 
 swdesc_pull_container "mirror.gcr.io/alpine"
-swdesc_files --dest /tmp zoo/test\ space
-swdesc_files --dest /tmp zoo/test\ space.tar
+# out/zoo created by build_tests.sh
+swdesc_files --dest /tmp out/zoo/test\ space
+swdesc_files --dest /tmp out/zoo/test\ space.tar

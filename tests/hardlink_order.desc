@@ -1,1 +1,2 @@
-swdesc_tar "zoo/hardlink" --version any 1
+# out/zoo created by build_tests.sh
+swdesc_tar "out/zoo/hardlink" --version any 1

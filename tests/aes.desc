@@ -2,4 +2,5 @@
 MKSWU_DEBUG_TARGET=""
 
 swdesc_option FORCE_VERSION
-swdesc_files --dest /tmp/swupdate-test zoo/test\ space zoo/test\ space.tar
+# out/zoo created by build_tests.sh
+swdesc_files --dest /tmp/swupdate-test out/zoo/test\ space out/zoo/test\ space.tar

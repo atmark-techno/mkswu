@@ -1,3 +1,4 @@
 swdesc_option component=test version=1
 
-swdesc_files "zoo"
+# out/zoo created by build_tests.sh
+swdesc_files "out/zoo"

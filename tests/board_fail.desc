@@ -1,3 +1,4 @@
 swdesc_option FORCE_VERSION
-swdesc_files --board noexist --dest /tmp/swupdate-test zoo/test\ space
-swdesc_files --dest /tmp/swupdate-test zoo/test\ space.tar
+# out/zoo created by build_tests.sh
+swdesc_files --board noexist --dest /tmp/swupdate-test out/zoo/test\ space
+swdesc_files --dest /tmp/swupdate-test out/zoo/test\ space.tar

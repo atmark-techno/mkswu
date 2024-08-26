@@ -6,17 +6,26 @@ cd "$(dirname "$0")"
 
 . ./common.sh
 
+# prepare file used by tests here.
+mkdir -p out/zoo
+echo "test content" > out/zoo/test\ space
+echo "test content" > out/zoo/test\ space2
+tar -C out/zoo -cf out/zoo/test\ space.tar test\ space
+echo foo > out/zoo/hardlink
+ln -f out/zoo/hardlink out/zoo/hardlink2
+
+
 build_check make_sbom.desc -- "sbom 'mirror.gcr.io/alpine' 'test\ space' 'test\ space.tar'"
 
 build_check spaces.desc -- "file zst.test\ space.tar" \
-	"file zst\..*test_space_tar.*target_load.*" \
+	"file zst\..*out_zoo_test_space_t.*target_load.*" \
 	"swdesc 'path = \"/tmp/test space\"'"
 name="--odd desc" build_check --- --odd\ desc.desc
 # --- is made into -- for mkswu
-[ "$(grep -c 'filename = "zst.zoo' "out/.--odd desc/sw-description")" = 1 ] \
+[ "$(grep -c 'filename = "zst.out_zoo' "out/.--odd desc/sw-description")" = 1 ] \
 	|| error "zoo archive was not included exactly once"
 build_check install_files.desc -- \
-	"file-tar zst.___tmp_swupdate_test*.tar zoo/test\ space zoo/test\ space.tar" \
+	"file-tar zst.out__tmp_swupdate_te*.tar zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
 
 [ -e out/mkswu-aes.conf ] || touch out/mkswu-aes.conf
@@ -159,9 +168,6 @@ version_fail test 1.2-@bc # non alnum
 version_fail test 1.2.3.12345678 # too big for 4 digits
 version_fail test 1234567890123 # too big
 
-rm -f zoo/hardlink zoo/hardlink2
-echo foo > zoo/hardlink
-ln zoo/hardlink zoo/hardlink2
 build_check hardlink_order.desc --
 [ "$(cpio --quiet -t < out/hardlink_order.swu)" = "sw-description
 sw-description.sig
