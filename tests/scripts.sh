@@ -328,8 +328,11 @@ test_passwd_update() {
 		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
 	SHADOW=./scripts/shadow
-	( update_shadow; check_shadow_empty_password; ) && error "copy should have failed"
-
+	( update_shadow; check_shadow_empty_password; ) \
+		|| error "copy should work if set to expire"
+	SHADOW=./scripts/shadow-noexpiry
+	( update_shadow; check_shadow_empty_password; ) \
+		&& error "copy should fail without password & expiry"
 
 	echo "passwd copy: test adding new user"
 	for f in passwd shadow group; do
@@ -372,7 +375,7 @@ test_passwd_update() {
 	for f in passwd shadow group; do
 		cp ./scripts/$f "$MKSWU_TMP/$f-target"
 	done
-	SHADOW=./scripts/shadow
+	SHADOW=./scripts/shadow-noexpiry
 	echo "  # MKSWU_ALLOW_EMPTY_LOGIN 1" > "$MKSWU_TMP/swdesc"
 	( SWDESC="$MKSWU_TMP/swdesc" check_shadow_empty_password; ) \
 		|| error "should be no failure with allow empty login"

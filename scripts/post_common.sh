@@ -7,7 +7,7 @@ check_shadow_empty_password() {
 	# check there are no user with empty login
 	# unless the update explicitely allows it
 	[ -n "$(mkswu_var ALLOW_EMPTY_LOGIN)" ] && return
-	user=$(awk -F: '$2 == "" { print $1 } ' "$NSHADOW")
+	user=$(awk -F: '$2 == "" && $3 != "0" { print $1 }' "$NSHADOW")
 	[ -z "$user" ] || error "the following users have an empty password, failing update: $user"
 }
 
