@@ -293,7 +293,9 @@ check_shadow_copied() {
 	local user="$1"
 
 	[ "$(grep -E "^$user:" "$NSHADOW")" = "$(grep -E "^$user:" "$SHADOW")" ] \
-		|| error "user $user not set as $SHADOW"
+		|| error "user $user not copied properly:" \
+			"$SHADOW: $(grep -E "^$user:" "$SHADOW")" \
+			"$NSHADOW: $(grep -E "^$user:" "$NSHADOW")"
 }
 
 test_passwd_update() {
@@ -336,23 +338,35 @@ test_passwd_update() {
 	done
 	cp ./scripts/shadow-set "$MKSWU_TMP/shadow-extrauser"
 	echo 'newuser:x:1001:' >> "$MKSWU_TMP/group-extrauser"
-	echo 'newtest:x:1002:newuser' >> "$MKSWU_TMP/group-extrauser"
+	echo 'newgroup:x:1002:newuser' >> "$MKSWU_TMP/group-extrauser"
 	echo 'newuser:$6$KW\\&efP7vuRXJyv$Dry6v157pvQgVA/VVTkMd6gygzooCTG1ogN6XNrGi0BHCZs.MuUSlT5Mal9SoPBP97wtKm63ZlGoErZ/JnTFV0:18908:0:99999:7:::' >> "$MKSWU_TMP/shadow-extrauser"
 	echo 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' >> "$MKSWU_TMP/passwd-extrauser"
+	echo 'emptypassuser:x:1003:' >> "$MKSWU_TMP/group-extrauser"
+	echo 'emptypassuser::0:0:99999:7:::' >> "$MKSWU_TMP/shadow-extrauser"
+	echo 'emptypassuser:x:1003:1003:test user:/home/emptypassuser:/bin/ash' >> "$MKSWU_TMP/passwd-extrauser"
 	PASSWD="$MKSWU_TMP/passwd-extrauser"
 	SHADOW="$MKSWU_TMP/shadow-extrauser"
 	GROUP="$MKSWU_TMP/group-extrauser"
 	( update_shadow; ) || error "copy with newuser failed"
 	grep -q 'newuser:x:1001:1001:test user:/home/newuser:/bin/ash' \
-			"$MKSWU_TMP/passwd-target" || error "newuser not copied (passwd)"
+			"$NPASSWD" || error "newuser not copied (passwd)"
 	check_shadow_copied newuser
-	grep -q 'newuser:x:1001:' "$MKSWU_TMP/group-target" || error "newuser not copied (group)"
-	grep -q 'newtest:x:1002:newuser' "$MKSWU_TMP/group-target" || error "newuser not copied (group)"
-	csum=$(sha256sum "$MKSWU_TMP/shadow-target")
+	grep -q 'newuser:x:1001:' "$NGROUP" || error "newuser not copied (group)"
+	grep -q 'emptypassuser:x:1003:1003:test user:/home/emptypassuser:/bin/ash' \
+			"$NPASSWD" || error "emptypassuser not copied (passwd)"
+	check_shadow_copied emptypassuser
+	grep -q 'emptypassuser:x:1003:' "$NGROUP" || error "newuser not copied (group)"
+	grep -q 'newgroup:x:1002:newuser' "$NGROUP" || error "newuser not copied (group)"
+	csum=$(sha256sum "$NSHADOW" "$NPASSWD" "$NGROUP")
 
 	echo "passwd copy: test running again with new user already existing"
 	( update_shadow; ) || error "copy with newuser again failed"
 	echo "$csum" | sha256sum -c - >/dev/null || error "shadow hash changed"
+
+	# .. and users not removed if missing from source
+	SHADOW=./scripts/shadow
+	( update_shadow; ) || error "copy with newuser (empty) failed"
+	echo "$csum" | sha256sum -c - >/dev/null || error "shadow hash changed (empty)"
 
 	echo "passwd copy: test leaving empty passwords is ok with debug set"
 	for f in passwd shadow group; do

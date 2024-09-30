@@ -4,8 +4,12 @@ update_shadow_user() {
 
 	oldpass=$(awk -F':' '$1 == "'"$user"'" && $3 != "0"' "$SHADOW" \
 			| sed -e 's/[\\:&]/\\&/g')
-	# password was never set: skip
-	[ -n "$oldpass" ] || return
+	# password was never set: copy iff missing on target
+	if [ -z "$oldpass" ]; then
+		grep -qE "^$user:" "$NSHADOW" && return
+		grep -E "^$user:" "$SHADOW" >> "$NSHADOW"
+		return
+	fi
 	# password already set on target: also skip
 	grep -qE "^$user:[^!:]" "$NSHADOW" && return
 
