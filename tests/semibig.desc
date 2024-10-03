@@ -1,0 +1,19 @@
+swdesc_option version=1
+
+DEBUG_SWDESC="# DEBUG_SKIP_SCRIPTS"
+
+# make a file with known content for hash computation:
+# 'foo00000' '00000'x2 and '00000bar'
+{ echo foo; dd if=/dev/zero bs=500k count=4; echo bar; } > "$OUTDIR/semibig"
+# force any date to fix header (use epoch to force tz)
+touch -d @1727713425 "$OUTDIR/semibig"
+
+# tar format changed in 1.35 so depending on version hash got updated:
+# https://git.savannah.gnu.org/cgit/tar.git/commit/?id=738de9ecdec45ebfeb999628742373b5f8253bd0
+# "This avoids generating irrelevant differences which helps with reproducible builds"...
+# so even with tar reproducibility improvements in mkswu we cannot use
+# swdesc_files here reliably, but swdesc_tar doesn't actually check we
+# give it a tar, just use that directly.
+
+# avoid compression so file is > 512k
+compress="" swdesc_tar --dest /tmp/swupdate "$OUTDIR/semibig"

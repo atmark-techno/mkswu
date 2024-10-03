@@ -445,6 +445,7 @@ write_entry_stdout() {
 	local install_if="$install_if"
 	shift 2
 	local sha256="" iv="" indent=0 validity
+	local sha256_chunked=""
 	local LF="
 "
 	local show_desc="${cmd_description%"$LF"*}"
@@ -543,6 +544,39 @@ write_entry_stdout() {
 	fi
 
 
+	# exec stores an intermediate copy and does not have the problem,
+	# skip to avoid growing sw-description on large embedded containers
+	if [ "$type" != "exec" ]; then
+		sha256_chunked="$file_out.sha256sum_chunked"
+		track_used "$sha256_chunked"
+		# check validity with mtime + size
+		if ! [ -e "$sha256_chunked" ] \
+		    || [ "$(head -n 1 "$sha256_chunked")" != "$validity" ]; then
+			local nlines=1 wc # validity header
+			{
+				echo "$validity"
+				if [ -s "$file_out" ]; then
+					split -b $((1024*512)) \
+							--filter='sha256sum -' \
+							"$file_out" \
+						| sed -e 's/^/"/' -e 's/\s*-$/",/'
+				else
+					# empty file still needs one line.. or does it?
+					nlines=$((nlines+1))
+					echo "\"$sha256\","
+				fi
+			} > "$sha256_chunked" \
+				|| error "Could not write %s" "$sha256_chunked"
+			# sanity check number of lines
+			nlines=$((nlines + ($(stat -L -c %s "$file_out")+1024*512-1) / 1024/512))
+			wc="$(wc -l "$sha256_chunked")"
+			wc="${wc%% *}"
+			[ "$wc" = "$nlines" ] \
+				|| error "Unexpected number of chunked sha256s for %s (real %s / expected %s)" \
+					"$sha256_chunked" "$wc" "$nlines"
+		fi
+	fi
+
 	write_line "{"
 	indent=$((indent+2))
 	write_line "filename = \"$file\";"
@@ -584,6 +618,12 @@ write_entry_stdout() {
 	[ -n "$MKSWU_TEST_NOT_DIRECTLY" ] \
 		|| write_line "installed-directly = true;"
 	write_line "sha256 = \"$sha256\";"
+	if [ -n "$sha256_chunked" ]; then
+		write_line 'chunked_sha256 = ('
+		tail -n +2 "$sha256_chunked" \
+			| indent=$((indent+2)) reindent /dev/stdin
+		write_line ');'
+	fi
 	local line properties_written=""
 	if [ "$show_desc" != "$cmd_description" ]; then
 		write_line "# mkswu_orig_cmd ${cmd_description##*"$LF"}"

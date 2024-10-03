@@ -13,9 +13,7 @@ echo "test content" > out/zoo/test\ space2
 tar -C out/zoo -cf out/zoo/test\ space.tar test\ space
 echo foo > out/zoo/hardlink
 ln -f out/zoo/hardlink out/zoo/hardlink2
-
-
-build_check make_sbom.desc -- "sbom 'mirror.gcr.io/alpine' 'test\ space' 'test\ space.tar'"
+{ echo foo; dd if=/dev/zero bs=1M count=1; echo bar; } > out/semibig
 
 build_check spaces.desc -- "file zst.test\ space.tar" \
 	"file zst\..*out_zoo_test_space_t.*target_load.*" \
@@ -27,6 +25,14 @@ name="--odd desc" build_check --- --odd\ desc.desc
 build_check install_files.desc -- \
 	"file-tar zst.out__tmp_swupdate_te*.tar zoo/test\ space zoo/test\ space.tar" \
 	"swdesc '# MKSWU_FORCE_VERSION 1'"
+
+# full file hash then 3 chunks
+build_check semibig.desc -- \
+	"swdesc 877d0aeaf78643fac45476f7a34f5ac3e1013e67c347df2a0eafc42b90666246 \
+		5dca1b3c3ddd35bf8976ad0fd64481a0e425acd69a6567013453763f42f05743 \
+		07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541 \
+		38e8b9f6e593b8012f9b22c46258b0a8b3c539d70e30732fdd466dfc11752d12 \
+		chunked_sha256 'sha256 ='"
 
 [ -e out/mkswu-aes.conf ] || touch out/mkswu-aes.conf
 "$MKSWU" --genkey --cn test --plain --config out/mkswu-aes.conf --noprompt \
@@ -44,6 +50,8 @@ build_check install_files.desc -- \
 ) || exit
 MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key build_check aes.desc -- \
 	"swdesc 'ivt ='" "file enc.zst.scripts_pre.sh"
+
+build_check make_sbom.desc -- "sbom 'mirror.gcr.io/alpine' 'test\ space' 'test\ space.tar'"
 
 build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \

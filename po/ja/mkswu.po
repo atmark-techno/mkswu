@@ -279,6 +279,10 @@ msgid "Could not write %s"
 msgstr "%s に書込みできませんでした。"
 
 #: mkswu
+msgid "Unexpected number of chunked sha256s for %s (real %s / expected %s)"
+msgstr "%s のチェックサム数が想定外です（行数 %s / 想定 %s)"
+
+#: mkswu
 msgid "item was set without version:\\n%s\\nPlease set a version (e.g. global swdesc_option version=...)"
 msgstr "バージョンが設定されていません:\\n%s\\nswdesc_option version=... 等でバージョンを設定してください"
 
