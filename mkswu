@@ -164,7 +164,7 @@ link() {
 	local dest="$2"
 	local existing
 
-	track_used "$dest"
+	track_used "$src"
 
 	src=$(readlink -e "$src") || error "Cannot find source file: %s" "$1"
 
@@ -408,7 +408,7 @@ compress() {
 	local file_src="$1"
 	local file_out="$2"
 
-	track_used "$file_src" "$file_out"
+	track_used "$file_src"
 	check_validity "$file_out" "$file_src" && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
@@ -515,10 +515,11 @@ write_entry_stdout() {
 
 	append_file "$file"
 
-	[ "$file_src" = "$file_out" ] && track_used "$file_out" \
-		|| link "$file_src" "$file_out"
+	if [ "$file_src" != "$file_out" ]; then
+		link "$file_src" "$file_out"
+	fi
 
-	track_used "$file_out.sha256sum"
+	track_used "$file_out" "$file_out.sha256sum"
 
 	if [ -e "$file_out.sha256sum" ]; then
 		sha256=$(cat "$file_out.sha256sum")
@@ -1421,8 +1422,6 @@ append_certificates() {
 
 create_prescript() {
 	# prefile is a self-extracting tar archive
-	track_used "$file"
-
 	check_validity "$file" "$PRE_SCRIPT" "$tar" && return
 
 	cat "$PRE_SCRIPT" "$tar" > "$file.tmp" \
