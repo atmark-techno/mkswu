@@ -32,7 +32,7 @@ build_check semibig.desc -- \
 		5dca1b3c3ddd35bf8976ad0fd64481a0e425acd69a6567013453763f42f05743 \
 		07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541 \
 		38e8b9f6e593b8012f9b22c46258b0a8b3c539d70e30732fdd466dfc11752d12 \
-		chunked_sha256 'sha256 ='"
+		chunked_sha256 'sha256 =' 'size ='"
 
 [ -e out/mkswu-aes.conf ] || touch out/mkswu-aes.conf
 "$MKSWU" --genkey --cn test --plain --config out/mkswu-aes.conf --noprompt \

@@ -444,7 +444,7 @@ write_entry_stdout() {
 	local compress="$compress"
 	local install_if="$install_if"
 	shift 2
-	local sha256="" iv="" indent=0 validity
+	local sha256="" iv="" indent=0 validity file_size
 	local sha256_chunked=""
 	local LF="
 "
@@ -525,6 +525,7 @@ write_entry_stdout() {
 
 	validity="$(stat -L -c %.Y-%s "$file_out")" \
 		|| error "Could not stat %s" "$file_out"
+	file_size="${validity##*-}"
 
 	if [ -e "$file_out.sha256sum" ]; then
 		sha256=$(cat "$file_out.sha256sum")
@@ -568,7 +569,7 @@ write_entry_stdout() {
 			} > "$sha256_chunked" \
 				|| error "Could not write %s" "$sha256_chunked"
 			# sanity check number of lines
-			nlines=$((nlines + ($(stat -L -c %s "$file_out")+1024*512-1) / 1024/512))
+			nlines=$((nlines + (file_size+1024*512-1) / 1024/512))
 			wc="$(wc -l "$sha256_chunked")"
 			wc="${wc%% *}"
 			[ "$wc" = "$nlines" ] \
@@ -623,6 +624,8 @@ write_entry_stdout() {
 		tail -n +2 "$sha256_chunked" \
 			| indent=$((indent+2)) reindent /dev/stdin
 		write_line ');'
+	else
+		write_line "size = $file_size;"
 	fi
 	local line properties_written=""
 	if [ "$show_desc" != "$cmd_description" ]; then
