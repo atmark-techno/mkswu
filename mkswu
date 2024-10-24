@@ -1123,7 +1123,15 @@ create_archive() {
 
 	track_used "$file" "$file.validity"
 	if ! [ -e "$file" ] || ! cmp -s "$file.validity" "$OUTDIR/tar.validity.tmp"; then
-		tar -cf "$file" -C "$basedir" "$@" \
+		local repro=""
+		# swupdate 'archive' without preserve_attributes will ignore
+		# user/time: strip them to make archives more reproducible
+		[ -z "$preserve_attributes" ] && repro="1"
+		# need to split '${repro:+}'s because IFS here is \n...
+		tar -cf "$file" --sort=name \
+				${repro:+--format=ustar} ${repro:+--numeric-owner} \
+				${repro:+--owner=0} ${repro:+--group=0} \
+				-C "$basedir" "$@" \
 			|| error "Could not create tar for %s" "$file"
 		mv "$OUTDIR/tar.validity.tmp" "$file.validity" \
 			|| error "Could not rename %s" "$file.validity"
@@ -1415,12 +1423,18 @@ append_certificates() {
 	for cert in $user_certs; do
 		# prefix ./ if no other / in filename...
 		[ "${cert%/*}" != "$cert" ] || cert="./$cert"
-		tar -C "${cert%/*}" --append --transform 's:^:certs_user/:' -f "$file.tmp" "${cert##*/}" \
+		tar -C "${cert%/*}" --append \
+			--transform 's:^:certs_user/:' \
+			--format=ustar --numeric-owner --owner=0 --group=0 \
+			-f "$file.tmp" "${cert##*/}" \
 			|| error "Could not append %s to %s" "$cert" "$file.tmp"
 	done
 	for cert in $ATMARK_CERTS; do
 		[ "${cert%/*}" != "$cert" ] || cert="./$cert"
-		tar -C "${cert%/*}" --append --transform 's:^:certs_atmark/:' -f "$file.tmp" "${cert##*/}" \
+		tar -C "${cert%/*}" --append \
+			--transform 's:^:certs_atmark/:' \
+			--format=ustar --numeric-owner --owner=0 --group=0 \
+			-f "$file.tmp" "${cert##*/}" \
 			|| error "Could not append %s to %s" "$cert" "$file.tmp"
 	done
 	mv "$file.tmp" "$file" \
