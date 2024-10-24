@@ -201,7 +201,13 @@ msgstr ""
 msgid "Could not generate an iv to encrypt %s"
 msgstr ""
 #: mkswu
+msgid "Could not stat %s"
+msgstr ""
+#: mkswu
 msgid "Checksumming %s failed"
+msgstr ""
+#: mkswu
+msgid "Could not write %s"
 msgstr ""
 #: mkswu
 msgid "item was set without version:\\n%s\\nPlease set a version (e.g. global swdesc_option version=...)"

@@ -437,13 +437,14 @@ $file"
 }
 
 write_entry_stdout() {
-	local file_src="$1"
+	local type="$1"
+	local file_src="$2"
 	local file="${file_src##*/}"
 	local file_out="$OUTDIR/$file"
 	local compress="$compress"
 	local install_if="$install_if"
-	shift
-	local sha256="" iv="" indent=0
+	shift 2
+	local sha256="" iv="" indent=0 validity
 	local LF="
 "
 	local show_desc="${cmd_description%"$LF"*}"
@@ -521,10 +522,13 @@ write_entry_stdout() {
 
 	track_used "$file_out" "$file_out.sha256sum"
 
+	validity="$(stat -L -c %.Y-%s "$file_out")" \
+		|| error "Could not stat %s" "$file_out"
+
 	if [ -e "$file_out.sha256sum" ]; then
 		sha256=$(cat "$file_out.sha256sum")
 		# check validity with mtime + size
-		[ "${sha256#* }" = "$(stat -L -c %.Y-%s "$file_out")" ] \
+		[ "${sha256#* }" = "$validity" ] \
 			|| sha256=""
 		sha256="${sha256% *}"
 	fi
@@ -533,7 +537,9 @@ write_entry_stdout() {
 		sha256=$(sha256sum < "$file_out") \
 			|| error "Checksumming %s failed" "$file_out"
 		sha256=${sha256%% *}
-		printf "%s\n" "$sha256 $(stat -L -c %.Y-%s "$file_out")" > "$file_out.sha256sum"
+		printf "%s\n" "$sha256 $validity" \
+			> "$file_out.sha256sum" \
+			|| error "Could not write %s" "$file_out.sha256sum"
 	fi
 
 
@@ -582,6 +588,7 @@ write_entry_stdout() {
 	if [ "$show_desc" != "$cmd_description" ]; then
 		write_line "# mkswu_orig_cmd ${cmd_description##*"$LF"}"
 	fi
+	write_line "type = \"$type\";"
 	for line; do
 		write_line "$line"
 		case "$line" in
@@ -952,7 +959,7 @@ swdesc_boot() {
 		normalize_version
 	fi
 
-	write_entry images "$boot_file" "type = \"raw\";" \
+	write_entry images raw "$boot_file" \
 		"device = \"/dev/swupdate_bootdev\";"
 }
 
@@ -1047,7 +1054,7 @@ swdesc_tar() {
 		info "Info: automatically setting --preserve-attributes for base_os update" >&2
 		preserve_attributes=1
 	fi
-	write_entry images "$file" "type = \"archive\";" \
+	write_entry images archive "$file" \
 		"path = \"$target$dest\";" \
 		"properties: {" "  create-destination = \"true\";" "};" \
 		"${preserve_attributes:+preserve-attributes = true;}"
@@ -1182,7 +1189,7 @@ swdesc_exec_nochroot() {
 		link "$orig_file" "$file"
 	fi
 
-	write_entry files "$file" "type = \"exec\";" \
+	write_entry files exec "$file" \
 		"properties: {" \
 		"  cmd: \"$(conf_quote "$cmd")\"" \
 		"  filename: \"$(conf_quote "$original_file")\"" \
@@ -1241,7 +1248,7 @@ swdesc_exec() {
 		link "$orig_file" "$file"
 	fi
 
-	write_entry files "$file" "type = \"exec\";" \
+	write_entry files exec "$file" \
 		"properties: {" \
 		"  cmd: \"$(conf_quote "$chroot_cmd")\"" \
 		"  filename: \"$(conf_quote "$original_file")\"" \
