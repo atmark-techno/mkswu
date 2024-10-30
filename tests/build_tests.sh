@@ -66,12 +66,26 @@ name=exec_quoting_readonly build_check exec_quoting.desc exec_readonly.desc -- \
 	"swdesc 'podman run.*read-only.*touch.*/fail'"
 
 printf "%s\n" "swdesc_files build_tests.sh --version stdin 1" \
-	| name=stdin build_check - -- "swdesc 'build_tests.sh'" \
+	| name=stdin build_check - -- \
+		"swdesc 'build_tests.sh'" \
+		"swdesc_absent 'tar has /var/app/volumes'"
 
 printf "%s\n" "swdesc_files build_tests.sh --version stdin 1" \
 	| name=stdin_quoting build_check exec_quoting.desc - -- \
 		"swdesc 'touch /tmp/swupdate-test'" \
 		"swdesc 'build_tests.sh'" \
+
+name=files_app_volumes build_check  - -- \
+	"swdesc_count 2 'tar has /var/app/volumes'" <<'EOF'
+mkdir -p "$OUTDIR/dir/var/app/volumes"
+swdesc_option version=1
+# no match
+swdesc_files "$OUTDIR/dir"
+# match
+swdesc_files --extra-os "$OUTDIR/dir"
+# also match
+swdesc_files --extra-os --dest /var "$OUTDIR/dir/var"
+EOF
 
 build_check swdesc_script.desc -- \
 	'swdesc_absent "script has /var/app/volumes"'

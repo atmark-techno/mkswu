@@ -1157,6 +1157,13 @@ create_archive() {
 		sbom_input "$basedir/$tarfile"
 	done
 
+	# $dest can be unset, just fix it early for base_os/extra_os
+	if [ -z "$dest" ]; then
+		case "$component" in
+		base_os|extra_os.*) dest=/;;
+		esac
+	fi
+
 	if [ -z "$file" ]; then
 		set_file_from_content "$basedir" "$dest" "$@"
 		file="$file.tar"
@@ -1165,6 +1172,7 @@ create_archive() {
 	fi
 
 	track_used "$file" "$file.validity"
+
 	if ! [ -e "$file" ] || ! cmp -s "$file.validity" "$OUTDIR/tar.validity.tmp"; then
 		local repro=""
 		# swupdate 'archive' without preserve_attributes will ignore
@@ -1180,6 +1188,18 @@ create_archive() {
 			|| error "Could not rename %s" "$file.validity"
 	else
 		rm "$OUTDIR/tar.validity.tmp"
+	fi
+
+	# check for /var/app/volumes in files we're packing
+	local varapp_prefix=/var/app/volumes
+	# check if $dest contains /var/app/volumes
+	varapp_prefix="${varapp_prefix#"$dest"}"
+	if [ "$varapp_prefix" != /var/app/volumes ]; then
+		varapp_prefix="${varapp_prefix#/}"
+		# validity file is off by basedir
+		if grep -qE "^$basedir/$varapp_prefix" "$file.validity"; then
+			desc_extra_text='# tar has /var/app/volumes'
+		fi
 	fi
 }
 

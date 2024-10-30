@@ -60,6 +60,15 @@ check() {
 				|| error "$regex not found in $dir/sw-description"
 		done
 		;;
+	swdesc_count)
+		[ $# -gt 1 ] || error "swdesc check needs 2+ argument"
+		count="$1"
+		shift
+		for regex; do
+			[ "$(grep -c -E "$regex" "$dir/sw-description")" = "$count" ] \
+				|| error "$regex not found $count times in $dir/sw-description"
+		done
+		;;
 	swdesc_absent)
 		[ $# -gt 0 ] || error "swdesc_absent check needs argument"
 		for regex; do
