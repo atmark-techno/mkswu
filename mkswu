@@ -2114,7 +2114,7 @@ mkswu_genkey_sign() {
 		case "$UPDATE_CERTS" in
 		[Nn]|[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|0|"")
 			printf "%s\n" "# This controls if we should update certificates on device, and can be" \
-					"# removed once all devices have been updated to only allow new certificate " \
+					"# removed once all devices have been updated to only allow new certificate" \
 					"UPDATE_CERTS=yes" >> "$CONFIG" \
 				|| error "Could not update %s in %s" "UPDATE_CERTS" "$CONFIG"
 			;;
