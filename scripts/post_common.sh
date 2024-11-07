@@ -44,7 +44,7 @@ update_swupdate_certificate()  {
 		/END CERTIFICATE/ { outfile="" }' "$SWUPDATE_PEM"
 	for cert in "$certsdir"/cert.*; do
 		[ -e "$cert" ] || continue
-		pubkey=$(openssl x509 -noout -in "$cert" -pubkey | sed -e '/-----/d' | tr -d '\n')
+		pubkey=$(openssl x509 -noout -in "$cert" -pubkey 2>/dev/null | sed -e '/-----/d' | tr -d '\n')
 		case "$pubkey" in
 		# Armadillo public one-time cert
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEYTN7NghmISesYQ1dnby5YkocLAe2/EJ8OTXkx/xGhBVlJ57eGOovtPORd/JMkA6lWI0N/pD5p6eUGcwrQvRtsw==")
@@ -81,6 +81,18 @@ update_swupdate_certificate()  {
 				mv "$cert" "$cert.atmark_old" \
 					|| error "Could not rename temporary file"
 				atmark_old_seen=1
+			fi
+			;;
+		# not a certificate?
+		"")
+			# some trailing space? just delete
+			if [ -z "$(cat "$cert")" ]; then
+				rm -f "$cert" \
+					|| error "Could not remove temporary file"
+			else
+				warning "The following content was found in swupdate.pem and is not a certificate" \
+					"Please remove it to ensure errors do not occur:" \
+					"$(cat "$cert")"
 			fi
 			;;
 		*)
