@@ -58,9 +58,10 @@ update_swupdate_certificate()  {
 			public_onetime_path="$cert"
 			;;
 		# certificate for atmark are handled separately
-		# atmark-1|atmark-2
+		# atmark-1|atmark-2|atmark-3
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA=="| \
-		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAERkRP5eTXBTG760gEmBfCBz4fWyYfUx3a+sYyHe4uc1sQN2bavxfaBlJmyGI4MY/Pkjh5FDVcddZfil552WUoWQ==")
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAERkRP5eTXBTG760gEmBfCBz4fWyYfUx3a+sYyHe4uc1sQN2bavxfaBlJmyGI4MY/Pkjh5FDVcddZfil552WUoWQ=="| \
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE6IZHb+5RM8wxXWB8NdVpy5k7THY61SKP7+4GqegW2SDJ3yYUYuwL7MZVjKtauUYUYQVvKzEc+ghxOdQgModzfA==")
 			# atmark certificates: delete if we have new ones, or just keep.
 			if [ -n "$atmark_present" ]; then
 				rm -f "$cert" \
