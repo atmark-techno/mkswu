@@ -1,4 +1,4 @@
-USER_PUBKEYS="$PUBKEY,$PWD/../certs/atmark-1.pem"
+USER_PUBKEYS="$PUBKEY,$PWD/../certs/atmark-3.pem"
 swdesc_option UPDATE_CERTS=1
 swdesc_option FORCE_VERSION
 swdesc_command true

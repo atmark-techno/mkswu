@@ -250,7 +250,7 @@ test_fail_atmark_new_container() {
 	echo "Testing atmark updates container addition prevention check"
 
 	# atmark key, container update, other container installed
-	openssl x509 -in ../certs/atmark-1.pem -outform DER -out "$SWDESC.sig"
+	openssl x509 -in ../certs/atmark-3.pem -outform DER -out "$SWDESC.sig"
 	echo "test 1" > "$MKSWU_TMP/sw-versions.present"
 	> "$MKSWU_TMP/sw-versions.old"
 	touch "$CONTAINER_CONF_DIR/container.conf"
@@ -262,7 +262,7 @@ test_fail_atmark_new_container() {
 	openssl x509 -in ../swupdate-onetime-public.pem -outform DER -out "$SWDESC.sig"
 	( fail_atmark_new_container ) \
 		|| error "fail_atmark_new_container failed with user key"
-	openssl x509 -in ../certs/atmark-1.pem -outform DER -out "$SWDESC.sig"
+	openssl x509 -in ../certs/atmark-3.pem -outform DER -out "$SWDESC.sig"
 
 	# container_clear
 	MKSWU_CONTAINER_CLEAR=1
@@ -424,7 +424,8 @@ test_cert_update() {
 		|| error "should have not changed anything"
 
 	mkdir "$MKSWU_TMP/certs_atmark"
-	cp ../certs/atmark-[12].pem "$MKSWU_TMP/certs_atmark"
+	cp ../certs/atmark-2.pem ../certs/atmark-3.pem "$MKSWU_TMP/certs_atmark" \
+		|| error "missing source file?"
 	echo "swupdate certificate: test atmark certs not added if not present"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and do nothing"
@@ -432,7 +433,7 @@ test_cert_update() {
 		|| error "should have added new key"
 
 	echo "swupdate certificate: test using old atmark key adds the new one"
-	cat ../certs/atmark-1.pem >> "$SWUPDATE_PEM"
+	cat ../certs/atmark-3.pem >> "$SWUPDATE_PEM"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok to add extra atmark cert"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
@@ -441,7 +442,7 @@ test_cert_update() {
 		|| error "certificate update should be ok to do nothing"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "3" ] \
 		|| error "should have not changed anything"
-	rm "$MKSWU_TMP/certs_atmark/atmark-1.pem"
+	rm "$MKSWU_TMP/certs_atmark/atmark-3.pem"
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and remove older atmark pem"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "2" ] \

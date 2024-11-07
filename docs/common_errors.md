@@ -119,13 +119,6 @@ Note that depending on the mkswu version used to generate your keys, you might n
 On the device:
 ```
 armadillo:~# cat /etc/swupdate.pem
-# atmark-1
------BEGIN CERTIFICATE-----
-MIIBuzCCAWCgAwIBAgIUbbibr2AEmw3ohnmkXeGPPf0glgcwCgYIKoZIzj0EAwIw
-
-Either fix the existing containers `set_image` configuration if it was wrong, or if the image is not meant to be started automatically add a new config file with just `set_image <newimage>` and `set_autostart no` to disable autostart....
-Ym7VNTvJTNMU82ZTiXk8
------END CERTIFICATE-----
 # atmark-2
 -----BEGIN CERTIFICATE-----
 MIIBvzCCAWagAwIBAgIUfagaF9RAjO2+x54PMqIlZkain9MwCgYIKoZIzj0EAwIw

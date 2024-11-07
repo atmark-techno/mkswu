@@ -127,12 +127,6 @@ SWU イメージは作成時に署名されていますが、署名に使われ�
 Armadillo 上での確認：
 ```
 armadillo:~# cat /etc/swupdate.pem
-# atmark-1
------BEGIN CERTIFICATE-----
-MIIBuzCCAWCgAwIBAgIUbbibr2AEmw3ohnmkXeGPPf0glgcwCgYIKoZIzj0EAwIw
-...
-Ym7VNTvJTNMU82ZTiXk8
------END CERTIFICATE-----
 # atmark-2
 -----BEGIN CERTIFICATE-----
 MIIBvzCCAWagAwIBAgIUfagaF9RAjO2+x54PMqIlZkain9MwCgYIKoZIzj0EAwIw

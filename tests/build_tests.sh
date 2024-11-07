@@ -111,10 +111,10 @@ if command -v podman && command -v jq > /dev/null; then
 fi
 
 build_check update_certs_atmark.desc -- \
-	"file-tar scripts_extras.tar certs_atmark/atmark-1.pem certs_atmark/atmark-2.pem certs_atmark/atmark-3.pem"
+	"file-tar scripts_extras.tar certs_atmark/atmark-2.pem certs_atmark/atmark-3.pem"
 
 build_check update_certs_user.desc -- \
-	"file-tar scripts_extras.tar certs_user/swupdate*.pem certs_user/atmark-1.pem"
+	"file-tar scripts_extras.tar certs_user/swupdate*.pem certs_user/atmark-3.pem"
 build_check update_certs_user.desc -- \
 	"file-tar scripts_extras.tar certs_user/swupdate*.pem"
 

@@ -15,7 +15,7 @@ check_shadow_empty_password() {
 update_swupdate_certificate()  {
 	local certsdir cert pubkey
 	local public_onetime_path=""
-	local atmark_present="" atmark_seen=""
+	local atmark_present="" atmark_seen="" atmark_old_seen=""
 	local user_present="" user_seen=""
 	# test constants
 	local SWUPDATE_PEM=${SWUPDATE_PEM:-/target/etc/swupdate.pem}
@@ -58,8 +58,7 @@ update_swupdate_certificate()  {
 			public_onetime_path="$cert"
 			;;
 		# certificate for atmark are handled separately
-		# atmark-1|atmark-2|atmark-3
-		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA=="| \
+		# atmark-2|atmark-3
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAERkRP5eTXBTG760gEmBfCBz4fWyYfUx3a+sYyHe4uc1sQN2bavxfaBlJmyGI4MY/Pkjh5FDVcddZfil552WUoWQ=="| \
 		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE6IZHb+5RM8wxXWB8NdVpy5k7THY61SKP7+4GqegW2SDJ3yYUYuwL7MZVjKtauUYUYQVvKzEc+ghxOdQgModzfA==")
 			# atmark certificates: delete if we have new ones, or just keep.
@@ -68,6 +67,21 @@ update_swupdate_certificate()  {
 					|| error "Could not remove temporary file"
 			fi
 			atmark_seen=1
+			;;
+		# atmark-1
+		"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEjgbd3SI8+iof3TLL9qTGNlQN84VqkESPZ3TSUkYUgTiEL3Bi1QoYzGWGqfdmrLiNsgJX4QA3gpaC19Q+fWOkEA==")
+			# old atmark certificates: delete immediately if we have new ones,
+			# delete later if we have any other, but if no current ones are
+			# found keep to allow an upgrade path.
+			if [ -n "$atmark_present" ]; then
+				rm -f "$cert" \
+					|| error "Could not remove temporary file"
+				atmark_seen=1
+			else
+				mv "$cert" "$cert.atmark_old" \
+					|| error "Could not rename temporary file"
+				atmark_old_seen=1
+			fi
 			;;
 		*)
 			# user certificates: delete if we have new ones,
@@ -93,6 +107,10 @@ update_swupdate_certificate()  {
 				|| error "Could not remove temporary file"
 			info "Removing one-time public certificate"
 		fi
+	fi
+	if [ -n "$atmark_old_seen" ] && [ -n "$atmark_seen" ]; then
+		rm -f "$certsdir/"cert.*.atmark_old \
+			|| error "Could not remove temporary file"
 	fi
 	(
 		# ignore errors, might not be any cert left here
