@@ -254,6 +254,12 @@ EOF
 				|| error "Could not modify /etc/iptables/$file"
 		fi
 	done
+
+	# add sw-description-max-size = 1MB config if unset (ABOS >= 3.20-at.5)
+	if grep -q 'sw-description-max-size;' /target/etc/swupdate.cfg; then
+		sed -i -e 's/globals:.*/&\n  sw-description-max-size = 1048576;/' /target/etc/swupdate.cfg \
+			|| error "Could not update swupdate.cfg"
+	fi
 }
 
 baseos_upgrade() {
