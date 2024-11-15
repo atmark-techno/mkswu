@@ -52,7 +52,7 @@ $oldvers"
 			"$@" \
 			"swdesc_command_nochroot --version testcomp '$newvers' \\" \
 			"	'touch \"$canary\"'" \
-		| name=version_install build_check - -- "swdesc 'VERSION testcomp $normalized_newvers'" \
+		| name=version_install build_check - -- "swdesc 'VERSION testcomp ${normalized_newvers/+/\\+}'" \
 		|| error "mkswu build failed"
 
 	echo "$swupdate_component $oldvers" > "$SW_VERSIONS"
@@ -94,6 +94,11 @@ for version in 1.1.0-1; do
                 && error "$version was higher than $base"
 done
 
+# test semvers with +
+test_version_install '2.1-4+4' '2.1-5+2' || error "no update"
+test_version_install '2.1-4+4' '2.1-4+6afdsb-43214.2341--afsd34' && error "should ignore + part of version"
+test_version_install '2.1-4' '2.1-4+6afdsb-43214.2341--afsd34' && error "should ignore + part of version"
+test_version_install '2.1-4+4' '2.1-4' && error "should ignore + part of version"
 
 # tests if different as well
 # different versions

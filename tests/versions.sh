@@ -26,6 +26,11 @@ check 0 '1.2.3 < 1.2.3.4' 1.2.3 1.2.3.4
 check 0 '1.2.3-4 < 1.2.3' 1.2.3-4 1.2.3
 check 0 '1-2.3 < 1-2.3.4' 1-2.3 1-2.3.4
 
+# + ignored in semvers
+check 2 '1.2-3+1 = 1.2-3' 1.2-3+1 1.2-3
+check 2 '1.2-3+1 = 1.2-3+2' 1.2-3+1 1.2-3+2
+check 0 '1.2-2+1 < 1.2-3' 1.2-2+1 1.2-3
+
 # bogus input
 check 3 'ERROR: Version 1.2.3.4.5 must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)' \
 	1 1.2.3.4.5

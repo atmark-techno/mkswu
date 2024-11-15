@@ -44,8 +44,8 @@ get_version() {
 
 # strict greater than
 version_higher() {
-	local oldvers="$1"
-	local newvers="$2"
+	local oldvers="${1%+*}"
+	local newvers="${2%+*}"
 	local oldpredash newpredash
 	local oldhasdash="" newhasdash=""
 
@@ -66,7 +66,7 @@ version_higher() {
 		esac
 	fi
 
-	! printf "%s\n" "$2" "$1" | sort -Vc 2>/dev/null
+	! printf "%s\n" "$newvers" "$oldvers" | sort -Vc 2>/dev/null
 }
 
 version_update() {

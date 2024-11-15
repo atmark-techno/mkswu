@@ -264,7 +264,7 @@ check_version_higher() {
 	local max err
 
 	# handle only x.y.z.t or x.y.z-t
-	printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+)?$' \
+	printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]*|-[A-Za-z0-9.]+(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?)?$' \
 		|| error "Version %s must be x.y.z.t (numbers < 65536 only) or x.y.z-t (x-z numbers only)" "$version"
 	# ... and check for max values
 	if [ "${version%-*}" = "${version}" ]; then
@@ -291,6 +291,8 @@ check_version_higher() {
 		# semver, signed int
 		max=2147483647
 	fi
+	# strip everything after + (ignored in semvers)
+	version=${version%+*}
 	err=$(printf %s "$version" | tr '.-' '\n' | awk '
 		/^[0-9]+$/ && $1 > '$max' {
 			print "1 " $1;
@@ -2529,13 +2531,19 @@ mkswu_version_cmp() {
 
 	for version in "$@"; do
 		if ! ( check_version_higher "$version" ); then
+			# invalid version
 			[ "$rc" -lt 3 ] && rc=3
 			continue
 		fi
 		if version_higher "$base" "$version"; then
 			info "%s < %s" "$base" "$version"
 		else
-			info "%s < %s" "$version" "$base"
+			if version_higher "$version" "$base"; then
+				info "%s < %s" "$version" "$base"
+			else
+				info "%s = %s" "$base" "$version"
+			fi
+			# non-installed artefacts
 			[ "$rc" -lt 2 ] && rc=2
 		fi
 	done
