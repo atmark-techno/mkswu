@@ -36,7 +36,7 @@ if ! [ -e ../imx-boot_armadillo_x2 ] \
 		echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e'
 	} > ../imx-boot_armadillo_x2
 fi
-build_check ../examples/boot.desc -- "file zst.imx-boot_armadillo_x2.*" "version boot '202.* different'" "swdesc imx-boot_armadillo_x2"
+build_check ../examples/boot.desc -- "file zst.imx-boot_armadillo_x2.*" "version boot '202.* higher'" "swdesc imx-boot_armadillo_x2"
 
 # kernel plain: just a couple of files.. since we don't actually check installation create dummy ones
 mkdir -p ../examples/kernel/lib/modules/5.10.82

@@ -596,12 +596,7 @@ write_entry_stdout() {
 			"$version" "$show_desc"
 	fi
 	if [ -n "$component" ]; then
-		if [ -z "$install_if" ]; then
-			case "$component" in
-			boot) install_if="different";;
-			*) install_if="higher";;
-			esac
-		fi
+		[ -n "$install_if" ] || install_if=higher
 		check_version_valid
 		write_line "name = \"$component\";" \
 			   "version = \"$version\";" \
@@ -1001,7 +996,31 @@ swdesc_boot() {
 	if [ -z "$version" ]; then
 		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$boot_file") \
 			|| error "Could not guess boot version in %s" "$boot_file"
+		# fix up version to allow install-if=higher:
+		# - 2020.04 -> 2020.4
 		normalize_version
+		# - at4 -> at.4
+		version=$(echo "$version" | sed -e 's/at\([0-9]\)/at.\1/')
+		# - 2020.04-at.4-2-gabc1234-4-gdef5678 -> 2020.04-at.4.2.4+gabc1234-gdef5678
+		version=$(echo "$version" | awk -F - '{
+				printf("%s-%s", $1, $2)
+				for (i=3; i<=NF; i++) {
+					if ($i ~ /^([0-9]+|[a-zA-Z]+)$/) {
+						# print only alpha or only num immediately with a .
+						printf(".%s", $i)
+					} else {
+						# otherwise keep for later with +
+						build[i]=$i
+					}
+				}
+				sep="+"
+				for (i=3; i<=NF; i++) {
+					if (! build[i]) continue;
+					printf("%s%s", sep, build[i])
+					sep="-"
+				}
+				printf "\n"
+			}')
 	fi
 
 	write_entry images raw "$boot_file" \
