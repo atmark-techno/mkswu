@@ -2601,7 +2601,7 @@ mkswu_update_version() {
 }
 
 mkswu_show() {
-	local swu desc order awk=""
+	local swu desc sig order awk=""
 
 	if command -v gawk >/dev/null; then
 		awk="gawk"
@@ -2639,10 +2639,23 @@ mkswu_show() {
 
 		[ -n "$awk" ] || error "mkswu --show requires a compatible awk (e.g. gawk)"
 
+		sig=$(cpio -i --quiet --to-stdout sw-description.sig < "$swu" \
+				| openssl asn1parse -inform DER \
+				| "$awk" -F: -v "verbose=$VERBOSE" '
+					$3 == "commonName" { in_cn=1 }
+					in_cn=1 && /UTF8STRING/ { cn=$4 }
+					in_cn=1 && /INTEGER/ { serial=$4 }
+					{ in_cn=0 }
+					END {
+						if (!cn) { exit }
+						printf("# signed by \"%s\"", cn)
+						if (verbose > 2 && serial) { print ", serial:", serial }
+					}')
+
 		order=$(cpio -t --quiet < "$swu") \
 			|| error "Could not get SWU file list from %s" "$swu"
 
-		printf "%s\n" "$desc" | "$awk" -v "order_string=$order" '
+		printf "%s\n" "$desc" | "$awk" -v "sig=$sig" -v "order_string=$order" '
 			function dequote() {
 				# undo "conf_quote"
 				sub(/";$/, "")
@@ -2654,11 +2667,13 @@ mkswu_show() {
 			# pre mkswu-5.0
 			/^ *# Built with mkswu/ {
 				print "# Built with mkswu", $NF
+				if (sig) print sig;
 			}
 			NR == 2 && /version = "/ {
 				sub(/.*version = "/, "")
 				dequote()
 				print "# Built with mkswu", $1
+				if (sig) print sig;
 			}
 			# pre mkswu-4.11
 			/^ *# swdesc/ {
