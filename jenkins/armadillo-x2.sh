@@ -5,8 +5,6 @@ error() {
 	exit 1
 }
 
-[[ -r "swupdate.key" ]] || error "Cannot read swupdate.key"
-
 ROOTFS=$(ls --sort=time baseos-x2-*.tar* | head -n 1)
 [[ -e  "$ROOTFS" ]] || error "rootfs not found"
 ROOTFS_VERSION=${ROOTFS#baseos-x2-}
@@ -21,8 +19,8 @@ done
 
 
 cat > "$OUTPUT.desc" <<EOF
+swdesc_option PUBLIC
 ATMARK_CERTS=certs/atmark-2.pem,certs/atmark-3.pem
-swdesc_option ALLOW_PUBLIC_CERT ALLOW_EMPTY_LOGIN
 swdesc_boot --board iot-g4-es1 imx-boot_armadillo_x2
 swdesc_boot --board iot-g4-es2 imx-boot_armadillo_x2
 swdesc_boot --board AGX4500 imx-boot_armadillo_x2
