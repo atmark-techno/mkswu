@@ -1,3 +1,11 @@
+7.1
+===
+features:
+ - mkswu show: print signature information from swu if present
+   This will allow easily checking if key was rotated if required.
+
+  -- 2024-11-25
+
 7.0
 ===
 security/breaking changes:
