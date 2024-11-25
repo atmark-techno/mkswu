@@ -657,6 +657,9 @@ msgstr ""
 msgid "%s < %s"
 msgstr ""
 #: mkswu
+msgid "%s = %s"
+msgstr ""
+#: mkswu
 msgid "--version-base %s must not include a dash"
 msgstr ""
 #: mkswu

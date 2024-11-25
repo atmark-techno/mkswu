@@ -36,15 +36,20 @@ $SU "./mkswu --config-dir . --mkconf"
 
 $SU ./jenkins/armadillo-x2.sh
 
+# only need to run this once (on debian that has msgmerge),
+# we don't care if alpine can't make dist.
+if command -v msgmerge >/dev/null; then
+	# remove old .pot files to make sure make regenerates all locales
+	rm po/*.pot
+	make dist
+fi
+
 # If we want to build debian package, quite a bit of work...
 case "$1" in
 deb)
 	sudo apt update
 	sudo apt install -y debhelper jq pandoc
 	VERSION=$(git describe | tr '-' '.')
-	# remove old .pot files to make sure make regenerates all locales
-	rm po/*.pot
-	make dist
 
 	rm -rf /tmp/mkswu && mkdir /tmp/mkswu
 	GIT_WORK_TREE=/tmp/mkswu git reset --hard HEAD

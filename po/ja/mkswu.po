@@ -875,6 +875,10 @@ msgid "%s < %s"
 msgstr ""
 
 #: mkswu
+msgid "%s = %s"
+msgstr ""
+
+#: mkswu
 msgid "--version-base %s must not include a dash"
 msgstr "--version-base %s にハイフン(-)を入れないでください。"
 
