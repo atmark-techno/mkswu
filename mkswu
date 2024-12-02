@@ -1632,6 +1632,7 @@ swdesc_option() {
 			info "Building SWU with public-onetime certificate"
 			PUBKEY="$SCRIPT_DIR/swupdate-onetime-public.pem"
 			PRIVKEY="$SCRIPT_DIR/swupdate-onetime-public.key"
+			UPDATE_CERTS=""
 			ENCRYPT_KEYFILE=""
 			# note public certificate is removed if users certs are
 			# present regardless of ALLOW_PUBLIC_CERT
