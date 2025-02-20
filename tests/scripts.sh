@@ -110,6 +110,20 @@ test2" ] || error "var was not correct: $var"
 	[ "$var" = "" ] || error "var was not correct: $var"
 }
 
+test_until() {
+	local now
+
+	now=$(date +%s)
+	echo " # MKSWU_UNTIL $((now-10)) $((now+100))" > "$SWDESC"
+	( check_until; ) || error "until failed with valid dates"
+	echo " # MKSWU_UNTIL $((now+100)) $((now+200))" > "$SWDESC"
+	( check_until; ) && error "until worked with invalid start"
+	echo " # MKSWU_UNTIL $((now-100)) $((now-10))" > "$SWDESC"
+	( check_until; ) && error "until worked with invalid end"
+
+	true
+}
+
 test_version_compare() {
 	local base version
 
@@ -871,6 +885,8 @@ test_update_overlays() {
 	export TEST_SCRIPTS=1
 	cleanup() { :; }
 	test_common
+	. "$SCRIPTS_SRC_DIR/pre_init.sh"
+	test_until
 ) || error "common tests failed"
 
 (

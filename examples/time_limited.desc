@@ -1,0 +1,12 @@
+swdesc_option version=1
+
+# swupdate on Armadillo does not check the certificate validity.
+# If you want to limit the time during which a SWU is installable, you
+# can use the 'until' option with any argument 'date -d' understands
+# (e.g. 'now + 1 year', '2024-01-01'...)
+# Note update will fail if time is not synchronized.
+swdesc_option until="now + 1 month"
+
+# the rest of the file is as normal,
+# this SWU does not do anything
+swdesc_command true

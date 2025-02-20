@@ -207,8 +207,29 @@ pre_installer() {
 	needs_update boot && error "Cannot update boot image in installer"
 }
 
+check_until() {
+	local until_start until_end now
+
+	until_start=$(mkswu_var UNTIL)
+
+	# not set = ok
+	[ -z "$until_start" ] && return
+
+	# format: start_ts end_ts (in seconds since epoch)
+	until_end="${until_start#* }"
+	until_start="${until_start% *}"
+	now=$(date +%s)
+
+	[ "$now" -gt "$until_start" ] \
+		|| error "This SWU cannot be installed before $(date -d @"$until_start") -- is clock synchronized?"
+	[ "$now" -lt "$until_end" ] \
+		|| error "This SWU cannot be installed after $(date -d @"$until_end")"
+}
+
 init() {
 	lock_update
+
+	check_until
 
 	if [ -n "$SWUPDATE_FROM_INSTALLER" ]; then
 		pre_installer

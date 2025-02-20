@@ -1628,6 +1628,11 @@ swdesc_option() {
 		install_if=*)
 			MKSWU_version_last_set="$*"
 			MKSWU_install_if="${opt#install_if=}";;
+		until=*)
+			MKSWU_until="$(date -d "${opt#until=}" +%s)" \
+				|| error "swdesc_option until=%s was not in a format 'date -d' understands" \
+					"${opt#until=}"
+			;;
 		BUILD_SBOM=*)
 			MKSWU_BUILD_SBOM="${opt#BUILD_SBOM=}";;
 		sbom_config_yaml=*)
@@ -1765,6 +1770,8 @@ EOF
 	*) error "invalid ROOTFS_FSTYPE \"%s\", must be empty, ext4 or btrfs" \
 		"$MKSWU_ROOTFS_FSTYPE";;
 	esac
+	[ -n "$MKSWU_until" ] \
+		&& echo "  # MKSWU_UNTIL $(date +%s) $MKSWU_until"
 	case "$MKSWU_POST_ACTION" in
 	poweroff|wait|container) echo " # MKSWU_POST_ACTION $MKSWU_POST_ACTION";;
 	""|reboot) ;;
@@ -2849,6 +2856,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	local main_cwd desc desc_file
 	local MKSWU_version="" MKSWU_component="" MKSWU_install_if=""
 	local MKSWU_install_first="" MKSWU_version_last_set=""
+	local MKSWU_until=""
 
 	# use make-sbom scan file
 	local MKSWU_SBOM_CONFIG_YAML="/usr/share/make-sbom/config/config.yaml"

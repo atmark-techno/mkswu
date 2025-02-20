@@ -372,6 +372,9 @@ msgstr ""
 msgid "%s must be set before the first swdesc_* action"
 msgstr ""
 #: mkswu
+msgid "swdesc_option until=%s was not in a format 'date -d' understands"
+msgstr ""
+#: mkswu
 msgid "Building SWU with public-onetime certificate"
 msgstr ""
 #: mkswu

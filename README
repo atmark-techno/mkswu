@@ -72,6 +72,10 @@ swdesc_option ALLOW_EMPTY_LOGIN
 swdesc_option ALLOW_PUBLIC_CERT
     (for test only) allow update to install if no user certificate has been
     installed, in which case public cert is left enabled
+swdesc_option until=<date>
+    set time limit for install validity (in any format 'date -d' recognizes,
+    this is stored as unix timestamp internally)
+    Note update will fail if time is not synchronized.
 
 
 swdesc_option BUILD_SBOM=<mode>
