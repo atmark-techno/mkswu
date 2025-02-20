@@ -185,36 +185,36 @@ test_version_update() {
 	echo "  #VERSION boot 2020.4-at2 different *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "Did not merge new boot version"
+	[ "$version" = "$uboot_vbase-at.2" ] || error "Did not merge new boot version"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "boot somehow changed?"
+	[ "$version" = "$uboot_vbase-at.2" ] || error "boot somehow changed?"
 
 	sed -i -e '/boot/d' "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "boot was not added"
+	[ "$version" = "$uboot_vbase-at.2" ] || error "boot was not added"
 
 	cp "$merged" "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "$uboot_vbase-at2" ] || error "boot somehow changed?"
+	[ "$version" = "$uboot_vbase-at.2" ] || error "boot somehow changed?"
 
 	cp "$merged" "$system_versions"
-	echo "  #VERSION boot 2020.4-at3 different $board" > "$SWDESC"
-	echo "  #VERSION boot 2020.4-at4 different not-$board" >> "$SWDESC"
+	echo "  #VERSION boot 2020.4-at.3 higher $board" > "$SWDESC"
+	echo "  #VERSION boot 2020.4-at.4 higher not-$board" >> "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
-	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
+	[ "$version" = "$uboot_vbase-at.3" ] || error "Did not merge correct new boot version"
 
 	: > "$system_versions"
 	gen_newversion
 	version=$(get_version boot)
 	[ "$(grep -cw boot "$merged")" = 1 ] || error "Duplicated boot version (ignored board)"
-	[ "$version" = "$uboot_vbase-at3" ] || error "Did not merge correct new boot version"
+	[ "$version" = "$uboot_vbase-at.3" ] || error "Did not merge correct new boot version"
 
 	echo "  #VERSION zero 0 different *" > "$SWDESC"
 	gen_newversion
@@ -223,23 +223,51 @@ test_version_update() {
 
 	# check old formats work (required for new shared scripts)
 	echo "a 123" > "$system_versions"
-	echo "  #VERSION boot 2020.04-at4 different *" > "$SWDESC"
+	echo "  #VERSION boot 2020.04-at.4 higher *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version --install-if boot present)
-	[ "$version" = "2020.4-at4 different" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
+	[ "$version" = "2020.4-at.4 higher" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at4" ] || error "version with 2 fields did not get merged (didn't add boot)"
+	[ "$version" = "2020.4-at.4" ] || error "version with 2 fields did not get merged (didn't add boot? got $version)"
 	version=$(get_version a)
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 
-	echo "  #VERSION boot 2020.04-at5 different" > "$SWDESC"
+	echo "  #VERSION boot 2020.04-at.5 higher" > "$SWDESC"
 	gen_newversion
 	version=$(get_version --install-if boot present)
-	[ "$version" = "2020.4-at5 different" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
+	[ "$version" = "2020.4-at.5 higher" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at5" ] || error "version with 2 fields did not get merged (didn't update boot)"
+	[ "$version" = "2020.4-at.5" ] || error "version with 2 fields did not get merged (didn't update boot? got $version)"
 	version=$(get_version a)
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
+
+	# more boot version updates..
+	# trap warning calls, use file as it is called in subshell
+	local warn_file="$MKSWU_TMP/last_warning"
+	# shellcheck disable=SC2317 ## not dead, called in gen_newversion...
+	warning() {
+		printf "%s\n" "$@" > "$warn_file"
+	}
+
+	echo 'boot 2020.04-at5' > "$system_versions"
+	echo " #VERSION a 123 higher" > "$SWDESC"
+	gen_newversion
+	version=$(get_version boot)
+	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (got $version)"
+	[ -e "$warn_file" ] && error "warned updating old boot version? $(cat "$warn_file")"
+
+	echo " #VERSION boot 2020.4-at.5 higher" > "$SWDESC"
+	gen_newversion
+	version=$(get_version boot)
+	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (same as swu, got $version)"
+	[ -e "$warn_file" ] && error "warned updating old boot version? $(cat "$warn_file")"
+
+	echo " #VERSION boot 2020.4-at.24 higher" > "$SWDESC"
+	gen_newversion
+	version=$(get_version boot)
+	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (higher in swu, got $version)"
+	grep -qF "version format was updated (2020.4-at5 -> 2020.4-at.5), but 2020.4-at.24" "$warn_file" \
+		|| error "boot version reformatting warning not printed? $(cat "$warn_file" 2>/dev/null || echo 'no file')"
 }
 
 test_fail_atmark_new_container() {

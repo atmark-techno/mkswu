@@ -108,8 +108,10 @@ needs_update_regex() {
 }
 
 extract_swdesc_versions() {
-	# normalize boot version and extract from #VERSION comments
-	sed -n -e 's/boot 2020.04/boot 2020.4/' -e "s/.*#VERSION //p"
+	# also fix boot versions
+	sed -n  -e 's/\(VERSION boot 2020\).04/\1.4/' \
+		-e 's/\(VERSION boot 2020.4-at\)\([0-9]\)/\1.\2/' \
+		-e "s/.*#VERSION //p"
 }
 
 fix_boot_versions() {
@@ -120,6 +122,28 @@ fix_boot_versions() {
 	# 2020.04 -> 2020.4
 	[ "$oldvers" != "${oldvers#2020.04}" ] \
 		&& oldvers="2020.4${oldvers#2020.04}"
+
+	# 2020.4-at24 -> 2020.4-at.24
+	if [ "$oldvers" != "${oldvers#2020.4-at[0-9]}" ]; then
+		local tmpvers="2020.4-at.${oldvers#2020.4-at}"
+		# We fix sw-versions' "boot" entry on any installed SWU,
+		# but any real update won't happen because swupdate itself does not
+		# know about this (at.24 < at20 for swupdate)
+		# In particular, we do NOT want $newvers in new sw-versions!
+		# The worst that can happen if we get this wrong is new version gets
+		# installed twice.
+		if [ "$install_if" = higher ] \
+		    && version_update higher "$tmpvers" "$newvers"; then
+			warning "'boot' version format was updated ($oldvers -> $tmpvers), but $newvers has" \
+				"NOT been installed! Please install this SWU again to update boot image."
+			# also "unfix" sw-versions.old to make sure this is installed
+			# even if nothing else is planned
+			sed -i -e 's/boot 2020.4-at\./boot 2020.4-at/' \
+				"$MKSWU_TMP/sw-versions.old"
+			newvers=""
+		fi
+		oldvers="$tmpvers"
+	fi
 }
 
 check_nothing_to_do() {
@@ -133,7 +157,9 @@ gen_newversion() {
 
 	# If the system still contains an old boot version with 0-padding
 	# then remove padding here to avoid incorrect update detections
-	sed -e 's/^boot 2020.04/boot 2020.4/' < "$system_versions" \
+	sed		-e 's/^boot 2020.04/boot 2020.4/' \
+			-e 's/^boot 2020.4-at\([0-9]\)/boot 2020.4-at.\1/' \
+			< "$system_versions" \
 			> "$MKSWU_TMP/sw-versions.old" \
 		|| error "Could not copy existing versions"
 
