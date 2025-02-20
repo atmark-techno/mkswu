@@ -112,6 +112,16 @@ extract_swdesc_versions() {
 	sed -n -e 's/boot 2020.04/boot 2020.4/' -e "s/.*#VERSION //p"
 }
 
+fix_boot_versions() {
+	[ "$component" != boot ] && return
+
+	# fix old boot versions
+
+	# 2020.04 -> 2020.4
+	[ "$oldvers" != "${oldvers#2020.04}" ] \
+		&& oldvers="2020.4${oldvers#2020.04}"
+}
+
 check_nothing_to_do() {
 	cmp -s "$MKSWU_TMP/sw-versions.old" "$MKSWU_TMP/sw-versions.merged"
 }
@@ -133,19 +143,22 @@ gen_newversion() {
 	# Merge files, keeping order of original sw-versions,
 	# then appending other lines from new one in order as well.
 	# Could probably do better but it works and files are small..
-	awk '!filter[$1] { filter[$1]=1; print }' "$MKSWU_TMP/sw-versions.old" \
+	awk '!filter[$1] { filter[$1]=1; print }' "$system_versions" \
 		| while read -r component oldvers; do
 			# drop other_boot / other_boot_linux: no longer used.
 			case "$component" in
 			other_boot|other_boot_linux) continue;;
 			esac
+
 			newvers=$(get_version --install-if "$component" present)
+			install_if=${newvers##* }
+			newvers=${newvers% *}
+
+			fix_boot_versions
 			if [ -z "$newvers" ]; then
 				printf "%s\n" "$component $oldvers"
 				continue
 			fi
-			install_if=${newvers##* }
-			newvers=${newvers% *}
 			if ! version_update "$install_if" "$oldvers" "$newvers"; then
 				info "Skipping install of component $component $newvers (has $oldvers)" >/dev/null
 				newvers="$oldvers"
