@@ -1,3 +1,17 @@
+7.2
+===
+fixes:
+- fix 'boot' version upgrades from old versions (broken in 7.0)
+  Older boot versions were formatted as 2020.4-at20 but that is
+  considered newer than 2020.4-at.24, so old versions would not
+  get upgraded properly. The old format in /etc/sw-versions is now
+  fixed whenever a SWU is installed.
+- make mkswu --init properly exit on ^C
+- disable USER_CERTS when using swdesc_option PUBLIC (we do not want
+  to overwrite users's certs in this case)
+
+  -- 20205-02-21
+
 7.1
 ===
 features:
