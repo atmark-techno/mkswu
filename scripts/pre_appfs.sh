@@ -100,9 +100,13 @@ remount_or_reboot() {
 podman_killall() {
 	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
-		podman_info stop -a
-		podman ps --format '{{.ID}}' \
-			| timeout 20s xargs -r podman_info wait
+		# give containers a chance to shutdown cleanly, without podman stop
+		# that can hang in a different mount namespace
+		podman_info kill -a -s SIGTERM
+		if ! podman ps --format '{{.ID}}' | timeout 10s xargs -r podman_info wait; then
+			podman_info kill -a -s SIGKILL
+			podman ps --format '{{.ID}}' | timeout 20s xargs -r podman_info wait
+		fi
 		touch "$MKSWU_TMP/podman_containers_killed"
 	fi
 	podman_info pod rm -a -f
