@@ -415,7 +415,7 @@ compress() {
 	check_validity "$file_out" "$file_src" && return
 
 	ZSTD_CLEVEL="${ZSTD_CLEVEL:-10}" \
-	zstd -q -o "$file_out.tmp" < "$file_src" \
+	zstd -qf -o "$file_out.tmp" < "$file_src" \
 		|| error "failed to compress %s" "$file_src"
 
 	mv "$file_out.tmp" "$file_out" \
