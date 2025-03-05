@@ -103,9 +103,11 @@ podman_killall() {
 		# give containers a chance to shutdown cleanly, without podman stop
 		# that can hang in a different mount namespace
 		podman_info kill -a -s SIGTERM
-		if ! podman ps --format '{{.ID}}' | timeout 10s xargs -r podman_info wait; then
+		if ! podman ps --format '{{.ID}}' \
+				| stderr_info timeout 10s xargs -r podman wait; then
 			podman_info kill -a -s SIGKILL
-			podman ps --format '{{.ID}}' | timeout 20s xargs -r podman_info wait
+			podman ps --format '{{.ID}}' \
+				| stderr_info timeout 20s xargs -r podman wait
 		fi
 		touch "$MKSWU_TMP/podman_containers_killed"
 	fi
