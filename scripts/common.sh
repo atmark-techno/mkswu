@@ -530,7 +530,19 @@ cleanup() {
 	luks_close_target
 	if [ -e "$MKSWU_TMP/podman_containers_killed" ] && ! needs_reboot; then
 		info "Restarting containers"
-		podman_start -a
+		# do this in a subshell so podman does not keep the mkswu lock forever...
+		(
+			# close all fd except stdio
+			# (or non-number but that should never happen)
+			for fd in "/proc/$$/fd/"*; do
+				fd=${fd##*/}
+				case "$fd" in
+				0|1|2|*[!0-9]*) continue;;
+				esac
+				eval "exec $fd<&-"
+			done
+			podman_start -a
+		)
 	fi
 }
 
