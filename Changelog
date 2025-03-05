@@ -1,3 +1,12 @@
+7.3.1
+=====
+fixes:
+- fix podman wait after podman kill in 7.3, that did not wait properly
+- in POST_ACTION=container, ensure the lock is not inherited by
+long-living container process
+
+  -- 2025-03-05
+
 7.3
 ===
 fixes:
