@@ -3092,7 +3092,9 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 	set -e
 	for desc; do
 		# shellcheck disable=SC2034 ## MKSWU_version is used, yes...
-		MKSWU_version=""; MKSWU_install_if=""
+		MKSWU_version=""
+		# shellcheck disable=SC2034 ## and this as well.
+		MKSWU_install_if=""
 		MKSWU_FORCE_VERSION="";
 
 		if [ "$desc" = "-" ]; then
@@ -3173,7 +3175,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 		if ! eval make_sbom.sh -i "$(shell_quote "$OUT")" \
 				-o "$(shell_quote "$OUT")" \
 				-c "$(shell_quote "$MKSWU_SBOM_CONFIG_YAML")" \
-				$MKSWU_SBOM_INPUT $MKSWU_SBOM_SOURCE_FILE; then
+				"$MKSWU_SBOM_INPUT" "$MKSWU_SBOM_SOURCE_FILE"; then
 			warning "Could not create sbom."
 			MKSWU_RETVAL=1
 		fi
