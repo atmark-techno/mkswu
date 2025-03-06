@@ -1749,7 +1749,7 @@ EOF
 		&& echo "$MKSWU_NOTIFY_FAIL_CMD" \
 			| sed -e 's/^/  # MKSWU_NOTIFY_FAIL_CMD /'
 	[ -n "${MKSWU_NOTIFY_SUCCESS_CMD+1}" ] \
-		&& echo "$NOTIFY_SUCCESS_CMD" \
+		&& echo "$MKSWU_NOTIFY_SUCCESS_CMD" \
 			| sed -e 's/^/  # MKSWU_NOTIFY_SUCCESS_CMD /'
 	case "$MKSWU_ROOTFS_FSTYPE" in
 	ext4|btrfs) echo "# MKSWU_ROOTFS_FSTYPE $MKSWU_ROOTFS_FSTYPE";;

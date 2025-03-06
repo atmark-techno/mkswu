@@ -73,4 +73,7 @@ build_check ../examples/volumes_assets.desc -- \
 build_check ../examples/container_clear.desc -- "swdesc CONTAINER_CLEAR"
 
 # notify
-build_check ../examples/enable_notify_led.desc -- "swdesc MKSWU_NOTIFY_STARTING_CMD"
+build_check ../examples/enable_notify_led.desc -- \
+	"swdesc 'MKSWU_NOTIFY_STARTING_CMD cd /sys'" \
+	"swdesc 'MKSWU_NOTIFY_FAIL_CMD cd /sys'" \
+	"swdesc 'MKSWU_NOTIFY_SUCCESS_CMD cd /sys'"
