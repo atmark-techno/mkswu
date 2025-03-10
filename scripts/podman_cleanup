@@ -165,9 +165,16 @@ podman_prune() {
 	# skip dry run
 	[ -n "$DRY_RUN" ] && return
 
+	# Image prune --external was added in podman 4.x (abos 3.16+, 2022/06)
+	# We assume almost no-one will run newer mkswu on such old images, but
+	# it is still supported so fallback to non-external on error.
+	# (Error is not hidden on purpose, will try harder if someone complains)
 	podman --root "$PODMAN_ROOT" \
 		--storage-opt additionalimagestore="" \
-		image prune -f
+		image prune -f --external \
+		|| podman --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			image prune -f
 }
 
 cleanup_images() {
