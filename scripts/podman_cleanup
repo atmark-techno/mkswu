@@ -149,6 +149,7 @@ trim_tags() {
 		--storage-opt additionalimagestore="" \
 		image list \
 		--format '{{.Id}}' |
+		sort -u |
 		while read -r id; do
 			grep -q -F "$id" "$tmpdir/ids" && continue
 			if [ -n "$DRY_RUN" ]; then
