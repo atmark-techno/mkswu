@@ -29,11 +29,11 @@ error() {
 	if [ -n "$SHOW_DF" ]; then
 		# btrfs only updates df in background or on sync
 		sync -f /var/app/volumes
-		stdout_info echo "Free space available:"
+		info "Free space available:"
 		stdout_info df -h /var/app/volumes
 	fi
 	if [ -n "$SHOW_DU" ]; then
-		stdout_info echo "Installing this file:"
+		info "Installing this file:"
 		stdout_info du -h "$SHOW_DU"
 	fi
 	exit 1
@@ -53,6 +53,10 @@ stdout_info() {
 	3) "$@" >&3;;
 	*) "$@";;
 	esac
+}
+
+info() {
+	stdout_info printf "%s\n" "$@"
 }
 
 # options:
@@ -80,17 +84,21 @@ info_if_not_empty() {
 	fi
 
 	if [ -s "$output" ]; then
-		stdout_info echo "Command '$*' output:"
+		info "Command '$*' output:"
 		stdout_info cat "$output"
 	fi
 	rm -f "$output"
 	return "$ret"
 }
 
-podman_in_root() {
-	info_if_not_empty command podman --root "$PODMAN_ROOT" \
+podman_in_root_noredir() {
+	command podman --root "$PODMAN_ROOT" \
 		--storage-opt additionalimagestore="" \
 		"$@"
+}
+
+podman_in_root() {
+	info_if_not_empty podman_in_root_noredir "$@"
 }
 
 usage() {
@@ -109,9 +117,23 @@ usage() {
 
 podman_pull() {
 	local uri="$1"
+	local image
 
-	podman_in_root pull -q "$uri" \
+	image=$(podman_in_root_noredir pull -q "$uri") \
 		|| SHOW_DF=1 error "Could not pull $uri"
+
+	if [ -z "$image" ]; then
+		info "No image pulled from $uri ?"
+		return
+	fi
+
+	if [ -n "$force_tag" ]; then
+		podman_in_root tag "$image" "$force_tag" \
+			|| error "Could not tag $image to $force_tag"
+		info "$uri: tagged $image as $force_tag"
+	else
+		info "$uri: pulled $image"
+	fi
 }
 
 check_sig() {
@@ -194,6 +216,12 @@ update_containers() {
 		podman_load "$@"
 		;;
 	pull)
+		local force_tag=""
+		if [ "$1" = "--tag" ]; then
+			[ $# = 3 ] || error "Usage: pull --tag tag image (single image only)"
+			force_tag="$2"
+			shift 2
+		fi
 		for uri do
 			podman_pull "$uri"
 		done

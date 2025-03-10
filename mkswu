@@ -784,6 +784,13 @@ parse_swdesc() {
 			container="$1"
 			SKIP=1
 			;;
+		"--tag")
+			[ $# -lt 1 ] && error "%s requires an argument" "$ARG"
+			[ "$CMD" = "pull_container" ] \
+				|| error "%s only allowed for %s" "$ARG" "swdesc_pull_container"
+			container_tag="$1"
+			SKIP=1
+			;;
 		"--stdout-info")
 			case "$CMD" in
 			exec|exec_nochroot|command|command_nochroot|script|script_nochroot) ;;
@@ -1425,12 +1432,15 @@ swdesc_embed_container() {
 
 swdesc_pull_container() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
-	local image=""
+	local image="" container_tag="" pull_cmd
 
 	parse_swdesc pull_container "$@"
 
+	pull_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target pull '
+	pull_cmd="$pull_cmd ${container_tag:+"--tag \"$container_tag\" "} \"$image\""
+
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target pull "'"$image"'"'
+	swdesc_command_nochroot "$pull_cmd"
 }
 
 swdesc_usb_container() {
