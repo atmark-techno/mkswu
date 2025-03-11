@@ -2367,7 +2367,7 @@ geninitdesc_prompt_abosweb() {
 
 geninitdesc_fixinitdesc() {
 	local version max_version=4
-	version=$(sed -ne 's/.*version=\([0-9]*\).*/\1/p' "$desc")
+	version=$(sed -ne 's/swdesc_option.*version=\([0-9]*\).*/\1/p' "$desc")
 	if [ -z "$version" ]; then
 		echo "initial_setup.desc is too old, regenerating it"
 		echo "old initial_setup.desc is kept in %s" "$desc.old"
