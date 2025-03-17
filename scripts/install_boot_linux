@@ -1,0 +1,90 @@
+#!/bin/sh
+
+TMPDIR="${TMPDIR:-/var/tmp}"
+
+# info commands duplicated from scripts/common
+stdout_info() {
+        # this one keeps stdout if unset
+        case "$SWUPDATE_INFO_FD" in
+        3) "$@" >&3;;
+        *) "$@";;
+        esac
+}
+info() {
+	stdout_info printf "%s\n" "$@"
+}
+error() {
+	printf -- "----------------------------------------------\n" >&2
+        printf -- "/!\ %s\n" "$@" >&2
+        printf -- "----------------------------------------------\n" >&2
+	exit 1
+}
+
+# write helpers
+write_mmcboot_5MB() {
+	# historical location (older g4)
+	local flash_dev="${rootdev#/dev/}boot${ab}"
+
+	echo 0 > "/sys/class/block/$flash_dev/force_ro" \
+		|| error "Could not make $flash_dev rw"
+	if ! dd if="$1" of="/dev/$flash_dev" bs=1M seek=5 conv=fsync status=none; then
+		echo 1 > "/sys/class/block/$flash_dev/force_ro"
+		error "Could not write linux image to $flash_dev"
+	fi
+	echo 1 > "/sys/class/block/$flash_dev/force_ro"
+
+	info "Wrote linux to $flash_dev"
+}
+
+write_split_boot_partition() {
+	# new location in a separate partition
+	# format and write
+	local flash_dev="${rootdev}p$((ab+10))"
+
+	[ -e "$flash_dev" ] \
+		|| error "${flash_dev#/dev/} not found"
+	mkfs.vfat -n "secboot" "$flash_dev" >/dev/null \
+		|| error "Could not format ${flash_dev#/dev/}"
+	mount "$flash_dev" /target/mnt \
+		|| error "Could not mount freshly formated ${flash_dev#/dev/}"
+	if ! mkdir /target/mnt/boot || ! cp "$1" /target/mnt/boot/Image; then
+		umount /target/mnt
+		error "Could not write Image to ${flash_dev#/dev/}"
+	fi
+	umount /target/mnt
+
+	info "Wrote linux to ${flash_dev#/dev/}"
+}
+
+# state variable from mkswu scripts
+ab="$(cat "$TMPDIR/scripts/ab")" \
+	|| error "Could not read current partition index"
+rootdev="$(cat "$TMPDIR/scripts/rootdev")" \
+	|| error "Could not read rootdev"
+
+# detect where to write linux image.
+# - If possible check env.
+# Use fw_printenv instead of /target/boot/uboot_env.d files because secureboot
+# usually lock env, so trust what was written by boot on current partition
+# over what is in target rootfs
+# - Otherwise check if image currently written
+location=split_part
+if env=$(fw_printenv 2>/dev/null); then
+	echo "$env" | grep -q loadimage_mmcboot \
+		&& location=mmcboot
+else
+	if [ "$(xxd -l 4 -p -s $((5*1024*1024)) "${rootdev}boot$ab" 2>/dev/null)" = d00dfeed ]; then
+		location=mmcboot
+	elif ! [ -e "${rootdev}p$((ab+10))" ]; then
+		error "Could not read env nor guess image location, aborting"
+	fi
+fi
+
+case "$location" in
+mmcboot)
+	write_mmcboot_5MB "$1"
+	;;
+split_part)
+	write_split_boot_partition "$1"
+	;;
+esac

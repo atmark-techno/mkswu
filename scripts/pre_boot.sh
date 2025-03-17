@@ -59,7 +59,35 @@ copy_boot_boot() {
 }
 
 copy_boot_linux() {
-	local offset=$((5*1024*1024))
+	local offset_mb=5
+	local offset=$((offset_mb * 1024 * 1024))
+	# shadow local declaration to avoid propagating linux dev
+	local cur_dev="$cur_dev" flash_dev="$flash_dev"
+
+	# same logic as install_boot_linux to check which partition to copy:
+	# check env, or signature in boot dev.
+	local env
+	location=split_part
+	if env=$(fw_printenv 2>/dev/null); then
+		echo "$env" | grep -q loadimage_mmcboot \
+			&& location=mmcboot
+	else
+		if [ "$(xxd -l 4 -p -s "$offset" "$flash_dev" 2>/dev/null)" = d00dfeed ]; then
+			location=mmcboot
+		elif ! [ -e "${rootdev}p$((ab+10))" ]; then
+			error "Could not read env nor guess image location, aborting"
+		fi
+	fi
+
+	case "$location" in
+	mmcboot) ;;
+	split_part)
+		flash_dev="${rootdev#/dev/}p$((ab+10))"
+		cur_dev="${rootdev}p$((!ab+10))"
+		offset=0
+		offset_mb=0
+		;;
+	esac
 
 	if cmp -s "$cur_dev" "/dev/$flash_dev" "$offset" "$offset"; then
 		echo "boot_linux already up to date"
@@ -68,7 +96,7 @@ copy_boot_linux() {
 
 	echo "Copying boot_linux to $flash_dev"
 	bootdev_unlock
-	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M skip=5 seek=5 \
+	dd if="$cur_dev" of="/dev/$flash_dev" bs=1M skip=$offset_mb seek=$offset_mb \
 			conv=fsync status=none || return
 	bootdev_lock
 }
@@ -94,6 +122,7 @@ prepare_boot() {
 	workaround_ax2_mmc
 
 	if needs_update "boot_linux"; then
+		# setup link anyway for old SWUs (that can run with newer installed scripts)
 		setup_link=1
 	elif [ -n "$(get_version boot_linux)" ]; then
 		# only copy if boot_linux exists

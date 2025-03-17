@@ -1102,6 +1102,8 @@ swdesc_boot_linux() {
 	[ -e "$image" ] || error "%s does not exist" "$image"
 	[ -n "$version" ] \
 		|| error "Version must be set for swdesc_boot_linux"
+	# XXX no longer true for new systems, but keep checking for now,
+	# should be plenty anyway.
 	[ "$(stat -L -c %s "$image")" -lt "$((26 * 1024 * 1024))" ] \
 		|| error "swdesc_boot_linux image must be at most 26MB big"
 
@@ -1125,10 +1127,7 @@ swdesc_boot_linux() {
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$image" \
-		'[ -e /dev/swupdate_bootdev ]' \
-		'echo 0 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro' \
-		'dd if=$1 of=/dev/swupdate_bootdev bs=1M seek=5 conv=fsync status=none' \
-		'echo 1 > /sys/class/block/$(basename $(readlink /dev/swupdate_bootdev))/force_ro'
+		'${TMPDIR:-/var/tmp}/scripts/install_boot_linux $1'
 }
 
 swdesc_tar() {

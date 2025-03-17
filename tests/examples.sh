@@ -60,7 +60,7 @@ if ! [ -e ../examples/Image.signed ] \
 	} > ../examples/Image.signed
 fi
 build_check ../examples/encrypted_rootfs_linux_update.desc -- \
-	"swdesc swupdate_bootdev"
+	"swdesc install_boot_linux"
 
 # encrypted boot
 if ! [ -e ../examples/imx-boot_armadillo_x2.enc ] \
