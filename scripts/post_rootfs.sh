@@ -289,6 +289,7 @@ post_rootfs() {
 	fi
 
 	# free unused blocks at mmc level
+	sync -f /target
 	fstrim /target
 
 	rm -f "$MKSWU_TMP/sw-versions.present"
