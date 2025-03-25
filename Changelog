@@ -1,3 +1,22 @@
+7.4
+===
+fixes:
+- fix `swdesc_option NOTIFY_SUCCESS_CMD`; due to a typo the command was
+not set correctly and never ran
+- cleanup unused container images that were used with abos-ctrl podman-rw
+build (podman prune --external)
+- fix running `mkswu --init` with semi-old initial_setup.desc (will be
+regenerated)
+
+features:
+- add `swdesc_option until=<date>` to make swu installable from its build
+date up until the specified date. Note this requires working NTP on devices.
+- add guards around swdesc_boot/swdesc_boot_linux to check the images is
+formatted as expected.
+- support A900 secure boot linux image location
+
+  -- 2025-03-25
+
 7.3.1
 =====
 fixes:
