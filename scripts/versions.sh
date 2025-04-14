@@ -108,9 +108,9 @@ needs_update_regex() {
 }
 
 extract_swdesc_versions() {
-	# also fix boot versions
-	sed -n  -e 's/\(VERSION boot 2020\).04/\1.4/' \
-		-e 's/\(VERSION boot 2020.4-at\)\([0-9]\)/\1.\2/' \
+	# also fix boot versions: remove leading zero, add dot after -at
+	sed -n  -e 's/\(VERSION boot 20[0-9][0-9]\).0\([0-9]\)/\1.\2/' \
+		-e 's/\(VERSION boot 20[0-9][0-9].[0-9]\+-at\)\([0-9]\)/\1.\2/' \
 		-e "s/.*#VERSION //p"
 }
 
@@ -119,13 +119,13 @@ fix_boot_versions() {
 
 	# fix old boot versions
 
-	# 2020.04 -> 2020.4
+	# 2020.04 -> 2020.4 (newer versions are correct so only 2020.4 is needed)
 	[ "$oldvers" != "${oldvers#2020.04}" ] \
 		&& oldvers="2020.4${oldvers#2020.04}"
 
 	# 2020.4-at24 -> 2020.4-at.24
-	if [ "$oldvers" != "${oldvers#2020.4-at[0-9]}" ]; then
-		local tmpvers="2020.4-at.${oldvers#2020.4-at}"
+	if [ "$oldvers" != "${oldvers#20*-at[0-9]}" ]; then
+		local tmpvers="${oldvers%%-at*}-at.${oldvers#20*-at}"
 		# We fix sw-versions' "boot" entry on any installed SWU,
 		# but any real update won't happen because swupdate itself does not
 		# know about this (at.24 < at20 for swupdate)
@@ -138,8 +138,7 @@ fix_boot_versions() {
 				"NOT been installed! Please install this SWU again to update boot image."
 			# also "unfix" sw-versions.old to make sure this is installed
 			# even if nothing else is planned
-			sed -i -e 's/boot 2020.4-at\./boot 2020.4-at/' \
-				"$MKSWU_TMP/sw-versions.old"
+			sed -i -e 's/^\(boot .*-at\)\./\1/' "$MKSWU_TMP/sw-versions.old"
 			newvers=""
 		fi
 		oldvers="$tmpvers"
@@ -157,8 +156,8 @@ gen_newversion() {
 
 	# If the system still contains an old boot version with 0-padding
 	# then remove padding here to avoid incorrect update detections
-	sed		-e 's/^boot 2020.04/boot 2020.4/' \
-			-e 's/^boot 2020.4-at\([0-9]\)/boot 2020.4-at.\1/' \
+	sed		-e 's/^\(boot 20[0-9][0-9]\).0\([0-9]\)/\1.\2/' \
+			-e 's/^\(boot 20[0-9][0-9].[0-9]\+-at\)\([0-9]\)/\1.\2/' \
 			< "$system_versions" \
 			> "$MKSWU_TMP/sw-versions.old" \
 		|| error "Could not copy existing versions"
