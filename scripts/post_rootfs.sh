@@ -169,6 +169,53 @@ check_update_log_encryption() {
 		|| error "Could not update fstab for encrypted /var/log"
 }
 
+check_dtbs() {
+	# newer U-boot changed 'fdt_file' to 'fdtfile', so check for the later first
+	# (and fallback to armadillo.dtb)
+	local dtb dtbs missing
+
+	# skip if encrypted (FDTs embedded in kernel) or no image
+	# lack of image will rollback if secureboot kernel is not available
+	if findmnt -nr -o SOURCE /target/ 2>/dev/null | grep -q /dev/mapper/rootfs \
+		|| ! [ -e "/target/$image" ]; then
+		return
+	fi
+
+	dtb="/$(fw_printenv -n fdtfile fdt_file 2>/dev/null | grep -m 1 '\.dtb$')"
+	[ "$dtb" != "/" ] || dtb=/boot/armadillo.dtb
+
+	dtbs=$(sed -n -e 's:[= ]: /boot/:g' -e 's/fdt_overlays //p' \
+			/target/boot/overlays.txt 2>/dev/null)
+
+	# use chroot to resolve absolute symlinks correctly...
+	# shellcheck disable=SC2016,SC2086 ## single quotes ok, expand dtbos space ok...
+	missing=$(chroot /target sh -c '
+		for file; do
+			[ -e "$file" ] || echo "$file"
+		done
+	' -- "$dtb" $dtbs)
+
+	[ -z "$missing" ] && return
+
+	# log a warning if the files were already missing,
+	# but if some files newly disappeared make it an error
+	local report=warning
+	for dtbs in $missing; do
+		[ -e "$dtbs" ] && report=error
+		if [ "${dtbs%.dtbo}" != "$dtbs" ]; then
+			# also an error ing if it was just added to overlays.txt
+			# (not present in old rootfs)
+			grep -qw "${dtbs#/boot/}" /boot/overlays.txt \
+				|| report=error
+		fi
+	done
+
+	# shellcheck disable=SC2086 ## expand missing on purpose...
+	"$report" "These dtbo files are listed in /boot/overlays.txt but not present" \
+		"Were they added to /etc/swupdate_preserve_files ?" \
+		"" $missing
+}
+
 post_rootfs() {
 	# allow overriding for tests
 	local TARGET="${TARGET:-/target}"
@@ -181,10 +228,10 @@ post_rootfs() {
 	if ! [ -e /target/bin/sh ]; then
 		error "No /bin/sh on target: something likely is wrong with rootfs, refusing to continue"
 	fi
-	local libc_arch
+	local libc_arch image
 	case "$(uname -m)" in
-	aarch64) libc_arch=aarch64;;
-	armv7*) libc_arch=armv7;;
+	aarch64) libc_arch=aarch64; image=/boot/Image;;
+	armv7*) libc_arch=armv7; image=/boot/uImage;;
 	esac
 	if [ -z "$(mkswu_var NO_ARCH_CHECK)" ] && [ -n "$libc_arch" ] \
 	    && ! ldd /target/bin/sh | grep -q "$libc_arch"; then
@@ -239,6 +286,8 @@ post_rootfs() {
 		if update_baseos; then
 			. "$SCRIPTSDIR/post_rootfs_baseos.sh"
 		fi
+
+		check_dtbs
 	fi
 
 	# extra fixups on update
