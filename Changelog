@@ -1,3 +1,11 @@
+7.5
+===
+fixes:
+- handle badly formated 2023.4 boot versions as well. This allows
+installing boot update on the first batch of A9E
+
+  -- 2025-04-14
+
 7.4
 ===
 fixes:
