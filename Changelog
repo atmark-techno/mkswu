@@ -1,3 +1,15 @@
+7.6
+===
+features:
+- add a check for missing dtb(o)s on upgrade.
+If upgrading baseos leads to missing dtbos (for example because a new
+dtbo was installed and added to overlays.txt but not added to 
+swupdate_preserve_files) then the update will fail. If it was already
+missing then update continues but a warning is issued.
+- add /etc/conf.d/syslog to default preserve files list
+
+  -- 2025-04-21
+
 7.5
 ===
 fixes:
