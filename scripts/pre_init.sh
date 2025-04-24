@@ -232,6 +232,7 @@ init() {
 	check_until
 
 	if [ -n "$SWUPDATE_FROM_INSTALLER" ]; then
+		info "SWU pre install in installer"
 		pre_installer
 		exit 0
 	fi

@@ -7,7 +7,10 @@
 # archive we concatenate at the end of it, then rolls the pre steps.
 
 # Allow skipping from env
-[ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
+if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
+	echo "$0 skipping due to MKSWU_SKIP_SCRIPTS" >&2
+	exit 0
+fi
 
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts"

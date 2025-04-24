@@ -589,7 +589,11 @@ init_common() {
 	fi
 
 	# debug tests... or swupdate overriding this in favor of ABOS scripts
-	grep -q "DEBUG_SKIP_SCRIPTS" "$SWDESC" && exit 0
+	if grep -q "DEBUG_SKIP_SCRIPTS" "$SWDESC"; then
+		# (because this is expected in normal cases, only log this at debug level)
+		echo "$0 skipped because of DEBUG_SKIP_SCRIPTS"
+		exit 0
+	fi
 
 	true
 }

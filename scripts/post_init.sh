@@ -15,6 +15,7 @@ post_installer() {
 
 init() {
 	if [ -n "$SWUPDATE_FROM_INSTALLER" ]; then
+		info "SWU post install in installer"
 		post_installer
 		exit 0
 	fi

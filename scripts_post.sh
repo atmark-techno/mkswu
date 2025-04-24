@@ -4,7 +4,10 @@
 # shellcheck source-path=SCRIPTDIR/scripts
 
 # Allow skipping from env
-[ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
+if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
+	echo "$0 skipping due to MKSWU_SKIP_SCRIPT" >&2
+	exit 0
+fi
 
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts"
@@ -68,6 +71,8 @@ container)
 		stdout_info_or_error echo "Restarting swupdate-hawkbit service"
 		# remove stdout/stderr to avoid sigpipe when parent is killed
 		rc-service swupdate-hawkbit restart >/dev/null 2>&1
+	else
+		info "Container only update done."
 	fi
 	;;
 *)
