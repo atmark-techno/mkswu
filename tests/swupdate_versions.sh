@@ -69,29 +69,29 @@ $oldvers"
 # versions higher than base
 base=1
 for version in 2 1.1; do
-        test_version_install "$base" "$version" \
-                || error "$version was not higher than $base"
+	test_version_install "$base" "$version" \
+		|| error "$version was not higher than $base"
 done
 base=1.1.1-1.abc
 for version in 1.1.1 1.1.2 1.2 2 1.1.1-2 1.1.1-1.abd 1.1.1-1.b; do
-        test_version_install "$base" "$version" \
-                || error "$version was not higher than $base"
+	test_version_install "$base" "$version" \
+		|| error "$version was not higher than $base"
 done
 # versions lower or equal than base
 base=1
 for version in 1 1.0 1-0 0; do
-        test_version_install "$base" "$version" \
-                && error "$version was higher than $base"
+	test_version_install "$base" "$version" \
+		&& error "$version was higher than $base"
 done
 base=1.1.1-1.abc
 for version in 1 1.1.0 1.1.1-0 1.1.1-1.a; do
-        test_version_install "$base" "$version" \
-                && error "$version was higher than $base"
+	test_version_install "$base" "$version" \
+		&& error "$version was higher than $base"
 done
 base=1.1-1
 for version in 1.1.0-1; do
-        test_version_install "$base" "$version" \
-                && error "$version was higher than $base"
+	test_version_install "$base" "$version" \
+		&& error "$version was higher than $base"
 done
 
 # test semvers with +

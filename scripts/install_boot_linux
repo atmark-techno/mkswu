@@ -4,19 +4,19 @@ TMPDIR="${TMPDIR:-/var/tmp}"
 
 # info commands duplicated from scripts/common
 stdout_info() {
-        # this one keeps stdout if unset
-        case "$SWUPDATE_INFO_FD" in
-        3) "$@" >&3;;
-        *) "$@";;
-        esac
+	# this one keeps stdout if unset
+	case "$SWUPDATE_INFO_FD" in
+	3) "$@" >&3;;
+	*) "$@";;
+	esac
 }
 info() {
 	stdout_info printf "%s\n" "$@"
 }
 error() {
 	printf -- "----------------------------------------------\n" >&2
-        printf -- "/!\ %s\n" "$@" >&2
-        printf -- "----------------------------------------------\n" >&2
+	printf -- "/!\ %s\n" "$@" >&2
+	printf -- "----------------------------------------------\n" >&2
 	exit 1
 }
 
