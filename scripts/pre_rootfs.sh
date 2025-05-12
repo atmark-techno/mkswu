@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=13
+	local preserve_version=0 max_version=14
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -192,6 +192,14 @@ EOF
 
 # v13 list: syslog service config
 /etc/conf.d/syslog
+EOF
+	fi
+
+	if [ "$preserve_version" -le 13 ]; then
+		cat >> "$list" << EOF || error "Could not update $list"
+
+# v14 list
+/etc/runlevels/boot/sim7672-boot
 EOF
 	fi
 }
