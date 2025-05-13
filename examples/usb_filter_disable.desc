@@ -1,0 +1,5 @@
+swdesc_option version=1
+
+# This example disables usb-filter if it was enabled
+# Also consider allowing only relevant devices with usb_filter_allowlist.desc instead
+swdesc_command --extra-os 'abos-ctrl usb-filter disable'

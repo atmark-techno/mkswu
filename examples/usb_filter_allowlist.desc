@@ -1,0 +1,19 @@
+swdesc_option version=1
+
+# Enable usb-filter if it was not already enabled, and allow some devices.
+#
+# Available allow-class parameters:
+#   Audio, CDC, HID, Physical, Image, Printer, MassStorage, Hub,
+#   CDCdata, SmartCard, ContentSecurity, Video, PersonalHealthCare
+#
+# Available allow-device options (can be obtained with list-devices or
+# list-rules --verbose flag):
+#   --vendor-id, --product-id, --model, --usb-interfaces, --serial
+#
+# The following example removes any pre-existing rules (reset) then
+# allows any USB Hub and a specific camera device model (serial was
+# not passed, so other identical cameras will be allowed)
+swdesc_command --extra-os 'abos-ctrl usb-filter enable' \
+	'abos-ctrl usb-filter reset-rules --force' \
+	'abos-ctrl usb-filter allow-class Hub' \
+	'abos-ctrl usb-filter allow-device --vendor-id "046d" --product-id "0825" --model "0825" --usb-interfaces ":0e0100:0e0200:010100:010200:"'
