@@ -913,7 +913,7 @@ parse_swdesc() {
 		[ $# -ge 1 ] || error "swdesc_command requires arguments\nUsage: swdesc_command [options] cmd [cmd..]"
 		cmd=""
 		for ARG; do
-			cmd="${cmd:+$cmd && }$ARG"
+			cmd="${cmd:+$cmd && }{ $ARG; }"
 		done
 		cmd="sh -c $(shell_quote "$cmd") ${stdout_info:+">&\${SWUPDATE_INFO_FD:-1} "}--"
 		;;
@@ -938,7 +938,7 @@ parse_swdesc() {
 		shift
 		cmd=""
 		for ARG; do
-			cmd="${cmd:+$cmd && }$ARG"
+			cmd="${cmd:+$cmd && }{ $ARG; }"
 		done
 		cmd="sh -c $(shell_quote "$cmd") ${stdout_info:+">&\${SWUPDATE_INFO_FD:-1} "}--"
 		;;

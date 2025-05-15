@@ -16,7 +16,7 @@ ln -f out/zoo/hardlink out/zoo/hardlink2
 { echo foo; dd if=/dev/zero bs=1M count=1; echo bar; } > out/semibig
 
 build_check spaces.desc -- "file zst.test\ space.tar" \
-	"file zst\..*out_zoo_test_space_t.*target_load.*" \
+	"file zst\..*out_zoo_test_space_t.*arget_load.*" \
 	"swdesc 'path = \"/tmp/test space\"'"
 name="--odd desc" build_check --- --odd\ desc.desc
 # --- is made into -- for mkswu
@@ -99,8 +99,8 @@ build_check two_scripts.desc -- \
 
 # replace ' with regular expression dots since they cannot be escaped
 build_check stdout_info.desc -- \
-	"swdesc 'sh -c .echo message to info. >&\\\$\{SWUPDATE_INFO_FD:-1\} --' \
-		'sh -c .echo message to debug. --'"
+	"swdesc 'sh -c .\{ echo message to info; }. >&\\\$\{SWUPDATE_INFO_FD:-1\} --' \
+		'sh -c .\{ echo message to debug; }. --'"
 
 echo 'swdesc_embed_container doesnotexist' \
 	| name="container_enoent_fail" build_fail -
