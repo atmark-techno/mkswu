@@ -51,7 +51,7 @@ build_check semibig.desc -- \
 MKSWU_ENCRYPT_KEYFILE=$PWD/out/swupdate.aes-key build_check aes.desc -- \
 	"swdesc 'ivt ='" "file enc.zst.scripts_pre.sh"
 
-build_check make_sbom.desc -- "sbom 'mirror.gcr.io/alpine' 'test\ space' 'test\ space.tar'"
+build_check make_sbom.desc -- "sbom 'pkg:oci/mirror.gcr.io%2Falpine' 'test\ space' 'test\ space.tar'"
 
 build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
