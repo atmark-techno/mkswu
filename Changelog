@@ -1,3 +1,17 @@
+7.6.2
+=====
+change:
+- make swdesc_command chained command work "as expected" with '||':
+before this change, 'swdesc_command "false" "false || true"' would
+run the last true, new code will properly stop at the first false
+(and would continue with an executed 'false || true')
+
+features:
+- add usb-filter example desc files: usb_filter_allowlist.desc and
+usb_filter_disable.desc
+
+  -- 2025-05-19
+
 7.6.1
 =====
 fixes:
