@@ -633,7 +633,7 @@ msgstr ""
 msgid "Could not copy initial_setup.desc from example dir"
 msgstr ""
 #: mkswu
-msgid "Enable auto-updates (BaseOS / pre-installed containers) from armadillo.atmark-techno.com servers? (N/y)"
+msgid "Enable auto-updates (BaseOS / upgradable containers) from armadillo.atmark-techno.com servers? (N/y)"
 msgstr ""
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"
