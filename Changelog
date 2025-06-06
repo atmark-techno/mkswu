@@ -1,3 +1,15 @@
+7.7
+===
+fixes:
+- properly install install_boot_linux script
+- improve some error messages
+- fix removing mkswu-owned /var/tmp on error in functions where
+IFS is overridden
+- fix error during scripts' rootfs post copy when file existed in
+live system but not rootfs
+
+  -- 2025-08-22
+
 7.6.2
 =====
 change:
@@ -161,7 +173,7 @@ features:
    if they contained NETAVARK: container rules should not be saved
    to disk. This is a follow-up of a previous ABOS Web update that
    could have saved bad rules.
- - add an option to build sbom (off by default)
+ - add BUILD_SBOM option to build sbom (off by default)
 
   -- 2024-08-26
 
