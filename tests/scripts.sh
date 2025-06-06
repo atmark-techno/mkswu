@@ -280,7 +280,7 @@ test_version_update() {
 	gen_newversion
 	version=$(get_version boot)
 	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (higher in swu, got $version)"
-	grep -qF "version format was updated (2020.4-at5 -> 2020.4-at.5), but 2020.4-at.24" "$warn_file" \
+	grep -qF "version format was updated (2020.4-at5 -> 2020.4-at.5)," "$warn_file" \
 		|| error "boot version reformatting warning not printed? $(cat "$warn_file" 2>/dev/null || echo 'no file')"
 }
 

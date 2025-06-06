@@ -134,8 +134,9 @@ fix_boot_versions() {
 		# installed twice.
 		if [ "$install_if" = higher ] \
 		    && version_update higher "$tmpvers" "$newvers"; then
-			warning "'boot' version format was updated ($oldvers -> $tmpvers), but $newvers has" \
-				"NOT been installed! Please install this SWU again to update boot image."
+			warning "'boot' version format was updated ($oldvers -> $tmpvers)," \
+				"but $newvers has NOT been installed!" \
+				"Please install this SWU again to update boot image."
 			# also "unfix" sw-versions.old to make sure this is installed
 			# even if nothing else is planned
 			sed -i -e 's/^\(boot .*-at\)\./\1/' "$MKSWU_TMP/sw-versions.old"
