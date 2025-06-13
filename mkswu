@@ -402,8 +402,9 @@ check_version_valid() {
 	local orig_version="$version"
 	normalize_version
 	if [ "$version" != "$orig_version" ]; then
-		warning "Warning: %s version %s has been simplified to %s" \
-			"$component" "$orig_version" "$version"
+		# send to stderr because stdout is sent to sw-description here
+		info "%s version %s has been simplified to %s" \
+			"$component" "$orig_version" "$version" >&2
 	fi
 }
 

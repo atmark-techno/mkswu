@@ -247,8 +247,8 @@ msgid "install_if must be higher or different"
 msgstr "install_if には「higher」か「different」を指定してください。"
 
 #: mkswu
-msgid "Warning: %s version %s has been simplified to %s"
-msgstr "Warning: %s のバージョン %s は %s に略されました。"
+msgid "%s version %s has been simplified to %s"
+msgstr "%s のバージョン %s は %s に略されました。"
 
 #: mkswu
 msgid "failed to compress %s"
