@@ -7,6 +7,9 @@ error() {
 
 	# redefine error as no-op: this avoids looping if one of the cleanup operations fail
 	error() { warning "$@"; }
+	# reset IFS as we might have errored out in a function overriding IFS
+	local IFS=' 	
+'
 	# also mark we're in error for cleanup (container restart check)
 	in_error=1
 
