@@ -283,21 +283,20 @@ post_rootfs() {
 				-e "$remove_ro_store" /target/etc/containers/storage.conf \
 				|| error "could not rewrite storage.conf"
 		fi
+
+		# extra fixups on OS update
 		if update_baseos; then
 			. "$SCRIPTSDIR/post_rootfs_baseos.sh"
+
+			# keep passwords around
+			update_shadow || error "Could not update user list"
+
+			# update preserve_files owners when required
+			# (after update_shadow)
+			post_chown_preserve_files
 		fi
 
 		check_dtbs
-	fi
-
-	# extra fixups on update
-	if update_baseos; then
-		# keep passwords around
-		update_shadow || error "Could not update user list"
-
-		# update preserve_files owners when required
-		# (after update_shadow)
-		post_chown_preserve_files
 	fi
 
 	# remove open access swupdate certificate or complain
