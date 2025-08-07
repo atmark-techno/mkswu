@@ -6,7 +6,7 @@ overwrite_to_target() {
 
 	for file; do
 		# source file must exist... being careful of symlinks
-		[ -L "$file" ] || [ -e "$file" ] || continue
+		[ -L "$fsroot$file" ] || [ -e "$fsroot$file" ] || continue
 
 		dir="${file%/*}"
 		mkdir_p_target "$dir"

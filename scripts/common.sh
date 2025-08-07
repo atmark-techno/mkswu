@@ -250,7 +250,8 @@ mkdir_p_target() {
 	[ -n "$parent" ] && mkdir_p_target "$parent"
 
 	mkdir "$TARGET/$dir" \
-		|| error "Could not create $TARGET/$dir"
+		|| error "Could not create $TARGET/$dir -- check /etc/swupdate_preserve_files ?"
+
 
 	chown "${ownermode% *}" "$TARGET/$dir" \
 		|| error "Could not chown $dir"
