@@ -11,7 +11,7 @@ l = ja
 translations = $(wildcard po/$(l)/*.po)
 locales = $(patsubst po/$(l)/%.po,locale/$(l)/LC_MESSAGES/%.mo,$(translations))
 
-install_scripts = $(wildcard scripts/*.sh) $(wildcard scripts/podman_*)
+install_scripts = $(wildcard scripts/*.sh) $(wildcard scripts/podman_*) $(wildcard scripts/install_*)
 install_docs = $(wildcard docs/*.md)
 install_docs_html = $(patsubst docs/%.md,docs/%.html,$(install_docs))
 
