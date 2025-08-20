@@ -16,6 +16,7 @@ fi
 . ./common.sh
 ./examples.sh
 ./build_tests.sh
+./mkswu_install.sh
 ./code_sanity.sh
 ./versions.sh
 
@@ -35,7 +36,7 @@ if command -v busybox \
 	busybox sh ./scripts.sh
 fi
 
-# install test
+# SWU install test
 SWUPDATE="${SWUPDATE:-swupdate}"
 if command -v "$SWUPDATE" > /dev/null; then
 	# setup
