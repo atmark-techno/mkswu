@@ -173,7 +173,11 @@ init_really_starting() {
 	# - handle a fail command if there is one (older swupdate only)
 	# - signal we're starting an update if instructed
 	if [ -e "/etc/fw_env.config" ]; then
-		fw_setenv_nowarn upgrade_available
+		local no_upgrade_available=00
+		# older ABOS ? supported from 3.22-at.5 (2025/9), cosmetic
+		grep -q upgrade_available=00 /usr/libexec/abos-ctrl/status.sh 2>/dev/null \
+			|| no_upgrade_available=''
+		fw_setenv_nowarn upgrade_available $no_upgrade_available
 		case "$?" in
 		0) ;; # ok
 		243)
@@ -185,7 +189,7 @@ init_really_starting() {
 				|| error "Could not set u-boot environment variable and no default was provided, refusing to run"
 			info "Could not set u-boot environment variable without defaults, retrying with a default file"
 			cat /boot/uboot_env.d/* \
-				| fw_setenv_nowarn --defenv - upgrade_available \
+				| fw_setenv_nowarn --defenv - upgrade_available $no_upgrade_available \
 				|| error "Could not set u-boot environment variable, refusing to run"
 			;;
 		*)
