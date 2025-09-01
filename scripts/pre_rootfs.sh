@@ -18,7 +18,7 @@ copy_to_target() {
 }
 
 update_preserve_list() {
-	local preserve_version=0 max_version=14
+	local preserve_version=0 max_version=15
 	local TARGET="${TARGET:-/target}"
 	local list="$TARGET/etc/swupdate_preserve_files"
 
@@ -165,7 +165,7 @@ EOF
 		cat >> "$list" << EOF || error "Could not update $list"
 
 # v10 list: chown abos-web directory
-CHOWN abos-web-admin: /etc/atmark/abos_web
+# CHOWN /etc/atmark/abos_web removed in v15
 EOF
 	fi
 
@@ -200,6 +200,18 @@ EOF
 
 # v14 list
 /etc/runlevels/boot/sim7672-boot
+EOF
+	fi
+
+	if [ "$preserve_version" -le 14 ]; then
+		cat >> "$list" << EOF \
+			&& sed -i -e 's@^CHOWN abos-web-admin: /etc/atmark/abos_web$@# CHOWN /etc/atmark/abos_web removed in v15@' "$list" \
+			|| error "Could not update $list"
+
+# v15 list: abos-web chown fix, device-info
+/var/lib/abos-web
+CHOWN abos-web-admin: /var/lib/abos-web
+/usr/lib/device-info/device-info.conf
 EOF
 	fi
 }
