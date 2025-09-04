@@ -630,6 +630,9 @@ write_entry_stdout() {
 	if [ "$show_desc" != "$cmd_description" ]; then
 		write_line "# mkswu_orig_cmd ${cmd_description##*"$LF"}"
 	fi
+	if [ -n "$MKSWU_hide_from_show" ]; then
+		write_line "# hide_from_show"
+	fi
 	write_line "type = \"$type\";"
 	for line; do
 		write_line "$line"
@@ -1086,8 +1089,9 @@ swdesc_boot_enc() {
 		|| error "dek offset file %s was not readable or empty" "$dek_offsets_file"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_command_nochroot --description "Setting up encryption offsets" \
-		"$offsets"
+	MKSWU_hide_from_show=1 \
+		swdesc_command_nochroot --description "Setting up encryption offsets" \
+			"$offsets"
 
 	swdesc_boot "$boot_file"
 }
@@ -1185,8 +1189,9 @@ swdesc_tar() {
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	if [ "$MKSWU_component_baseos_seen" = archive ]; then
 		MKSWU_component_baseos_seen="done"
-		swdesc_command_nochroot --description "base_os post fixups" \
-			'${TMPDIR:-/var/tmp}/scripts/post_rootfs_baseos.sh'
+		MKSWU_hide_from_show=1 \
+			swdesc_command_nochroot --description "base_os post fixups" \
+				'${TMPDIR:-/var/tmp}/scripts/post_rootfs_baseos.sh'
 	fi
 }
 
@@ -2789,6 +2794,11 @@ mkswu_show() {
 			/^ *install-if-different/ && filename {
 				install_if[filename]="different"
 			}
+			/^ *# hide_from_show/ && filename {
+				cmd[filename] = ""
+				filename=""
+				cmd_pending=""
+			}
 			/^ *}/ && filename {
 				filename=""
 				cmd_pending=""
@@ -2848,6 +2858,7 @@ sw-description.sig"
 	local FILES=""
 	local FIRST_SWDESC_INIT=1
 	local MKSWU_component_baseos_seen=""
+	local MKSWU_hide_from_show=""
 	local COPY_USB=""
 	local MODE=""
 	local VERBOSE=2
