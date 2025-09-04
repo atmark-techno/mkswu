@@ -28,8 +28,15 @@ copy_boot() {
 	fi
 }
 
+is_zero() {
+	local dev="$1" sz="$2"
+
+	dd if=/dev/zero bs=1M iflag=count_bytes count="$sz" status=none \
+		| cmp -s -n "$sz" "$dev" -
+}
+
 copy_boot_boot() {
-	local env_offset
+	local env_offset swapped=""
 
 	# We copy until env start if changed.
 	# Env will be cleared in post_boot
@@ -43,6 +50,33 @@ copy_boot_boot() {
 		}
 		' < /etc/fw_env.config) \
 		|| error "Could not get boot env location"
+
+	# sanity check: we've observed broken boards with both boot partitions zeroed
+	# after update; avoid copying zeroes around...
+	if is_zero "$cur_dev" 4096; then
+		# other side also busted?!
+		if is_zero "/dev/$flash_dev" 4096; then
+			# If we're here, either SWU had the same boot version or none at all.
+			# Remove boot version in overlay to allow reinstall in former case.
+			sed -i -e '/^boot /d' /etc/sw-versions
+			if [ -n "$(get_version boot present)" ]; then
+				error "boot partitions were zeroed! Do not reboot now!" \
+					"This SWU has a bootloader, please retrigger install immediately"
+			else
+				error "boot partitions were zeroed! Do not reboot now!" \
+					"Please re-install a baseos update immediately (\`abos-ctrl update\` or similar)"
+			fi
+		fi
+		# Otherwise we can always attempt copy from other side,
+		# but remove boot version just in case to allow further clean
+		# reinstall
+		sed -i -e '/^boot /d' "$MKSWU_TMP/sw-versions.merged"
+		warning "$cur_dev was zeroed!!!" \
+		       "Attempting to restore from $flash_dev"
+		# swap partitions as local so it's only for this function
+		# shellcheck disable=SC2318 ## (yes, this is a swap...)
+		local flash_dev="${cur_dev#/dev/}" cur_dev="/dev/$flash_dev"
+	fi
 
 	# already up to date?
 	if cmp -s -n "$env_offset" "$cur_dev" "/dev/$flash_dev" 2>/dev/null; then
