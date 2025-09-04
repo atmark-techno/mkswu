@@ -1,3 +1,16 @@
+7.7.1
+=====
+features:
+- add an extra paranoid check that we don't copy an obviously invalid
+(first 4k zeroed) bootloader to the other partition.
+This should never happen, but at least Armadillo A900 can boot off the other
+side if the current boot partition is broken, and such a copy would render
+armadillo unbootable.
+Until we can check more properly which side really has booted, at least
+prevent some preventable breakage
+
+  -- 2025-09-04
+
 7.7
 ===
 fixes:
