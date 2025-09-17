@@ -260,6 +260,14 @@ EOF
 		sed -i -e 's/globals:.*/&\n  sw-description-max-size = 1048576;/' /target/etc/swupdate.cfg \
 			|| error "Could not update swupdate.cfg"
 	fi
+
+	# remove old example files that were copied by preserve files (ABOS >= 3.22-at.5)
+	for f in reset_default_list.txt.example reset_default_lists.txt.example; do
+		if [ -e "/target/etc/atmark/$f" ]; then
+			[ -e /target/etc/atmark/reset_default_custom.sh.example ] || break
+			rm -f "/target/etc/atmark/$f"
+		fi
+	done
 }
 
 baseos_upgrade() {
