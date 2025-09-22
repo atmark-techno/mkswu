@@ -1,3 +1,16 @@
+7.8
+===
+fixes:
+- make mkswu --show correctly print 'base_os' rootfs only once
+
+features:
+- swupdate_preserve_files v15: add device-info.conf and fix abos-web settings
+- remove old reset_default_list*.txt.example files
+- use 'upgrade_available=00' marker instaed of unset if supported.
+This fixes usage with secureboot env_writeable_list setting.
+
+  -- 2025-09-22
+
 7.7.1
 =====
 features:
