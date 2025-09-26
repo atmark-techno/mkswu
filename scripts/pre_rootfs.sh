@@ -229,6 +229,9 @@ copy_preserve_files() {
 	done < "$MKSWU_TMP/preserve_files_pre"
 
 	rm -f "$MKSWU_TMP/preserve_files_pre"
+
+	# also reset ownerships: there is no guarantee uids will stay the same in target
+	find "$TARGET" -not '(' -user 0 -group 0 ')' -exec chown root: {} +
 }
 
 # mount helper for rootfs

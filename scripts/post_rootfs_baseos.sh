@@ -24,6 +24,9 @@ overwrite_to_target() {
 
 		cp -a "$fsroot$file" "$TARGET/$file" \
 			|| error "Failed to copy $file from previous rootfs"
+
+		# also reset owner to root if needed
+		find "$TARGET/$file" -not '(' -user 0 -group 0 ')' -exec chown root: {} +
 	done
 }
 
