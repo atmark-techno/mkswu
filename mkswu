@@ -280,12 +280,14 @@ check_version_higher() {
 		# with semver prerelease field filtering
 		if [ "$component" = "base_os" ] \
 		    && [ -z "$WARNING_ACK_BASEOS_PRERELEASE" ]; then
+			warning
 			warning "base_os version %s was not in x[.y[.z]]-t format" "$version"
 			warning "Please note that %s > %s-at.1, so if installing atmark-provided updates" \
 				"$version" "$version"
 			warning "later then ensure upgrades stay possible."
 			warning "This warning can be disabled by setting '%s' in '%s'" \
 				"WARNING_ACK_BASEOS_PRERELEASE=1" "$CONFIG"
+			warning
 			WARNING_ACK_BASEOS_PRERELEASE=1
 		fi
 	else
@@ -847,20 +849,24 @@ parse_swdesc() {
 			case "$CMD,$MKSWU_component_baseos_seen" in
 			tar,) MKSWU_component_baseos_seen="archive";;
 			tar,done)
+				warning
 				warning "Warning: 'base_os' has been used multiple times."
 				warning "post-baseos extraction (e.g. swupdate_preserve_files POST step) will run after"
 				warning "the first occurence so the result might be unexpected."
+				warning
 				MKSWU_component_baseos_seen="warned"
 				;;
 			tar,archive|tar,warned) ;;
 			tar,extra_os*)
 				if [ -z "$WARNING_ACK_BASEOS_ORDER" ]; then
 					# re-ordering done in append_file with FILES_FIRST
+					warning
 					warning "Warning: 'base_os' update listed after '%s'" "$MKSWU_component_baseos_seen"
 					warning "The 'base_os' archive will be extracted first to ensure installation"
 					warning "succeeds, please check this does not impact file extraction order."
 					warning "This warning can be disabled by setting '%s' in '%s'" \
 						"WARNING_ACK_BASEOS_ORDER=1" "$CONFIG"
+					warning
 					WARNING_ACK_BASEOS_ORDER=1
 				fi
 				MKSWU_component_baseos_seen="archive"
@@ -1463,14 +1469,18 @@ container_check_archive() {
 		|| error "%s does not exist or is not a regular file" "$image"
 
 	if ! manifest=$(tar -Oxf "$image" manifest.json); then
+		warning
 		warning "Warning: Container image %s was not in docker-archive format, install might not work" "$image"
+		warning
 		return
 	fi
 
 	# skip check if no jq
 	command -v jq >/dev/null || return 0
 	if [ -z "$(printf "%s\n" "$manifest" | jq -r  '.[] | .RepoTags[]')" ]; then
+		warning
 		warning "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id" "$image"
+		warning
 	fi
 }
 
@@ -3203,18 +3213,22 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 		|| error "No command could be found in desc files"
 
 	if [ -n "$MKSWU_version_last_set" ]; then
+		warning
 		warning "Warning: 'swdesc_option %s' was not used, did you" \
 			"$MKSWU_version_last_set"
 		warning "place it before the commands you want to run?"
+		warning
 	fi
 	embedded_postinstall_script
 	write_sw_desc > "$OUTDIR/sw-description"
 	# ignore swdesc_exec "chroot" lines...
 	if sed -e 's@-v /target/var/app/volumes:/var/app/volumes@@g' "$OUTDIR/sw-description" \
 			| grep -qF "/var/app/volumes"; then
+		warning
 		warning "Warning: update is using /var/app/volumes"
 		warning "It is not safe to modify /var/app/volumes while the system uses it,"
 		warning "consider using /var/app/rollback/volumes instead"
+		warning
 	fi
 
 	# XXX debian's libconfig is obsolete and does not allow
