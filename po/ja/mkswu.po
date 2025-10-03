@@ -407,8 +407,40 @@ msgid "Unrecognized boot image format for %s"
 msgstr "%s ブートイメージフォーマットを認識できませんでした。"
 
 #: mkswu
-msgid "Could not guess boot version in %s"
-msgstr "ブートバージョン %s を認識できませんでした。"
+msgid "Could not guess boot version in '%s'"
+msgstr "'%s' のバージョンを認識できませんでした。"
+
+#: mkswu
+msgid "Required file not found: %s"
+msgstr "%s が存在しません。"
+
+#: mkswu
+msgid "Warning: Version found in '%s', '%s',"
+msgstr "Warning: '%s' に組み込まれてるバージョン（%s）"
+
+#: mkswu
+msgid "is lower than '%s' provided in swdesc_option version=%s"
+msgstr "は指定された'%s'（swdesc_option version=%s）より低いです。"
+
+#: mkswu
+msgid "Up until mkswu 7.8 images would have been built with '%s' so this might"
+msgstr "mkswu 7.8 までは %s でイメージをビルドしていましたので、"
+
+#: mkswu
+msgid "cause images to fail to install."
+msgstr "更新によってアップデートできなくなる可能性があります。"
+
+#: mkswu
+msgid "If you want to set the version, use swdesc_boot --version boot '%s'"
+msgstr "指定されたバージョンを利用したい場合は swdesc_boot --version boot '%s'"
+
+#: mkswu
+msgid "to explicitly set the version."
+msgstr "で明示的に設定してください。"
+
+#: mkswu
+msgid "If this is intended you can set '%s' to silence this warning."
+msgstr "今の動作で問題なければこの警告を '%s' で無効化できます。"
 
 #: mkswu
 msgid "Version must be set for swdesc_boot_encrypted"
@@ -489,10 +521,6 @@ msgstr "Warning: podmanでは、圧縮するとコピーの回数が増えます
 #: mkswu
 msgid "you might want to keep the archive as simple .tar"
 msgstr "普通のtarアーカイブにした方が効率的です。"
-
-#: mkswu
-msgid "Required file not found: %s"
-msgstr "%s が存在しません。"
 
 #: mkswu
 msgid "Invalid value for %s: %s"

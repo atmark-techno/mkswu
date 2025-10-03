@@ -145,6 +145,14 @@ printf "%s\n" "swdesc_command --version boot 1 true" \
 if [ -e ../imx-boot_armadillo_x2 ]; then
 	printf "%s\n" "swdesc_boot --version test 1 ../imx-boot_armadillo_x2" \
 		| name="special_versions" build_fail -
+	printf "%s\n" "swdesc_option version=1" "swdesc_boot ../imx-boot_armadillo_x2" \
+		| name="boot_ignore_outer_version" build_check - -- \
+			"version boot '202.* higher'"
+	printf "%s\n" "swdesc_option version=5000" "swdesc_boot ../imx-boot_armadillo_x2" \
+		| name="boot_ignore_outer_version" build_check - -- \
+			"version boot '202.* higher'" 2> out/boot_ignore_outer_version.stderr
+	grep WARNING_ACK_OUTER_BOOT_VERSION out/boot_ignore_outer_version.stderr \
+		|| error "no warning on WARNING_ACK_OUTER_BOOT_VERSION"
 fi
 printf "%s\n" "swdesc_command --version base_os 3.19.1-at.1 true" \
 	| name="special_versions" build_fail -

@@ -306,7 +306,31 @@ msgstr ""
 msgid "Unrecognized boot image format for %s"
 msgstr ""
 #: mkswu
-msgid "Could not guess boot version in %s"
+msgid "Could not guess boot version in '%s'"
+msgstr ""
+#: mkswu
+msgid "Required file not found: %s"
+msgstr ""
+#: mkswu
+msgid "Warning: Version found in '%s', '%s',"
+msgstr ""
+#: mkswu
+msgid "is lower than '%s' provided in swdesc_option version=%s"
+msgstr ""
+#: mkswu
+msgid "Up until mkswu 7.8 images would have been built with '%s' so this might"
+msgstr ""
+#: mkswu
+msgid "cause images to fail to install."
+msgstr ""
+#: mkswu
+msgid "If you want to set the version, use swdesc_boot --version boot '%s'"
+msgstr ""
+#: mkswu
+msgid "to explicitly set the version."
+msgstr ""
+#: mkswu
+msgid "If this is intended you can set '%s' to silence this warning."
 msgstr ""
 #: mkswu
 msgid "Version must be set for swdesc_boot_encrypted"
@@ -367,9 +391,6 @@ msgid "Warning: podman does not handle compressed container images without an ex
 msgstr ""
 #: mkswu
 msgid "you might want to keep the archive as simple .tar"
-msgstr ""
-#: mkswu
-msgid "Required file not found: %s"
 msgstr ""
 #: mkswu
 msgid "Invalid value for %s: %s"

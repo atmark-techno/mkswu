@@ -1028,42 +1028,80 @@ check_pad_boot() {
 	error "Unrecognized boot image format for %s" "$boot_file"
 }
 
+normalize_boot_version() {
+	[ "$install_if" = different ] && return
+
+	# fix up version to allow install-if=higher:
+	# - 2020.04 -> 2020.4
+	normalize_version
+	# - at4 -> at.4
+	version=$(echo "$version" | sed -e 's/at\([0-9]\)/at.\1/')
+	# - 2020.04-at.4-2-gabc1234-4-gdef5678 -> 2020.04-at.4.2.4+gabc1234-gdef5678
+	version=$(echo "$version" | awk -F - '{
+			printf("%s%s%s", $1, $2 ? "-" : "", $2)
+			for (i=3; i<=NF; i++) {
+				if ($i ~ /^([0-9]+|[a-zA-Z]+)$/) {
+					# print only alpha or only num immediately with a .
+					printf(".%s", $i)
+				} else {
+					# otherwise keep for later with +
+					build[i]=$i
+				}
+			}
+			sep="+"
+			for (i=3; i<=NF; i++) {
+				if (! build[i]) continue;
+				printf("%s%s", sep, build[i])
+				sep="-"
+			}
+			printf "\n"
+		}')
+}
+
 swdesc_boot() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
-	local boot_file=""
+	local boot_file="" outer_version="" outer_version_orig=""
+	# reset component/version set from swdesc_option
 	component=boot
+	if [ -z "$MKSWU_encrypted_boot" ]; then
+		outer_version_orig="$version"
+		[ -n "$version" ] && normalize_boot_version
+		outer_version="$version"
+		version=""
+	fi
 
 	parse_swdesc boot "$@"
 
 	check_pad_boot
-	if [ -z "$version" ]; then
+	if [ -n "$version" ]; then
+		# no need to check it
+		outer_version=""
+	else
 		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$boot_file") \
-			|| error "Could not guess boot version in %s" "$boot_file"
-		# fix up version to allow install-if=higher:
-		# - 2020.04 -> 2020.4
-		normalize_version
-		# - at4 -> at.4
-		version=$(echo "$version" | sed -e 's/at\([0-9]\)/at.\1/')
-		# - 2020.04-at.4-2-gabc1234-4-gdef5678 -> 2020.04-at.4.2.4+gabc1234-gdef5678
-		version=$(echo "$version" | awk -F - '{
-				printf("%s-%s", $1, $2)
-				for (i=3; i<=NF; i++) {
-					if ($i ~ /^([0-9]+|[a-zA-Z]+)$/) {
-						# print only alpha or only num immediately with a .
-						printf(".%s", $i)
-					} else {
-						# otherwise keep for later with +
-						build[i]=$i
-					}
-				}
-				sep="+"
-				for (i=3; i<=NF; i++) {
-					if (! build[i]) continue;
-					printf("%s%s", sep, build[i])
-					sep="-"
-				}
-				printf "\n"
-			}')
+			|| error "Could not guess boot version in '%s'" "$boot_file"
+	fi
+	normalize_boot_version
+	if [ -n "$outer_version" ] && [ "$install_if" != different ] \
+	    && [ -z "$WARNING_ACK_OUTER_BOOT_VERSION" ]; then
+		# for version_higher
+		[ -e "$SCRIPT_DIR/scripts/versions.sh" ] \
+			|| error "Required file not found: %s" "$SCRIPT_DIR/scripts/versions.sh"
+		. "$SCRIPT_DIR/scripts/versions.sh"
+		if version_higher "$version" "$outer_version" "$version"; then
+			warning
+			warning "Warning: Version found in '%s', '%s'," "$boot_file" "$version"
+			warning "is lower than '%s' provided in swdesc_option version=%s" \
+				"$outer_version" "$outer_version_orig"
+			warning "Up until mkswu 7.8 images would have been built with '%s' so this might" \
+				"$outer_version"
+			warning "cause images to fail to install."
+			warning "If you want to set the version, use swdesc_boot --version boot '%s'" \
+				"$outer_version_orig"
+			warning "to explicitly set the version."
+			warning "If this is intended you can set '%s' to silence this warning." \
+				"WARNING_ACK_OUTER_BOOT_VERSION=1"
+			warning
+		fi
 	fi
 
 	write_entry images raw "$boot_file" \
