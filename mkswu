@@ -1036,12 +1036,15 @@ normalize_boot_version() {
 	normalize_version
 	# - at4 -> at.4
 	version=$(echo "$version" | sed -e 's/at\([0-9]\)/at.\1/')
-	# - 2020.04-at.4-2-gabc1234-4-gdef5678 -> 2020.04-at.4.2.4+gabc1234-gdef5678
+	# - 2020.4-at.4-0002-gabc1234-4-gdef5678 -> 2020.4-at.4.2.4+gabc1234-gdef5678
 	version=$(echo "$version" | awk -F - '{
 			printf("%s%s%s", $1, $2 ? "-" : "", $2)
 			for (i=3; i<=NF; i++) {
-				if ($i ~ /^([0-9]+|[a-zA-Z]+)$/) {
-					# print only alpha or only num immediately with a .
+				if ($i ~ /^[0-9]+$/) {
+					# only num with a ., normalized to strip leading zeroes
+					printf(".%s", int($i))
+				} else if ($i ~ /^[a-zA-Z]+$/) {
+					# print only alpha with a .
 					printf(".%s", $i)
 				} else {
 					# otherwise keep for later with +
