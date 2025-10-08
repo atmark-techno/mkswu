@@ -1278,7 +1278,7 @@ create_archive() {
 		[ "${tarfile#../}" = "$tarfile" ] \
 			|| error "%s is not inside %s" "$tarfile_raw" "$basedir"
 
-		find "$tarfile_raw" -exec stat -c "%n-%.Y-%s" {} + \
+		find "$tarfile_raw" -exec stat -c "%n-%.Y-%a${preserve_attributes:+-%u-%g}-%s" {} + \
 				| sort >> "$OUTDIR/tar.validity.tmp" \
 			|| error "Could not create tar for %s" "$tarfile_raw"
 		set -- "$@" "$tarfile"

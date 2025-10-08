@@ -14,6 +14,8 @@ swdesc_files --basedir out --dest /tmp/swupdate-test \
 	out/zoo/test\ space out/zoo/test\ space.tar
 
 swdesc_files --dest /tmp/swupdate-test/autobase out/zoo/test\ space
-swdesc_files --dest /tmp/swupdate-test/subdir out/zoo
+swdesc_files --preserve-attributes --dest /tmp/swupdate-test/subdir \
+	out/zoo
+chmod 600 "out/zoo/test space"
 swdesc_files --dest=/tmp/swupdate-test/"subdir space" \
 	"out/zoo/test space"

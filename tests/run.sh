@@ -60,6 +60,8 @@ if command -v "$SWUPDATE" > /dev/null; then
 		|| error "subdir extraction failed"
 	[ "$(cat "/tmp/swupdate-test/subdir space/test space")" = "test content" ] \
 		|| error "subdir extraction with space failed"
+	[ "$(stat -c %a "/tmp/swupdate-test/subdir space/test space")" = 600 ] \
+		|| error "mode not preserved"
 	rm -rf /tmp/swupdate-test
 
 	# this one should fail (mkswu scripts cannot run here)

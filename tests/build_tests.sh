@@ -24,7 +24,7 @@ name="--odd desc" build_check --- --odd\ desc.desc
 	|| error "zoo archive was not included exactly once"
 build_check install_files.desc -- \
 	"file-tar zst.out__tmp_swupdate_te*.tar zoo/test\ space zoo/test\ space.tar" \
-	"swdesc '# MKSWU_FORCE_VERSION 1'"
+	"swdesc '# MKSWU_FORCE_VERSION 1' 'preserve-attributes = true'"
 
 # full file hash then 3 chunks
 build_check semibig.desc -- \
