@@ -2772,7 +2772,14 @@ mkswu_show() {
 					END {
 						if (!cn) { exit }
 						printf("# signed by \"%s\"", cn)
-						if (verbose > 2 && serial) { print ", serial:", serial }
+						if (serial) {
+							if (verbose > 2) {
+								print ", serial:", serial
+							} else {
+								serial = substr(serial, 0, 8);
+								print " (" serial ")"
+							}
+						}
 					}')
 
 		order=$(cpio -t --quiet < "$swu") \

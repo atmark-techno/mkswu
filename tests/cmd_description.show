@@ -1,7 +1,7 @@
 # out/cmd_description.swu
 
 # Built with mkswu
-# signed by "test"
+# signed by "test" ()
 swdesc_option FORCE_VERSION
 
 swdesc_command_nochroot 'echo ran default command >&2'

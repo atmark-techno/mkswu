@@ -210,7 +210,9 @@ build_check cmd_description.desc -- \
 		'description: \"some description\";'"
 if command -v gawk || command -v awk && ! awk -W version | grep -q mawk; then
 	"$MKSWU" --show "out/cmd_description.swu" \
-		| sed -e 's/\(Built with mkswu\) .*/\1/' > "out/cmd_description.show"
+		| sed -e 's/\(Built with mkswu\) .*/\1/' \
+			-e 's/\(signed by "[a-z]*"\) ([0-9A-F]\{8\})/\1 ()/' \
+			> "out/cmd_description.show"
 	diff -u "cmd_description.show" "out/cmd_description.show" \
 		|| error "mkswu --show output not as expected"
 fi
