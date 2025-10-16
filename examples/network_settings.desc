@@ -1,0 +1,11 @@
+swdesc_option version=1
+
+# Network settings are stored in /etc/NetworkManager/system-connections
+# as .nmconnection files, and can be copied in SWU files.
+# Copy the connection files you want to set here.
+
+# NetworkManager ignores files whose mode is not 0600 (-rw-------)
+chmod 0600 setting.nmconnection
+
+# ... and then send the file
+swddesc_files --extra-os --dest /etc/NetworkManager/system-connections setting.nmconnection
