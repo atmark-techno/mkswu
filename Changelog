@@ -1,3 +1,18 @@
+7.9
+===
+fixes:
+- mkswu would not detect mode changes in swdesc_files contents, and
+incorrectly keep sending from cache instead of sending correct files.
+Properly consider mode as well.
+- swdesc_boot: ignore versions from swdesc_option version.
+When embedding one's own uboot the version from uboot should still come from
+the binary unless set explicitly with swdesc_boot --version
+- scripts/preserve_files: ensure copied files are root owned if not specified.
+mkswu would copy the previous owner from old rootfs, this was not intended
+and can cause problems with changing uids.
+
+  -- 2025-10-27
+
 7.8
 ===
 fixes:
