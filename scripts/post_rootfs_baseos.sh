@@ -90,15 +90,41 @@ disable_service() {
 	rm -f "/target/etc/runlevels/$runlevel/$service"
 }
 
+onelineify_cert() {
+	# busybox grep cannot do multiline matching, so print
+	# certificates contents one per line
+	awk '/END/{ print p } { p=p $0 } /BEGIN/ { p="" }' < "$1"
+}
+
+# check if source file is already present in ca-certificates and
+# add if missing.
+# Note: In theory this should check each cert of the file
+# individually, this copies all if any is missing.
+copy_cert() {
+	local cert="$1" content
+	local cacert="${TEST_CACERT:-/target/etc/ssl/certs/ca-certificates.crt}"
+
+	content=$(onelineify_cert "$cert" | sort -u)
+	[ -n "$content" ] || return
+
+	[ -e "$cacert" ] || error "ca-certificates.crt not found on target system, cannot preserve /usr/local/share/ca-certificates/*"
+
+	if [ "$(onelineify_cert "$cacert" | grep -F "$content" | sort -u)" = "$content" ]; then
+		return
+	fi
+	cat "$cert" >> "$cacert" \
+		|| error "Could not update certificates"
+}
+
 baseos_upgrade_fixes() {
-	local baseos_version overlays
+	local baseos_version overlays cert
 
 	# if user has local certificates we should regenerate the bundle
-	if stat /target/usr/local/share/ca-certificates/* >/dev/null 2>&1; then
-		FILTER="WARNING: ca-certificates.crt does not contain exactly one certificate or CRL: skipping" \
-			podman_info run --net=none --rootfs /target update-ca-certificates 2>/dev/null \
-				|| error "update-ca-certificates failed"
-	fi
+	# (ca-certificates command was removed in ABOS 3.21+, rough emulation)
+	for cert in /target/usr/local/share/ca-certificates/*; do
+		[ -e "$cert" ] || continue
+		copy_cert "$cert"
+	done
 
 	### workaround section, these can be removed once we consider we no longer
 	### support a given version.

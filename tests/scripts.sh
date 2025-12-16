@@ -585,6 +585,25 @@ test_preserve_files_post() {
 	rm -f "$TARGET/$SRC/copy"*
 }
 
+test_cacert() {
+	# only run if we have grep -z (busybox with EXTRA_COMPAT or gnu grep)
+	if ! echo test | grep -qz test; then
+		echo "skip: no grep -z"
+		return
+	fi
+
+	TEST_CACERT="$MKSWU_TMP/cacert.pem"
+
+	: > "$TEST_CACERT"
+
+	copy_cert ./scripts/atmark-2.pem
+	grep -qzf ./scripts/atmark-2.pem "$TEST_CACERT" || error "atmark-2 not copied"
+
+	cat ./scripts/atmark-2.pem ./scripts/atmark-3.pem > "$MKSWU_TMP/multi.crt"
+	copy_cert "$MKSWU_TMP/multi.crt"
+	grep -qzf ./scripts/atmark-3.pem "$TEST_CACERT" || error "atmark-3 not copied"
+}
+
 test_preserve_files_chown() {
 	TARGET=$(realpath "$MKSWU_TMP/target")
 	FLIST="$TARGET/etc/swupdate_preserve_files"
@@ -921,6 +940,7 @@ test_update_overlays() {
 	cleanup() { :; }
 	. "$SCRIPTS_SRC_DIR/post_rootfs_baseos.sh"
 	test_preserve_files_post
+	test_cacert
 ) || error "post test failed"
 
 (
