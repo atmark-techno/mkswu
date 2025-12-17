@@ -1624,7 +1624,7 @@ append_certificates() {
 	for cert in $user_certs; do
 		# prefix ./ if no other / in filename...
 		[ "${cert%/*}" != "$cert" ] || cert="./$cert"
-		tar -C "${cert%/*}" --append \
+		tar -C "${cert%/*}" --dereference --append \
 			--transform 's:^:certs_user/:' \
 			--format=ustar --numeric-owner --owner=0 --group=0 \
 			-f "$file.tmp" "${cert##*/}" \
