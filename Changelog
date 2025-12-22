@@ -1,3 +1,13 @@
+7.10
+====
+fixes:
+- fix UPDATE_CERTS when swupdate.pem is a symlink
+- fix handling of /usr/local/share/ca-certificates/* certs on ABOS >= 3.21
+  (ABOS 3.21 removed update-ca-certificates command and needs different
+  handling)
+
+  -- 2025-12-22
+
 7.9
 ===
 fixes:
