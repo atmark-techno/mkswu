@@ -68,8 +68,9 @@ init() {
 		echo "$SSL_CA_CONTENT" \
 			| sed -e '/^[ \t]*$/d' > /usr/local/share/ca-certificates/hawkbit.crt \
 			|| error "Could not write certificate"
-		update-ca-certificates \
-			|| error "Could not update-ca-certificates"
+		cat /usr/local/share/ca-certificates/hawkbit.crt \
+			>> /etc/ssl/certs/ca-certificates.crt \
+			|| error "Could not update ca-certificates.crt"
 	fi
 
 	wait_network
