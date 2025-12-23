@@ -297,6 +297,21 @@ EOF
 			rm -f "/target/etc/atmark/$file"
 		fi
 	done
+
+	# ABOS < 3.23-at.3 would not properly add 90_abosweb_disable_wlan.conf to preserve_files...
+	file=/target/etc/NetworkManager/conf.d/90_abosweb_disable_wlan.conf
+	if [ -e /target/etc/hostapd/hostapd.conf ] && ! [ -e "$file" ] \
+	    && ! grep -q type=wifi /target/etc/NetworkManager/system-connections/*.nmconnection 2>/dev/null; then
+		local ignore_if
+		ignore_if=$(sed -ne 's/^interface=//p' /target/etc/hostapd/hostapd.conf)
+		[ "$ignore_if" = uap0 ] && ignore_if=mlan0
+		cat > "$file" <<EOF
+[device_abosweb_$ignore_if]
+match-device=interface-name:$ignore_if
+managed=0
+EOF
+		echo "${file#/target}" >> /target/etc/swupdate_preserve_files
+	fi
 }
 
 baseos_upgrade() {
