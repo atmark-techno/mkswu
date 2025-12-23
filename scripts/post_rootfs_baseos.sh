@@ -291,10 +291,10 @@ EOF
 	fi
 
 	# remove old example files that were copied by preserve files (ABOS >= 3.22-at.5)
-	for f in reset_default_list.txt.example reset_default_lists.txt.example; do
-		if [ -e "/target/etc/atmark/$f" ]; then
+	for file in reset_default_list.txt.example reset_default_lists.txt.example; do
+		if [ -e "/target/etc/atmark/$file" ]; then
 			[ -e /target/etc/atmark/reset_default_custom.sh.example ] || break
-			rm -f "/target/etc/atmark/$f"
+			rm -f "/target/etc/atmark/$file"
 		fi
 	done
 }
