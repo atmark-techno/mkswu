@@ -1413,6 +1413,7 @@ swdesc_exec() {
 			"swdesc_exec"
 
 	local chroot_cmd="run --net=host --rm -v \${TMPDIR:-/var/tmp}:\${TMPDIR:-/var/tmp}"
+	local chroot_cmd="$chroot_cmd -v \${TMPDIR:-/var/tmp}:/var/tmp"
 	case "$container,$component" in
 	,base_os|,extra_os*)
 		# run in target "chroot", writable OS
