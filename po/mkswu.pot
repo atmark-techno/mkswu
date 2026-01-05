@@ -681,6 +681,12 @@ msgstr ""
 msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr ""
 #: mkswu
+msgid "WARNING: mkswu should not be used as root"
+msgstr ""
+#: mkswu
+msgid "Continue? [N/y]"
+msgstr ""
+#: mkswu
 msgid "Warning: Could not find current version in %s, not updating"
 msgstr ""
 #: mkswu
@@ -763,6 +769,9 @@ msgid "Must provide at least one desc file"
 msgstr ""
 #: mkswu
 msgid "Cannot guess output name from stdin"
+msgstr ""
+#: mkswu
+msgid "Running as root but %s does not belong to root user, refusing to run"
 msgstr ""
 #: mkswu
 msgid "cannot enter %s directory"

@@ -907,6 +907,14 @@ msgid "manually adjusting /etc/swupdate.pem on devices"
 msgstr "を修正しないとインストールできなくなります。"
 
 #: mkswu
+msgid "WARNING: mkswu should not be used as root"
+msgstr "WARNING: mkswu を root ユーザーで使用することは避けてください。"
+
+#: mkswu
+msgid "Continue? [N/y]"
+msgstr ""
+
+#: mkswu
 msgid "Warning: Could not find current version in %s, not updating"
 msgstr "Warning: %s から現在のバージョンを取得できませんでした。更新できません。"
 
@@ -1017,6 +1025,10 @@ msgstr ".desc ファイルの引数が必要です。"
 #: mkswu
 msgid "Cannot guess output name from stdin"
 msgstr "- (stdin) の場合には --output を設定してください。"
+
+#: mkswu
+msgid "Running as root but %s does not belong to root user, refusing to run"
+msgstr "root ユーザーで実行してますが %s は非 root ユーザーのファイルです。実行を拒否します。"
 
 #: mkswu
 msgid "cannot enter %s directory"
