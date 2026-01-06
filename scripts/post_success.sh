@@ -145,6 +145,7 @@ post_success() {
 	[ -n "$SWUPDATE_USB_SWU" ] && post_success_usb
 	post_success_custom
 	set_fw_update_ind
+	log_status "SUCCESS"
 }
 
 [ -n "$TEST_SCRIPTS" ] && return

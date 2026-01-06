@@ -111,7 +111,8 @@ fail_redundant_update() {
 	# downloading the rest of the image
 	if [ -z "$(mkswu_var FORCE_VERSION)" ]; then
 		if check_nothing_to_do; then
-			error "Nothing to do -- failing on purpose to save bandwidth"
+			NOTHING_TO_DO=1 \
+				error "Nothing to do -- failing on purpose to save bandwidth"
 		fi
 		# also check B-side unless SW_ALLOW_ROLLBACK is set
 		local dev="${partdev#/dev/}$((ab+1))"

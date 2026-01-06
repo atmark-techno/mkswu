@@ -1,5 +1,14 @@
 # SPDX-License-Identifier: MIT
 
+log_status() {
+	local status="$1"
+
+	if [ -e "$TMPDIR/mkswu_status" ] \
+	    && [ "$(stat -c %u "$TMPDIR/mkswu_status")" = 0 ]; then
+		echo "$status" >> "$TMPDIR/mkswu_status"
+	fi
+}
+
 error() {
 	printf -- "----------------------------------------------\n" >&2
 	printf -- "/!\ %s\n" "$@" >&2
@@ -12,6 +21,12 @@ error() {
 '
 	# also mark we're in error for cleanup (container restart check)
 	in_error=1
+
+	if [ -n "$NOTHING_TO_DO" ]; then
+		log_status "NOTHING_TO_DO"
+	else
+		log_status "ERROR: $*"
+	fi
 
 	cleanup
 	if [ -n "$soft_fail" ]; then
@@ -563,6 +578,7 @@ clear_internal_variables() {
 	unset CONTAINER_CONF_DIR TARGET SWUPDATE_PEM
 	unset PASSWD NPASSWD SHADOW NSHADOW GROUP NGROUP
 	unset system_versions BASEOS_CONF TEST_SCRIPTS
+	unset NOTHING_TO_DO
 	# This comment describes variables that can currently be used
 	# to override something, but might be subject to change.
 	# these variables are allowed through mkswu_var:
