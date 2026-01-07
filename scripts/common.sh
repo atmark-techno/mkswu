@@ -235,9 +235,12 @@ lock_update() {
 	# happen unless the updates are bogus.
 	#
 	# This lock is now redundant with the lock taken in swupdate itself:
-	# it is kept for backwards compatibility.
-	# In 2024/07, it will only be created if SWUPDATE_VERSION is not set
-	# (swupdate < 2023.12)
+	# it is kept for backward compatibility with swupdate < 2023.12
+	# (first version that implemented lock / set SWUPDATE_VERSION)
+	[ -n "$SWUPDATE_VERSION" ] && return
+
+	# This can be removed when atmark-2 key is removed: there will be
+	# no way to install an update that needs this afterwards.
 	if try_lock; then
 		# recheck for reboot after we've locked in case of race.
 		lock_check_rebooting unlock
