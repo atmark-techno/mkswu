@@ -2,9 +2,6 @@
 
 # Do minimal work if called from installer
 post_installer() {
-	# for update_shadow compat, always mounted in installer
-	local fsroot=/live/rootfs
-
 	# check passwords have been set if required
 	check_shadow_empty_password
 	# update swupdate certificate and versions
