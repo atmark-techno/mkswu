@@ -199,11 +199,12 @@ version_fail test 1.2.3.12345678 # too big for 4 digits
 version_fail test 1234567890123 # too big
 
 build_check hardlink_order.desc --
-[ "$(cpio --quiet -t < out/hardlink_order.swu)" = "sw-description
+[ "$(cpio --quiet -t < out/hardlink_order.swu \
+	| sed -e 's/.*_post_sh.*/scripts_post/')" = "sw-description
 sw-description.sig
 zst.scripts_pre.sh
 hardlink
-zst.scripts_post.sh" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
+scripts_post" ] || error "cpio content was not in expected order: $(cpio --quiet -t < out/hardlink_order.swu)"
 
 build_check cmd_description.desc -- \
 	"swdesc '# mkswu_orig_cmd swdesc_command_nochroot --description' \

@@ -1,12 +1,15 @@
 #!/bin/sh
 
-# Allow skipping from env
-[ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
-
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
 SCRIPTSDIR="$MKSWU_TMP"
+
+# Allow skipping from env
+if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
+	rm -rf "$MKSWU_TMP"
+	exit 0
+fi
 
 . "$SCRIPTSDIR/common.sh"
 

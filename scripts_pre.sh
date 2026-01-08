@@ -6,12 +6,6 @@
 # This script prepares the script environment by extracting the
 # archive we concatenate at the end of it, then rolls the pre steps.
 
-# Allow skipping from env
-if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
-	echo "$0 skipping due to MKSWU_SKIP_SCRIPTS" >&2
-	exit 0
-fi
-
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
@@ -23,6 +17,12 @@ cd "$MKSWU_TMP" || exit 1
 
 # extract archive after script
 sed -e '1,/^BEGIN_ARCHIVE/d' "$0" | tar xv || exit 1
+
+# Allow skipping from env
+if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
+	echo "$0 skipping due to MKSWU_SKIP_SCRIPTS" >&2
+	exit 0
+fi
 
 # prepare update
 . "$SCRIPTSDIR/common.sh"

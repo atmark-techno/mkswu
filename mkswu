@@ -1680,10 +1680,9 @@ embedded_postinstall_script() {
 	eval "$MKSWU_declare_swdesc_cmd_vars_stanza"
 	local component="" version="" install_if=""
 	local cmd_description="post_script"
-	local file="$SCRIPT_DIR/scripts_post.sh"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_script_nochroot
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts-mkswu/post.sh'
 }
 
 swdesc_option() {

@@ -354,8 +354,8 @@ Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : image mycontainer:v
 Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : ----------------------------------------------
 Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : /!\ cleanup of old images failed: mismatching configuration/container update?
 Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : ----------------------------------------------
-Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : Command failed: sh -c 'sh $1 ' -- /var/tmp//scripts_post.sh.zst.enc
-Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : Error streaming scripts_post.sh.zst.enc
+Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : Command failed: sh -c '{ ${TMPDIR:-/var/tmp}/scripts/post.sh; }' -- /var/tmp/sh__c______TMPDIR___..ripts_post_sh________3f493c556cb31d3235fdc328e390403f00802cca
+Apr  4 13:12:19 armadillo user.err swupdate: FAILURE ERROR : Error streaming _home_atmark_mkswu__..ripts_post_sh________cdc041aec5bbc45514e1866ed662f894c9f1f88d
 Apr  4 13:12:19 armadillo user.err swupdate: FATAL_FAILURE Image invalid or corrupted. Not installing ...
 Apr  4 13:12:19 armadillo user.info swupdate: IDLE Waiting for requests...
 ```

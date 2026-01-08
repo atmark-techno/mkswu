@@ -3,16 +3,17 @@
 
 # shellcheck source-path=SCRIPTDIR/scripts
 
-# Allow skipping from env
-if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
-	echo "$0 skipping due to MKSWU_SKIP_SCRIPT" >&2
-	exit 0
-fi
-
 TMPDIR="${TMPDIR:-/var/tmp}"
 MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
 SCRIPTSDIR="$MKSWU_TMP"
+
+# Allow skipping from env
+if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
+	echo "$0 skipping due to MKSWU_SKIP_SCRIPT" >&2
+	rm -rf "$MKSWU_TMP"
+	exit 0
+fi
 
 . "$SCRIPTSDIR/common.sh"
 . "$SCRIPTSDIR/post_common.sh"

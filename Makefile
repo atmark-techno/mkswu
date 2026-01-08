@@ -103,7 +103,7 @@ install_mkswu:
 	install -D -m 0644 -t $(DESTDIR)$(BASH_COMPLETION_DIR) \
 		bash_completion.d/mkswu bash_completion.d/hawkbit_push_update \
 		bash_completion.d/podman_partial_image
-	install -D -t $(DESTDIR)$(SHARE) scripts_pre.sh scripts_post.sh
+	install -D -t $(DESTDIR)$(SHARE) scripts_pre.sh
 	install -d $(DESTDIR)$(SHARE)/scripts
 	@# use cp instead of install to preserve executable mode
 	cp -t $(DESTDIR)$(SHARE)/scripts $(install_scripts)
@@ -138,7 +138,6 @@ install_html: $(install_docs_html)
 install_swupdate:
 	install -d $(DESTDIR)$(LIBEXEC)
 	cp -t $(DESTDIR)$(LIBEXEC) $(install_scripts)
-	cp scripts_post.sh $(DESTDIR)$(LIBEXEC)/post.sh
 	# remove self-decompress
 	sed -e '/BEGIN_ARCHIVE/d' scripts_pre.sh > $(DESTDIR)$(LIBEXEC)/pre.sh
 	chmod +x $(DESTDIR)$(LIBEXEC)/pre.sh
