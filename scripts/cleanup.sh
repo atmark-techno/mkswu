@@ -10,20 +10,24 @@ SCRIPTSDIR="$MKSWU_TMP"
 
 . "$SCRIPTSDIR/common.sh"
 
-# run post hook if present
-# (we check SWUPDATE_VERSION here to avoid overlapping with
-#  the async failure mechanism in scripts/pre_init.sh, and
-#  check update_started to avoid running fail script on early
-#  version check failures)
-if [ -n "$SWUPDATE_VERSION" ] \
-    && [ -e "$MKSWU_TMP/update_started" ] \
-    && action="$(mkswu_var NOTIFY_FAIL_CMD)" \
-    && [ -n "$action" ]; then
-	eval "$action"
-fi
+do_cleanup() {
+	# run post hook if present
+	# (we check SWUPDATE_VERSION here to avoid overlapping with
+	#  the async failure mechanism in scripts/pre_init.sh, and
+	#  check update_started to avoid running fail script on early
+	#  version check failures)
+	if [ -n "$SWUPDATE_VERSION" ] \
+	    && [ -e "$MKSWU_TMP/update_started" ] \
+	    && action="$(mkswu_var NOTIFY_FAIL_CMD)" \
+	    && [ -n "$action" ]; then
+		eval "$action"
+	fi
 
-cleanup
-# swupdate removes TMPDIR/scripts itself, but we still
-# need to remove mkswu's dir
-rm -rf "$MKSWU_TMP"
-unlock_update
+	cleanup
+	# swupdate removes TMPDIR/scripts itself, but we still
+	# need to remove mkswu's dir
+	rm -rf "$MKSWU_TMP"
+	unlock_update
+}
+
+do_cleanup
