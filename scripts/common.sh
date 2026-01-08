@@ -28,12 +28,18 @@ error() {
 		log_status "ERROR: $*"
 	fi
 
-	cleanup
 	if [ -n "$soft_fail" ]; then
 		echo "An error happened after changes have been applied" >&2
 		echo "Rebooting to finish applying anything left" >&2
 		reboot
 	fi
+
+	# swupdate >= 2023.12 (version set) will run these in cleanup.sh
+	if [ -n "$SWUPDATE_VERSION" ]; then
+		exit 1
+	fi
+
+	cleanup ""
 	unlock_update
 	exit 1
 }
