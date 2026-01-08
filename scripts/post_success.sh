@@ -14,7 +14,7 @@ post_success_rootfs() {
 		|| warning "Could not record last update partition"
 	cp "$MKSWU_TMP/sw-versions.merged" "/var/log/swupdate/sw-versions-${newpart#/dev/}" \
 		|| warning "Could not update latest sw-versions"
-	cp "$MKSWU_TMP/sw-versions.old" "/var/log/swupdate/sw-versions-${oldpart#/dev/}" \
+	cp "$MKSWU_TMP/sw-versions.init" "/var/log/swupdate/sw-versions-${oldpart#/dev/}" \
 		|| warning "Could not update previous sw-versions"
 }
 
@@ -28,7 +28,7 @@ post_success_atlog() {
 	local versions
 	# variables for tests
 	local atlog="${atlog:-/var/at-log/atlog}"
-	local old_versions="${old_versions:-$MKSWU_TMP/sw-versions.old}"
+	local old_versions="${old_versions:-$MKSWU_TMP/sw-versions.init}"
 	local new_versions="${new_versions:-$MKSWU_TMP/sw-versions.merged}"
 
 	# if /var/at-log isn't mounted fallback to /var/log/swupdate/atlog

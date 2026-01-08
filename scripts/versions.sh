@@ -150,6 +150,11 @@ check_nothing_to_do() {
 	cmp -s "$MKSWU_TMP/sw-versions.old" "$MKSWU_TMP/sw-versions.merged"
 }
 
+# Generates:
+# - sw-versions.old: versions as of before this SWU
+# - sw-versions.init: versions as of before all SWUs (for chained updates)
+# - sw-versions.present: versions included in this SWU
+# - sw-versions.merged: updated versions file based
 gen_newversion() {
 	local component oldvers newvers install_if newvers_board
 	local system_versions="${system_versions:-/etc/sw-versions}"
@@ -162,6 +167,10 @@ gen_newversion() {
 			< "$system_versions" \
 			> "$MKSWU_TMP/sw-versions.old" \
 		|| error "Could not copy existing versions"
+
+	[ -e "$MKSWU_TMP/sw-versions.init" ] \
+		|| cp "$MKSWU_TMP/sw-versions.old" "$MKSWU_TMP/sw-versions.init" \
+		|| error "Could not copy sw-versions.init"
 
 	extract_swdesc_versions < "$SWDESC" > "$MKSWU_TMP/sw-versions.present" \
 		|| error "Could not extract versions present in swdesc"
