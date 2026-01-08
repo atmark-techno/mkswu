@@ -24,6 +24,7 @@ error() {
 
 	if [ -n "$NOTHING_TO_DO" ]; then
 		log_status "NOTHING_TO_DO"
+		touch "$MKSWU_TMP/nothing_to_do"
 	else
 		log_status "ERROR: $*"
 	fi
@@ -502,6 +503,13 @@ set_post_action() {
 	if [ "$post_action" = "container" ] && needs_reboot; then
 		post_action=""
 	fi
+	# for chained updates the last SWU to be installed can
+	# pick poweroff or wait without problem, but container
+	# would fail if it doesn't agree with the first SWU:
+	# always clear it for now
+	if [ "$post_action" = "container" ] && [ -n "$SWUPDATE_CHAIN_IDX" ]; then
+		post_action=""
+	fi
 }
 
 clear_b_side() {
@@ -601,6 +609,7 @@ clear_internal_variables() {
 	#     SW_ALLOW_ROLLBACK SWUPDATE_FROM_INSTALLER
 	#     SWUPDATE_HAWKBIT SWUPDATE_USB_SWU SWUPDATE_ARMADILLO_TWIN
 	#     CONTAINERS_CONF/CONTAINERS_STORAGE_CONF/CONTAINERS_REGISTRIES_CONF
+	#     SWUPDATE_CHAIN_IDX SWUPDATE_CHAIN_COUNT SWUPDATE_CHAIN_ID
 	# these come from swupdate
 	#     SWUDPATE_WARN_FD SWUPDATE_INFO_FD
 }

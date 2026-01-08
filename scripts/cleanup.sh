@@ -13,7 +13,30 @@ fi
 
 . "$SCRIPTSDIR/common.sh"
 
+handle_chained_swu() {
+	# Updates with nothing to do are considered failures by swupdate,
+	# but we don't want this script to run for chained updates in this
+	# case, so check manually...
+
+	# We still want to cleanup $TMPDIR/scripts-vendored on nothing
+	# to do if this was not a chained update, so we only check this on chained update
+	[ -n "$SWUPDATE_CHAIN_IDX" ] || return
+
+	# Not nothing to do -> real error, cleanup normally
+	[ -e "$MKSWU_TMP/nothing_to_do" ] || return
+
+	# not last in chain, don't cleanup.
+	[ "$SWUPDATE_CHAIN_IDX" != "$SWUPDATE_CHAIN_COUNT" ] && exit
+
+	# last in chain, run post to finish update.
+	# (but still need cleanup if that failed...
+	# hence subshell to catch if it exists)
+	( "$SCRIPTSDIR/post.sh"; ) && exit 0
+}
+
 do_cleanup() {
+	handle_chained_swu
+
 	# run post hook if present
 	# (we check SWUPDATE_VERSION here to avoid overlapping with
 	#  the async failure mechanism in scripts/pre_init.sh, and

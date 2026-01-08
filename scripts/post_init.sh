@@ -1,19 +1,26 @@
 # SPDX-License-Identifier: MIT
 
-# Do minimal work if called from installer
-post_installer() {
+# Do minimal work if skipping cleanup (installer or chained updates)
+post_minimal() {
+	info "$1"
+
 	# check passwords have been set if required
 	check_shadow_empty_password
 	# update swupdate certificate and versions
 	update_swupdate_certificate
 	cp "$MKSWU_TMP/sw-versions.merged" "/target/etc/sw-versions" \
 		|| error "Could not set sw-versions"
+
+	log_status "SUCCESS"
 }
 
 init() {
 	if [ -n "$SWUPDATE_FROM_INSTALLER" ]; then
-		info "SWU post install in installer"
-		post_installer
+		post_minimal "SWU post install in installer"
+		exit 0
+	fi
+	if [ "$SWUPDATE_CHAIN_IDX" != "$SWUPDATE_CHAIN_COUNT" ]; then
+		post_minimal "Skipping post ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
 		exit 0
 	fi
 

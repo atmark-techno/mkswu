@@ -55,6 +55,13 @@ init_vars_update() {
 	    && fw_printenv upgrade_available | grep -qxE 'upgrade_available=[012]'; then
 		upgrade_available=1
 	fi
+	if [ -n "$SWUPDATE_CHAIN_IDX" ]; then
+		# for now consider chained updates to always update rootfs and require
+		# reboot (needs_reboot is implied by the override in set_post_action)
+		# If this changes in the future, pre_chained_update will need to
+		# update saved vars if a later update starts modifying these
+		update_rootfs=${update_rootfs:-1}
+	fi
 }
 
 save_vars() {
@@ -216,6 +223,51 @@ pre_installer() {
 	needs_update boot && error "Cannot update boot image in installer"
 }
 
+# for chained updates after the first one
+pre_chained_update() {
+	info "Processing chain $SWUPDATE_CHAIN_ID update $SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT"
+
+	if [ "$SWUPDATE_CHAIN_IDX" = 1 ]; then
+		echo "$SWUPDATE_CHAIN_ID" > "$MKSWU_TMP/swupdate_chain_id"
+		# first update setups normally
+		return
+	else
+		local old_id
+
+		old_id=$(cat "$MKSWU_TMP/swupdate_chain_id")
+		[ "$old_id" = "$SWUPDATE_CHAIN_ID" ] \
+			|| error "SWU chain id mismatch (expected $old_id, got $SWUPDATE_CHAIN_ID)"
+	fi
+
+	# if first update had nothing to do, init won't be done yet: continue normally
+	if ! [ -e "$MKSWU_TMP/update_started" ]; then
+		return
+	fi
+
+	mountpoint -q /target \
+		|| error "SWU chain but /target is not mounted"
+
+	# sanity check: /target/etc/sw-versions must be the same as /etc/sw-versions
+	# or swupdate will not install the correct software
+	cmp -s /etc/sw-versions /target/etc/sw-versions \
+		|| error "/etc/sw-versions does not match target's"
+
+	gen_newversion
+	if needs_update base_os || needs_update boot; then
+		# we can't handle base_os or boot update mid-chain,
+		# finish what we have now and this will be installed
+		# after reboot
+		info "base_os or boot update required mid SWU chain. Stopping chain here to continue after reboot"
+		# This needs some fiddling to avoid bumping versions
+		# with what we just get and post to not skip work...
+		cp "$MKSWU_TMP/sw-versions.old" "$MKSWU_TMP/sw-versions.merged" \
+			|| error "Failed cleanup"
+		unset SWUPDATE_CHAIN_IDX SWUPDATE_CHAIN_COUNT
+		exec "$SCRIPTSDIR/post.sh"
+		exit 1
+	fi
+}
+
 check_until() {
 	local until_start until_end now
 
@@ -239,16 +291,20 @@ init() {
 	lock_update
 
 	check_until
+	init_vars
 
 	if [ -n "$SWUPDATE_FROM_INSTALLER" ]; then
 		info "SWU pre install in installer"
 		pre_installer
 		exit 0
 	fi
+	if [ -n "$SWUPDATE_CHAIN_IDX" ]; then
+		# this exits early if further setup is not needed
+		pre_chained_update
+	fi
 
 	cleanup
 
-	init_vars
 	gen_newversion
 	init_vars_update
 

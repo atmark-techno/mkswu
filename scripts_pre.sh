@@ -11,8 +11,26 @@ MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
 SCRIPTSDIR="$MKSWU_TMP"
 
-rm -rf "$MKSWU_TMP"
-mkdir "$MKSWU_TMP" || exit 1
+if [ "${SWUPDATE_CHAIN_IDX:-1}" = 1 ]; then
+	# only re-create dir for first swu in chain
+	rm -rf "$MKSWU_TMP"
+	mkdir "$MKSWU_TMP" || exit 1
+	# 2026/02: also remove old scripts dir for leftovers of older SWUs
+	rm -rf "$TMPDIR/scripts"
+else
+	if ! [ -e "$MKSWU_TMP" ]; then
+		echo "Chained SWU but $MKSWU_TMP does not exist!" >&2
+		exit 1
+	fi
+	# cleanup any certs and re-extract (they are installed
+	# after each individual swu if present)
+	# Note scripts-mkswu is hardcoded as we only consider the
+	# SWU tarball.
+	# 2026/02: also remove old scripts dir for leftovers of older SWUs
+	rm -rf "$TMPDIR/scripts-mkswu/certs_"* \
+		"$TMPDIR/scripts/certs_"*
+fi
+
 cd "$MKSWU_TMP" || exit 1
 
 # extract archive after script
