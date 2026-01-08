@@ -17,9 +17,11 @@ if [ "${MKSWU%/usr/bin/mkswu}" != "$MKSWU" ]; then
 fi
 
 export TEST_SCRIPTS=1
+# need this to avoid error() removing $MKSWU_TMP
+export SWUPDATE_VERSION=2023.12
 SWDESC=/dev/null
 TMPDIR=./out/scripts
-MKSWU_TMP="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts-mkswu"
 rm -rf "$TMPDIR"
 mkdir -p "$MKSWU_TMP"
 touch "$TMPDIR/sw-description"
@@ -472,7 +474,7 @@ test_cert_update() {
 	( update_swupdate_certificate; ) \
 		|| error "certificate update should be ok and do nothing"
 	[ "$(grep -c "BEGIN CERT" "$SWUPDATE_PEM")" = "1" ] \
-		|| error "should have added new key"
+		|| error "should not have added new key"
 
 	echo "swupdate certificate: test using old atmark key adds the new one"
 	cat ../certs/atmark-3.pem >> "$SWUPDATE_PEM"

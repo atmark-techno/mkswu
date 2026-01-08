@@ -21,7 +21,7 @@ update_swupdate_certificate()  {
 	local SWUPDATE_PEM=${SWUPDATE_PEM:-/target/etc/swupdate.pem}
 	# Use tmpdir from SWU version of the scripts as embedded tmp
 	# never contains certificates
-	local MKSWU_SWU_TMP="$TMPDIR/scripts"
+	local MKSWU_SWU_TMP="$TMPDIR/scripts-mkswu"
 
 	# what certificates were embedded into swu, if any?
 	for cert in "$MKSWU_SWU_TMP/certs_atmark/"*; do

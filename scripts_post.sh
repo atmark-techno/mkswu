@@ -10,7 +10,7 @@ if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
 fi
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-MKSWU_TMP="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
 SCRIPTSDIR="$MKSWU_TMP"
 
@@ -44,11 +44,9 @@ kill_old_swupdate() {
 	done
 }
 
-if [ "$MKSWU_TMP" != "$TMPDIR/scripts" ]; then
-	# swupdate removes TMPDIR/scripts itself, but we still
-	# need to remove the -vendored dir if it was used...
-	rm -rf "$MKSWU_TMP"
-fi
+# swupdate removes TMPDIR/scripts itself, but we still
+# need to remove mkswu's dir
+rm -rf "$MKSWU_TMP"
 
 case "$post_action" in
 poweroff)

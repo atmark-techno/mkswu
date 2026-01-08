@@ -1179,7 +1179,7 @@ swdesc_boot_linux() {
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
 	swdesc_exec_nochroot "$image" \
-		'${TMPDIR:-/var/tmp}/scripts/install_boot_linux $1'
+		'${TMPDIR:-/var/tmp}/scripts-mkswu/install_boot_linux $1'
 }
 
 swdesc_tar() {
@@ -1238,7 +1238,7 @@ swdesc_tar() {
 		MKSWU_component_baseos_seen="done"
 		MKSWU_hide_from_show=1 \
 			swdesc_command_nochroot --description "base_os post fixups" \
-				'${TMPDIR:-/var/tmp}/scripts/post_rootfs_baseos.sh'
+				'${TMPDIR:-/var/tmp}/scripts-mkswu/post_rootfs_baseos.sh'
 	fi
 }
 
@@ -1422,7 +1422,7 @@ swdesc_exec() {
 	*,base_os|*,extra_os*)
 		# run in container, writable OS
 		# use podman_target to use newly installed images
-		chroot_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target '"$chroot_cmd"
+		chroot_cmd='${TMPDIR:-/var/tmp}/scripts-mkswu/podman_target '"$chroot_cmd"
 		chroot_cmd="$chroot_cmd --root /target/var/lib/containers"
 		chroot_cmd="$chroot_cmd -v /target:/target $container"
 		;;
@@ -1435,7 +1435,7 @@ swdesc_exec() {
 		;;
 	*)
 		# run in container, read-only OS, RW volumes
-		chroot_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target '"$chroot_cmd"
+		chroot_cmd='${TMPDIR:-/var/tmp}/scripts-mkswu/podman_target '"$chroot_cmd"
 		chroot_cmd="$chroot_cmd -v /target/var/app/volumes:/target/var/app/volumes"
 		chroot_cmd="$chroot_cmd -v /target/var/app/rollback/volumes:/target/var/app/rollback/volumes"
 		chroot_cmd="$chroot_cmd -v /target:/target:ro $container"
@@ -1534,7 +1534,7 @@ swdesc_embed_container() {
 	container_check_archive
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts/podman_target load $1'
+	swdesc_exec_nochroot "$image" '${TMPDIR:-/var/tmp}/scripts-mkswu/podman_target load $1'
 }
 
 swdesc_pull_container() {
@@ -1543,7 +1543,7 @@ swdesc_pull_container() {
 
 	parse_swdesc pull_container "$@"
 
-	pull_cmd='${TMPDIR:-/var/tmp}/scripts/podman_target pull '
+	pull_cmd='${TMPDIR:-/var/tmp}/scripts-mkswu/podman_target pull '
 	pull_cmd="$pull_cmd ${container_tag:+"--tag \"$container_tag\" "} \"$image\""
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
@@ -1568,7 +1568,7 @@ swdesc_usb_container() {
 	COPY_USB="$COPY_USB $(shell_quote "$(realpath "$OUTDIR/$image_usb.sig")")"
 
 	eval "$MKSWU_export_swdesc_cmd_vars_stanza"
-	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts/podman_target --pubkey /etc/swupdate.pem load '"$image_usb"
+	swdesc_command_nochroot '${TMPDIR:-/var/tmp}/scripts-mkswu/podman_target --pubkey /etc/swupdate.pem load '"$image_usb"
 }
 
 swdesc_sbom_source_file() {

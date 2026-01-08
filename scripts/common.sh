@@ -40,6 +40,7 @@ error() {
 	fi
 
 	cleanup ""
+	rm -rf "$MKSWU_TMP"
 	unlock_update
 	exit 1
 }

@@ -350,8 +350,8 @@ rerun_vendored() {
 	fi
 
 	# embedded version
-	if [ -e "$TMPDIR/scripts/rootdev" ]; then
-		MKSWU_TMP="$TMPDIR/scripts"
+	if [ -e "$TMPDIR/scripts-mkswu/rootdev" ]; then
+		MKSWU_TMP="$TMPDIR/scripts-mkswu"
 		SCRIPTSDIR="$MKSWU_TMP"
 		return
 	fi
@@ -362,7 +362,7 @@ rerun_vendored() {
 		echo "Could not execute embedded post_rootfs_baseos, will be processed at end of update" >&2
 		exit 0
 	fi
-	echo "Could not decide where to run, will be processed at end of update" >&2
+	echo "post_rootfs_baseos could not find where script was run, will be processed at end of update" >&2
 	exit 0
 }
 

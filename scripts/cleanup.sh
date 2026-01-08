@@ -4,7 +4,7 @@
 [ -n "$MKSWU_SKIP_SCRIPTS" ] && exit 0
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-MKSWU_TMP="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
 SCRIPTSDIR="$MKSWU_TMP"
 
@@ -23,9 +23,7 @@ if [ -n "$SWUPDATE_VERSION" ] \
 fi
 
 cleanup
-if [ "$MKSWU_TMP" != "$TMPDIR/scripts" ]; then
-	# swupdate removes TMPDIR/scripts itself, but we still
-	# need to remove the -vendored dir if it was used...
-	rm -rf "$MKSWU_TMP"
-fi
+# swupdate removes TMPDIR/scripts itself, but we still
+# need to remove mkswu's dir
+rm -rf "$MKSWU_TMP"
 unlock_update

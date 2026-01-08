@@ -181,8 +181,8 @@ podman_prune() {
 cleanup_images() {
 	local tmpdir
 
-	mkdir -p "${TMPDIR:-/var/tmp}/scripts"
-	tmpdir=$(mktemp -d "${TMPDIR:-/var/tmp}/scripts/mkswu_podman_cleanup.XXXXXX") \
+	mkdir -p "${TMPDIR:-/var/tmp}/scripts-mkswu"
+	tmpdir=$(mktemp -d "${TMPDIR:-/var/tmp}/scripts-mkswu/mkswu_podman_cleanup.XXXXXX") \
 		|| error "Could not create tmpdir in ${TMPDIR:-/var/tmp}"
 	trap "rm -rf '$tmpdir'" EXIT
 

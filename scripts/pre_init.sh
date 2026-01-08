@@ -160,7 +160,7 @@ init_fail_command() {
 		# inotifyd exits when it cannot watch anymore, but
 		# we need to chdir out of it first...
 		cd / || exit
-		inotifyd - "$TMPDIR/scripts":x >/dev/null || exit
+		inotifyd - "$TMPDIR/scripts-mkswu":x >/dev/null || exit
 		[ -e "$fail_file" ] || exit 0
 		if [ "$(stat -c "%u.%a" "$fail_file")" != 0.600 ]; then
 			warning "NOTIFY FAIL script was not root owned/0600! refusing to run it"

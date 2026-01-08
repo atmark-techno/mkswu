@@ -57,8 +57,8 @@ write_split_boot_partition() {
 }
 
 # state variable from mkswu scripts
-if [ -e "$TMPDIR/scripts/rootdev" ]; then
-	MKSWU_TMP="$TMPDIR/scripts"
+if [ -e "$TMPDIR/scripts-mkswu/rootdev" ]; then
+	MKSWU_TMP="$TMPDIR/scripts-mkswu"
 elif [ -e "$TMPDIR/scripts-vendored/rootdev" ]; then
 	MKSWU_TMP="$TMPDIR/scripts-vendored"
 else

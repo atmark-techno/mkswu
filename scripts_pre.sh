@@ -13,7 +13,7 @@ if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
 fi
 
 TMPDIR="${TMPDIR:-/var/tmp}"
-MKSWU_TMP="$TMPDIR/scripts"
+MKSWU_TMP="$TMPDIR/scripts-mkswu"
 # SCRIPTSDIR is overridden for scripts embedded with swupdate
 SCRIPTSDIR="$MKSWU_TMP"
 
