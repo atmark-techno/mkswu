@@ -38,7 +38,7 @@ swap_btrfs_snapshots() {
 	exchange_btrfs_snapshots || return 1
 
 	# we need to now remount the volumes with the new data,
-	# so stop all countainers and restart them
+	# so stop all containers and restart them
 	podman_killall "Stopping containers to swap storage"
 
 	if ! umount_if_mountpoint /var/lib/containers/storage_readonly \
@@ -130,7 +130,7 @@ cleanup_appfs() {
 		mount -t btrfs "$dev" "$basemount" || error "Could not mount app root"
 
 		# We're not rebooting, since we got here there was something
-		# to do and want to use updated apps on currenet os (old apps
+		# to do and want to use updated apps on current os (old apps
 		# now being backup for fallback)
 		if ! swap_btrfs_snapshots; then
 			stdout_warn echo "Could not swap btrfs subvolumes, forcing reboot"

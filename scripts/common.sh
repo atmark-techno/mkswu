@@ -555,7 +555,7 @@ clear_internal_variables() {
 	#     TMPDIR MKSWU_TMP SCRIPTSDIR
 	# these variables should always be set before use
 	#     rootdev partdev ab post_action
-	# these variables are used accross scripts and should not depend on env
+	# these variables are used across scripts and should not depend on env
 	unset needs_reboot update_rootfs upgrade_available
 	unset FILTER NOSTDOUT
 	# these variables are used for tests, but should not be used when

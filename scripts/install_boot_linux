@@ -46,7 +46,7 @@ write_split_boot_partition() {
 	mkfs.vfat -n "secboot" "$flash_dev" >/dev/null \
 		|| error "Could not format ${flash_dev#/dev/}"
 	mount "$flash_dev" /target/mnt \
-		|| error "Could not mount freshly formated ${flash_dev#/dev/}"
+		|| error "Could not mount freshly formatted ${flash_dev#/dev/}"
 	if ! mkdir /target/mnt/boot || ! cp "$1" /target/mnt/boot/Image; then
 		umount /target/mnt
 		error "Could not write Image to ${flash_dev#/dev/}"

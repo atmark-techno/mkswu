@@ -325,7 +325,7 @@ Immediately after this error `/target` will still have the target filesystem mou
 * If rootfs (`/target`) was full, you probably need to make the rootfs content smaller, or use container spaces (`/var/app/volumes` or `/var/app/rollback/volumes`) instead.
 * If appfs (`/var/app/volumes` and other application mounts) was full, you need to make some space.
   * In some case there can be leftover podman files in `/var/tmp` that can safely be removed. They are otherwise removed automatically on boot.
-  * Remove data from `/var/app/volumes` and `/var/app/rollback/volumes`. Note that the rollback volumes directory has just been snapshoted so df will not immediately see free space, but space will be reclaimed when swupdate runs again
+  * Remove data from `/var/app/volumes` and `/var/app/rollback/volumes`. Note that the rollback volumes directory has just been snapshotted so df will not immediately see free space, but space will be reclaimed when swupdate runs again
   * In case container images are full, use `abos-ctrl podman-rw` to remove unused containers. Like above, space will be reclaimed when swupdate runs due to the snapshot mechanism.  
 In some case it might not be possible to hold two copies of the container images (e.g. if a large image is replaced by another large image with no layer in common); but image sizes should consider the need for double-copy and should be designed to be able to hold two copies.  
 Note that updating containers through 'apt upgrade' or similar upgrade mechanism adds more data without freeing the space associated with the old files due to the layer mechanism. Consider rebuilding from a new base image or using `podman build`'s `--squash-all` option to remove intermediate layers.
@@ -519,7 +519,7 @@ Apr  4 13:16:25 armadillo user.info swupdate: RUN [read_lines_notify] : swupdate
 
 ### Cause of warning
 
-Note this is not an error, the update was succesfully installed but the container image included in the SWU was immediately removed and will thus not be present after reboot.
+Note this is not an error, the update was successfully installed but the container image included in the SWU was immediately removed and will thus not be present after reboot.
 
 The reason for removal is as described in the warning: no container configuration in `/etc/atmark/containers` used the image, so the cleanup mechanism removed it.
 

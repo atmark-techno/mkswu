@@ -335,11 +335,11 @@ check_version_different() {
 		esac
 	else
 		# versions with 5+ components, semvers with 4+ leading digits,
-		# and the '+' part of semvers are completly ignored and will be
+		# and the '+' part of semvers are completely ignored and will be
 		# considered identical so should be refused.
 		# Anything else should be string-compared and is ok.
 		if printf %s "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]*(\.[0-9]+|-[A-Za-z0-9.-]+)?$'; then
-			error "version %s has too many digit components, please use somthing else" \
+			error "version %s has too many digit components, please use something else" \
 				"$version"
 		fi
 		if printf %s "$version" | grep -qE '^[0-9]+(\.[0-9]+)*([+-][A-Za-z0-9.+-]+)?$'; then
@@ -852,7 +852,7 @@ parse_swdesc() {
 				warning
 				warning "Warning: 'base_os' has been used multiple times."
 				warning "post-baseos extraction (e.g. swupdate_preserve_files POST step) will run after"
-				warning "the first occurence so the result might be unexpected."
+				warning "the first occurrence so the result might be unexpected."
 				warning
 				MKSWU_component_baseos_seen="warned"
 				;;
@@ -2819,7 +2819,7 @@ mkswu_show() {
 				sub(/ *# mkswu_orig_cmd /, "")
 				orig_cmd=1
 				dequote()
-				# record all occurences of commands if different (for --board)
+				# record all occurrences of commands if different (for --board)
 				if (! cmd[filename]) {
 					cmd[filename]=$0
 				} else if (! (cmd[filename] ~ "(^|\n)"$0"($|\n)")) {

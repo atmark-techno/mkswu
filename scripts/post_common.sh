@@ -5,7 +5,7 @@ check_shadow_empty_password() {
 	local NSHADOW="${NSHADOW:-/target/etc/shadow}"
 
 	# check there are no user with empty login
-	# unless the update explicitely allows it
+	# unless the update explicitly allows it
 	[ -n "$(mkswu_var ALLOW_EMPTY_LOGIN)" ] && return
 	user=$(awk -F: '$2 == "" && $3 != "0" { print $1 }' "$NSHADOW")
 	[ -z "$user" ] || error "the following users have an empty password, failing update: $user"
@@ -110,7 +110,7 @@ update_swupdate_certificate()  {
 	if [ -n "$public_onetime_path" ]; then
 		if [ -z "$user_seen$user_present" ]; then
 			# don't remove one-time cert if no external cert provided
-			# fail unless explicitely allowed
+			# fail unless explicitly allowed
 			[ -n "$(mkswu_var ALLOW_PUBLIC_CERT)" ] \
 				|| error "The public one-time swupdate certificate can only be used once. Please add your own certificate. Failing update."
 			info "No user certificate present: keeping one-time public certificate"

@@ -223,7 +223,7 @@ msgid "version check failed for %s: %s must not mix alpha and digits, e.g.:\\n\\
 msgstr "バージョン %s は使えません: %s に数字とアルファベットが混在しています。\\n例:\\n\\t1.2.3-rc.4\\n\\t1.2.3.4\\n\\t1.2.3-4"
 
 #: mkswu
-msgid "version %s has too many digit components, please use somthing else"
+msgid "version %s has too many digit components, please use something else"
 msgstr " バージョン %s に数字の部分が多すぎてswupdateに無視されます。他を使ってください。"
 
 #: mkswu
@@ -335,7 +335,7 @@ msgid "post-baseos extraction (e.g. swupdate_preserve_files POST step) will run 
 msgstr "baseos 展開後の処理(swupdate_preserve_files の POST 処理等)は展開直後"
 
 #: mkswu
-msgid "the first occurence so the result might be unexpected."
+msgid "the first occurrence so the result might be unexpected."
 msgstr "に実行されますので、複数回または先頭以外で指定すると予想外の結果になる恐れがあります。"
 
 #: mkswu
