@@ -87,8 +87,13 @@ fail_atmark_new_container() {
 	# we're clearing containers, so nothing to check
 	[ -n "$(mkswu_var CONTAINER_CLEAR)" ] && return
 
-	# base_os update: nothing to check
-	[ -n "$(get_version base_os present)" ] && return
+	if [ -z "$(mkswu_var ATMARK_PROD_UPDATE)" ]; then
+		# [2026/01] temporarily keep for backwards compability with older SWUs:
+		# base_os updates are allowed.
+		if [ -n "$(get_version base_os present)" ]; then
+			return
+		fi
+	fi
 
 	# simple update? check if first version of swu had already been installed
 	read -r component _ < "$MKSWU_TMP/sw-versions.present"
