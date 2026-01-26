@@ -1,3 +1,14 @@
+7.11
+====
+fixes:
+- ABOS: restore 90_abosweb_disable_wlan.conf if it was incorrectly made
+missing after previous update
+
+features:
+- add check to warn when running as root
+
+  -- 2026-01-26
+
 7.10
 ====
 fixes:
