@@ -18,10 +18,13 @@ update_swupdate_certificate()  {
 	local atmark_present="" atmark_seen="" atmark_old_seen=""
 	local user_present="" user_seen=""
 	# test constants
-	local SWUPDATE_PEM=${SWUPDATE_PEM:-/target/etc/swupdate.pem}
+	local SWUPDATE_PEM="${SWUPDATE_PEM:-/target/etc/swupdate.pem}"
 	# Use tmpdir from SWU version of the scripts as embedded tmp
 	# never contains certificates
+	# 2026/02: also check older directory for older SWUs
+	# This will be removed in a couple of years...
 	local MKSWU_SWU_TMP="$TMPDIR/scripts-mkswu"
+	local OLD_MKSWU_SWU_TMP="$TMPDIR/scripts"
 
 	# what certificates were embedded into swu, if any?
 	for cert in "$MKSWU_SWU_TMP/certs_atmark/"*; do
@@ -129,12 +132,14 @@ update_swupdate_certificate()  {
 		cat "$certsdir"/cert.* 2>/dev/null
 		if [ -n "$atmark_seen" ]; then
 			# only add atmark certs if they're currently installed
-			for cert in "$MKSWU_SWU_TMP/certs_atmark/"*; do
+			for cert in "$MKSWU_SWU_TMP/certs_atmark/"* \
+					"$OLD_MKSWU_SWU_TMP/certs_atmark/"*; do
 				[ -e "$cert" ] || continue
 				cat "$cert" || exit 1
 			done
 		fi
-		for cert in "$MKSWU_SWU_TMP/certs_user/"*; do
+		for cert in "$MKSWU_SWU_TMP/certs_user/"* \
+				"$OLD_MKSWU_SWU_TMP/certs_user/"*; do
 			[ -e "$cert" ] || continue
 			# add comment to older certificates
 			grep -qE '^# ' "$cert" || echo "# ${cert##*/}"
