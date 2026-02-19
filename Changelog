@@ -1,3 +1,26 @@
+8.0
+===
+fixes:
+- fix install_boot_linux (secureboot) when running from vendored dir (ABOS
+newer than mkswu)
+
+misc:
+- no longer take /tmp/.swupdate_lock when running off swupdate >= 2023.12
+(has not been needed since then)
+- similarly, no longer produce /tmp/.swupdate_rebooting or swupdate_waiting
+markers for newer swupdate version
+- add explicit error for a900 RSA signed secureboot linux binary.
+
+features:
+- add experimental chained swu support to install multiples SWUs in a row
+without rebooting in between. For usage see abos-base swupdate-chained script.
+- report SWU install status in $TMPDIR/mkswu_status if the file already exists
+and is root owned: this makes it possible to differentiate real failures from
+'nothing to do' failures (this is not expected to be used directly and might
+change in the future)
+
+  -- 2026-02-20
+
 7.11.1
 ======
 fixes:
