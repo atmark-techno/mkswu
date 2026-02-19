@@ -463,6 +463,10 @@ msgid "swdesc_boot_linux image must be at most 26MB big"
 msgstr "swdesc_boot_linux は 26MB までです。"
 
 #: mkswu
+msgid "i.MX 8ulp images signed with rsa are known to be broken, do not use"
+msgstr ""
+
+#: mkswu
 msgid "Encrypted linux image not yet supported"
 msgstr "暗号化されたカーネルは未対応です。"
 

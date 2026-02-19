@@ -1166,7 +1166,11 @@ swdesc_boot_linux() {
 		# it's linux the worst that can happen is a rollback...
 		;;
 	00c00287)
-		# signed imx8ulp image
+		# signed imx8ulp image (ecc)
+		;;
+	00e80587)
+		# signed imx8ulp image (rsa)
+		error "i.MX 8ulp images signed with rsa are known to be broken, do not use"
 		;;
 	00080387)
 		# encrypted imx8ulp image
