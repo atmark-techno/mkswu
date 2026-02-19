@@ -28,10 +28,12 @@ kill_old_swupdate() {
 	# We do not want any other swupdate install to run after swupdate
 	# stopped
 	touch /run/swupdate_rebooting
-	# marker in /tmp are kept for compatibility until 2025/04
-	# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
-	local tmp
-	tmp=$(mktemp /tmp/.swupdate_rebooting.XXXXXX) && mv "$tmp" /tmp/.swupdate_rebooting
+	if [ -z "$SWUPDATE_VERSION" ]; then
+		# marker in /tmp are kept for compatibility until atmark-2 key is removed
+		# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
+		local tmp
+		tmp=$(mktemp /tmp/.swupdate_rebooting.XXXXXX) && mv "$tmp" /tmp/.swupdate_rebooting
+	fi
 
 	# swupdate >= 2023.12 has better locking, skip this to preserve return status
 	[ -n "$SWUPDATE_VERSION" ] && return
@@ -59,9 +61,11 @@ wait)
 	stdout_info_or_error echo "swupdate waiting until external reboot"
 	# tell the world we're ready to be killed
 	touch /run/swupdate_waiting
-	# marker in /tmp are kept for compatibility until 2025/04
-	# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
-	tmp=$(mktemp /tmp/.swupdate_waiting.XXXXXX) && mv "$tmp" /tmp/.swupdate_waiting
+	if [ -z "$SWUPDATE_VERSION" ]; then
+		# marker in /tmp are kept for compatibility until atmark-2 key is removed
+		# touch -h isn't 100% race-free, use mktemp + mv instead... (ignore errors)
+		tmp=$(mktemp /tmp/.swupdate_waiting.XXXXXX) && mv "$tmp" /tmp/.swupdate_waiting
+	fi
 	kill_old_swupdate
 	;;
 container)
