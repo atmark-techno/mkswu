@@ -23,6 +23,12 @@ init() {
 		post_minimal "Skipping post ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
 		exit 0
 	fi
+	if [ -n "$SWUPDATE_CHAIN_IDX" ] && ! [ -e "$MKSWU_TMP/update_started" ]; then
+		# last in chain, if there was nothing to do all along skip everything...
+		cleanup
+		rm -rf "$MKSWU_TMP"
+		exit 0
+	fi
 
 	rootdev="$(cat "$MKSWU_TMP/rootdev")" \
 		|| error "Could not read rootdev from prepare step?!"

@@ -266,6 +266,10 @@ pre_chained_update() {
 		exec "$SCRIPTSDIR/post.sh"
 		exit 1
 	fi
+
+	# chain update ok: skip rest of pre script
+	info "Skipping pre ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
+	exit 0
 }
 
 check_until() {
