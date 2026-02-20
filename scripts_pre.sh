@@ -16,7 +16,9 @@ if [ "${SWUPDATE_CHAIN_IDX:-1}" = 1 ]; then
 	rm -rf "$MKSWU_TMP"
 	mkdir "$MKSWU_TMP" || exit 1
 	# 2026/02: also remove old scripts dir for leftovers of older SWUs
+	# (prints error message if missing so recreate)
 	rm -rf "$TMPDIR/scripts"
+	mkdir -p "$TMPDIR/scripts"
 else
 	if ! [ -e "$MKSWU_TMP" ]; then
 		echo "Chained SWU but $MKSWU_TMP does not exist!" >&2
