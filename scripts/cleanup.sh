@@ -18,8 +18,7 @@ handle_chained_swu() {
 	# but we don't want this script to run for chained updates in this
 	# case, so check manually...
 
-	# We still want to cleanup $TMPDIR/scripts-vendored on nothing
-	# to do if this was not a chained update, so we only check this on chained update
+	# Not a chained update
 	[ -n "$SWUPDATE_CHAIN_IDX" ] || return
 
 	# Not nothing to do -> real error, cleanup normally

@@ -57,12 +57,10 @@ write_split_boot_partition() {
 }
 
 # state variable from mkswu scripts
-if [ -e "$TMPDIR/scripts-mkswu/rootdev" ]; then
-	MKSWU_TMP="$TMPDIR/scripts-mkswu"
-elif [ -e "$TMPDIR/scripts-vendored/rootdev" ]; then
-	MKSWU_TMP="$TMPDIR/scripts-vendored"
-else
-	error "Could not find ab/rootdev in $TMPDIR/scripts or $TMPDIR/scripts-vendored, bug?"
+MKSWU_TMP="$TMPDIR/scripts-mkswu"
+
+if ! [ -e "$MKSWU_TMP/rootdev" ]; then
+	error "Could not find ab/rootdev in $MKSWU_TMP, bug?"
 fi
 ab="$(cat "$MKSWU_TMP/ab")" \
 	|| error "Could not read current partition index"

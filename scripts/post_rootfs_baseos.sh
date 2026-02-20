@@ -341,28 +341,29 @@ rerun_vendored() {
 	# post_rootfs_baseos itself will be processed at end of update,
 	# so do not fail the update.
 	TMPDIR="${TMPDIR:-/var/tmp}"
+	MKSWU_TMP="$TMPDIR/scripts-mkswu"
+
+	if ! [ -e "$MKSWU_TMP/rootdev" ]; then
+		echo "post_rootfs_baseos could not find where script was run, will be processed at end of update" >&2
+		exit 0
+	fi
 
 	# already checked, running from vendored dir!
 	if [ -n "$RUNNING_VENDORED" ]; then
-		MKSWU_TMP="$TMPDIR/scripts-vendored"
 		SCRIPTSDIR="/usr/libexec/mkswu"
 		return
 	fi
 
 	# embedded version
-	if [ -e "$TMPDIR/scripts-mkswu/rootdev" ]; then
-		MKSWU_TMP="$TMPDIR/scripts-mkswu"
+	if ! [ -e "$MKSWU_TMP/vendored" ]; then
 		SCRIPTSDIR="$MKSWU_TMP"
 		return
 	fi
-	# vendored version
-	if [ -e "$TMPDIR/scripts-vendored/rootdev" ]; then
-		export RUNNING_VENDORED=1
-		exec /usr/libexec/mkswu/post_rootfs_baseos.sh
-		echo "Could not execute embedded post_rootfs_baseos, will be processed at end of update" >&2
-		exit 0
-	fi
-	echo "post_rootfs_baseos could not find where script was run, will be processed at end of update" >&2
+
+	# re-execute vendored version
+	export RUNNING_VENDORED=1
+	exec /usr/libexec/mkswu/post_rootfs_baseos.sh
+	echo "Could not execute embedded post_rootfs_baseos, will be processed at end of update" >&2
 	exit 0
 }
 

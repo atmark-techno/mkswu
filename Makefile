@@ -145,7 +145,6 @@ install_swupdate:
 	sed -i -e 's/DEBUG_SKIP_SCRIPTS/DEBUG_SKIP_VENDORED_SCRIPTS/' $(DESTDIR)$(LIBEXEC)/common.sh
 	# modify scripts base directory
 	sed -i -e 's:^SCRIPTSDIR=.*:SCRIPTSDIR=$(LIBEXEC):' \
-		-e 's/^\(MKSWU_TMP=.*\)-mkswu/\1-vendored/' \
 		$(DESTDIR)$(LIBEXEC)/pre.sh \
 		$(DESTDIR)$(LIBEXEC)/post.sh \
 		$(DESTDIR)$(LIBEXEC)/cleanup.sh
