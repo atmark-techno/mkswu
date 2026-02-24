@@ -2601,7 +2601,7 @@ mkinit_mkimageinitswu() {
 
 
 mkswu_init() {
-	if [ "$(id -u)" = 0 ]; then
+	if [ "$(id -u)" = 0 ] && [ -z "$MKSWU_YES_RUN_AS_ROOT" ]; then
 		warning "WARNING: mkswu should not be used as root"
 		prompt_yesno n "Continue? [N/y]" || return
 	fi
@@ -3252,7 +3252,7 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 		else
 			[ -e "$desc" ] || error "%s does not exist" "$desc"
 			# if running as root, check desc is root-owned
-			if [ "$(id -u)" = 0 ] && [ "$(stat -c %u "$desc")" != 0 ]; then
+			if [ "$(id -u)" = 0 ] && [ "$(stat -c %u -- "$desc")" != 0 ]; then
 				error "Running as root but %s does not belong to root user, refusing to run" "$desc"
 			fi
 			cd "$(dirname -- "$desc")" \

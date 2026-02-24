@@ -219,6 +219,7 @@ if command -v gawk || command -v awk && ! awk -W version | grep -q mawk; then
 fi
 
 rm -rf "$TESTS_DIR/out/init" "$TESTS_DIR/out/init_noupdate" "$TESTS_DIR/out/init_noatmark"
+export MKSWU_YES_RUN_AS_ROOT=1
 "$MKSWU" --config-dir "$TESTS_DIR/out/init" --init <<EOF \
 	|| error "mkswu --init failed"
 cn
