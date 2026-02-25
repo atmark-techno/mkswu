@@ -62,6 +62,12 @@ fi
 # extract archive after script
 sed -e '1,/^BEGIN_ARCHIVE/d' "$0" | tar xv || exit 1
 
+# compat: when running from SWU, swupdate will try to run $TMPDIR/scripts/cleanup.sh,
+# but we moved to scripts-mkswu... Create a link for it
+if ! [ -e vendored ]; then
+	ln -sf ../scripts-mkswu/cleanup.sh "$TMPDIR/scripts/"
+fi
+
 # Allow skipping from env
 if [ -n "$MKSWU_SKIP_SCRIPTS" ]; then
 	echo "$0 skipping due to MKSWU_SKIP_SCRIPTS" >&2
