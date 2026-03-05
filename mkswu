@@ -1884,8 +1884,8 @@ EOF
 	[ -n "$MKSWU_until" ] \
 		&& echo "  # MKSWU_UNTIL $(date +%s) $MKSWU_until"
 	case "$MKSWU_POST_ACTION" in
-	poweroff|wait|container) echo " # MKSWU_POST_ACTION $MKSWU_POST_ACTION";;
-	""|reboot) ;;
+	reboot|poweroff|wait|container) echo " # MKSWU_POST_ACTION $MKSWU_POST_ACTION";;
+	"") ;;
 	*) error "invalid POST_ACTION \"%s\", must be empty, poweroff or wait" \
 		"$MKSWU_POST_ACTION";;
 	esac
