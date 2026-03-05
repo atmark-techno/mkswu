@@ -3015,7 +3015,8 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 
 	if [ -z "$MKSWU_VERSION" ]; then
 		if [ -e "$SCRIPT_DIR/.git" ]; then
-			MKSWU_VERSION="$(git --git-dir "$SCRIPT_DIR/.git" describe)"
+			MKSWU_VERSION="$(git --git-dir "$SCRIPT_DIR/.git" --work-tree="$SCRIPT_DIR" \
+						describe --dirty)"
 		elif [ -e "$SCRIPT_DIR/.version" ]; then
 			MKSWU_VERSION=$(cat "$SCRIPT_DIR/.version")
 		else
