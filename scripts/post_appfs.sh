@@ -85,7 +85,9 @@ check_warn_new_containers_removed() {
 
 remove_unused_containers() {
 	info "Removing unused containers"
-	stdout_info "$SCRIPTSDIR/podman_cleanup" "$@" \
+	stdout_info "$SCRIPTSDIR/podman_cleanup" \
+			--confdir /target/etc/atmark/containers --ab "$ab" \
+			"$@" \
 		|| error "cleanup of old images failed: mismatching configuration/container update?"
 }
 
@@ -103,7 +105,7 @@ cleanup_appfs() {
 		remove_unused_containers --storage /var/lib/containers/storage
 	else
 		remove_unused_containers --storage /target/var/lib/containers/storage_readonly \
-			--confdir /target/etc/atmark/containers --fail-missing
+			--trim-tags --fail-missing
 	fi
 
 	# cleanup readonly storage

@@ -1,8 +1,12 @@
 #!/bin/sh
 
+# shellcheck disable=SC2016 ## we know variables don't expand in single quotes..
+
 PODMAN_ROOT=/var/lib/containers/storage_readonly
 CONFDIR=
 FAIL_MISSING=
+TRIM_TAGS=
+ab=
 DRY_RUN=
 
 error() {
@@ -63,8 +67,21 @@ get_pod_infra_image_tag() {
 	fi
 }
 
+get_image_id() {
+	id=$(awk -v tag="$tag" '$1 == tag { print $2 }' "$tmpdir/tag_id_map" 2>/dev/null)
+	[ -n "$id" ] && return
+
+	id=$(podman --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			image inspect --format '{{.Id}}' \
+			"$tag" 2>/dev/null) \
+		|| return
+
+	echo "$tag $id" >> "$tmpdir/tag_id_map"
+}
+
 get_conf_image() {
-	local tag type autostart pull
+	local tag type autostart pull id version
 	tag=$({ echo 'set_image() { image="$1"; [ -n "$image" ] || image=unknown; }';
 		grep -E '^(set_)?image' "$conf" && echo 'echo "$image"'; } | sh)
 	case "$tag" in
@@ -92,6 +109,7 @@ get_conf_image() {
 	unknown)
 		warning "Warning: could not resolve container tag with just grep, executing $conf"
 		warning "Please consider using set_image without intermediate variable"
+		# shellcheck disable=SC2317 ## dead code reachable when sourcing conf...
 		tag=$(set_image() { echo "$1"; exit 0; };
 		      . "$conf" 2>/dev/null; exit 1) \
 			|| error "Could not extract image from $conf"
@@ -104,10 +122,7 @@ get_conf_image() {
 	# also skip explicit --rootfs
 	[ "$tag" = "--rootfs" ] && return
 
-	if ! podman --root "$PODMAN_ROOT" \
-			--storage-opt additionalimagestore="" \
-			image inspect --format '{{.Id}}' \
-			"$tag" 2>/dev/null; then
+	if ! get_image_id; then
 		[ -n "$FAIL_MISSING" ] || return
 		# don't fail if image is no autostart: user can pull themselves
 		autostart=$({ echo 'set_autostart() { autostart=$1; }';
@@ -129,10 +144,81 @@ get_conf_image() {
 			error "image $tag in $conf not found in image store !"
 		fi
 	fi
+
+	# if using firmware, grab OS version -- first from previous state or run
+	if grep -q /opt/firmware "$conf"; then
+		# mirror abos-ctrl status.sh, differences:
+		# - this errors on not found or bad version
+		# - we're not intested in not_found in cache, skip these
+		# - we could skip getting by tag to just check version, but we
+		# need to to build a complete cache
+		# - cache timestamp must be set last as pruning will update ts
+		version=$(awk -v tag="$tag" '$1 == tag { print $3; exit }' \
+				/var/log/swupdate/containers_os.tmp 2>/dev/null)
+		if [ -z "$version" ]; then
+			version=$(awk -v id="$id" '$2 == id && $3 != "not_found" { print $3; exit }' \
+					/var/log/swupdate/containers_os* 2>/dev/null)
+			if [ -n "$version" ]; then
+				echo "$tag $id $version" >> /var/log/swupdate_containers_os.tmp
+			fi
+		fi
+		if [ -z "$version" ]; then
+			version=$(podman run --root "$PODMAN_ROOT" \
+					--storage-opt additionalimagestore="" \
+					--entrypoint '' --rm --network=none \
+					"$id" sh -c 'cat /etc/debian_version 2>/dev/null || :') \
+				|| version=not_found
+			[ -n "$version" ] || version=not_debian
+			echo "$tag $id $version" >> /var/log/swupdate_containers_os.tmp
+		fi
+		case "$kver,$version" in
+		5.10,11.*|6.12,13.*) ;; # ok
+		,*)
+			# no kver = no /opt/firmware
+			warning "${conf##*/} uses /opt/firmware, which is not mounted?"
+			;;
+		*,not_debian)
+			warning "${conf##*/} uses $tag, not debian based, but requires /opt/firmware: NPU/GPU/VPU will probably not work."
+			;;
+		*,not_found)
+			warning "${conf##*/} uses $tag, but container not found?"
+			;;
+		*)
+			warning "${conf##*/} uses $tag based on debian $version, not compatible with kernel $kver - update or ensure /opt/firmware is not used"
+			;;
+		esac
+	fi
+
+
+	echo "$id"
+
+}
+
+get_firmware_version() {
+	kver="$(cat /opt/firmware/etc/imxlib_version 2>/dev/null)"
+	# fixup old version...
+	# note: very old imxlib had no imxlib_version, but we cannot
+	# get real kernel version easily here and cannot differentiate with
+	# no firmware, so skip check in that case.
+	case "$kver" in
+	2.2.0*) kver=5.10;;
+	"") mountpoint -q /opt/firmware && kver=5.10;;
+	esac
+	# fixup trailing dots
+	while [ "${kver%.*.*}" != "$kver" ]; do
+		kver=${kver%.*}
+	done
 }
 
 trim_tags() {
-	local conf
+	local conf kver
+
+	# this also generates containers os cache and checks firmware version...
+	rm -f /var/log/swupdate/containers_os.tmp
+	[ -d /var/log/swupdate ] \
+		|| mkdir -p /var/log/swupdate \
+		|| exit 1
+
 	[ -n "$CONFDIR" ] || return
 	# if no configuration is present, skip this step
 	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
@@ -144,6 +230,14 @@ trim_tags() {
 		get_conf_image >> "$tmpdir/ids"
 	done
 
+	# can be missing if no container use /opt/firmware
+	rm -f "/var/log/swupdate/containers_os_$ab"
+	if [ -n "$ab" ] && [ -e /var/log/swupdate/containers_os.tmp ]; then
+		mv /var/log/swupdate/containers_os.tmp "/var/log/swupdate/containers_os_$ab" \
+			|| exit
+	fi
+
+	[ -n "$TRIM_TAGS" ] || return
 	# untag any unused image
 	podman --root "$PODMAN_ROOT" \
 		--storage-opt additionalimagestore="" \
@@ -184,6 +278,7 @@ cleanup_images() {
 	mkdir -p "${TMPDIR:-/var/tmp}/scripts-mkswu"
 	tmpdir=$(mktemp -d "${TMPDIR:-/var/tmp}/scripts-mkswu/mkswu_podman_cleanup.XXXXXX") \
 		|| error "Could not create tmpdir in ${TMPDIR:-/var/tmp}"
+	# shellcheck disable=SC2064 # expand tmpdir now
 	trap "rm -rf '$tmpdir'" EXIT
 
 	trim_tags
@@ -206,8 +301,17 @@ while [ $# -ge 1 ]; do
 		CONFDIR="$2"
 		shift 2
 		;;
+	"--ab")
+		[ $# -ge 2 ] || error "$1 needs an argument"
+		ab="$2"
+		shift 2
+		;;
 	"--fail-missing")
 		FAIL_MISSING=1
+		shift
+		;;
+	"--trim-tags")
+		TRIM_TAGS=1
 		shift
 		;;
 	"--dry-run")
