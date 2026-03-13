@@ -26,13 +26,11 @@ update_swupdate_certificate()  {
 	local OLD_MKSWU_TMP="$TMPDIR/scripts"
 
 	# what certificates were embedded into swu, if any?
-	for cert in "$MKSWU_TMP/certs_atmark/"*; do
-		[ -e "$cert" ] && atmark_present=1
-		break
+	for cert in "$MKSWU_TMP/certs_atmark/"* "$OLD_MKSWU_TMP/certs_atmark/"*; do
+		[ -e "$cert" ] && atmark_present=1 && break
 	done
-	for cert in "$MKSWU_TMP/certs_user/"*; do
-		[ -e "$cert" ] && user_present=1
-		break
+	for cert in "$MKSWU_TMP/certs_user/"* "$OLD_MKSWU_TMP/certs_user/"*; do
+		[ -e "$cert" ] && user_present=1 && break
 	done
 
 	# split swupdate.pem into something we can handle, then match
