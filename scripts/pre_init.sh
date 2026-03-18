@@ -266,6 +266,9 @@ pre_chained_update() {
 		exec "$SCRIPTSDIR/post.sh"
 		exit 1
 	fi
+	init_vars_update
+	fail_atmark_new_container
+	fail_redundant_update
 
 	# chain update ok: skip rest of pre script
 	info "Skipping pre ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
