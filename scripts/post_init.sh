@@ -11,6 +11,8 @@ post_minimal() {
 	cp "$MKSWU_TMP/sw-versions.merged" "/target/etc/sw-versions" \
 		|| error "Could not set sw-versions"
 
+	# remove marker for next updates
+	rm -f "$MKSWU_TMP/update_started"
 	log_status "SUCCESS"
 }
 
@@ -23,8 +25,9 @@ init() {
 		post_minimal "Skipping post ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
 		exit 0
 	fi
-	if [ -n "$SWUPDATE_CHAIN_IDX" ] && ! [ -e "$MKSWU_TMP/update_started" ]; then
+	if [ -n "$SWUPDATE_CHAIN_IDX" ] && [ -z "$SWUPDATE_CHAIN_STARTED" ]; then
 		# last in chain, if there was nothing to do all along skip everything...
+		# (this is called on cleanup so we cannot assume current SWU was installed)
 		cleanup
 		rm -rf "$MKSWU_TMP"
 		exit 0

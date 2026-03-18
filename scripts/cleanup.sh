@@ -21,10 +21,12 @@ handle_chained_swu() {
 	# Not a chained update
 	[ -n "$SWUPDATE_CHAIN_IDX" ] || return
 
-	# Not nothing to do -> real error, cleanup normally
-	[ -e "$MKSWU_TMP/nothing_to_do" ] || return
+	# called after starting = real error, cleanup normally
+	[ -e "$MKSWU_TMP/update_started" ] && return
 
-	# not last in chain, don't cleanup.
+	# At this point this update didn't run (either bad sig,
+	# 404 or nothing to do).
+	# not last in chain: don't finish update.
 	[ "$SWUPDATE_CHAIN_IDX" != "$SWUPDATE_CHAIN_COUNT" ] && exit
 
 	# last in chain, run post to finish update.

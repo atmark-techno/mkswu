@@ -27,16 +27,16 @@ fi
 # - running embedded version and vendored was not run (sw-description not marked for skip)
 if [ "$SCRIPTSDIR" != "$MKSWU_TMP" ] \
   || ! grep -q "DEBUG_SKIP_SCRIPTS" "$SWDESC"; then
-	if [ "${SWUPDATE_CHAIN_IDX:-1}" = 1 ]; then
-		# only re-create dir for first swu in chain,
+	if [ -z "$SWUPDATE_CHAIN_STARTED" ]; then
+		# only re-create dir for first swu in chain (or not chain)
 		rm -rf "$MKSWU_TMP"
 		# 2026/02: also remove old scripts dir for leftovers of older SWUs
 		# (prints error message if missing so recreate)
 		rm -rf "$TMPDIR/scripts"
 		mkdir -p "$TMPDIR/scripts"
 	else
-		if ! [ -e "$MKSWU_TMP" ]; then
-			echo "Chained SWU but $MKSWU_TMP does not exist!" >&2
+		if ! [ -e "$MKSWU_TMP/swupdate_chain_id" ]; then
+			echo "Chained SWU but $MKSWU_TMP/swupdate_chain_id does not exist!" >&2
 			exit 1
 		fi
 		# cleanup any certs and re-extract (they are installed

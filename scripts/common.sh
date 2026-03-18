@@ -24,9 +24,13 @@ error() {
 
 	if [ -n "$NOTHING_TO_DO" ]; then
 		log_status "NOTHING_TO_DO"
-		touch "$MKSWU_TMP/nothing_to_do"
 	else
 		log_status "ERROR: $*"
+		# this is a real error, so make sure cleanup doesn't ignore it
+		# and skip cleanup if it happened early
+		if [ -n "$SWUPDATE_CHAIN_STARTED" ]; then
+			touch "$MKSWU_TMP/update_started"
+		fi
 	fi
 
 	if [ -n "$soft_fail" ]; then
@@ -609,7 +613,7 @@ clear_internal_variables() {
 	#     SW_ALLOW_ROLLBACK SWUPDATE_FROM_INSTALLER
 	#     SWUPDATE_HAWKBIT SWUPDATE_USB_SWU SWUPDATE_ARMADILLO_TWIN
 	#     CONTAINERS_CONF/CONTAINERS_STORAGE_CONF/CONTAINERS_REGISTRIES_CONF
-	#     SWUPDATE_CHAIN_IDX SWUPDATE_CHAIN_COUNT SWUPDATE_CHAIN_ID
+	#     SWUPDATE_CHAIN_IDX SWUPDATE_CHAIN_COUNT SWUPDATE_CHAIN_ID SWUPDATE_CHAIN_STARTED
 	# these come from swupdate
 	#     SWUDPATE_WARN_FD SWUPDATE_INFO_FD
 }

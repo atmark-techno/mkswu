@@ -210,6 +210,7 @@ init_really_starting() {
 	fi
 
 	touch "$MKSWU_TMP/update_started"
+	log_status "UPDATE_STARTED"
 	init_fail_command
 
 	action="$(mkswu_var NOTIFY_STARTING_CMD)"
@@ -227,22 +228,17 @@ pre_installer() {
 pre_chained_update() {
 	info "Processing chain $SWUPDATE_CHAIN_ID update $SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT"
 
-	if [ "$SWUPDATE_CHAIN_IDX" = 1 ]; then
-		echo "$SWUPDATE_CHAIN_ID" > "$MKSWU_TMP/swupdate_chain_id"
-		# first update setups normally
-		return
-	else
-		local old_id
-
-		old_id=$(cat "$MKSWU_TMP/swupdate_chain_id")
-		[ "$old_id" = "$SWUPDATE_CHAIN_ID" ] \
-			|| error "SWU chain id mismatch (expected $old_id, got $SWUPDATE_CHAIN_ID)"
-	fi
-
-	# if first update had nothing to do, init won't be done yet: continue normally
-	if ! [ -e "$MKSWU_TMP/update_started" ]; then
+	if [ -z "$SWUPDATE_CHAIN_STARTED" ]; then
+		# chain not started yet -- setup normally
+		echo "$SWUPDATE_CHAIN_ID" > "$MKSWU_TMP/swupdate_chain_id" \
+			|| error "Could not write state file"
 		return
 	fi
+
+	local old_id
+	read -r old_id < "$MKSWU_TMP/swupdate_chain_id"
+	[ "$old_id" = "$SWUPDATE_CHAIN_ID" ] \
+		|| error "SWU chain id mismatch (expected $old_id, got $SWUPDATE_CHAIN_ID)"
 
 	mountpoint -q /target \
 		|| error "SWU chain but /target is not mounted"
@@ -272,6 +268,10 @@ pre_chained_update() {
 
 	# chain update ok: skip rest of pre script
 	info "Skipping pre ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
+
+	touch "$MKSWU_TMP/update_started"
+	log_status "UPDATE_STARTED"
+
 	exit 0
 }
 
