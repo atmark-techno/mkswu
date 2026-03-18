@@ -24,6 +24,7 @@ exchange_btrfs_snapshots() {
 }
 
 podman_killall() {
+	touch "$MKSWU_TMP/podman_containers_killed"
 	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
 		podman_info stop -a
