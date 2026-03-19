@@ -1,0 +1,102 @@
+swdesc_option component=extra_os.kernel
+
+# kernel version to install
+kernel_version=6.12
+
+# pick your board below
+board=x2 # Armadillo IoT G4 / Armadillo X2
+#board=a900 # Armadillo IoT A9E / Armadillo 900-based
+#board=a6e # Armadillo IoT A6E
+#board=a600 # Armadillo 640 or 610-based
+
+case "$board" in
+x2)
+	arch=aarch64
+	imxlib_url="https://download.atmark-techno.com/baseos/imxlib-$kernel_version-latest.img"
+	dtb_keep_pattern=".*/armadillo_iotg_g4.*"
+	;;
+*)
+	error "Unknown board or not supported yet: $board"
+	;;
+esac
+APK="$SCRIPT_DIR/examples/apk-wrapper.sh"
+
+if ! [ -e linux-apk ]; then
+	linux_apk_base="linux-at-$kernel_version"
+	echo "Fetching $linux_apk_base apk"
+	# fetch won't pull in metadata, run empty add first to get/refresh index
+	"$APK" --arch aarch64 add
+	"$APK" --arch aarch64 fetch "$linux_apk_base"
+	linux_apk=$("$APK" --arch aarch64 list "$linux_apk_base")
+	linux_apk="${linux_apk%% *}.apk"
+	"$APK" verify "$linux_apk" \
+		|| error "Downloaded apk could not be verified, corrupt download?"
+	rm -rf linux-apk linux-apk.tmp
+	mkdir linux-apk.tmp
+	tar --warning=no-unknown-keyword -C linux-apk.tmp -xf "$linux_apk"
+	rm -f linux-apk.tmp/.PKGINFO linux-apk.tmp/.SIGN*
+	if [ -n "$dtb_keep_pattern" ]; then
+		find "linux-apk.tmp/boot" '(' -name "*.dtb" -or -name "*.dtbo" ')' \
+			-not -regex "$dtb_keep_pattern" \
+			-delete
+	fi
+	mv linux-apk.tmp linux-apk
+fi
+
+for version in linux-apk/lib/modules/*; do :; done
+if ! [ -d "$version" ]; then
+	rm -rf linux-apk
+	error "no modules, apk not extracted successfully?"
+fi
+version=${version##*/}
+version=${version%-at}
+case "$version" in
+"$kernel_version"*) ;;
+*)
+	rm -rf linux-apk
+	error "Found kernel version $version in linux-apk, but $kernel_version was requested. Run again"
+	;;
+esac
+swdesc_option version="$version"
+
+# Remove old modules
+swdesc_command 'rm -rf /lib/modules'
+
+# Install apk content as files:
+# - less double work on install and better compression
+# - apk info won't be preserved after base os upgrade anyway
+swdesc_files linux-apk
+
+# Add the kernel to files to be preserved on OS update
+swdesc_script "$SCRIPT_DIR/examples/update_preserve_files.sh" -- \
+        "POST /boot" \
+        "POST /lib/modules"
+
+# Update watch URL for future updates
+swdesc_command --description "Update /etc/swupdate.watch" \
+	"abos-ctrl switch-kernel --watch $kernel_version"
+
+# Update imxlib if needed
+if [ -n "$imxlib_url" ]; then
+	# note imxlib is not A/B based so upgrading this means no going back with rollback:
+	# this shoud be last
+	imxlib="${imxlib_url##*/}"
+	if ! [ -e "$imxlib" ] || ! [ -e "$imxlib.sig" ]; then
+		curl -O "$imxlib_url" -O "$imxlib_url.sig"
+	fi
+	# verify with atmark certificates, not ours
+	cat "$SCRIPT_DIR/certs/"atmark-*.pem > atmark.pem
+	PUBKEY="$PWD/atmark.pem" verify "$imxlib"
+
+	# Note: we don't stop containers/umount /opt as this could be installed
+	# from a container and people don't expect container to stop
+	# This could cause IO errors for the container, but will not cause
+	# corruptions for the new imxlib as squashfs is read-only
+	swdesc_exec_nochroot "$imxlib" \
+		'if ! dest=$(findmnt -n -o SOURCE /opt/firmware); then
+			echo "/opt/firmware not mounted?" >&2
+			exit 1
+		fi' \
+		'dd if=$1 of=$dest bs=1M oflag=direct status=none'
+fi
+
