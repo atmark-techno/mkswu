@@ -1,3 +1,25 @@
+8.1
+===
+fixes:
+- fix updating certificates with SWUs built prior to 8.0 (in particular
+old initial_setup.swu)
+- setting POST_ACTION=reboot in swu now properly has priority over baseos.conf
+value
+- fix cases where containers could be stopped but not restarted
+- various incompatible fixes around chained updates (require ABOS 3.23.3-at.5)
+The feature is still experimental and not used by default.
+
+misc:
+- when running from git and files are modified version will reflect this with
+'-dirty' tag
+
+features:
+- add a warning if containers use /opt/firmware and version is not compatible
+- add new major_kernel_upgrade.desc example to update supported kernel major
+version
+
+  -- 2026-03-19
+
 8.0.1
 =====
 fixes:
