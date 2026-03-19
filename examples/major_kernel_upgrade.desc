@@ -92,11 +92,17 @@ if [ -n "$imxlib_url" ]; then
 	# from a container and people don't expect container to stop
 	# This could cause IO errors for the container, but will not cause
 	# corruptions for the new imxlib as squashfs is read-only
+	# Additionally, make a tmpfs with new version over firmware for container
+	# version check to work
 	swdesc_exec_nochroot "$imxlib" \
+		--description "Update imxlib" \
 		'if ! dest=$(findmnt -n -o SOURCE /opt/firmware); then
 			echo "/opt/firmware not mounted?" >&2
 			exit 1
 		fi' \
-		'dd if=$1 of=$dest bs=1M oflag=direct status=none'
+		'dd if=$1 of=$dest bs=1M oflag=direct status=none' \
+		'mount -t tmpfs tmpfs /opt/firmware' \
+		'mkdir -p /opt/firmware/etc' \
+		"echo $kernel_version > /opt/firmware/etc/imxlib_version"
 fi
 
