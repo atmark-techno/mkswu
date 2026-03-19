@@ -11,7 +11,8 @@ https://download.atmark-techno.com/alpine/current/atmark
 '
 : "${APK:=apk}"
 : "${CACHE_DIR:="$HOME/.cache/mkswu"}"
-: "${APK_ROOT:="$CACHE_DIR/apkroot"}"
+# APK_ARCH default --arch value if passed in arguments, or $(apk --print-arch)
+# APK_ROOT default $CACHE_DIR/apkroot_$APK_ARCH
 : "${APK_TOOLS_URI:="https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v2.14.0/x86_64/apk.static"}"
 : "${APK_TOOLS_SHA256:="1c65115a425d049590bec7c729c7fd88357fbb090a6fc8c31d834d7b0bc7d6f2"}"
 
@@ -50,16 +51,31 @@ find_or_get_apk() {
 }
 
 main() {
+	local arg next="" set_arch=1
 	find_or_get_apk
+
+	if [ -z "$APK_ARCH" ]; then
+		for arg in "$@"; do
+			if [ -n "$next" ]; then
+				APK_ARCH="$arg"
+				next=""
+				set_arch=""
+				continue
+			fi
+			[ "$arg" = "--arch" ] && next=1
+		done
+		[ -n "$APK_ARCH" ] || APK_ARCH=$("$APK" --print-arch)
+	fi
+	[ -n "$APK_ROOT" ] || APK_ROOT="$CACHE_DIR/apkroot_$APK_ARCH"
 
 	if ! stat "$APK_ROOT/var/cache/apk/APKINDEX"* >/dev/null 2>&1; then
 		echo "Initializing repo in $APK_ROOT"
 		dump_apk_keys "$APK_ROOT/etc/apk/keys"
 		echo "$APK_REPOS" > "$APK_ROOT/etc/apk/repositories"
-		"$APK" --root "$APK_ROOT" --initdb add
+		"$APK" --arch "$APK_ARCH" --root "$APK_ROOT" --initdb add
 	fi
 
-	"$APK" --root "$APK_ROOT" "$@"
+	"$APK" ${set_arch:+--arch "$APK_ARCH"} --root "$APK_ROOT" "$@"
 }
 
 main "$@"

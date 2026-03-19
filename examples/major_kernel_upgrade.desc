@@ -25,11 +25,11 @@ if ! [ -e linux-apk ]; then
 	linux_apk_base="linux-at-$kernel_version"
 	echo "Fetching $linux_apk_base apk"
 	# fetch won't pull in metadata, run empty add first to get/refresh index
-	"$APK" --arch aarch64 add
-	"$APK" --arch aarch64 fetch "$linux_apk_base"
-	linux_apk=$("$APK" --arch aarch64 list "$linux_apk_base")
+	"$APK" --arch "$arch" add
+	"$APK" --arch "$arch" fetch "$linux_apk_base"
+	linux_apk=$("$APK" --arch "$arch" list "$linux_apk_base")
 	linux_apk="${linux_apk%% *}.apk"
-	"$APK" verify "$linux_apk" \
+	"$APK" --arch "$arch" verify "$linux_apk" \
 		|| error "Downloaded apk could not be verified, corrupt download?"
 	rm -rf linux-apk linux-apk.tmp
 	mkdir linux-apk.tmp
