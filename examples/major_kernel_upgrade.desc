@@ -59,6 +59,13 @@ case "$version" in
 esac
 swdesc_option version="$version"
 
+# check ABOS version by looking for switch-kernel command
+swdesc_command --description "Check ABOS version" \
+	 'if ! abos-ctrl switch-kernel --help > /dev/null 2>&1; then
+		echo "You must update to ABOS 3.23.3-at.5 or later first" >&2
+		exit 1
+	fi'
+
 # Remove old modules
 swdesc_command 'rm -rf /lib/modules'
 
