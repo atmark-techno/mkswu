@@ -951,8 +951,8 @@ msgid "--version-base %s must have at most 3 components (x[.y[.z]])"
 msgstr "--version-base %s の書式を x[.y[.z]] にしてください。"
 
 #: mkswu
-msgid "File does not end in .swu: %s"
-msgstr "%s は「.swu」で終わらせてください。"
+msgid "File does not look like a SWU: %s"
+msgstr "%s は SWU アーカイブにみえません。"
 
 #: mkswu
 msgid "Could not get swu sw-description content from %s"

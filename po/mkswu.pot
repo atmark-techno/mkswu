@@ -714,7 +714,7 @@ msgstr ""
 msgid "--version-base %s must have at most 3 components (x[.y[.z]])"
 msgstr ""
 #: mkswu
-msgid "File does not end in .swu: %s"
+msgid "File does not look like a SWU: %s"
 msgstr ""
 #: mkswu
 msgid "Could not get swu sw-description content from %s"

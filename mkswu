@@ -2749,8 +2749,10 @@ mkswu_show() {
 	fi
 
 	for swu; do
-		[ "$swu" != "${swu%.swu}" ] \
-			|| error "File does not end in .swu: %s" "$swu"
+		if ! [ "$(head -c 4 "$swu" 2>/dev/null)" = 0707 ]; then
+			warning "File does not look like a SWU: %s" "$swu"
+			continue
+		fi
 
 		printf "# %s\n\n" "$swu"
 
