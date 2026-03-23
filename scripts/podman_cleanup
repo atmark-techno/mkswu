@@ -222,6 +222,7 @@ trim_tags() {
 	[ -n "$CONFDIR" ] || return
 	# if no configuration is present, skip this step
 	stat "$CONFDIR/"*.conf >/dev/null 2>&1 || return
+	get_firmware_version
 
 	# build list of images in use
 	: > "$tmpdir/ids"
