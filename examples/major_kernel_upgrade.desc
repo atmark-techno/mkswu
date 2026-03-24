@@ -9,6 +9,7 @@ board=x2 # Armadillo IoT G4 / Armadillo X2
 #board=a6e # Armadillo IoT A6E
 #board=a600 # Armadillo 640 or 610-based
 
+imxlib_url=""
 case "$board" in
 x2)
 	arch=aarch64
@@ -20,8 +21,16 @@ a900)
 	imxlib_url="https://download.atmark-techno.com/baseos/imxlib-$kernel_version-latest.img"
 	dtb_keep_pattern=".*/armadillo_\(900\|iotg_a9e\).*"
 	;;
+a6e)
+	arch=armv7
+	dtb_keep_pattern=".*/armadillo-iotg-a6e.*"
+	;;
+a600)
+	arch=armv7
+	dtb_keep_pattern=".*/armadillo-6[14]0.*"
+	;;
 *)
-	error "Unknown board or not supported yet: $board"
+	error "Unknown board or not supported: $board"
 	;;
 esac
 APK="$SCRIPT_DIR/examples/apk-wrapper.sh"
