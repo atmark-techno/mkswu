@@ -25,6 +25,8 @@ init() {
 		post_minimal "Skipping post ($SWUPDATE_CHAIN_IDX / $SWUPDATE_CHAIN_COUNT)"
 		exit 0
 	fi
+	# started even if we're first and last...
+	[ -e "$MKSWU_TMP/update_started" ] && SWUPDATE_CHAIN_STARTED=1
 	if [ -n "$SWUPDATE_CHAIN_IDX" ] && [ -z "$SWUPDATE_CHAIN_STARTED" ]; then
 		# last in chain, if there was nothing to do all along skip everything...
 		# (this is called on cleanup so we cannot assume current SWU was installed)
