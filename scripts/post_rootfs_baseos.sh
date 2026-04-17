@@ -213,6 +213,12 @@ EOF
 		fi
 		;;
 	esac
+	# The reference URL has been changed due to the addition of the ABOSweb automatic update function.
+	local swupdate_watch="/target/etc/swupdate.watch"
+	if [ -f "$swupdate_watch" ] && grep -qF "https://download.atmark-techno.com" "$swupdate_watch"; then
+		sed -i -e 's,https://download\.atmark-techno\.com,https://atmark-techno-dl.com,' \
+			"$swupdate_watch" || error "Could not update swupdate.watch"
+	fi
 
 	# schedule_ts is supposed to be compatible with date -d, but
 	# check to make sure (added in 3.18-at.5)
