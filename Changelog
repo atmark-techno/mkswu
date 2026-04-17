@@ -1,3 +1,15 @@
+8.1.2
+=====
+fixes:
+- improve major_kernel_upgrade.desc
+- fix the issue that chain update was considered failed despite all messages
+being success when last swu in chain is installed first.
+
+features:
+- major_kernel_upgrade.desc supports a900
+
+  -- 2026-04-17
+
 8.1.1
 =====
 fixes:
