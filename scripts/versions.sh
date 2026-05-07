@@ -154,7 +154,7 @@ check_nothing_to_do() {
 # - sw-versions.old: versions as of before this SWU
 # - sw-versions.init: versions as of before all SWUs (for chained updates)
 # - sw-versions.present: versions included in this SWU
-# - sw-versions.merged: updated versions file based
+# - sw-versions.merged: updated versions file (old + present)
 gen_newversion() {
 	local component oldvers newvers install_if newvers_board
 	local system_versions="${system_versions:-/etc/sw-versions}"
