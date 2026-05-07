@@ -1,0 +1,8 @@
+# out/special_versions.swu
+
+# Built with mkswu
+# signed by "test" ()
+
+swdesc_tar --version base_os 3.19.1-at.1 build_tests.sh
+
+swdesc_command --version extra_os.stdin 1 --extra-os true

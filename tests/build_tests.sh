@@ -56,6 +56,10 @@ build_check make_sbom.desc -- "sbom 'pkg:oci/mirror.gcr.io%2Falpine' 'test\ spac
 build_check board.desc -- "swdesc 'iot-g4-es1 = '" \
 	"version test '2 higher'" \
 	"version --board iot-g4-es1 test '1 higher'"
+build_check board2.desc -- "swdesc 'iot-g4-es1 = '" \
+	"version test '2 higher'" \
+	"version --board iot-g4-es1 test '1 higher'" \
+	"version --board iot-g4-es2 test '1 higher'"
 build_check board_fail.desc --
 
 build_check exec_quoting.desc -- "swdesc 'touch /tmp/swupdate-test'"
@@ -169,7 +173,8 @@ printf "%s\n" "swdesc_files --version cont 1 build_tests.sh" \
 	| name="special_versions" build_check - 2> out/special_versions.stderr
 grep Warning out/special_versions.stderr \
 	&& error "Should be no warning for cont+base_os"
-printf "%s\n" "swdesc_command --version extra_os.cont 1 true" \
+printf "%s\n" "swdesc_option version=1" \
+		"swdesc_command --extra-os true" \
 		"swdesc_tar --version base_os 3.19.1-at.1 build_tests.sh" \
 	| name="special_versions" build_check - 2> out/special_versions.stderr
 grep Warning out/special_versions.stderr \
@@ -209,13 +214,20 @@ scripts_post" ] || error "cpio content was not in expected order: $(cpio --quiet
 build_check cmd_description.desc -- \
 	"swdesc '# mkswu_orig_cmd swdesc_command_nochroot --description' \
 		'description: \"some description\";'"
-if command -v gawk || command -v awk && ! awk -W version | grep -q mawk; then
-	"$MKSWU" --show "out/cmd_description.swu" \
-		| sed -e 's/\(Built with mkswu\) .*/\1/' \
-			-e 's/\(signed by "[a-z]*"\) ([0-9A-F]\{8\})/\1 ()/' \
-			> "out/cmd_description.show"
-	diff -u "cmd_description.show" "out/cmd_description.show" \
-		|| error "mkswu --show output not as expected"
+if command -v gawk || { command -v awk && awk -W version | grep -q "GNU Awk"; }; then
+	check_show() {
+		local swu="out/$1.swu" show="$1.show"
+		"$MKSWU" --show "$swu" \
+			| sed -e 's/\(Built with mkswu\) .*/\1/' \
+				-e 's/\(signed by "[a-z]*"\) ([0-9A-F]\{8\})/\1 ()/' \
+				> "out/$show"
+		diff -u "$show" "out/$show" \
+			|| error "mkswu --show output ($show) not as expected"
+	}
+	check_show cmd_description
+	check_show board
+	check_show board2
+	check_show special_versions
 fi
 
 rm -rf "$TESTS_DIR/out/init" "$TESTS_DIR/out/init_noupdate" "$TESTS_DIR/out/init_noatmark"

@@ -2823,8 +2823,8 @@ mkswu_show() {
 			}
 			/^ *# mkswu_orig_cmd / {
 				sub(/ *# mkswu_orig_cmd /, "")
-				orig_cmd=1
 				dequote()
+				orig_set=1
 				# record all occurrences of commands if different (for --board)
 				if (! cmd[filename]) {
 					cmd[filename]=$0
@@ -2832,14 +2832,19 @@ mkswu_show() {
 					cmd[filename]=cmd[filename] "\n" $0
 				}
 			}
-			/^ *description: / && ! cmd[filename] {
+			/^ *description: / && ! orig_set {
 				sub(/ *description: "/, "")
 				dequote()
 				if ($0 ~ /^pre_script$|^post_script$/) {
 					# skip
-				} else {
+				} else if (! cmd[filename]) {
 					cmd[filename]=$0
+				} else if (! (cmd[filename] ~ "(^|\n)"$0"($|\n)")) {
+					cmd[filename]=cmd[filename] "\n" $0
 				}
+			}
+			/^ *description: / && orig_set {
+				unset orig_set
 			}
 			/^ *filename =/ {
 				gsub(/.*= "|";/, "")
@@ -2886,14 +2891,16 @@ mkswu_show() {
 						continue
 					}
 					print ""
-					if (! orig_cmd) {
-						# only add version/install-if found if we did not record the original command
-						if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
-							sub(/ /, "  --version " component[filename] " " version[filename] " ", cmd[filename])
-						}
-						if (!(cmd[filename] ~ /--install-if/) && install_if[filename]) {
-							sub(/ /, "  --install-if " install_if[filename] " ", cmd[filename])
-						}
+					# only add version/install-if found if not already set
+					if (!(cmd[filename] ~ /--version/) && component[filename] && version[filename]) {
+						cmd[filename] = gensub(/(^|\n)[^ ]* /,
+							"&--version " component[filename] " " version[filename] " ",
+							"g", cmd[filename])
+					}
+					if (!(cmd[filename] ~ /--install-if/) && install_if[filename]) {
+						cmd[filename] = gensub(/(^|\n)[^ ]* /,
+							"&  --install-if " install_if[filename] " ",
+							"g", cmd[filename])
 					}
 					print cmd[filename]
 					if (encrypted[filename]) {
