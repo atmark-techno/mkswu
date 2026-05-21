@@ -1,12 +1,22 @@
+8.1.3
+=====
+fixes:
+- `mkswu --show` now more often shows version
+
+features:
+- update swupdate.watch URLs on baseos update:
+s/download.atmark-techno.com/atmark-techno-dl.com/
+- major_kernel_upgrade.desc a6e/a640 support
+
+  -- 2026-05-21
+
 8.1.2
 =====
 fixes:
-- improve major_kernel_upgrade.desc
-- fix the issue that chain update was considered failed despite all messages
-being success when last swu in chain is installed first.
+- fix chain update failure when last swu in chain is only valid swu
 
 features:
-- major_kernel_upgrade.desc supports a900
+- major_kernel_upgrade.desc a900 support
 
   -- 2026-04-17
 
