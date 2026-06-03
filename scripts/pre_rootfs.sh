@@ -395,7 +395,15 @@ prepare_rootfs() {
 		update_rootfs_timestamp
 	fi
 	if [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
-		rm -f /target/etc/atmark/containers/*.conf
+		rm -f /target/etc/atmark/containers/*.conf || exit
+		# also cleanup swupdate.watch/versions like abos-ctrl container-clear
+		sed -i -n -e '/^#/p' -e '/\/baseos.*swu/p' /target/etc/swupdate.watch || exit
+		# We want to make sure whatever version in this swu also aren't removed, so
+		# clear versons.old and recompute versions.merged...
+		sed -n -e '/^\(base_os\|boot\|boot_linux\|container_clear\|extra_os.kernel\|extra_os.initial_setup\) /p' \
+			< "$MKSWU_TMP/sw-versions.old" \
+			> "$MKSWU_TMP/sw-versions.tmp" || exit
+		system_versions="$MKSWU_TMP/sw-versions.tmp" gen_newversion
 	fi
 	# mount tmpfs in /target/tmp for scripts that might want to use /tmp
 	[ -d /target/tmp ] || mkdir /target/tmp
