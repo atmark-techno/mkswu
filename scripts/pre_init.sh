@@ -55,7 +55,7 @@ init_vars_update() {
 	    && fw_printenv upgrade_available | grep -qxE 'upgrade_available=[012]'; then
 		upgrade_available=1
 	fi
-	if [ -n "$SWUPDATE_CHAIN_IDX" ]; then
+	if [ -n "$SWUPDATE_CHAIN_IDX" ] && [ "$SWUPDATE_CHAIN_COUNT" != 1 ]; then
 		# for now consider chained updates to always update rootfs and require
 		# reboot (needs_reboot is implied by the override in set_post_action)
 		# If this changes in the future, pre_chained_update will need to
