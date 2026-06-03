@@ -6,9 +6,7 @@ APK_KEYS='
 atmark-601a0e69.rsa.pub:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsGhwCSao1swqUGNSIPg5cL+Wxs2J2HrHCfi8pfL4l+yTHhmLXA353TFDcgpBTrhfAjjSQVQMa45G+keJlyeg9z7SXVwUzCSI7HZYp3qQ6ljXKqpsxo7rhlOBXY9d6kQ4oRSmQ7eUn9oaspEpIqI7JhsR6kxoC77zLd5BpBrNu/9A2L/oBwmhoVhCJoHSe6+JmSraF4/PJED2c7BUFje7hPFQArvx3N9x+xKgNhG96dehtodi808MD3X8G82668lxIUxt2Qehk1/mE3Kpy/xGZXkZ/SbIXVKKqlL4y8H1QzAPvjqpunIS+vQdwXDu5kMziApJbmDjVJwOQoAds6kghQIDAQAB
 atmark-62b116af.rsa.pub:MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvujbgM/5uNDUtbPSIeK7kZzO/3SyLv+LhbshucdGEKFysKZjYmXwJVuKMWCB6ySzhou+v6y5GixwPVVZR09fGDzZnzkr4fA/D6Ky/qLtENsBKN4p6ce0f/Sui9HEeLS+mtu+2MFTs3i7D/xHgKDNVCCsaETUxpGYaVgYBQ9U2Mg4JFbO2RCFbkvb6psceF94nmXunFxxotQ82mWc22B2bIzcaKEULsR5MO7VRh52WNQOTj8dbirvX6jc2UB44vsa9tQDeOGIbX4aERzxfJDX4xJmUQgZO7tir29oKuBVGDaXMZxWDZ4ogrGPTxvtdXMSiWDKBk4SuTZ6Rp3UzZKWM2qpKzyw26dSldytcAKBhgU6+2LVVG1soV9fyPJ0yyXJGxtkYfQVW4rdD1XL8++Qo5YUUMRxv5xf75ds6HAZ+qZrNTsZSHzvMD/LI4WlgI7x/2uDWEMo9hfX2qG11HsmOJH6NBxKB54M1U/7irJACqwYx0Rbx+ASTxjCW+c9S3th+GdgSC62EHAL4ljzcOx/wPAtC+/OMIoipP1LBBT6EJlawyYYr3+uV+8WLh+ihsCOZ8Me5hg/vkZHwzYmDA1zkk67Ql7U0s/67wY+Iz2BPXN1RB3Vu2HbB5SCHeaWFZYDysxDhb/5WZYU7St4neKTQcHxcibnl4d9nET12H01TQsCAwEAAQ==
 '
-APK_REPOS='
-https://download.atmark-techno.com/alpine/current/atmark
-'
+: "${APK_REPOS:="https://download.atmark-techno.com/alpine/current/atmark"}"
 : "${APK:=apk}"
 : "${CACHE_DIR:="$HOME/.cache/mkswu"}"
 # APK_ARCH default --arch value if passed in arguments, or $(apk --print-arch)
