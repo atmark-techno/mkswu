@@ -242,11 +242,19 @@ pre_chained_update() {
 		|| error "/etc/sw-versions does not match target's"
 
 	gen_newversion
-	if needs_update base_os || needs_update boot; then
+	if needs_update base_os || needs_update boot || [ -n "$(mkswu_var CONTAINER_CLEAR)" ]; then
 		# we can't handle base_os or boot update mid-chain,
 		# finish what we have now and this will be installed
 		# after reboot
-		info "base_os or boot update required mid SWU chain. Stopping chain here to continue after reboot"
+		local what
+		if needs_update base_os; then
+			what=base_os
+		elif needs_update boot; then
+			what=boot
+		else
+			what=CONTAINER_CLEAR
+		fi
+		info "$what update required mid SWU chain. Stopping chain here to continue after reboot"
 		# This needs some fiddling to avoid bumping versions
 		# with what we just get and post to not skip work...
 		cp "$MKSWU_TMP/sw-versions.old" "$MKSWU_TMP/sw-versions.merged" \
