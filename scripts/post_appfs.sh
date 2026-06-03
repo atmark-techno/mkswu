@@ -27,9 +27,11 @@ podman_killall() {
 	touch "$MKSWU_TMP/podman_containers_killed"
 	if [ -n "$(podman ps --format '{{.ID}}')" ]; then
 		warning "$@"
-		podman_info stop -a
-		podman ps --format '{{.ID}}' \
-			| timeout 20s xargs -r podman_info wait
+		podman_info kill -a -s SIGTERM
+		if ! podman ps --format '{{.ID}}' | timeout 10s xargs -r podman wait; then
+			podman_info kill -a -s SIGKILL
+			podman ps --format '{{.ID}}' | timeout 20s xargs -r podman wait
+		fi
 	fi
 	podman_info pod rm -a -f
 	podman_info rm -a -f
