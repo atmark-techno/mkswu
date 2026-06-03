@@ -507,13 +507,6 @@ set_post_action() {
 	if [ "$post_action" = "container" ] && needs_reboot; then
 		post_action=""
 	fi
-	# for chained updates the last SWU to be installed can
-	# pick poweroff or wait without problem, but container
-	# would fail if it doesn't agree with the first SWU:
-	# always clear it for now
-	if [ "$post_action" = "container" ] && [ -n "$SWUPDATE_CHAIN_IDX" ] && [ "$SWUPDATE_CHAIN_COUNT" != 1 ]; then
-		post_action=""
-	fi
 }
 
 clear_b_side() {

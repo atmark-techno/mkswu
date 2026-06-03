@@ -55,13 +55,6 @@ init_vars_update() {
 	    && fw_printenv upgrade_available | grep -qxE 'upgrade_available=[012]'; then
 		upgrade_available=1
 	fi
-	if [ -n "$SWUPDATE_CHAIN_IDX" ] && [ "$SWUPDATE_CHAIN_COUNT" != 1 ]; then
-		# for now consider chained updates to always update rootfs and require
-		# reboot (needs_reboot is implied by the override in set_post_action)
-		# If this changes in the future, pre_chained_update will need to
-		# update saved vars if a later update starts modifying these
-		update_rootfs=${update_rootfs:-1}
-	fi
 }
 
 save_vars() {
@@ -271,6 +264,21 @@ pre_chained_update() {
 
 	touch "$MKSWU_TMP/update_started"
 	log_status "UPDATE_STARTED"
+
+	if needs_reboot && ! [ -e "$MKSWU_TMP/needs_reboot" ]; then
+		touch "$MKSWU_TMP/needs_reboot" \
+			|| error "Could not save need to reboot variable"
+		echo "needs_reboot enabled mid-chain"
+	fi
+	if update_rootfs && ! [ -e "$MKSWU_TMP/update_rootfs" ]; then
+		# note: value must be 1 as base_os is only allowed on first update,
+		# and there is no need to check for value change
+		echo "$update_rootfs" > "$MKSWU_TMP/update_rootfs" \
+			|| error "Could not save rootfs update variable"
+		echo "update_rootfs enabled mid-chain"
+
+		update_rootfs_timestamp
+	fi
 
 	exit 0
 }
