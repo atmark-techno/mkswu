@@ -62,6 +62,7 @@ info() {
 # options:
 # FILTER: run grep -vE on filter and only print non-matches
 # NOSTDOUT: drop stdout and only consider stderr (for openssl cms-verify)
+# ERRORMATCH: grep for errors and print to stderr as well
 info_if_not_empty() {
 	local output="${TMPDIR:-/var/tmp}/cmd_output.$$"
 	local ret
@@ -86,6 +87,9 @@ info_if_not_empty() {
 	if [ -s "$output" ]; then
 		info "Command '$*' output:"
 		stdout_info cat "$output"
+		if [ -n "$ERRORMATCH" ] && [ "$ret" != 0 ]; then
+			grep -E "$ERRORMATCH" "$output" >&2
+		fi
 	fi
 	rm -f "$output"
 	return "$ret"
@@ -150,8 +154,9 @@ podman_load() {
 	local archive
 
 	if [ $# -eq 0 ]; then
-		podman_in_root load \
-			|| SHOW_DF=1 error "Could not load archive"
+		ERRORMATCH="no space left on device" \
+			podman_in_root load \
+				|| SHOW_DF=1 error "Could not load archive"
 	else for archive; do
 		case "$archive" in
 		/*) ;;
@@ -160,9 +165,10 @@ podman_load() {
 		if [ -n "$PUB_KEY" ]; then
 			check_sig "$archive"
 		fi
-		podman_in_root load -i "$archive" \
-			|| SHOW_DF=1 SHOW_DU="$archive" \
-				error "Could not load $archive"
+		ERRORMATCH="no space left on device" \
+			podman_in_root load -i "$archive" \
+				|| SHOW_DF=1 SHOW_DU="$archive" \
+					error "Could not load $archive"
 	done; fi
 }
 
