@@ -1,11 +1,30 @@
 swdesc_option version=1
 
 # Network settings are stored in /etc/NetworkManager/system-connections
-# as .nmconnection files, and can be copied in SWU files.
-# Copy the connection files you want to set here.
+# as .nmconnection files, and can be added or modified in SWU files.
 
+# The following are example of network configuration using the nmcli
+# command with the --offline option.
+# If you want to create a bridge, you can use the following command.
+CON_NAME=bridge-br0
+FILE="/etc/NetworkManager/system-connections/$CON_NAME.nmconnection"
+TYPE=bridge
+IFNAME=br0
+# change the address to match your network
+ADDRESS=x.y.z.t/24
+swdesc_command --extra-os \
+	"nmcli --offline connection add \
+		type $TYPE \
+		con-name $CON_NAME \
+		ifname $IFNAME \
+		ipv4.method manual \
+		ipv4.addresses $ADDRESS \
+		> '$FILE'" \
+	"chmod 600 '$FILE'"
+
+# Copy the connection files you want to set here if you need to set
+# complicated network settings.
 # NetworkManager ignores files whose mode is not 0600 (-rw-------)
 chmod 0600 setting.nmconnection
-
 # ... and then send the file
 swddesc_files --extra-os --dest /etc/NetworkManager/system-connections setting.nmconnection
