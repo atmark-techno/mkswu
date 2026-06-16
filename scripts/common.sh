@@ -575,7 +575,11 @@ cleanup() {
 				esac
 				eval "exec $fd<&-"
 			done
-			podman_start -a
+			# we only swap container mounts in root namespace, so also need to run
+			# this in pid 1 mount namespace if separate
+			local nsenter=""
+			[ "$(readlink /proc/1/ns/mnt)" = "$(readlink /proc/self/ns/mnt)" ] || nsenter=1
+			${nsenter:+nsenter -t 1 -m} podman_start -a
 		)
 	fi
 }

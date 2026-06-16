@@ -75,6 +75,7 @@ update_shadow() {
 }
 
 update_running_versions() {
+	umount_if_mountpoint /etc/sw-versions
 	cp "$1" /etc/sw-versions || error "Could not update /etc/sw-versions"
 
 	[ "$(findmnt -nr -o FSTYPE -T /etc/sw-versions)" = "overlay" ] || return
@@ -325,7 +326,7 @@ post_rootfs() {
 	# and finally set version where appropriate.
 	if ! needs_reboot; then
 		# record current versions to other rootfs
-		cp /etc/sw-versions /target/etc/sw-versions \
+		cp "$MKSWU_TMP/sw-versions.init" /target/etc/sw-versions \
 			|| error "Could not copy current sw-versions to other fs"
 		# updating current version with what is being installed:
 		# we should avoid failing from here on.

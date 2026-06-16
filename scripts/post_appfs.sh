@@ -44,11 +44,25 @@ swap_btrfs_snapshots() {
 	# so stop all containers and restart them
 	podman_killall "Stopping containers to swap storage"
 
-	if ! umount_if_mountpoint /var/lib/containers/storage_readonly \
-	    || ! mount /var/lib/containers/storage_readonly \
-	    || ! umount_if_mountpoint /var/app/rollback/volumes \
-	    || ! mount /var/app/rollback/volumes; then
-		# hope rollback works...
+	# if not running from init namespace we need to remound there, as that is
+	# what will be left after update.
+	# We do not need to do it in current namespace as nothing else will use
+	# podman after this.
+	local nsenter=""
+	[ "$(readlink /proc/1/ns/mnt)" = "$(readlink /proc/self/ns/mnt)" ] || nsenter=1
+
+	# (cannot use internal functions, same as in pre_appfs, for recursive umount)
+	if umount --version 2>/dev/null | grep -q util-linux; then
+                set -- umount -R
+        else
+                set -- abos-ctrl umount
+        fi
+
+	if ! ${nsenter:+nsenter -t 1 -m} "$@" /var/lib/containers/storage_readonly \
+	    || ! ${nsenter:+nsenter -t 1 -m} mount /var/lib/containers/storage_readonly \
+	    || ! ${nsenter:+nsenter -t 1 -m} "$@" /var/app/rollback/volumes \
+	    || ! ${nsenter:+nsenter -t 1 -m} mount /var/app/rollback/volumes; then
+		# hope rollback works... will reboot at end of update
 		exchange_btrfs_snapshots
 		return 1
 	fi
@@ -144,6 +158,9 @@ cleanup_appfs() {
 			return
 		fi
 		umount "$basemount"
+		# note failure after this will be in bad installed state but sw-versions
+		# is not correct... Hopefully should not happen, and it's better than
+		# updating sw-versions first (and miss an update)
 	fi
 }
 
