@@ -1,3 +1,18 @@
+8.2
+===
+fixes:
+- fix POST_ACTION=container when swupdate is run in a mount namespace
+(e.g. swupdate-usb or swupdate-chain with >=2 SWUs)
+
+features:
+- CONTAINER_CLEAR now removes any non-standard ABOS versions from sw-versions
+and non-standard images from swupdate.watch
+- support more update variations with swupdate-chain (POST_ACTION=container)
+- add nmcli --offline usage example in examples/network_settings.desc
+
+  -- 2026-06-19
+
+
 8.1.3
 =====
 fixes:
