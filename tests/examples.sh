@@ -33,7 +33,7 @@ if ! [ -e ../imx-boot_armadillo_x2 ] \
 		# big enough to be compressed...
 		dd if=/dev/zero bs=1M count=1 status=none
 		# and with version recognizable
-		echo '2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e'
+		echo 'U-Boot 2020.04-at2-2-g16be576a6d2a-00001-ge7d8a230e98e'
 		echo u-boot
 		echo aarch64
 	} > ../imx-boot_armadillo_x2

@@ -1080,8 +1080,9 @@ swdesc_boot() {
 		# no need to check it
 		outer_version=""
 	else
-		version=$(grep -m1 -aoE '20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$boot_file") \
+		version=$(grep -m1 -aoE 'U-Boot 20[0-9]{2}.[0-1][0-9]-[0-9a-zA-Z.-]*' "$boot_file") \
 			|| error "Could not guess boot version in '%s'" "$boot_file"
+		version="${version#U-Boot }"
 	fi
 	normalize_boot_version
 	if [ -n "$outer_version" ] && [ "$install_if" != different ] \
