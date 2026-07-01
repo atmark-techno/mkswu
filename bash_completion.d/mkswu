@@ -28,20 +28,21 @@ _mkswu()
 		--import) mode=import;;
 		--show) mode=show;;
 		--update-version) mode=update_version;;
+		--verify-atmark-release) mode=verify_atmark;;
 		esac
 	done
 
 	options="-c --config --config-dir -v --verbose -q --quiet -h --help --version"
 	case "$mode" in
 	genkey) options+=" --aes --cn --plain";;
-	genkey_aes|init|import) :;;
 	show) options+=" --raw";;
 	update_version) options+=" --version-base";;
-	"") options+=" -o --out --init --import --genkey --show --update-version --version-cmp";;
+	"") options+=" -o --out --init --import --genkey --show --update-version --version-cmp --verify-atmark-release";;
 	esac
 	COMPREPLY=($(compgen -W "$options" -- "$cur"))
 	case "$mode" in
 	show) _filedir 'swu';;
 	""|update_version) _filedir 'desc';;
+	verify_atmark) _filedir "sig";;
 	esac
 } && complete -F _mkswu mkswu

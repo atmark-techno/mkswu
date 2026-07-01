@@ -1954,12 +1954,14 @@ sign() {
 }
 
 verify() {
-	# note: this is only a helper for debug
-	local file="$1"
-	openssl cms -verify -inform DER -in "$file.sig" -content "$file" \
-		-nosmimecap -binary -CAfile "$PUBKEY" > /dev/null \
-		|| error "Signature verification failed for $file"
-	echo "$file: OK"
+	local file="$1" err
+
+	# Only print stderr on failure to hide 'CMS Verification successful' message...
+	err=$(openssl cms -verify -no_check_time -inform DER \
+		-in "$file.sig" -content "$file" \
+		-nosmimecap -binary -CAfile "$PUBKEY" 2>&1 > /dev/null) \
+		|| error "Signature verification failed for %s: %s" "$file" "$err"
+	info "%s: OK" "$file"
 }
 
 mkcpio() {
@@ -2912,10 +2914,30 @@ mkswu_show() {
 	done
 }
 
+mkswu_verify_atmark() {
+	local f rc=0
+
+	[ "$#" -gt 0 ] || error "Usage: mkswu --verify-atmark-release file.sig [files...]"
+
+	for f in "$@"; do
+		f=${f%.sig}
+		[ -e "$f" ] || { warning "%s does not exist" "$f"; rc=1; continue; }
+		[ -e "$f.sig" ] || { warning "%s does not exist" "$f.sig"; rc=1; continue; }
+
+		# pipe makes this not exit on error(): remember rc and continue to next file
+		cat "$SCRIPT_DIR"/certs/atmark-*.pem \
+			| PUBKEY=/dev/stdin \
+				verify "$f" || rc=1
+	done
+
+	return $rc
+}
+
 mode_to_opt() {
 	case "$1" in
 	genkey*) echo "genkey";;
 	update_version) echo "update-version";;
+	verify_atmark) echo "verify-atmark-release";;
 	*) echo "$1";;
 	esac
 }
@@ -3126,6 +3148,10 @@ local MKSWU_NO_SPECIAL_VERSION_CHECK=1
 		"--update-version")
 			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
 			MODE=update_version
+			;;
+		"--verify-atmark-release")
+			[ -z "$MODE" ] || error "%s is incompatible with --%s" "$ARG" "$(mode_to_opt "$MODE")"
+			MODE=verify_atmark
 			;;
 		"--version-base")
 			[ "$MODE" = "update_version" ] || error "%s must be passed after %s" "$ARG" "--update-version"

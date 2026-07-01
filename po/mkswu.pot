@@ -474,7 +474,10 @@ msgstr ""
 msgid "Retrying %s more time(s)."
 msgstr ""
 #: mkswu
-msgid "Signature verification failed for $file"
+msgid "Signature verification failed for %s: %s"
+msgstr ""
+#: mkswu
+msgid "%s: OK"
 msgstr ""
 #: mkswu
 msgid "Could not enter %s"
@@ -730,6 +733,9 @@ msgid "mkswu --show requires a compatible awk (e.g. gawk)"
 msgstr ""
 #: mkswu
 msgid "Could not get SWU file list from %s"
+msgstr ""
+#: mkswu
+msgid "Usage: mkswu --verify-atmark-release file.sig [files...]"
 msgstr ""
 #: mkswu
 msgid "Could not get script dir"
