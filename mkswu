@@ -154,7 +154,7 @@ reindent() {
 	padding=$(printf "%*s" "${indent:-0}" "")
 
 	for file; do
-		[ -e "$file" ] || continue
+		[ -e "$file" ] || error "%s does not exist" "$file"
 		sed -e "s/^/$padding/" "$file"
 	done
 }

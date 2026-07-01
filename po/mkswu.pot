@@ -114,6 +114,9 @@ msgstr ""
 msgid "  --aes         generate aes key instead of default rsa key pair"
 msgstr ""
 #: mkswu
+msgid "%s does not exist"
+msgstr ""
+#: mkswu
 msgid "Cannot find source file: %s"
 msgstr ""
 #: mkswu
@@ -289,9 +292,6 @@ msgid "swdesc_%s requires at least two arguments\\nUsage: swdesc_%s [options] fi
 msgstr ""
 #: mkswu
 msgid "%s requires an argument\\nUsage: %s [options] image"
-msgstr ""
-#: mkswu
-msgid "%s does not exist"
 msgstr ""
 #: mkswu
 msgid "Unhandled command %s"
