@@ -1,3 +1,16 @@
+8.3
+===
+fixes:
+- make reindent() internal function error when called with non-existing file
+This ensures the sw-description does not silently miss content on incorrect
+usage
+
+features:
+- add mkswu --verify-atmark-release mode. This can be called with a .sig file
+to check that it was signed with an atmark key
+
+  -- 2026-07-29
+
 8.2
 ===
 fixes:
