@@ -393,10 +393,10 @@ grep -qx "swdesc_option version=5.11 component=foo" "$DESC" \
 # we cheat it by adding a key to certs/atmark-*pem wildcard
 # which needs to be in system location if running installed command
 case "$MKSWU" in
-/usr/bin/mkswu|mkswu) d=/usr/share/mkswu/certs;;
-*) d=../certs;;
+/usr/bin/mkswu|mkswu) d=/usr/share/mkswu/certs; s=sudo;;
+*) d=../certs; s=;;
 esac
-cp -Tf ../swupdate-onetime-public.pem "$d"/atmark-test.pem
+$s cp -Tf ../swupdate-onetime-public.pem "$d"/atmark-test.pem
 mkdir -p "$TESTS_DIR/out/signatures"
 echo sig.ok > "$TESTS_DIR/out/signatures/sig.ok"
 MKSWU_PRIVKEY=../swupdate-onetime-public.key MKSWU_PUBKEY=../swupdate-onetime-public.pem \
@@ -409,7 +409,7 @@ echo sig.bad > "$TESTS_DIR/out/signatures/sig.bad"
 	&& error "sig.bad verify passed"
 "$MKSWU" --verify-atmark-release "$TESTS_DIR/out/signatures/sig.bad" "$TESTS_DIR/out/signatures/sig.ok" \
 	&& error "sig.bad + ok verify passed"
-rm -f "$d"/atmark-test.pem
+$s rm -f "$d"/atmark-test.pem
 
 # test is ok even if last command failed...
 true
