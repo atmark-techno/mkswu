@@ -393,7 +393,7 @@ grep -qx "swdesc_option version=5.11 component=foo" "$DESC" \
 # we cheat it by adding a key to certs/atmark-*pem wildcard
 # which needs to be in system location if running installed command
 case "$MKSWU" in
-mkswu) d=/usr/share/mkswu/certs;;
+/usr/bin/mkswu|mkswu) d=/usr/share/mkswu/certs;;
 *) d=../certs;;
 esac
 cp -Tf ../swupdate-onetime-public.pem "$d"/atmark-test.pem
