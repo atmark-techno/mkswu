@@ -115,6 +115,8 @@ usage() {
 	info "                          lower the version"
 	info "  --version-cmp <base_version> <version> [<version...>]"
 	info "                          compare versions given with base version"
+	info "  --verify-atmark-relase <file.sig>"
+	info "                          Check <file.sig> signature against <file>"
 	info "  --version               print version and exit"
 	info "  desc                    image description file(s), if multiple are given"
 	info "                          then the generated image will merge all the contents"

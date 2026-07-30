@@ -51,6 +51,12 @@ msgstr ""
 msgid "                          compare versions given with base version"
 msgstr ""
 #: mkswu
+msgid "  --verify-atmark-relase <file.sig>"
+msgstr ""
+#: mkswu
+msgid "                          Check <file.sig> signature against <file>"
+msgstr ""
+#: mkswu
 msgid "  --version               print version and exit"
 msgstr ""
 #: mkswu
