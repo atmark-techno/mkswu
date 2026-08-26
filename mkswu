@@ -2846,7 +2846,7 @@ mkswu_show() {
 				}
 			}
 			/^ *description: / && orig_set {
-				unset orig_set
+				orig_set=0
 			}
 			/^ *filename =/ {
 				gsub(/.*= "|";/, "")
@@ -2878,6 +2878,7 @@ mkswu_show() {
 			/^ *}/ && filename {
 				filename=""
 				cmd_pending=""
+				orig_set=0
 			}
 			/^ *# MKSWU_/ {
 				sub(/ *# MKSWU_/, "")
