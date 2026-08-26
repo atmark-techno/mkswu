@@ -2838,7 +2838,7 @@ mkswu_show() {
 				sub(/ *description: "/, "")
 				dequote()
 				if ($0 ~ /^pre_script$|^post_script$/) {
-					# skip
+					cmd[filename]="[hidden]"
 				} else if (! cmd[filename]) {
 					cmd[filename]=$0
 				} else if (! (cmd[filename] ~ "(^|\n)"$0"($|\n)")) {
@@ -2871,7 +2871,7 @@ mkswu_show() {
 				install_if[filename]="different"
 			}
 			/^ *# hide_from_show/ && filename {
-				cmd[filename] = ""
+				cmd[filename] = "[hidden]"
 				filename=""
 				cmd_pending=""
 			}
@@ -2886,11 +2886,20 @@ mkswu_show() {
 				sub(/ /, "=")
 				print "swdesc_option " $0
 			}
+			BEGIN {
+				cmd["sw-description"]="[hidden]";
+				cmd["sw-description.sig"]="[hidden]";
+			}
 			END {
 				split(order_string, order);
 				for (key in order) {
 					filename = order[key];
+					if (cmd[filename] == "[hidden]") {
+						continue
+					}
 					if (!(cmd[filename])) {
+						print "# warning:" filename, "in SWU but not installed?"
+						print "# this is likely a bug in mkswu --show, please report this with mkswu --show --raw content"
 						continue
 					}
 					print ""
