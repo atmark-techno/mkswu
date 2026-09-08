@@ -312,7 +312,8 @@ EOF
 	for file in reset_default_list.txt.example reset_default_lists.txt.example; do
 		if [ -e "/target/etc/atmark/$file" ]; then
 			[ -e /target/etc/atmark/reset_default_custom.sh.example ] || break
-			rm -f "/target/etc/atmark/$file"
+			rm -f "/target/etc/atmark/$file" \
+				|| error "Could not remove /etc/atmark/$file"
 		fi
 	done
 
@@ -323,12 +324,22 @@ EOF
 		local ignore_if
 		ignore_if=$(sed -ne 's/^interface=//p' /target/etc/hostapd/hostapd.conf)
 		[ "$ignore_if" = uap0 ] && ignore_if=mlan0
-		cat > "$file" <<EOF
+		cat > "$file" <<EOF || error "Could not write ${file#/target}"
 [device_abosweb_$ignore_if]
 match-device=interface-name:$ignore_if
 managed=0
 EOF
-		echo "${file#/target}" >> /target/etc/swupdate_preserve_files
+		echo "${file#/target}" >> /target/etc/swupdate_preserve_files \
+			|| error "Could not update swupdate_preserve_files"
+	fi
+
+	# ABOS 4.0 changed default rule at install (new EC25-J modem firmware)
+	local match='device "2c7c" "0125" "Android" ":ffffff:ff0000:" "Android_Android"'
+	local new='device "2c7c" "0125" "Android" ":ffffff:ff0000:" "*"'
+	file=/target/etc/atmark/usb-filter-allowlist
+	if grep -qxF "$match" "$file"; then
+		sed -i -e "s/$match/$new/" "$file" \
+			|| error "Could not update ${file#/target} EC25 rule"
 	fi
 }
 
