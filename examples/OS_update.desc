@@ -1,12 +1,26 @@
-swdesc_option version=3.14.3-at.2
 
 # boot image can be generated with atmark imx-boot script
-swdesc_boot imx-boot-2020.04-at1_armadillo_x2
+swdesc_boot imx-boot_armadillo_x2_2020.04-at31
+
 
 # base OS is a tar that will be extracted on a blank filesystem,
 # after copying just a few key config files.
+swdesc_tar --version base_os 4.0-at.1 "baseos-x2-nokernel-4.0-at.1.tar.zst"
+
+
+# If the above archive was built from build_rootfs.sh with a kernel image
+# (default) then this is enough, but release archives now no longer include
+# a kernel and it needs to be updated separately.
 #
-# OS updates are only installed if version is greater than previous update
-# so if you install your own updates atmark-techno provided Armadillo Base OS
-# updates might not get installed
-swdesc_tar --base-os "baseos-x2-3.14.2-at.2.tar.zst"
+# The APK can be fetched with the apk-wrapper.sh script in this directory:
+# ./apk-wrapper.sh --arch aarch64 update
+# ./apk-wrapper.sh --arch aarch64 fetch linux-at-6.12
+#
+# WARNING: This does not check the existing kernel version, upgrade from 5.10
+# could also require updating the firmware as in the major_kernel_upgrade.desc
+# example
+swdesc_exec --version extra_os.kernel 6.12.111-0 \
+	linux-at-6.12-6.12.111-r0.apk \
+	"apk del --no-network --force-broken-world 'linux-at-*'" \
+	'rm -rf /lib/modules' \
+	'apk add --no-network --force-broken-world $1'

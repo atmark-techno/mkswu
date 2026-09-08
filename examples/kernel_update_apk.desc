@@ -1,18 +1,19 @@
-# Actually works with any APK...
-# Careful that it will try to resolve any missing dependency through internet
-# if package cannot be installed directly.
-# Network will not be used if dependencies are satisfied.
+# This could be used for any APK
+# A few notes:
+# - --no-network forces disabling internet access, apk commands
+# can be used with internet enabled with swdesc_command instead
+# - for linux, we remove any manually installed kernel (either
+# package or file) before installing apk to ensure apk add does
+# something; if apk was already installed just removing file would
+# success and leave the system without kernel modules
 
-# apk versions with r3 are not liked by swupdate, so use
-# install-if different mode here
-swdesc_option install_if=different
-
-# set version once for all below swdesc elements unless
-# forced with --version
 swdesc_option component=extra_os.kernel
 swdesc_option version=5.10.82-1
 
-swdesc_exec "linux-at-5.10.9-r3.apk" 'apk add $1'
+swdesc_exec "linux-at-5.10.9-r3.apk" \
+	"apk del --no-network --force-broken-world 'linux-at-*'" \
+	'rm -rf /lib/modules' \
+	'apk add --no-network --force-broken-world $1'
 
 # it's also possible to have a whole update via internet
 #swdesc_command "apk add linux-at"
