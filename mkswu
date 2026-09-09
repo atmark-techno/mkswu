@@ -1818,7 +1818,7 @@ EOF
 		indent=2 write_line "$board = {"
 		indent=4 write_line "hardware-compatibility = [ \"$board_hwcompat\" ];"
 		for file in "$OUTDIR/sw-description-"*"-$board"; do
-			[ -s "$file" ] || continue
+			[ -e "$file" ] || continue
 			# also include common section if any
 			# XXX in case of duplicate here we should favor
 			# current board's file and ignore second one instead
@@ -1830,7 +1830,9 @@ EOF
 			section=${file##*sw-description-}
 			section=${section%%-*}
 			indent=4 write_line "$section: ("
-			indent=6 reindent "$file" "$OUTDIR/sw-description-$section"
+			indent=6 reindent "$file"
+			[ -e "$OUTDIR/sw-description-$section" ] \
+				&& indent=6 reindent "$OUTDIR/sw-description-$section"
 			indent=4 write_line ");"
 		done
 		indent=2 write_line "};"
