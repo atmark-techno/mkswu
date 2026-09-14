@@ -49,6 +49,19 @@ info() {
 	printmsg 2 "$@"
 }
 
+info_bold() {
+	local level=2
+	[ "$VERBOSE" -lt "$level" ] && return
+
+	local fmt="$1"
+	shift
+	if tty >/dev/null; then
+		printf -- "\e[1m$(_gettext "$fmt")\e[0m\n" "$@"
+	else
+		printf -- "$(_gettext "$fmt")\n" "$@"
+	fi
+}
+
 trace() {
 	printmsg 3 "$@" >&2
 }
@@ -2608,16 +2621,31 @@ mkinit_mkimageinitswu() {
 			"$CONFIG_DIR/initial_setup.desc" \
 		|| error "Could not generate initial setup swu"
 	echo
+	mkinit_prompt_note
+	info
+	info_bold "How to install initial setup"
 	info "You can use \"%s\" as is or" "$CONFIG_DIR/initial_setup.swu"
 	info "regenerate an image with extra modules using the following command:"
 	info "  mkswu \"%s\" [other_desc_files]" \
 		"$CONFIG_DIR/initial_setup.desc"
 	info
-	info "Note that once installed, you must preserve this directory as losing"
-	info "key files means you will no longer be able to install new updates without"
-	info "manually adjusting /etc/swupdate.pem on devices"
+	info_bold "Backup mkswu secrets"
+	info "Once initial setup has been installed, you must preserve this directory"
+	info "as losing key files means you will no longer be able to install"
+	info "new updates without manually adjusting /etc/swupdate.pem on devices"
 }
 
+mkinit_prompt_note() {
+	info
+	info_bold "Note about Armadillo Base OS outgoing connnections"
+	info "The following services run by default on Armadillo Base OS and transmit data"
+	info "by default"
+	info "- avahi-daemon (mDNS hostname announces)"
+	info "- chronyd (NTP time synchronization)"
+	info "- armadillo-twin-agentd (check subscription status with Armadillo Twin)"
+	info
+	info "Please refer to the reference manual for details and configuration options."
+}
 
 mkswu_init() {
 	if [ "$(id -u)" = 0 ] && [ -z "$MKSWU_YES_RUN_AS_ROOT" ]; then

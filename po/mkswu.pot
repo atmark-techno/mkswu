@@ -678,6 +678,9 @@ msgstr ""
 msgid "Could not generate initial setup swu"
 msgstr ""
 #: mkswu
+msgid "How to install initial setup"
+msgstr ""
+#: mkswu
 msgid "You can use \"%s\" as is or"
 msgstr ""
 #: mkswu
@@ -687,13 +690,37 @@ msgstr ""
 msgid "  mkswu \"%s\" [other_desc_files]"
 msgstr ""
 #: mkswu
-msgid "Note that once installed, you must preserve this directory as losing"
+msgid "Backup mkswu secrets"
 msgstr ""
 #: mkswu
-msgid "key files means you will no longer be able to install new updates without"
+msgid "Once initial setup has been installed, you must preserve this directory"
 msgstr ""
 #: mkswu
-msgid "manually adjusting /etc/swupdate.pem on devices"
+msgid "as losing key files means you will no longer be able to install"
+msgstr ""
+#: mkswu
+msgid "new updates without manually adjusting /etc/swupdate.pem on devices"
+msgstr ""
+#: mkswu
+msgid "Note about Armadillo Base OS outgoing connnections"
+msgstr ""
+#: mkswu
+msgid "The following services run by default on Armadillo Base OS and transmit data"
+msgstr ""
+#: mkswu
+msgid "by default"
+msgstr ""
+#: mkswu
+msgid "- avahi-daemon (mDNS hostname announces)"
+msgstr ""
+#: mkswu
+msgid "- chronyd (NTP time synchronization)"
+msgstr ""
+#: mkswu
+msgid "- armadillo-twin-agentd (check subscription status with Armadillo Twin)"
+msgstr ""
+#: mkswu
+msgid "Please refer to the reference manual for details and configuration options."
 msgstr ""
 #: mkswu
 msgid "WARNING: mkswu should not be used as root"

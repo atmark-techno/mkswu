@@ -903,6 +903,10 @@ msgid "Could not generate initial setup swu"
 msgstr "swuの初期設定の作成に失敗しました。"
 
 #: mkswu
+msgid "How to install initial setup"
+msgstr "初期化方法"
+
+#: mkswu
 msgid "You can use \"%s\" as is or"
 msgstr "\"%s\" をそのまま使うことができますが、"
 
@@ -915,16 +919,48 @@ msgid "  mkswu \"%s\" [other_desc_files]"
 msgstr "  mkswu \"%s\" [他の.descファイル]"
 
 #: mkswu
-msgid "Note that once installed, you must preserve this directory as losing"
+msgid "Backup mkswu secrets"
+msgstr "署名情報のバックアップを推奨します。"
+
+#: mkswu
+msgid "Once initial setup has been installed, you must preserve this directory"
 msgstr "インストール後は、このディレクトリを削除しないように注意してください。"
 
 #: mkswu
-msgid "key files means you will no longer be able to install new updates without"
+msgid "as losing key files means you will no longer be able to install"
 msgstr "鍵を失うと新たなアップデートはデバイスの /etc/swupdate.pem"
 
 #: mkswu
-msgid "manually adjusting /etc/swupdate.pem on devices"
+msgid "new updates without manually adjusting /etc/swupdate.pem on devices"
 msgstr "を修正しないとインストールできなくなります。"
+
+#: mkswu
+msgid "Note about Armadillo Base OS outgoing connnections"
+msgstr "Armadillo Base OSの外部通信に関する注意"
+
+#: mkswu
+msgid "The following services run by default on Armadillo Base OS and transmit data"
+msgstr "Armadillo Base OS では、以下に示すソフトウェアが自動起動し、"
+
+#: mkswu
+msgid "by default"
+msgstr "デフォルト状態で外部と通信しています。"
+
+#: mkswu
+msgid "- avahi-daemon (mDNS hostname announces)"
+msgstr ""
+
+#: mkswu
+msgid "- chronyd (NTP time synchronization)"
+msgstr ""
+
+#: mkswu
+msgid "- armadillo-twin-agentd (check subscription status with Armadillo Twin)"
+msgstr ""
+
+#: mkswu
+msgid "Please refer to the reference manual for details and configuration options."
+msgstr "各ソフトウェアの詳細および設定オプションに関しては、製品マニュアルをご参照ください。"
 
 #: mkswu
 msgid "WARNING: mkswu should not be used as root"
