@@ -11,6 +11,10 @@ msgid "$@"
 msgstr ""
 
 #: mkswu
+msgid "End of file reached while prompting"
+msgstr ""
+
+#: mkswu
 msgid "Usage: %s [opts] desc [desc...]"
 msgstr ""
 

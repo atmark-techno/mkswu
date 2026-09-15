@@ -64,6 +64,7 @@ prompt() {
 	local var="$1"
 	local prompt_fmt="$2"
 	shift 2
+	local EOF
 
 	if [ -n "$PASS" ] && tty > /dev/null; then
 		trap 'stty echo; echo; error "Interrupted by user"' INT QUIT
@@ -73,12 +74,15 @@ prompt() {
 
 	# shellcheck disable=SC2059 # fmt is a build time constant
 	printf -- "$(_gettext "$prompt_fmt") " "$@"
-	read -r "${var?}"
+	read -r "${var?}" || EOF=1
 
 	if [ -n "$PASS" ] && tty > /dev/null; then
 		stty echo
 		trap "" EXIT INT QUIT
 		echo
+	fi
+	if [ -n "$EOF" ]; then
+		error "End of file reached while prompting"
 	fi
 }
 
