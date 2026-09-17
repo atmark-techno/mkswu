@@ -184,7 +184,6 @@ create_rollout() {
 			"'{
 				"name": "bulk'"$i"'",
 				"description": "normal devices",
-				"targetFilterQuery": "",
 				"targetPercentage": "'"$percent"'",
 				"successCondition": {
 					"condition": "THRESHOLD",
