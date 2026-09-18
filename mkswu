@@ -877,6 +877,9 @@ parse_swdesc() {
 				fi
 				MKSWU_component_baseos_seen="archive"
 				;;
+			script,done|command,done|exec,done)
+				# allow extra script to share base_os version, but only if it comes after tar
+				;;
 			*)
 				if [ "${CMD%_nochroot}" = "$CMD" ] \
 				    || [ -z "$YES_RUN_MKSWU_BASEOS_NOCHROOT_COMMAND" ]; then
