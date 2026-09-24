@@ -46,7 +46,18 @@ post_copy_fixups() {
 			"of /lib/modules." \
 			"Please add either 'POST /lib/modules' or '# no copy /lib/modules'" \
 			"to /etc/swupdate_preserve_files to remove this warning."
-		echo /lib/modules >> "$MKSWU_TMP/preserve_files_post"
+		echo /lib/modules >> "$MKSWU_TMP/preserve_files_post" || return
+	fi
+
+	if stat /lib/modules/[0-9]* >/dev/null 2>&1 && ! stat "$TARGET"/lib/modules/[0-9]* >/dev/null 2>&1; then
+		# this is a -nokernel SWU, we should copy kernel if not done already
+		echo "Ensuring kernel is copied..."
+		grep -qxF /boot "$MKSWU_TMP/preserve_files_post" \
+			|| echo /boot >> "$MKSWU_TMP/preserve_files_post" \
+			|| return
+		grep -qxF /lib/modules "$MKSWU_TMP/preserve_files_post" \
+			|| echo /lib/modules >> "$MKSWU_TMP/preserve_files_post" \
+			|| return
 	fi
 }
 
@@ -58,9 +69,10 @@ post_copy_preserve_files() {
 	[ -n "$(mkswu_var NO_PRESERVE_FILES)" ] && return
 
 	sed -ne 's:^POST /:/:p' "$TARGET/etc/swupdate_preserve_files" \
-		| sort -u > "$MKSWU_TMP/preserve_files_post"
+			| sort -u > "$MKSWU_TMP/preserve_files_post" \
+		|| error "Could not build preserve_files_post list"
 
-	post_copy_fixups
+	post_copy_fixups || error "post_copy_fixups failed"
 
 	while read -r f; do
 		# shellcheck disable=SC2086 # No quote to expand globs
