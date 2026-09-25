@@ -527,8 +527,8 @@ msgid "Warning: Container image %s was not in docker-archive format, install mig
 msgstr "Warning: コンテナイメージ %s は docker-archive として認識できませんでした。インストールは失敗する可能性があります。"
 
 #: mkswu
-msgid "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id"
-msgstr "Warning: コンテナイメージ %s にはイメージタグがありません。イメージを id で指定しない場合インストールされません。"
+msgid "Warning: Container image file %s had containers with no tags, which are likely useless:\\n%s"
+msgstr "Warning: コンテナファイル '%s' の中で、以下のコンテナにはタグが付いていません。利用されない可能性は高いです:\\n%s"
 
 #: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"

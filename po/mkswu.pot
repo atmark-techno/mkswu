@@ -396,7 +396,7 @@ msgstr ""
 msgid "Warning: Container image %s was not in docker-archive format, install might not work"
 msgstr ""
 #: mkswu
-msgid "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id"
+msgid "Warning: Container image file %s had containers with no tags, which are likely useless:\\n%s"
 msgstr ""
 #: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"

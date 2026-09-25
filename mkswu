@@ -1537,7 +1537,7 @@ swdesc_script_nochroot() {
 }
 
 container_check_archive() {
-	local manifest
+	local manifest ids
 
 	[ -f "$image" ] \
 		|| error "%s does not exist or is not a regular file" "$image"
@@ -1551,9 +1551,11 @@ container_check_archive() {
 
 	# skip check if no jq
 	command -v jq >/dev/null || return 0
-	if [ -z "$(printf "%s\n" "$manifest" | jq -r  '.[] | .RepoTags[]')" ]; then
+	ids=$(printf "%s\n" "$manifest" | jq -r '.[] | select(.RepoTags == null or .RepoTags == []) | .Config')
+	if [ -n "$ids" ]; then
 		warning
-		warning "Warning: Container image %s did not contain any tag, image will not be installed unless selected by id" "$image"
+		warning "Warning: Container image file %s had containers with no tags, which are likely useless:\n%s" \
+			"$image" "$ids"
 		warning
 	fi
 }
