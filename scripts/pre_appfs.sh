@@ -243,6 +243,11 @@ prepare_appfs() {
 	fi
 	mount -t btrfs -o "$mountopt=updates_tmp" "$dev" /target/var/tmp \
 		|| error "Could not mount tmp subvol"
+	mkdir /target/var/tmp/scripts-mkswu \
+		&& touch /target/var/tmp/sw-description \
+		&& mount --bind "$MKSWU_TMP" /target/var/tmp/scripts-mkswu \
+		&& mount --bind "$SWDESC" /target/var/tmp/sw-description \
+		|| error "Could not bind-mount swu details"
 
 	podman_list_images > "$MKSWU_TMP/podman_images_pre"
 
