@@ -88,11 +88,6 @@ swdesc_command 'rm -rf /lib/modules'
 # - apk info won't be preserved after base os upgrade anyway
 swdesc_files linux-apk
 
-# Add the kernel to files to be preserved on OS update
-swdesc_script "$SCRIPT_DIR/examples/update_preserve_files.sh" -- \
-        "POST /boot" \
-        "POST /lib/modules"
-
 # Update watch URL for future updates
 swdesc_command --description "Update /etc/swupdate.watch" \
 	"abos-ctrl switch-kernel --watch $kernel_version"
