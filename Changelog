@@ -1,3 +1,19 @@
+8.4
+===
+fixes:
+- `mkswu --show` incorrectly skipped some entries with specific SWUs, fix and
+adjust to print a warning if this happens again in different conditions
+
+misc:
+- version picked up by swdesc_boot more strictly match 'U-Boot', so unrelated
+versions are not picked up (e.g. from build path embedded in old binaries)
+- handle base_os archives with no kernel internally: kernel will be copied if
+possible in this case
+- swdesc_*_container: improve warning when using a container archive that
+containers untagged images
+
+  -- 2026-09-28
+
 8.3
 ===
 fixes:
