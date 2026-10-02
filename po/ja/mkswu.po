@@ -531,6 +531,10 @@ msgid "Warning: Container image file %s had containers with no tags, which are l
 msgstr "Warning: コンテナファイル '%s' の中で、以下のコンテナにはタグが付いていません。利用されない可能性は高いです:\\n%s"
 
 #: mkswu
+msgid "Included %s containers: %s"
+msgstr "%s コンテナが搭載されました：%s"
+
+#: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
 msgstr "Warning: podmanでは、圧縮するとコピーの回数が増えます。"
 

@@ -399,6 +399,9 @@ msgstr ""
 msgid "Warning: Container image file %s had containers with no tags, which are likely useless:\\n%s"
 msgstr ""
 #: mkswu
+msgid "Included %s containers: %s"
+msgstr ""
+#: mkswu
 msgid "Warning: podman does not handle compressed container images without an extra uncompressed copy"
 msgstr ""
 #: mkswu

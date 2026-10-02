@@ -1537,7 +1537,7 @@ swdesc_script_nochroot() {
 }
 
 container_check_archive() {
-	local manifest ids
+	local manifest ids count
 
 	[ -f "$image" ] \
 		|| error "%s does not exist or is not a regular file" "$image"
@@ -1557,6 +1557,11 @@ container_check_archive() {
 		warning "Warning: Container image file %s had containers with no tags, which are likely useless:\n%s" \
 			"$image" "$ids"
 		warning
+	fi
+	count=$(printf "%s\n" "$manifest" | jq length)
+	if [ "$count" != 1 ]; then
+		ids=$(printf "%s\n" "$manifest" | jq -r '.[] | (.RepoTags // [])[]' | tr '\n' ' ')
+		info "Included %s containers: %s" "$count" "$ids"
 	fi
 }
 
