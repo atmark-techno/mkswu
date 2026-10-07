@@ -337,7 +337,7 @@ EOF
 	local match='device "2c7c" "0125" "Android" ":ffffff:ff0000:" "Android_Android"'
 	local new='device "2c7c" "0125" "Android" ":ffffff:ff0000:" "*"'
 	file=/target/etc/atmark/usb-filter-allowlist
-	if grep -qxF "$match" "$file"; then
+	if grep -qxF "$match" "$file" 2>/dev/null; then
 		sed -i -e "s/$match/$new/" "$file" \
 			|| error "Could not update ${file#/target} EC25 rule"
 	fi
