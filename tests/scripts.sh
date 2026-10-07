@@ -19,6 +19,7 @@ fi
 export TEST_SCRIPTS=1
 # need this to avoid error() removing $MKSWU_TMP
 export SWUPDATE_VERSION=2023.12
+export VERBOSE=2
 SWDESC=/dev/null
 TMPDIR=./out/scripts
 MKSWU_TMP="$TMPDIR/scripts-mkswu"

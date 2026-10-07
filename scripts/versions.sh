@@ -44,29 +44,75 @@ get_version() {
 
 # strict greater than
 version_higher() {
+	# ignore everything after +
 	local oldvers="${1%+*}"
 	local newvers="${2%+*}"
-	local oldpredash newpredash
-	local oldhasdash="" newhasdash=""
+	# allow overriding awk for tests
+	local awk="${MKSWU_AWK:-awk}"
 
-	oldpredash=${oldvers%%-*}
-	newpredash=${newvers%%-*}
-	if [ "$oldpredash" = "$newpredash" ]; then
-		# swupdate compares version as semver which says x.y.z > x.y.z-t
-		# (which is not native sort -V order)
-		# If only either of the two component have a dash *and*
-		# the prefix part before the only dash is the same, override
-		# sort -V result here.
-		[ "$oldpredash" != "$oldvers" ] && oldhasdash="1"
-		[ "$newpredash" != "$newvers" ] && newhasdash="1"
+	# precheck identical version (common case)
+	[ "$oldvers" = "$newvers" ] && return 1
+	# and non-existing oldvers (any newvers is bigger...)
+	[ -z "$oldvers" ] && return 0
 
-		case "$oldhasdash,$newhasdash" in
-		,1) return 1;;
-		1,) return 0;;
-		esac
-	fi
-
-	! printf "%s\n" "$newvers" "$oldvers" | sort -Vc 2>/dev/null
+	# We only need to handle x.y.z.t or x.y.z-a.b.c formats
+	$awk -v old="$oldvers" -v new="$newvers" < /dev/null \
+		'
+		function min(a, b) {
+			if (a < b) { return a; } else { return b; }
+		}
+		function max(a, b) {
+			if (a > b) { return a; } else { return b; }
+		}
+		function comp(old, new) {
+			# exit early if different, handle empty input = 0
+			# (0 < alpha so this works for non-digits too)
+			o = old ? old : 0
+			n = new ? new : 0
+			if (n > o) {
+				exit(0)
+			}
+			if (n < o) {
+				exit(1)
+			}
+		}
+		BEGIN {
+			# get - out of the way first
+			split(old, old_dash, /-/);
+			split(new, new_dash, /-/);
+			# compare main version
+			split(old_dash[1], old_vers, /\./)
+			split(new_dash[1], new_vers, /\./)
+			i=0
+			end=max(length(old_vers), length(new_vers))
+			while (i++ < end) {
+				comp(old_vers[i], new_vers[i])
+			}
+			# main version identical, compare prerelease if both are set
+			# (only one side has preversion set = older)
+			if (old_dash[2] != "" && new_dash[2] == "") {
+				exit(0)
+			}
+			if (old_dash[2] == "" && new_dash[2] != "") {
+				exit(1)
+			}
+			split(old_dash[2], old_vers, /\./)
+			split(new_dash[2], new_vers, /\./)
+			i=0
+			end=min(length(old_vers), length(new_vers))
+			while (i++ < end) {
+				comp(old_vers[i], new_vers[i])
+			}
+			# trailing semver is apparently newer even if 0...
+			if (length(old_vers) < length(new_vers)) {
+				exit(0)
+			}
+			if (length(old_vers) > length(new_vers)) {
+				exit(1)
+			}
+			# identical version, can happen with e.g. 4-at.1 = 4.0-at.1
+			exit(1)
+		}'
 }
 
 version_update() {

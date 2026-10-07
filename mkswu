@@ -280,6 +280,8 @@ check_validity() {
 }
 
 check_version_higher() {
+	[ -n "$MKSWU_TEST_ALLOW_BOGUS_VERSION" ] && return
+
 	local version="$1"
 	local max err
 
