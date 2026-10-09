@@ -106,6 +106,90 @@ fail_atmark_new_container() {
 	fi
 }
 
+skip_atmark_kernel_version() {
+	local reason="$1"
+	shift
+
+	# if doing a chained update that already started, and the linux SWU is in swupdate.watch,
+	# comment it out.
+	if [ "$SWUPDATE_CHAIN_STARTED" ]; then
+		local baseos_linux
+		baseos_linux=$(sed -n -e 's@^http.*/\(baseos-[^-]*-linux.*swu\)@\1@p' /target/etc/swupdate.watch)
+		if [ -n "$baseos_linux" ]; then
+			sed -i -e 's@http.*/baseos-[^-]*-linux.*swu@# &@' /target/etc/swupdate.watch \
+				|| error "Could not remove $baseos_linux from swupdate.watch"
+			info "$baseos_linux was commented out of /etc/swupdate.watch" \
+				"to save bandwidth"
+		fi
+	fi
+
+	local old_kver replace
+	old_kver=$(get_version extra_os.kernel old)
+	if [ -n "$old_kver" ]; then
+		replace="s/^extra_os.kernel .*/extra_os.kernel $old_kver/"
+	else
+		replace="/^extra_os.kernel /d"
+	fi
+	sed -i -e "$replace" "$MKSWU_TMP/sw-versions.merged" \
+		|| error "Could not restore sw-versions.merged"
+	info "Linux kernel install skipped: $reason" "$@"
+}
+
+check_atmark_kernel_version() {
+	# This checks kernel is installable early on to allow falling back to
+	# nothing to do.
+	# Only check atmark kernel updates.
+	[ -z "$(mkswu_var ATMARK_PROD_KERNEL_UPDATE)" ] && return
+
+	local swu_kver installed_kver
+	swu_kver=$(get_version extra_os.kernel present)
+
+	if device-info --is-secure secureboot 2>/dev/null; then
+		skip_atmark_kernel_version "secureboot is enabled"
+		return
+	fi
+
+	local mod=/target/lib/modules/
+	# for combined SWU there is no /target yet
+	[ -e /target/lib ] || mod=/lib/modules
+	for installed_kver in "$mod"/[0-9]*; do :; done
+	if [ -d "$installed_kver" ]; then
+		installed_kver="${installed_kver#"$mod/"}"
+	else
+		echo "No modules installed? Could not detect previous kernel version, falling back to uname"
+		installed_kver="$(uname -r)"
+	fi
+
+	# Major kernel upgrade must consider /opt/firmware (which might exist but not
+	# be used when this is installed), refuse even if we could try to update firmware
+	# as well out-of-band... (protecting from denial of service > ease of use here)
+	local kmajor="${swu_kver%.*-*}"
+	if ! [ -e /lib/modules/abos_kernel_upgrade_major ] \
+	    && ! echo "$installed_kver" | grep -qE "^$kmajor"; then
+		skip_atmark_kernel_version "trying to install a $kmajor kernel on $installed_kver" \
+			"switch kernel[1] or create /lib/modules/abos_kernel_upgrade_major" \
+			"[1] https://armadillo.atmark-techno.com/howto/abos-kernel-upgrade"
+		return
+	fi
+
+
+	# Only install as an upgrade from an atmark kernel
+	# We can't rely on apk here (files get copied on update without metadata), so rely on uname:
+	# atmark kernels version get set in APKBUILD to `x.y.z-$pkgrel-$flavor` e.g. `5.10.266-0-at`,
+	# whereas kernels built manually will have x.y.z-at0 (since 5.10.236-r2, just 'x.y.z' before)
+	if ! [ -e /lib/modules/abos_kernel_upgrade_non_at ] \
+	    && ! echo "$installed_kver" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+-at$'; then
+		skip_atmark_kernel_version "it does not look like you are using an official kernel ($installed_kver)," \
+			"run abos-ctrl restore-kernel or create /lib/modules/abos_kernel_upgrade_non_at"
+		return
+	fi
+
+	# This marker is checked by linux updates: this ensures kernel is not installed
+	# if we decided to skip here (necessary with userspace+kernel archive combined SWUs),
+	# and also serves as a double-check mkswu & release scripts are in sync
+	touch "$MKSWU_TMP/linux_install_allowed"
+}
+
 fail_redundant_update() {
 	# if no version changed, clean up and fail script to avoid
 	# downloading the rest of the image
@@ -265,6 +349,7 @@ pre_chained_update() {
 	fi
 	init_vars_update
 	fail_atmark_new_container
+	check_atmark_kernel_version
 	fail_redundant_update
 
 	# chain update ok: skip rest of pre script
@@ -332,6 +417,7 @@ init() {
 	init_vars_update
 
 	fail_atmark_new_container
+	check_atmark_kernel_version
 	fail_redundant_update
 	printf "Using %s on boot %s. Reboot%s required.\n" "$rootdev" "$ab" \
 		"$(needs_reboot || echo " not")"
