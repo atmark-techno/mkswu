@@ -40,12 +40,15 @@ copy_boot_boot() {
 
 	# We copy until env start if changed.
 	# Env will be cleared in post_boot
-	env_offset=$(awk '/^[^#]/ && $2 > 0 {
+	env_offset=$(busybox awk '/^[^#]/ && $2 > 0 {
 			if (!start || $2 < start)
 				start = $2;
 		}
 		END {
-			if (!start) exit(1);
+			if (! (start+0)) {
+			       print "Invalid start offset:", start > "/dev/stderr"
+			       exit(1)
+		       }
 			printf("%d\n", start);
 		}
 		' < /etc/fw_env.config) \

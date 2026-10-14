@@ -54,7 +54,7 @@ reset_uboot_env() {
 	# Get environment device, offset and size
 	# This assumes a single device contains env with nothing in
 	# between redundant envs
-	env_dev=$(awk '/^[^#]/ && $2 > 0 {
+	env_dev=$(busybox awk '/^[^#]/ && $2 > 0 {
 			if (!start || $2 < start)
 				start = $2;
 			if (!end || $2 + $3 > end)
@@ -66,7 +66,10 @@ reset_uboot_env() {
 			dev=$1
 		}
 		END {
-			if (! (start+0)) exit(1);
+			if (! (start+0)) {
+			       print "Invalid start offset:", start > "/dev/stderr"
+			       exit(1)
+		       }
 			printf("%s,%d,%d\n", dev, start, end-start);
 		}
 		' < /target/etc/fw_env.config) \
