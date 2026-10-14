@@ -198,9 +198,6 @@ msgstr ""
 msgid "install_if must be higher or different"
 msgstr ""
 #: mkswu
-msgid "%s version %s has been simplified to %s"
-msgstr ""
-#: mkswu
 msgid "failed to compress %s"
 msgstr ""
 #: mkswu

@@ -31,6 +31,23 @@ check 2 '1.2-3+1 = 1.2-3' 1.2-3+1 1.2-3
 check 2 '1.2-3+1 = 1.2-3+2' 1.2-3+1 1.2-3+2
 check 0 '1.2-2+1 < 1.2-3' 1.2-2+1 1.2-3
 
+# previously normalized versions
+for version in 1 \
+		1.0,1 \
+		1.0.0-1.0.ab,1-1.0.ab \
+		1.00.01-01.123,1.0.1-1.123 \
+		2020.04-at.2,2020.4-at.2 \
+		100,100 \
+		01.00000.0-1.0.0,1-1.0.0 \
+		01.01-01.0,1.1-1.0 \
+		1.0.0123-0000.0.0,1.0.123-0.0.0 \
+		0.0.0.0,0 \
+		0.1,0.1; do
+	simplified="${version#*,}"
+	version="${version%,*}"
+	check 2 "$simplified = $version" "$simplified" "$version"
+done
+
 # alnum mismatch
 check 2 '1.1-1.1 < 1.1-1.a' 1.1-1.a 1.1-1.1
 

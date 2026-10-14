@@ -370,33 +370,6 @@ check_version_different() {
 	fi
 }
 
-normalize_version() {
-	# modifies $version in place
-	local semver_prerelease="${version#*-}"
-	if [ "$semver_prerelease" = "$version" ]; then
-		semver_prerelease=""
-	else
-		version="${version%%-*}"
-	fi
-
-	# the version part is only allowed dots, and we can just
-	# strip any leading 0 and trailing .0s
-	version="$(echo "$version" \
-			| sed -e 's/\<0\+\([0-9]\)/\1/g' -e 's/\(\.0\)\+$//')"
-	if [ -n "$semver_prerelease" ]; then
-		# semver should simplify leading zero if and only if it's a pure
-		# number enclosed in dots; e.g. 01.01 -> 1.1 but 01-01 -> 01-01
-		# as it is considered as a string...
-		# This needs looping on a label because we eat the next dot and
-		# sed does not have lookahead
-		semver_prerelease="$(echo "$semver_prerelease" \
-			| sed -e ':repeat;
-				s/\(^\|\.\)0\+\([0-9]\+\(\.\|$\)\)/\1\2/g;
-				t repeat' )"
-		version="$version-$semver_prerelease"
-	fi
-}
-
 check_version_valid() {
 	[ -n "$MKSWU_TEST_ALLOW_BOGUS_VERSION" ] && return
 
@@ -420,15 +393,6 @@ check_version_valid() {
 		;;
 	*) error "install_if must be higher or different";;
 	esac
-
-	# check version is normalized
-	local orig_version="$version"
-	normalize_version
-	if [ "$version" != "$orig_version" ]; then
-		# send to stderr because stdout is sent to sw-description here
-		info "%s version %s has been simplified to %s" \
-			"$component" "$orig_version" "$version" >&2
-	fi
 }
 
 compress() {
@@ -1061,11 +1025,9 @@ normalize_boot_version() {
 	[ "$install_if" = different ] && return
 
 	# fix up version to allow install-if=higher:
-	# - 2020.04 -> 2020.4
-	normalize_version
 	# - at4 -> at.4
 	version=$(echo "$version" | sed -e 's/at\([0-9]\)/at.\1/')
-	# - 2020.4-at.4-0002-gabc1234-4-gdef5678 -> 2020.4-at.4.2.4+gabc1234-gdef5678
+	# - 2020.04-at.4-0002-gabc1234-4-gdef5678 -> 2020.04-at.4.2.4+gabc1234-gdef5678
 	version=$(echo "$version" | awk -F - '{
 			printf("%s%s%s", $1, $2 ? "-" : "", $2)
 			for (i=3; i<=NF; i++) {

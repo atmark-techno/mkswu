@@ -18,8 +18,6 @@ get_version() {
 	# remembering all versions for this component and printing the right one
 	# It is an error to request install-if on installed version files
 	# (but we don't enforce that check)
-	# Lastly, swupdate ignores leading 0 and (trailing .0 in main version),
-	# so we need to filter that out too with simplify_version helper
 	awk -v "component=$component" -v "board=${board:-none}" \
 		-v "install_if=$install_if" \
 		'$1 == component {
@@ -155,8 +153,7 @@ needs_update_regex() {
 
 extract_swdesc_versions() {
 	# also fix boot versions: remove leading zero, add dot after -at
-	sed -n  -e 's/\(VERSION boot 20[0-9][0-9]\).0\([0-9]\)/\1.\2/' \
-		-e 's/\(VERSION boot 20[0-9][0-9].[0-9]\+-at\)\([0-9]\)/\1.\2/' \
+	sed -n  -e 's/\(VERSION boot 20[0-9][0-9].[0-9]\+-at\)\([0-9]\)/\1.\2/' \
 		-e "s/.*#VERSION //p"
 }
 
@@ -164,12 +161,7 @@ fix_boot_versions() {
 	[ "$component" != boot ] && return
 
 	# fix old boot versions
-
-	# 2020.04 -> 2020.4 (newer versions are correct so only 2020.4 is needed)
-	[ "$oldvers" != "${oldvers#2020.04}" ] \
-		&& oldvers="2020.4${oldvers#2020.04}"
-
-	# 2020.4-at24 -> 2020.4-at.24
+	# 2020.04-at24 -> 2020.04-at.24
 	if [ "$oldvers" != "${oldvers#20*-at[0-9]}" ]; then
 		local tmpvers="${oldvers%%-at*}-at.${oldvers#20*-at}"
 		# We fix sw-versions' "boot" entry on any installed SWU,
@@ -206,10 +198,9 @@ gen_newversion() {
 	local system_versions="${system_versions:-/etc/sw-versions}"
 	[ -e "$system_versions" ] || system_versions=/dev/null
 
-	# If the system still contains an old boot version with 0-padding
+	# If the system still contains an old boot version with grouped at[0-9]
 	# then remove padding here to avoid incorrect update detections
-	sed		-e 's/^\(boot 20[0-9][0-9]\).0\([0-9]\)/\1.\2/' \
-			-e 's/^\(boot 20[0-9][0-9].[0-9]\+-at\)\([0-9]\)/\1.\2/' \
+	sed -e 's/^\(boot 20[0-9][0-9].[0-9]\+-at\)\([0-9]\)/\1.\2/' \
 			< "$system_versions" \
 			> "$MKSWU_TMP/sw-versions.old" \
 		|| error "Could not copy existing versions"

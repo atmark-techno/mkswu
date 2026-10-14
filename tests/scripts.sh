@@ -34,34 +34,6 @@ setup_test_swupdate_fd() {
 	export SWUPDATE_WARN_FD=4
 }
 
-test_version_normalize() {
-	# versions with extra .0 and leading zeroes are transformed and
-	# not handled directly in version_update/version_higher, make sure
-	# normalization works...
-	echo "Testing mkswu simplifies version correctly..."
-	get_v() {
-		local version="$1"
-		normalize_version
-		echo "$version"
-	}
-	for version in 1 \
-			1.0,1 \
-			1.0.0-1.0.ab,1-1.0.ab \
-			1.00.01-01.123,1.0.1-1.123 \
-			2020.04-at2,2020.4-at2 \
-			100,100 \
-			01.00000.0-1.0.0,1-1.0.0 \
-			01.01-01-01.01.01.01-01.01,1.1-01-01.1.1.01-01.1 \
-			1.0.0123-0000.0.0,1.0.123-0.0.0 \
-			0.0.0.0,0 \
-			0.1,0.1; do
-		simplified="${version#*,}"
-		version="${version%,*}"
-		[ "$(get_v "$version")" = "$simplified" ] \
-			|| error "$version was not simplified to $simplified:  $(get_v "$version")"
-	done
-}
-
 test_encrypt_sign() {
 	ENCRYPT_KEYFILE="$MKSWU_TMP/aes-key"
 	echo "$(openssl rand -hex 32) $(openssl rand -hex 16)" > "$ENCRYPT_KEYFILE"
@@ -243,18 +215,18 @@ test_version_update() {
 	echo "  #VERSION boot 2020.04-at.4 higher *" > "$SWDESC"
 	gen_newversion
 	version=$(get_version --install-if boot present)
-	[ "$version" = "2020.4-at.4 higher" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
+	[ "$version" = "2020.04-at.4 higher" ] || error "Did not extract version with install-if on 2-fields format correctly, had $version"
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at.4" ] || error "version with 2 fields did not get merged (didn't add boot? got $version)"
+	[ "$version" = "2020.04-at.4" ] || error "version with 2 fields did not get merged (didn't add boot? got $version)"
 	version=$(get_version a)
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 
 	echo "  #VERSION boot 2020.04-at.5 higher" > "$SWDESC"
 	gen_newversion
 	version=$(get_version --install-if boot present)
-	[ "$version" = "2020.4-at.5 higher" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
+	[ "$version" = "2020.04-at.5 higher" ] || error "Did not extract version with install-if on 3-fields format correctly, had $version"
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at.5" ] || error "version with 2 fields did not get merged (didn't update boot? got $version)"
+	[ "$version" = "2020.04-at.5" ] || error "version with 2 fields did not get merged (didn't update boot? got $version)"
 	version=$(get_version a)
 	[ "$version" = "123" ] || error "version with 2 fields did not get merged (didn't keep 'a')"
 
@@ -270,20 +242,20 @@ test_version_update() {
 	echo " #VERSION a 123 higher" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (got $version)"
+	[ "$version" = "2020.04-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.04-at.5 (got $version)"
 	[ -e "$warn_file" ] && error "warned updating old boot version? $(cat "$warn_file")"
 
-	echo " #VERSION boot 2020.4-at.5 higher" > "$SWDESC"
+	echo " #VERSION boot 2020.04-at.5 higher" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (same as swu, got $version)"
+	[ "$version" = "2020.04-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (same as swu, got $version)"
 	[ -e "$warn_file" ] && error "warned updating old boot version? $(cat "$warn_file")"
 
 	echo " #VERSION boot 2020.4-at.24 higher" > "$SWDESC"
 	gen_newversion
 	version=$(get_version boot)
-	[ "$version" = "2020.4-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (higher in swu, got $version)"
-	grep -qF "version format was updated (2020.4-at5 -> 2020.4-at.5)," "$warn_file" \
+	[ "$version" = "2020.04-at.5" ] || error "Version not updated 2020.04-at5 -> 2020.4-at.5 (higher in swu, got $version)"
+	grep -qF "version format was updated (2020.04-at5 -> 2020.04-at.5)," "$warn_file" \
 		|| error "boot version reformatting warning not printed? $(cat "$warn_file" 2>/dev/null || echo 'no file')"
 }
 
@@ -897,7 +869,6 @@ test_update_overlays() {
 	set -e
 	. "$MKSWU"
 
-	test_version_normalize
 	test_encrypt_sign
 ) || error "mkswu subfunctions failed"
 

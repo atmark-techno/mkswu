@@ -31,19 +31,13 @@ test_version_install() {
 	local canary=/tmp/swupdate-installed
 	local swupdate_component=${swupdate_component:-testcomp}
 	local install_if="${install_if:-}"
-	local normalized_newvers
-	# shellcheck disable=SC2016 ## single quote on purpose...
-	normalized_newvers=$(version="$newvers" "$MKSWU" --internal \
-			eval 'normalize_version; echo $version') \
-		&& [ -n "$normalized_newvers" ] \
-		|| error "Could not normalize version"
 	shift 2 # extra args extra swdesc arguments
 
 	printf "%s\n" \
 			"${install_if:+swdesc_option install_if=$install_if}" \
 			"swdesc_command_nochroot --version testcomp '$newvers' \\" \
 			"	'touch \"$canary\"'" \
-		| name=version_install build_check - -- "swdesc 'VERSION testcomp ${normalized_newvers/+/\\+}'" \
+		| name=version_install build_check - -- "swdesc 'VERSION testcomp ${newvers/+/\\+}'" \
 		|| error "mkswu build failed"
 
 	echo "$swupdate_component $oldvers" > "$SW_VERSIONS"
@@ -88,7 +82,6 @@ test_skipped() {
 		|| error "$new was incorrectly installed over $old (${install_if:+install_if=$install_if}${swupdate_component:+component=$swupdate_component})"
 }
 
-
 # versions higher than base
 test_installed 1 2
 test_installed 1 1.1
@@ -116,6 +109,12 @@ test_skipped 1.1.1-1.abc 1.1.1-1.a
 test_skipped 1.1.1-1.abc 1.1.1-1.1
 test_skipped 1.1.1-1.abc.0 1.1.1-1.abc
 test_skipped 1.1-1 1.1.0-1
+
+# previously normalized versions
+test_skipped 1.0-at.1 1-at.1
+test_skipped 1-at.1 1.0-at.1
+test_skipped 1.01-at.1 1.1-at.1
+test_skipped 1.1-at.1 1.01-at.1
 
 # weird identical semvers...
 test_skipped 1.1-1..1 1.1-1.0.1
