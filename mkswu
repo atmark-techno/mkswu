@@ -2597,7 +2597,7 @@ mkinit_geninitdesc() {
 		|| error "Could not update %s" "$desc.tmp"
 
 	if [ -n "$KEEPATMARKPEM" ] && \
-	    prompt_yesno n "Enable auto-updates (BaseOS / upgradable containers) from atmark-techno-dl.com servers? (N/y)"; then
+		prompt_yesno n "\nEnable auto-updates (BaseOS / upgradable containers) from\natmark-techno-dl.com servers? (N/y)"; then
 
 		while true; do
 			prompt AUTOUPDATE "Select update frequency ([weekly]/daily)"

@@ -895,8 +895,8 @@ msgid "Could not copy initial_setup.desc from example dir"
 msgstr "initial_setup.descをコピーできませんでした。"
 
 #: mkswu
-msgid "Enable auto-updates (BaseOS / upgradable containers) from atmark-techno-dl.com servers? (N/y)"
-msgstr "BaseOS/アップデート可能なコンテナを atmark-techno-dl.com サーバーから自動アップデートしますか？ (N/y)"
+msgid "\\nEnable auto-updates (BaseOS / upgradable containers) from\\natmark-techno-dl.com servers? (N/y)"
+msgstr "\\nBaseOS/アップデート可能なコンテナを atmark-techno-dl.com サーバーから\\n自動アップデートしますか？ (N/y)"
 
 #: mkswu
 msgid "Select update frequency ([weekly]/daily)"
