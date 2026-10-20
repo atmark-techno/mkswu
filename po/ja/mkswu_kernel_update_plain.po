@@ -35,6 +35,14 @@ msgid "Please build kernel first"
 msgstr "Linux カーネルを先にビルドしてください。"
 
 #: examples/kernel_update_plain.install.sh
+msgid "Could not read version from include/generated/utsrelease.h"
+msgstr "include/generated/utsrelease.h からバージョンを読み取りできませんでした。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "UTS_RELEASE $kver does not look like a kernel version"
+msgstr "UTS_RELEASE $kver を取得しましたが、カーネルバージョンに見えません。"
+
+#: examples/kernel_update_plain.install.sh
 msgid "mkswu not found (required for version update)"
 msgstr "mkswu コマンドが見つかりません。"
 
@@ -97,6 +105,10 @@ msgstr "depmod は実行されませんでした。"
 #: examples/kernel_update_plain.install.sh
 msgid "Multiple kernel versions in $dest/lib/modules, modules_install did not work as expected?"
 msgstr "$desc/lib/modules に複数のバージョンがインストールされたようです。modules_install の問題だと思われます。"
+
+#: examples/kernel_update_plain.install.sh
+msgid "Installed $installed_ver but UTS_RELEASE was $kver, is build up to date?"
+msgstr "インストールした $installed_ver と UTA_RELEASE ($kver) は一致しません。ビルドは更新されましたか？"
 
 #: examples/kernel_update_plain.install.sh
 msgid "module alias $modalias is suspiciously small, assuming depmod failed to parse modules"

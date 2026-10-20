@@ -34,6 +34,10 @@ preinstall_checks() {
 	[ -e Kbuild ] || [ -e vmlinux ] \
 		|| error $"Please run from linux build directory"
 	[ -e vmlinux ] || error $"Please build kernel first"
+	kver=$(cut -d'"' -f2 < include/generated/utsrelease.h)
+	[ -n "$kver" ] || error $"Could not read version from include/generated/utsrelease.h"
+	[[ "$kver" =~ ^[0-9]*\.[0-9]* ]] \
+		|| error $"UTS_RELEASE $kver does not look like a kernel version"
 	if [ -x "$examples_dir/../mkswu" ]; then
 		mkswu="$examples_dir/../mkswu"
 	elif command -v mkswu >/dev/null; then
@@ -58,7 +62,10 @@ preinstall_checks() {
 		# actual uname -r can be garbled by uImage packing,
 		# use Linux-XXX in uImage headers instead
 		version_check_prefix=Linux-
-		dtb_prefix=arch/arm/boot/dts/armadillo-
+		case "$kver" in
+		5.10*) dtb_prefix=arch/arm/boot/dts/armadillo-;;
+		*) dtb_prefix=arch/arm/boot/dts/nxp/imx/armadillo-;;
+		esac
 		cross=${CROSS_COMPILE:-arm-linux-gnueabihf-}
 		;;
 	*)
@@ -112,17 +119,19 @@ install_files() {
 }
 
 postinstall_checks() {
+	local installed_ver=""
 	[ -n "$nocheck" ] && return
 	# get version and sanity checks
-	kver=""
 	for modalias in "$dest"/lib/modules/*/modules.alias.bin; do
 		[ -e "$modalias" ] \
 			|| error $"depmod did not run on module install"
-		[ -z "$kver" ] \
+		[ -z "$installed_ver" ] \
 			|| error $"Multiple kernel versions in $dest/lib/modules, modules_install did not work as expected?"
-		kver="${modalias%/modules.alias.bin}"
-		kver="${kver##*/}"
+		installed_ver="${modalias%/modules.alias.bin}"
+		installed_ver="${installed_ver##*/}"
 	done
+	[ "$installed_ver" = "$kver" ] \
+		|| error $"Installed $installed_ver but UTS_RELEASE was $kver, is build up to date?"
 	[ "$(stat -c %s "$modalias")" -gt 1000 ] \
 		|| error $"module alias $modalias is suspiciously small, assuming depmod failed to parse modules" \
 			 $"Please check CONFIG_MODULE_COMPRESS is unset"
