@@ -560,7 +560,7 @@ cleanup() {
 				btrfs subvol delete -i "$id" /target/var/tmp;
 			done
 	fi
-	umount_if_mountpoint /target || error "Could not umount $dir"
+	umount_if_mountpoint /target || error "Could not umount /target"
 	luks_close_target
 	if [ -e "$MKSWU_TMP/podman_containers_killed" ] && ! needs_reboot; then
 		info "Restarting containers"
