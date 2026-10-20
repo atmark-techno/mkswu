@@ -240,11 +240,12 @@ trim_tags() {
 
 	[ -n "$TRIM_TAGS" ] || return
 	# untag any unused image
-	podman --root "$PODMAN_ROOT" \
-		--storage-opt additionalimagestore="" \
-		image list \
-		--format '{{.Id}}' |
-		sort -u |
+	{ podman --root "$PODMAN_ROOT" \
+			--storage-opt additionalimagestore="" \
+			image list \
+			--format '{{.Id}}' \
+		|| touch "$tmpdir/fail"
+	} | sort -u |
 		while read -r id; do
 			grep -q -F "$id" "$tmpdir/ids" && continue
 			if [ -n "$DRY_RUN" ]; then
@@ -252,9 +253,13 @@ trim_tags() {
 				continue
 			fi
 			podman --root "$PODMAN_ROOT" \
-				--storage-opt additionalimagestore="" \
-				untag "$id"
+					--storage-opt additionalimagestore="" \
+					untag "$id" \
+				|| error "podman untag $id failed"
 		done
+	if [ -e "$tmpdir/fail" ]; then
+		error "could not list podman images"
+	fi
 }
 
 podman_prune() {
@@ -270,7 +275,8 @@ podman_prune() {
 		image prune -f --external \
 		|| podman --root "$PODMAN_ROOT" \
 			--storage-opt additionalimagestore="" \
-			image prune -f
+			image prune -f \
+		|| error "podman image prune failed"
 }
 
 cleanup_images() {
