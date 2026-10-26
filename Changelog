@@ -1,3 +1,26 @@
+8.5
+===
+fixes:
+- scripts: do not mount full TMPDIR for command executions.
+This avoids a problem when chaining swdesc_files --dest /var/tmp with
+executing it
+- update examples/OS_update.desc for split userspace/kernel updates
+- fix examples/kernel_update_plain.install.sh for 32-bit 6.12 (dtb install
+failure)
+- fix examples/kernel_update_apk.desc to avoid network usage
+
+misc:
+- fail update if podman_cleanup (pruning old images) fails
+- implement support for .0 in version comparison. `sort -V` limitations
+were too much so replace it with an awk reimplementation.
+- handle atmark kernel updates within mkswu scripts instead of kernel SWUs:
+this allows handling skipped kernel installs as 'nothing to do'
+
+features:
+- print an info message if swdesc_*_container archive contains multiple images
+
+  -- 2026-10-26
+
 8.4
 ===
 fixes:
